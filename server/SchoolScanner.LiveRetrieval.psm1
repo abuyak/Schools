@@ -318,7 +318,40 @@ function Convert-OpenAIResponseToResult {
     )
 
     $outputText = [string]$ApiResponse.output_text
-    $parsed = ConvertFrom-Json -InputObject $outputText -ErrorAction Stop
+    if ([string]::IsNullOrWhiteSpace($outputText)) {
+        return @{
+            status = "upstream_invalid_format"
+            httpStatus = 502
+            title = "Unexpected upstream response"
+            summary = "The research provider returned an empty response where structured JSON was expected."
+            keyPoints = @("No answer was generated.", "Try again in a moment.")
+            sections = @(
+                @{
+                    heading = "What happened"
+                    body = "The upstream response did not include a parseable answer payload."
+                }
+            )
+        }
+    }
+
+    try {
+        $parsed = ConvertFrom-Json -InputObject $outputText -ErrorAction Stop
+    }
+    catch {
+        return @{
+            status = "upstream_invalid_format"
+            httpStatus = 502
+            title = "Unexpected upstream response"
+            summary = "The research provider returned a response that did not match the expected JSON format."
+            keyPoints = @("No answer was generated.", "Try again, or adjust the question to be more specific.")
+            sections = @(
+                @{
+                    heading = "Next step"
+                    body = "Retry the request. If this repeats, the backend schema enforcement may need tightening."
+                }
+            )
+        }
+    }
     $sources = @()
 
     foreach ($item in @($ApiResponse.output)) {
@@ -351,6 +384,7 @@ function Convert-OpenAIResponseToResult {
 
     return @{
         status = "completed"
+        httpStatus = 200
         title = [string]$parsed.title
         summary = [string]$parsed.summary
         keyPoints = @($parsed.keyPoints)
@@ -391,9 +425,56 @@ function Invoke-OpenAIResearch {
         "Content-Type" = "application/json"
     }
 
-    $response = Invoke-RestMethod -Uri "https://api.openai.com/v1/responses" -Method Post -Headers $headers -Body $requestBody -TimeoutSec 120
-    $plain = ConvertTo-PlainHashtable -InputObject $response
-    return Convert-OpenAIResponseToResult -ApiResponse $plain
+    try {
+        $response = Invoke-RestMethod -Uri "https://api.openai.com/v1/responses" -Method Post -Headers $headers -Body $requestBody -TimeoutSec 120
+        $plain = ConvertTo-PlainHashtable -InputObject $response
+        return Convert-OpenAIResponseToResult -ApiResponse $plain
+    }
+    catch {
+        $statusCode = $null
+        $detail = $_.Exception.Message
+
+        if ($_.Exception -is [System.Net.WebException] -and $_.Exception.Response) {
+            try {
+                $statusCode = [int]$_.Exception.Response.StatusCode
+            }
+            catch {
+                $statusCode = $null
+            }
+        }
+
+        if (-not $statusCode) {
+            $statusCode = 502
+        }
+
+        $safeStatus = if ($statusCode -in @(400,401,403,404,409,422,429,500,502,503,504)) { $statusCode } else { 502 }
+        $summary = if ($safeStatus -eq 401 -or $safeStatus -eq 403) {
+            "The research provider rejected the API key. Check OPENAI_API_KEY."
+        } elseif ($safeStatus -eq 429) {
+            "The research provider is rate-limiting requests. Try again shortly."
+        } elseif ($safeStatus -eq 504) {
+            "The research provider timed out while retrieving sources. Try again."
+        } else {
+            "The research provider could not complete the request. Try again."
+        }
+
+        return @{
+            status = "upstream_error"
+            httpStatus = $safeStatus
+            title = "Research provider error"
+            summary = $summary
+            keyPoints = @(
+                "No answer was generated."
+                "The browser is waiting for the server-side research workflow."
+            )
+            sections = @(
+                @{
+                    heading = "What happened"
+                    body = $detail
+                }
+            )
+        }
+    }
 }
 
 function Get-LiveResearchUnavailableResponse {

@@ -16,6 +16,9 @@ $rateWindowSeconds = 60
 $maxRequestsPerWindow = 30
 $requestLog = @{}
 $errorLog = Join-Path $env:TEMP "schoolscanner-server-error.log"
+$analyticsLog = Join-Path $env:TEMP "schoolscanner-analytics.jsonl"
+$maxHeaderBytes = 16384
+$maxBodyBytes = 4096
 
 Write-Host "School Scanner PoC listening on http://localhost:$Port/"
 
@@ -118,12 +121,15 @@ function Read-Request {
         }
 
         $memory.Write($buffer, 0, $read)
+        if ($memory.Length -gt $maxHeaderBytes) {
+            throw [System.InvalidOperationException]::new("BAD_REQUEST: Headers too large.")
+        }
         $raw = [System.Text.Encoding]::ASCII.GetString($memory.ToArray())
         $headerEnd = $raw.IndexOf("`r`n`r`n")
     }
 
     if ($headerEnd -lt 0) {
-        return $null
+        throw [System.InvalidOperationException]::new("BAD_REQUEST: Malformed request headers.")
     }
 
     $allBytes = $memory.ToArray()
@@ -131,6 +137,9 @@ function Read-Request {
     $headerText = [System.Text.Encoding]::ASCII.GetString($headerBytes)
     $headerLines = $headerText -split "`r`n"
     $requestLine = $headerLines[0]
+    if ([string]::IsNullOrWhiteSpace($requestLine)) {
+        throw [System.InvalidOperationException]::new("BAD_REQUEST: Missing request line.")
+    }
 
     $headers = @{}
     foreach ($line in $headerLines[1..($headerLines.Length - 1)]) {
@@ -140,9 +149,16 @@ function Read-Request {
         }
     }
 
+    if ($headers.ContainsKey("Transfer-Encoding") -and ([string]$headers["Transfer-Encoding"]).ToLowerInvariant().Contains("chunked")) {
+        throw [System.InvalidOperationException]::new("BAD_REQUEST: Chunked transfer encoding is not supported.")
+    }
+
     $contentLength = 0
     if ($headers.ContainsKey("Content-Length")) {
         [void][int]::TryParse([string]$headers["Content-Length"], [ref]$contentLength)
+    }
+    if ($contentLength -gt $maxBodyBytes) {
+        throw [System.InvalidOperationException]::new("BAD_REQUEST: Payload too large.")
     }
 
     $bodyStart = $headerEnd + 4
@@ -170,7 +186,16 @@ function Read-Request {
     }
 
     $parts = $requestLine.Split(" ")
+    if ($parts.Length -lt 2) {
+        throw [System.InvalidOperationException]::new("BAD_REQUEST: Malformed request line.")
+    }
+    if ($parts[0] -notin @("GET", "POST")) {
+        throw [System.InvalidOperationException]::new("BAD_REQUEST: Method not supported.")
+    }
     $rawTarget = $parts[1]
+    if ([string]::IsNullOrWhiteSpace($rawTarget) -or -not $rawTarget.StartsWith("/")) {
+        throw [System.InvalidOperationException]::new("BAD_REQUEST: Malformed request target.")
+    }
     $uri = [System.Uri]::new("http://localhost$rawTarget")
     $queryParams = @{}
     foreach ($entry in $uri.Query.TrimStart("?").Split("&")) {
@@ -195,16 +220,28 @@ function Read-Request {
     }
 }
 
+function Write-AnalyticsEvent {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Name,
+        [hashtable]$Properties = @{}
+    )
+
+    $record = [ordered]@{
+        ts = (Get-Date).ToUniversalTime().ToString("o")
+        name = $Name
+        props = $Properties
+    }
+
+    Add-Content -LiteralPath $analyticsLog -Value ($record | ConvertTo-Json -Depth 4 -Compress)
+}
+
 try {
     while ($true) {
         $client = $listener.AcceptTcpClient()
 
         try {
             $request = Read-Request -Client $client
-            if ($null -eq $request) {
-                $client.Close()
-                continue
-            }
 
             $clientKey = $request.ClientAddress
             $now = Get-Date
@@ -274,11 +311,6 @@ try {
             }
 
             if ($request.Method -eq "POST" -and $request.Path -eq "/api/research") {
-                if ($request.Body.Length -gt 4096) {
-                    Send-JsonResponse -Client $client -StatusCode 413 -ReasonPhrase "Payload Too Large" -Body @{ error = "Payload too large." }
-                    continue
-                }
-
                 try {
                     $body = ConvertTo-PlainHashtable -InputObject (ConvertFrom-Json -InputObject $request.Body)
                 }
@@ -294,18 +326,55 @@ try {
                 }
 
                 $result = Invoke-OpenAIResearch -Payload $body
-                $statusCode = if ($result.status -eq "completed") { 200 } else { 503 }
-                $reason = if ($statusCode -eq 200) { "OK" } else { "Service Unavailable" }
+                $statusCode = if ($result.httpStatus) { [int]$result.httpStatus } elseif ($result.status -eq "completed") { 200 } else { 503 }
+                $reason = if ($statusCode -eq 200) { "OK" } elseif ($statusCode -eq 400) { "Bad Request" } elseif ($statusCode -eq 401) { "Unauthorized" } elseif ($statusCode -eq 429) { "Too Many Requests" } elseif ($statusCode -eq 502) { "Bad Gateway" } elseif ($statusCode -eq 504) { "Gateway Timeout" } else { "Service Unavailable" }
                 Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
+                continue
+            }
+
+            if ($request.Method -eq "POST" -and $request.Path -eq "/api/analytics/click") {
+                try {
+                    $body = ConvertTo-PlainHashtable -InputObject (ConvertFrom-Json -InputObject $request.Body)
+                }
+                catch {
+                    Send-JsonResponse -Client $client -StatusCode 400 -ReasonPhrase "Bad Request" -Body @{ error = "Invalid JSON payload." }
+                    continue
+                }
+
+                $event = [string]$body.event
+                if ([string]::IsNullOrWhiteSpace($event) -or $event.Length -gt 64) {
+                    Send-JsonResponse -Client $client -StatusCode 400 -ReasonPhrase "Bad Request" -Body @{ error = "Invalid event." }
+                    continue
+                }
+
+                $props = @{}
+                foreach ($key in @("branch", "placement", "utm_campaign", "utm_content")) {
+                    if ($body.ContainsKey($key)) {
+                        $value = [string]$body[$key]
+                        if ($value.Length -le 128) {
+                            $props[$key] = $value
+                        }
+                    }
+                }
+
+                Write-AnalyticsEvent -Name $event -Properties $props
+                Send-HttpResponse -Client $client -StatusCode 204 -ReasonPhrase "No Content" -BodyBytes @() -ContentType "text/plain; charset=utf-8"
                 continue
             }
 
             Send-JsonResponse -Client $client -StatusCode 404 -ReasonPhrase "Not Found" -Body @{ error = "Not found." }
         }
         catch {
-            Add-Content -LiteralPath $errorLog -Value ("[{0}] {1}" -f (Get-Date).ToString("s"), $_.Exception.Message)
+            $message = [string]$_.Exception.Message
+            Add-Content -LiteralPath $errorLog -Value ("[{0}] {1}" -f (Get-Date).ToString("s"), $message)
+
             if ($client.Connected) {
-                Send-JsonResponse -Client $client -StatusCode 500 -ReasonPhrase "Internal Server Error" -Body @{ error = "Server error." }
+                if ($message.StartsWith("BAD_REQUEST:")) {
+                    Send-JsonResponse -Client $client -StatusCode 400 -ReasonPhrase "Bad Request" -Body @{ error = "Bad request." }
+                }
+                else {
+                    Send-JsonResponse -Client $client -StatusCode 500 -ReasonPhrase "Internal Server Error" -Body @{ error = "Server error." }
+                }
             }
         }
     }

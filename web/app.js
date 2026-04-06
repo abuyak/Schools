@@ -18,6 +18,7 @@
   const premiumPoints = document.getElementById("premium-points");
   const gateNote = document.getElementById("gate-note");
   const premiumPanel = document.getElementById("premium-panel");
+  const coffeeCta = document.getElementById("coffee-cta");
 
   function setStatus(message) {
     formStatus.textContent = message;
@@ -66,6 +67,35 @@
     renderList(previewPoints, result.keyPoints || []);
     renderSections(result.sections || []);
 
+    if (coffeeCta) {
+      const status = result.status || "";
+      const branch = branchInput.value || "";
+      const utm = new URLSearchParams({
+        utm_source: "school_scanner",
+        utm_medium: "referral",
+        utm_campaign: "donation",
+        utm_content: status ? "answer_" + status : "answer"
+      });
+
+      if (branch) {
+        utm.set("utm_term", branch);
+      }
+
+      const baseUrl = coffeeCta.getAttribute("data-base-url") || coffeeCta.href;
+      try {
+        const url = new URL(baseUrl);
+        url.searchParams.forEach(function (_value, key) {
+          if (utm.has(key)) {
+            utm.delete(key);
+          }
+        });
+        url.search = utm.toString();
+        coffeeCta.href = url.toString();
+      } catch (_error) {
+        // If base URL is invalid, keep existing href.
+      }
+    }
+
     if (ENABLE_PAYWALL) {
       premiumPanel.hidden = false;
       renderList(premiumPoints, result.premiumPoints || []);
@@ -100,12 +130,13 @@
     setStatus("Researching online sources. This should take longer than the old instant local path.");
 
     try {
-      const query = new URLSearchParams(payload);
-      const response = await fetch("/api/research?" + query.toString(), {
-        method: "GET",
+      const response = await fetch("/api/research", {
+        method: "POST",
         headers: {
-          "Accept": "application/json"
-        }
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
       });
 
       const result = await response.json();
@@ -146,6 +177,37 @@
     }
     selectBranch(card.getAttribute("data-branch"));
   });
+
+  if (coffeeCta) {
+    coffeeCta.addEventListener("click", function () {
+      const payload = {
+        event: "donation_click",
+        branch: branchInput.value || "",
+        placement: coffeeCta.getAttribute("data-placement") || "results",
+        utm_campaign: "donation",
+        utm_content: "cta"
+      };
+
+      try {
+        if (navigator.sendBeacon) {
+          const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+          navigator.sendBeacon("/api/analytics/click", blob);
+          return;
+        }
+      } catch (_error) {
+        // fall through to fetch
+      }
+
+      fetch("/api/analytics/click", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        keepalive: true
+      }).catch(function () {
+        // ignore analytics failures
+      });
+    });
+  }
 
   form.addEventListener("submit", submitQuestion);
   selectBranch(branchInput.value);
