@@ -1,0 +1,315 @@
+param(
+    [int]$Port = 8080,
+    [string]$Root = (Join-Path $PSScriptRoot "..\web")
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+Import-Module (Join-Path $PSScriptRoot "SchoolScanner.Server.psm1") -Force
+Import-Module (Join-Path $PSScriptRoot "SchoolScanner.LiveRetrieval.psm1") -Force
+
+$listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, $Port)
+$listener.Start()
+
+$rateWindowSeconds = 60
+$maxRequestsPerWindow = 30
+$requestLog = @{}
+$errorLog = Join-Path $env:TEMP "schoolscanner-server-error.log"
+
+Write-Host "School Scanner PoC listening on http://localhost:$Port/"
+
+function Get-ResponseHeaderLines {
+    param(
+        [hashtable]$Headers
+    )
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    foreach ($key in $Headers.Keys) {
+        $lines.Add(("{0}: {1}" -f $key, $Headers[$key]))
+    }
+    return $lines
+}
+
+function Send-HttpResponse {
+    param(
+        [Parameter(Mandatory)]
+        [System.Net.Sockets.TcpClient]$Client,
+        [Parameter(Mandatory)]
+        [int]$StatusCode,
+        [Parameter(Mandatory)]
+        [string]$ReasonPhrase,
+        [Parameter(Mandatory)]
+        [byte[]]$BodyBytes,
+        [Parameter(Mandatory)]
+        [string]$ContentType,
+        [hashtable]$ExtraHeaders = @{}
+    )
+
+    $stream = $Client.GetStream()
+    $writer = New-Object System.IO.StreamWriter($stream, [System.Text.Encoding]::ASCII, 1024, $true)
+    $writer.NewLine = "`r`n"
+
+    $headers = Get-SecurityHeaders -ApiResponse:($ContentType -like "application/json*")
+    foreach ($key in $ExtraHeaders.Keys) {
+        $headers[$key] = $ExtraHeaders[$key]
+    }
+    $headers["Content-Type"] = $ContentType
+    $headers["Content-Length"] = [string]$BodyBytes.Length
+    $headers["Connection"] = "close"
+
+    $writer.WriteLine("HTTP/1.1 $StatusCode $ReasonPhrase")
+    foreach ($line in (Get-ResponseHeaderLines -Headers $headers)) {
+        $writer.WriteLine($line)
+    }
+    $writer.WriteLine("")
+    $writer.Flush()
+
+    $stream.Write($BodyBytes, 0, $BodyBytes.Length)
+    $stream.Flush()
+    $writer.Dispose()
+    $Client.Close()
+}
+
+function Send-JsonResponse {
+    param(
+        [System.Net.Sockets.TcpClient]$Client,
+        [int]$StatusCode,
+        [string]$ReasonPhrase,
+        $Body
+    )
+
+    $json = $Body | ConvertTo-Json -Depth 6 -Compress
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
+    Send-HttpResponse -Client $Client -StatusCode $StatusCode -ReasonPhrase $ReasonPhrase -BodyBytes $bytes -ContentType "application/json; charset=utf-8"
+}
+
+function Send-FileResponse {
+    param(
+        [System.Net.Sockets.TcpClient]$Client,
+        [string]$Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        Send-JsonResponse -Client $Client -StatusCode 404 -ReasonPhrase "Not Found" -Body @{ error = "Not found." }
+        return
+    }
+
+    $bytes = [System.IO.File]::ReadAllBytes($Path)
+    $contentType = Get-MimeType -Path $Path
+    Send-HttpResponse -Client $Client -StatusCode 200 -ReasonPhrase "OK" -BodyBytes $bytes -ContentType $contentType
+}
+
+function Read-Request {
+    param(
+        [System.Net.Sockets.TcpClient]$Client
+    )
+
+    $stream = $Client.GetStream()
+    $stream.ReadTimeout = 5000
+    $buffer = New-Object byte[] 1024
+    $memory = New-Object System.IO.MemoryStream
+    $headerEnd = -1
+
+    while ($headerEnd -lt 0) {
+        $read = $stream.Read($buffer, 0, $buffer.Length)
+        if ($read -le 0) {
+            break
+        }
+
+        $memory.Write($buffer, 0, $read)
+        $raw = [System.Text.Encoding]::ASCII.GetString($memory.ToArray())
+        $headerEnd = $raw.IndexOf("`r`n`r`n")
+    }
+
+    if ($headerEnd -lt 0) {
+        return $null
+    }
+
+    $allBytes = $memory.ToArray()
+    $headerBytes = $allBytes[0..($headerEnd - 1)]
+    $headerText = [System.Text.Encoding]::ASCII.GetString($headerBytes)
+    $headerLines = $headerText -split "`r`n"
+    $requestLine = $headerLines[0]
+
+    $headers = @{}
+    foreach ($line in $headerLines[1..($headerLines.Length - 1)]) {
+        $parts = $line.Split(":", 2)
+        if ($parts.Count -eq 2) {
+            $headers[$parts[0].Trim()] = $parts[1].Trim()
+        }
+    }
+
+    $contentLength = 0
+    if ($headers.ContainsKey("Content-Length")) {
+        [void][int]::TryParse([string]$headers["Content-Length"], [ref]$contentLength)
+    }
+
+    $bodyStart = $headerEnd + 4
+    $bodyBytes = New-Object System.Collections.Generic.List[byte]
+    if ($allBytes.Length -gt $bodyStart) {
+        $initialBody = $allBytes[$bodyStart..($allBytes.Length - 1)]
+        foreach ($byte in $initialBody) {
+            $bodyBytes.Add($byte)
+        }
+    }
+
+    while ($bodyBytes.Count -lt $contentLength) {
+        $read = $stream.Read($buffer, 0, [Math]::Min($buffer.Length, $contentLength - $bodyBytes.Count))
+        if ($read -le 0) {
+            break
+        }
+        for ($i = 0; $i -lt $read; $i++) {
+            $bodyBytes.Add($buffer[$i])
+        }
+    }
+
+    $bodyText = ""
+    if ($contentLength -gt 0) {
+        $bodyText = [System.Text.Encoding]::UTF8.GetString($bodyBytes.ToArray(), 0, $contentLength)
+    }
+
+    $parts = $requestLine.Split(" ")
+    $rawTarget = $parts[1]
+    $uri = [System.Uri]::new("http://localhost$rawTarget")
+    $queryParams = @{}
+    foreach ($entry in $uri.Query.TrimStart("?").Split("&")) {
+        if ([string]::IsNullOrWhiteSpace($entry)) {
+            continue
+        }
+
+        $pair = $entry.Split("=", 2)
+        $key = [System.Uri]::UnescapeDataString($pair[0])
+        $value = if ($pair.Count -eq 2) { [System.Uri]::UnescapeDataString($pair[1]) } else { "" }
+        $queryParams[$key] = $value
+    }
+
+    return @{
+        Method = $parts[0]
+        Path = $uri.AbsolutePath
+        RawTarget = $rawTarget
+        Query = $queryParams
+        Headers = $headers
+        Body = $bodyText
+        ClientAddress = ([System.Net.IPEndPoint]$Client.Client.RemoteEndPoint).Address.ToString()
+    }
+}
+
+try {
+    while ($true) {
+        $client = $listener.AcceptTcpClient()
+
+        try {
+            $request = Read-Request -Client $client
+            if ($null -eq $request) {
+                $client.Close()
+                continue
+            }
+
+            $clientKey = $request.ClientAddress
+            $now = Get-Date
+            if (-not $requestLog.ContainsKey($clientKey)) {
+                $requestLog[$clientKey] = New-Object System.Collections.Generic.List[datetime]
+            }
+
+            $recent = New-Object System.Collections.Generic.List[datetime]
+            foreach ($item in $requestLog[$clientKey]) {
+                if (($now - $item).TotalSeconds -le $rateWindowSeconds) {
+                    $recent.Add($item)
+                }
+            }
+            $requestLog[$clientKey] = $recent
+            $requestLog[$clientKey].Add($now)
+
+            if ($requestLog[$clientKey].Count -gt $maxRequestsPerWindow) {
+                Send-JsonResponse -Client $client -StatusCode 429 -ReasonPhrase "Too Many Requests" -Body @{ error = "Rate limit exceeded." }
+                continue
+            }
+
+            switch ("{0} {1}" -f $request.Method, $request.Path) {
+                "GET /" {
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "index.html")
+                    continue
+                }
+                "GET /index.html" {
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "index.html")
+                    continue
+                }
+                "GET /styles.css" {
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "styles.css")
+                    continue
+                }
+                "GET /app.js" {
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "app.js")
+                    continue
+                }
+                "GET /api/health" {
+                    Send-JsonResponse -Client $client -StatusCode 200 -ReasonPhrase "OK" -Body @{
+                        status = "ok"
+                        allowedBranches = @(Get-AllowedBranches)
+                        liveRetrieval = Get-LiveRetrievalStatus
+                    }
+                    continue
+                }
+            }
+
+            if ($request.Method -eq "GET" -and $request.Path -eq "/api/research") {
+                $body = @{
+                    branch = $request.Query["branch"]
+                    question = $request.Query["question"]
+                    email = $request.Query["email"]
+                }
+
+                $validation = Test-QuestionPayload -Payload $body
+                if (-not $validation.IsValid) {
+                    Send-JsonResponse -Client $client -StatusCode 400 -ReasonPhrase "Bad Request" -Body @{ error = "Validation failed."; details = $validation.Errors }
+                    continue
+                }
+
+                $result = Invoke-OpenAIResearch -Payload $body
+                $statusCode = if ($result.status -eq "completed") { 200 } else { 503 }
+                $reason = if ($statusCode -eq 200) { "OK" } else { "Service Unavailable" }
+                Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
+                continue
+            }
+
+            if ($request.Method -eq "POST" -and $request.Path -eq "/api/research") {
+                if ($request.Body.Length -gt 4096) {
+                    Send-JsonResponse -Client $client -StatusCode 413 -ReasonPhrase "Payload Too Large" -Body @{ error = "Payload too large." }
+                    continue
+                }
+
+                try {
+                    $body = ConvertTo-PlainHashtable -InputObject (ConvertFrom-Json -InputObject $request.Body)
+                }
+                catch {
+                    Send-JsonResponse -Client $client -StatusCode 400 -ReasonPhrase "Bad Request" -Body @{ error = "Invalid JSON payload." }
+                    continue
+                }
+
+                $validation = Test-QuestionPayload -Payload $body
+                if (-not $validation.IsValid) {
+                    Send-JsonResponse -Client $client -StatusCode 400 -ReasonPhrase "Bad Request" -Body @{ error = "Validation failed."; details = $validation.Errors }
+                    continue
+                }
+
+                $result = Invoke-OpenAIResearch -Payload $body
+                $statusCode = if ($result.status -eq "completed") { 200 } else { 503 }
+                $reason = if ($statusCode -eq 200) { "OK" } else { "Service Unavailable" }
+                Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
+                continue
+            }
+
+            Send-JsonResponse -Client $client -StatusCode 404 -ReasonPhrase "Not Found" -Body @{ error = "Not found." }
+        }
+        catch {
+            Add-Content -LiteralPath $errorLog -Value ("[{0}] {1}" -f (Get-Date).ToString("s"), $_.Exception.Message)
+            if ($client.Connected) {
+                Send-JsonResponse -Client $client -StatusCode 500 -ReasonPhrase "Internal Server Error" -Body @{ error = "Server error." }
+            }
+        }
+    }
+}
+finally {
+    $listener.Stop()
+}

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="School Scanner answers school-choice questions by routing them into school review, comparison, area search, or admissions strategy workflows.">
+  <title>School Scanner</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <main id="main" class="page-shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Trust-first school choice guidance</p>
+        <h1>Ask the four school-choice questions parents actually have.</h1>
+        <p class="lede">Choose the kind of school-choice question you have, ask it in plain English, and get a structured answer built around the right decision workflow.</p>
+      </div>
+    </section>
+
+    <section class="flow" aria-labelledby="flow-title">
+      <div class="section-head">
+        <p class="section-kicker">Three-step flow</p>
+        <h2 id="flow-title">Pick a question path, then ask once.</h2>
+      </div>
+
+      <ol class="stepper" aria-label="School Scanner steps">
+        <li><strong>1.</strong> Choose the kind of question</li>
+        <li><strong>2.</strong> Describe the parent problem clearly</li>
+        <li><strong>3.</strong> Read the answer and decide your next move</li>
+      </ol>
+
+      <div class="branch-grid" id="branch-grid">
+        <button class="branch-card is-selected" type="button" data-branch="prompt_branch_1">
+          <span class="branch-number">01</span>
+          <h3>Evaluate a school</h3>
+          <p>For questions like "Is this school actually good?"</p>
+        </button>
+        <button class="branch-card" type="button" data-branch="prompt_branch_2">
+          <span class="branch-number">02</span>
+          <h3>Compare schools</h3>
+          <p>For "School A vs School B" decisions.</p>
+        </button>
+        <button class="branch-card" type="button" data-branch="prompt_branch_3">
+          <span class="branch-number">03</span>
+          <h3>Check an area</h3>
+          <p>For postcode or area-led family moves.</p>
+        </button>
+        <button class="branch-card" type="button" data-branch="prompt_branch_4">
+          <span class="branch-number">04</span>
+          <h3>Plan backup options</h3>
+          <p>For reserve lists, Plan B schools, and admissions uncertainty.</p>
+        </button>
+      </div>
+
+      <form id="question-form" class="question-panel" novalidate>
+        <input id="branch-input" name="branch" type="hidden" value="prompt_branch_1">
+        <div>
+          <label for="question">Your question</label>
+          <textarea id="question" name="question" rows="5" maxlength="600" required placeholder="Example: Reigate Grammar School vs St Paul's Girls' School. Which looks stronger if fit matters as much as outcomes?"></textarea>
+          <p class="field-help">Keep it specific. The clearer the problem, the stronger the answer.</p>
+        </div>
+
+        <div>
+          <label for="email">Email <span>(optional)</span></label>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com">
+          <p class="field-help">Optional for future follow-up. It is not needed to generate the answer.</p>
+        </div>
+
+        <div class="form-actions">
+          <button id="submit-button" class="primary-cta" type="submit">Generate answer</button>
+          <p class="trust-note">No inline scripts, no third-party trackers, no unsafe HTML rendering.</p>
+        </div>
+        <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="results" aria-labelledby="results-title">
+      <div class="section-head">
+        <p class="section-kicker">Answer experience</p>
+        <h2 id="results-title">Ask once and get a practical answer.</h2>
+      </div>
+
+      <div id="result-card" class="result-card" hidden>
+        <div class="result-free">
+          <p class="result-badge">Answer</p>
+          <h3 id="result-title">Your school-choice answer</h3>
+          <p id="result-summary"></p>
+          <ul id="preview-points" class="result-list"></ul>
+          <div id="answer-sections" class="answer-sections"></div>
+        </div>
+
+        <div id="premium-panel" class="result-gated" aria-label="Premium report teaser">
+          <p class="result-badge premium">Premium layer</p>
+          <h3>What unlocks behind the paywall</h3>
+          <ul id="premium-points" class="result-list"></ul>
+          <button class="secondary-cta" type="button">Unlock the full report</button>
+          <p id="gate-note" class="gate-note"></p>
+        </div>
+      </div>
+
+      <div class="support-panel">
+        <a class="coffee-cta" href="https://www.paypal.com/paypalme/example" target="_blank" rel="noopener noreferrer">Buy me a Coffee if you like the answer</a>
+      </div>
+    </section>
+
+    <section class="security" aria-labelledby="security-title">
+      <div class="section-head">
+        <p class="section-kicker">OWASP-aware by design</p>
+        <h2 id="security-title">The current implementation is shaped to survive security review, not just a demo day.</h2>
+      </div>
+      <ul class="security-list">
+        <li>Strict Content Security Policy and no inline JavaScript.</li>
+        <li>Server-side payload validation, size limits, and rate limiting.</li>
+        <li>Safer rendering with <code>textContent</code> only for user data.</li>
+        <li>Headers aligned with common ZAP findings: frame denial, no sniffing, tight referrer policy.</li>
+      </ul>
+    </section>
+  </main>
+  <script src="app.js" defer></script>
+</body>
+</html>
