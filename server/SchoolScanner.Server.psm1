@@ -41,7 +41,10 @@ function ConvertTo-PlainHashtable {
         return $items
     }
 
-    if ($InputObject.PSObject -and $InputObject.PSObject.Properties.Count -gt 0 -and $InputObject -isnot [string]) {
+    $properties = $null
+    try { $properties = $InputObject.PSObject.Properties } catch { $properties = $null }
+
+    if ($properties -and @($properties).Length -gt 0 -and $InputObject -isnot [string]) {
         $result = @{}
         foreach ($property in $InputObject.PSObject.Properties) {
             $result[$property.Name] = ConvertTo-PlainHashtable -InputObject $property.Value

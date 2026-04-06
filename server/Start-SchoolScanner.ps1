@@ -142,23 +142,36 @@ function Read-Request {
     }
 
     $headers = @{}
-    foreach ($line in $headerLines[1..($headerLines.Length - 1)]) {
-        $parts = $line.Split(":", 2)
-        if ($parts.Count -eq 2) {
-            $headers[$parts[0].Trim()] = $parts[1].Trim()
+    if ($headerLines.Length -gt 1) {
+        foreach ($line in $headerLines[1..($headerLines.Length - 1)]) {
+            if ([string]::IsNullOrWhiteSpace($line)) {
+                continue
+            }
+
+            $parts = $line.Split(":", 2)
+            if ($parts.Count -eq 2) {
+                $name = $parts[0].Trim().ToLowerInvariant()
+                $headers[$name] = $parts[1].Trim()
+            }
         }
     }
 
-    if ($headers.ContainsKey("Transfer-Encoding") -and ([string]$headers["Transfer-Encoding"]).ToLowerInvariant().Contains("chunked")) {
+    if ($headers.ContainsKey("transfer-encoding") -and ([string]$headers["transfer-encoding"]).ToLowerInvariant().Contains("chunked")) {
         throw [System.InvalidOperationException]::new("BAD_REQUEST: Chunked transfer encoding is not supported.")
     }
 
     $contentLength = 0
-    if ($headers.ContainsKey("Content-Length")) {
-        [void][int]::TryParse([string]$headers["Content-Length"], [ref]$contentLength)
+    if ($headers.ContainsKey("content-length")) {
+        [void][int]::TryParse([string]$headers["content-length"], [ref]$contentLength)
     }
     if ($contentLength -gt $maxBodyBytes) {
         throw [System.InvalidOperationException]::new("BAD_REQUEST: Payload too large.")
+    }
+
+    if ($headers.ContainsKey("expect") -and ([string]$headers["expect"]).ToLowerInvariant().Contains("100-continue")) {
+        $continueBytes = [System.Text.Encoding]::ASCII.GetBytes("HTTP/1.1 100 Continue`r`n`r`n")
+        $stream.Write($continueBytes, 0, $continueBytes.Length)
+        $stream.Flush()
     }
 
     $bodyStart = $headerEnd + 4
@@ -180,9 +193,13 @@ function Read-Request {
         }
     }
 
+    if ($bodyBytes.Count -ne $contentLength) {
+        throw [System.InvalidOperationException]::new("BAD_REQUEST: Incomplete request body.")
+    }
+
     $bodyText = ""
     if ($contentLength -gt 0) {
-        $bodyText = [System.Text.Encoding]::UTF8.GetString($bodyBytes.ToArray(), 0, $contentLength)
+        $bodyText = [System.Text.Encoding]::UTF8.GetString($bodyBytes.ToArray())
     }
 
     $parts = $requestLine.Split(" ")
@@ -304,7 +321,7 @@ try {
                 }
 
                 $result = Invoke-OpenAIResearch -Payload $body
-                $statusCode = if ($result.status -eq "completed") { 200 } else { 503 }
+                $statusCode = if ($result["status"] -eq "completed") { 200 } else { 503 }
                 $reason = if ($statusCode -eq 200) { "OK" } else { "Service Unavailable" }
                 Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
                 continue
@@ -312,7 +329,9 @@ try {
 
             if ($request.Method -eq "POST" -and $request.Path -eq "/api/research") {
                 try {
-                    $body = ConvertTo-PlainHashtable -InputObject (ConvertFrom-Json -InputObject $request.Body)
+                    $rawBody = [string]$request.Body
+                    $rawBody = $rawBody.Trim([char]0, [char]0xFEFF)
+                    $body = ConvertTo-PlainHashtable -InputObject (ConvertFrom-Json -InputObject $rawBody)
                 }
                 catch {
                     Send-JsonResponse -Client $client -StatusCode 400 -ReasonPhrase "Bad Request" -Body @{ error = "Invalid JSON payload." }
@@ -326,7 +345,7 @@ try {
                 }
 
                 $result = Invoke-OpenAIResearch -Payload $body
-                $statusCode = if ($result.httpStatus) { [int]$result.httpStatus } elseif ($result.status -eq "completed") { 200 } else { 503 }
+                $statusCode = if ($result.ContainsKey("httpStatus") -and $result["httpStatus"]) { [int]$result["httpStatus"] } elseif ($result["status"] -eq "completed") { 200 } else { 503 }
                 $reason = if ($statusCode -eq 200) { "OK" } elseif ($statusCode -eq 400) { "Bad Request" } elseif ($statusCode -eq 401) { "Unauthorized" } elseif ($statusCode -eq 429) { "Too Many Requests" } elseif ($statusCode -eq 502) { "Bad Gateway" } elseif ($statusCode -eq 504) { "Gateway Timeout" } else { "Service Unavailable" }
                 Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
                 continue
@@ -334,7 +353,9 @@ try {
 
             if ($request.Method -eq "POST" -and $request.Path -eq "/api/analytics/click") {
                 try {
-                    $body = ConvertTo-PlainHashtable -InputObject (ConvertFrom-Json -InputObject $request.Body)
+                    $rawBody = [string]$request.Body
+                    $rawBody = $rawBody.Trim([char]0, [char]0xFEFF)
+                    $body = ConvertTo-PlainHashtable -InputObject (ConvertFrom-Json -InputObject $rawBody)
                 }
                 catch {
                     Send-JsonResponse -Client $client -StatusCode 400 -ReasonPhrase "Bad Request" -Body @{ error = "Invalid JSON payload." }
@@ -369,11 +390,17 @@ try {
             Add-Content -LiteralPath $errorLog -Value ("[{0}] {1}" -f (Get-Date).ToString("s"), $message)
 
             if ($client.Connected) {
-                if ($message.StartsWith("BAD_REQUEST:")) {
-                    Send-JsonResponse -Client $client -StatusCode 400 -ReasonPhrase "Bad Request" -Body @{ error = "Bad request." }
+                try {
+                    if ($message.StartsWith("BAD_REQUEST:")) {
+                        Send-JsonResponse -Client $client -StatusCode 400 -ReasonPhrase "Bad Request" -Body @{ error = "Bad request." }
+                    }
+                    else {
+                        Send-JsonResponse -Client $client -StatusCode 500 -ReasonPhrase "Internal Server Error" -Body @{ error = "Server error." }
+                    }
                 }
-                else {
-                    Send-JsonResponse -Client $client -StatusCode 500 -ReasonPhrase "Internal Server Error" -Body @{ error = "Server error." }
+                catch {
+                    # If the client has already disconnected, avoid cascading errors.
+                    try { $client.Close() } catch { }
                 }
             }
         }
