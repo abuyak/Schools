@@ -7,6 +7,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 Import-Module (Join-Path $PSScriptRoot "SchoolScanner.Server.psm1") -Force
+Import-Module (Join-Path $PSScriptRoot "SchoolScanner.Config.psm1") -Force
 Import-Module (Join-Path $PSScriptRoot "SchoolScanner.LiveRetrieval.psm1") -Force
 
 $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, $Port)

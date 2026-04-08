@@ -1,16 +1,13 @@
 Set-StrictMode -Version Latest
 
+Import-Module (Join-Path $PSScriptRoot "SchoolScanner.Config.psm1") -Force
+
 function Get-OpenAIApiKey {
     [CmdletBinding()]
     param()
 
-    $value = [System.Environment]::GetEnvironmentVariable("OPENAI_API_KEY", "Process")
-    if ([string]::IsNullOrWhiteSpace($value)) {
-        $value = [System.Environment]::GetEnvironmentVariable("OPENAI_API_KEY", "User")
-    }
-    if ([string]::IsNullOrWhiteSpace($value)) {
-        $value = [System.Environment]::GetEnvironmentVariable("OPENAI_API_KEY", "Machine")
-    }
+    $settings = Get-SchoolScannerResearchSettings
+    $value = [string]$settings.apiKey
 
     if (-not [string]::IsNullOrWhiteSpace($value)) {
         return $value
@@ -23,11 +20,18 @@ function Get-LiveRetrievalStatus {
     [CmdletBinding()]
     param()
 
-    $apiKey = Get-OpenAIApiKey
+    $settings = Get-SchoolScannerResearchSettings
+    $apiKey = [string]$settings.apiKey
+    $ready = (-not [bool]$settings.apiKeyRequired) -or (-not [string]::IsNullOrWhiteSpace($apiKey))
     return @{
-        mode = if ($apiKey) { "configured" } else { "needs_api_key" }
-        onlineSearchEnabled = [bool]$apiKey
-        reason = if ($apiKey) { "OpenAI API key detected. Live web research can be attempted." } else { "Set OPENAI_API_KEY for live web research." }
+        mode = if ($ready) { "configured" } else { "needs_api_key" }
+        onlineSearchEnabled = [bool]$ready
+        reason = if ($ready) { "Research settings detected. Live web research can be attempted." } else { "Set OPENAI_API_KEY or save an encrypted local key for live web research." }
+        model = [string]$settings.model
+        provider = [string]$settings.provider
+        baseUrl = [string]$settings.baseUrl
+        apiKeyRequired = [bool]$settings.apiKeyRequired
+        configRoot = Get-SchoolScannerConfigRoot
     }
 }
 
@@ -277,19 +281,10 @@ function New-OpenAIResearchRequest {
         timezone = "Europe/London"
     }
 
-    $modelName = [System.Environment]::GetEnvironmentVariable("OPENAI_MODEL", "Process")
-    if ([string]::IsNullOrWhiteSpace($modelName)) {
-        $modelName = [System.Environment]::GetEnvironmentVariable("OPENAI_MODEL", "User")
-    }
-    if ([string]::IsNullOrWhiteSpace($modelName)) {
-        $modelName = [System.Environment]::GetEnvironmentVariable("OPENAI_MODEL", "Machine")
-    }
-    if ([string]::IsNullOrWhiteSpace($modelName)) {
-        $modelName = "gpt-5"
-    }
+    $settings = Get-SchoolScannerResearchSettings
 
     return @{
-        model = $modelName
+        model = [string]$settings.model
         reasoning = @{
             effort = "medium"
         }
@@ -399,21 +394,22 @@ function Invoke-OpenAIResearch {
         [hashtable]$Payload
     )
 
-    $apiKey = Get-OpenAIApiKey
-    if (-not $apiKey) {
+    $settings = Get-SchoolScannerResearchSettings
+    $apiKey = [string]$settings.apiKey
+    if ([bool]$settings.apiKeyRequired -and [string]::IsNullOrWhiteSpace($apiKey)) {
         return @{
             status = "configuration_required"
             title = "OpenAI API key required"
-            summary = "Set OPENAI_API_KEY on the server to enable live online research through the OpenAI Responses API."
+            summary = "Configure the research backend with an API key to enable live online research."
             keyPoints = @(
                 "The frontend no longer generates local answers."
-                "The backend is ready to call OpenAI's Responses API with live web search."
-                "No answer is generated until OPENAI_API_KEY is configured."
+                "The backend is ready to call an OpenAI-compatible Responses API with live web search."
+                "No answer is generated until a required API key is configured."
             )
             sections = @(
                 @{
                     heading = "Next step"
-                    body = "Set OPENAI_API_KEY and optionally OPENAI_MODEL, then restart the backend."
+                    body = "Save an encrypted local API key or set OPENAI_API_KEY, then restart the backend."
                 }
             )
         }
@@ -421,12 +417,23 @@ function Invoke-OpenAIResearch {
 
     $requestBody = New-OpenAIResearchRequest -Payload $Payload | ConvertTo-Json -Depth 20
     $headers = @{
-        "Authorization" = "Bearer $apiKey"
         "Content-Type" = "application/json"
     }
+    if (-not [string]::IsNullOrWhiteSpace($apiKey)) {
+        $headers["Authorization"] = "Bearer $apiKey"
+    }
+    $baseUrl = ([string]$settings.baseUrl).TrimEnd("/")
+    $responsesPath = [string]$settings.responsesPath
+    if ([string]::IsNullOrWhiteSpace($responsesPath)) {
+        $responsesPath = "/responses"
+    }
+    if (-not $responsesPath.StartsWith("/")) {
+        $responsesPath = "/$responsesPath"
+    }
+    $requestUri = "$baseUrl$responsesPath"
 
     try {
-        $response = Invoke-RestMethod -Uri "https://api.openai.com/v1/responses" -Method Post -Headers $headers -Body $requestBody -TimeoutSec 120
+        $response = Invoke-RestMethod -Uri $requestUri -Method Post -Headers $headers -Body $requestBody -TimeoutSec 120
         $plain = ConvertTo-PlainHashtable -InputObject $response
         return Convert-OpenAIResponseToResult -ApiResponse $plain
     }

@@ -1,13 +1,30 @@
 Set-StrictMode -Version Latest
 
-Import-Module (Join-Path $PSScriptRoot "..\server\SchoolScanner.Server.psm1") -Force
-Import-Module (Join-Path $PSScriptRoot "..\server\SchoolScanner.LiveRetrieval.psm1") -Force
+Import-Module (Join-Path $PSScriptRoot "..\server\SchoolScanner.Server.psm1") -Force -Global
+$script:configModule = Import-Module (Join-Path $PSScriptRoot "..\server\SchoolScanner.Config.psm1") -Force -PassThru
+Import-Module (Join-Path $PSScriptRoot "..\server\SchoolScanner.LiveRetrieval.psm1") -Force -Global
 . (Join-Path $PSScriptRoot "PageObjects\HomePage.ps1")
 
 $script:port = 8091
 $script:serverProcess = $null
 $script:stdoutLog = Join-Path $env:TEMP "schoolscanner-stdout.log"
 $script:stderrLog = Join-Path $env:TEMP "schoolscanner-stderr.log"
+$script:pageTestConfigRoot = $null
+
+function Invoke-ConfigCommand {
+    param(
+        [Parameter(Mandatory)]
+        [scriptblock]$ScriptBlock,
+        [object[]]$ArgumentList = @()
+    )
+
+    $module = $script:configModule
+    if (-not $module) {
+        throw "SchoolScanner.Config module is not loaded."
+    }
+
+    return & $module $ScriptBlock @ArgumentList
+}
 
 function Invoke-PreviewRequest {
     param(
@@ -90,6 +107,66 @@ Describe "School Scanner server module" {
 }
 
 Describe "School Scanner live retrieval module" {
+    It "loads encrypted local settings when environment variables are absent" {
+        $configRoot = Join-Path $env:TEMP ("schoolscanner-config-test-" + [guid]::NewGuid().ToString("N"))
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
+        [System.Environment]::SetEnvironmentVariable("OPENAI_API_KEY", $null, "Process")
+        [System.Environment]::SetEnvironmentVariable("OPENAI_MODEL", $null, "Process")
+        [System.Environment]::SetEnvironmentVariable("OPENAI_BASE_URL", $null, "Process")
+
+        try {
+            Invoke-ConfigCommand -ScriptBlock {
+                param($model, $baseUrl, $apiKey)
+                Set-SchoolScannerResearchConfig -Model $model -BaseUrl $baseUrl -ApiKeyRequired $false | Out-Null
+                Set-SchoolScannerApiKey -ApiKey $apiKey | Out-Null
+                Get-SchoolScannerResearchSettings
+            } -ArgumentList @("gpt-5-mini", "http://127.0.0.1:11434/v1", "test-secret-key") | Out-Null
+
+            $settings = Invoke-ConfigCommand -ScriptBlock { Get-SchoolScannerResearchSettings }
+
+            $settings.model | Should Be "gpt-5-mini"
+            $settings.baseUrl | Should Be "http://127.0.0.1:11434/v1"
+            $settings.apiKeyRequired | Should Be $false
+            $settings.apiKey | Should Be "test-secret-key"
+            $settings.sources.apiKey | Should Be "encrypted_file"
+        }
+        finally {
+            Invoke-ConfigCommand -ScriptBlock { Clear-SchoolScannerApiKey }
+            [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $null, "Process")
+            Remove-Item -LiteralPath $configRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "prefers process environment overrides over local config" {
+        $configRoot = Join-Path $env:TEMP ("schoolscanner-config-test-" + [guid]::NewGuid().ToString("N"))
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
+
+        try {
+            Invoke-ConfigCommand -ScriptBlock {
+                Set-SchoolScannerResearchConfig -Model "gpt-5-mini" -BaseUrl "http://127.0.0.1:11434/v1" -ApiKeyRequired $false | Out-Null
+                Set-SchoolScannerApiKey -ApiKey "stored-key" | Out-Null
+            } | Out-Null
+            [System.Environment]::SetEnvironmentVariable("OPENAI_API_KEY", "env-key", "Process")
+            [System.Environment]::SetEnvironmentVariable("OPENAI_MODEL", "gpt-5", "Process")
+            [System.Environment]::SetEnvironmentVariable("OPENAI_BASE_URL", "https://api.openai.com/v1", "Process")
+
+            $settings = Invoke-ConfigCommand -ScriptBlock { Get-SchoolScannerResearchSettings }
+
+            $settings.apiKey | Should Be "env-key"
+            $settings.model | Should Be "gpt-5"
+            $settings.baseUrl | Should Be "https://api.openai.com/v1"
+            $settings.sources.apiKey | Should Match "^env:"
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable("OPENAI_API_KEY", $null, "Process")
+            [System.Environment]::SetEnvironmentVariable("OPENAI_MODEL", $null, "Process")
+            [System.Environment]::SetEnvironmentVariable("OPENAI_BASE_URL", $null, "Process")
+            Invoke-ConfigCommand -ScriptBlock { Clear-SchoolScannerApiKey }
+            [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $null, "Process")
+            Remove-Item -LiteralPath $configRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     It "returns a branch-aware research contract" {
         $contract = New-LiveResearchContract -Payload @{
             branch = "prompt_branch_2"
@@ -102,20 +179,35 @@ Describe "School Scanner live retrieval module" {
     }
 
     It "builds an OpenAI responses request for live web research" {
-        $request = New-OpenAIResearchRequest -Payload @{
-            branch = "prompt_branch_1"
-            question = "Tell me about Highgate School"
-        }
+        $configRoot = Join-Path $env:TEMP ("schoolscanner-config-test-" + [guid]::NewGuid().ToString("N"))
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
 
-        $request.model | Should Not BeNullOrEmpty
-        $request.tools[0].type | Should Be "web_search"
-        $request.text.format.type | Should Be "json_schema"
+        try {
+            Invoke-ConfigCommand -ScriptBlock {
+                Set-SchoolScannerResearchConfig -Model "gpt-5-nano" -BaseUrl "http://127.0.0.1:11434/v1" -ResponsesPath "/responses" -ApiKeyRequired $false | Out-Null
+            } | Out-Null
+
+            $request = New-OpenAIResearchRequest -Payload @{
+                branch = "prompt_branch_1"
+                question = "Tell me about Highgate School"
+            }
+
+            $request.model | Should Be "gpt-5-nano"
+            $request.tools[0].type | Should Be "web_search"
+            $request.text.format.type | Should Be "json_schema"
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $null, "Process")
+            Remove-Item -LiteralPath $configRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 
 Describe "School Scanner page" {
     BeforeAll {
         $serverScript = Join-Path $PSScriptRoot "..\server\Start-SchoolScanner.ps1"
+        $script:pageTestConfigRoot = Join-Path $env:TEMP ("schoolscanner-page-config-" + [guid]::NewGuid().ToString("N"))
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $script:pageTestConfigRoot, "Process")
         Remove-Item -LiteralPath $script:stdoutLog, $script:stderrLog -Force -ErrorAction SilentlyContinue
         $startInfo = New-Object System.Diagnostics.ProcessStartInfo
         $startInfo.FileName = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
@@ -157,6 +249,10 @@ Describe "School Scanner page" {
     AfterAll {
         if ($script:serverProcess -and -not $script:serverProcess.HasExited) {
             Stop-Process -Id $script:serverProcess.Id -Force -ErrorAction SilentlyContinue
+        }
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $null, "Process")
+        if ($script:pageTestConfigRoot) {
+            Remove-Item -LiteralPath $script:pageTestConfigRoot -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 

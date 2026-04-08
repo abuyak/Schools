@@ -10,6 +10,7 @@ __pycache__/
 *.log
 server-err.log
 server-out.log
+.local/
 
 # Playwright local profile / artifacts
 playwright_facebook_profile/

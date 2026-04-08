@@ -26,21 +26,47 @@ powershell -ExecutionPolicy Bypass -File .\server\Start-SchoolScanner.ps1 -Port 
 
 Then open [http://localhost:8080](http://localhost:8080).
 
-## Required configuration
+## Research configuration
 
-Set an OpenAI API key before expecting live answers:
+You now have two ways to configure the backend:
+
+1. Environment variables for quick one-off runs
+2. An untracked local config store in [.local](/C:/Users/Skye/Documents/Codex/Schools/.local) for safer day-to-day use
+
+Quick run with environment variables:
 
 ```powershell
 $env:OPENAI_API_KEY="your_api_key_here"
+$env:OPENAI_MODEL="gpt-5"
+$env:OPENAI_BASE_URL="https://api.openai.com/v1"
 ```
 
-Optional:
+Safer local setup with an encrypted key file:
 
 ```powershell
-$env:OPENAI_MODEL="gpt-5"
+powershell -ExecutionPolicy Bypass -File .\scripts\Set-LocalResearchConfig.ps1 -ApiKey "your_api_key_here" -Model "gpt-5"
 ```
 
-Without `OPENAI_API_KEY`, the frontend will correctly wait for the backend and then return a configuration-required response instead of generating a local shortcut answer.
+That writes:
+
+- config to `.local/research-settings.json`
+- the API key to `.local/research-secrets.clixml`
+
+The secret file is encrypted with Windows DPAPI for the current user account, so it is not stored in plaintext and is ignored by git.
+
+For a local OpenAI-compatible backend, you can point the app elsewhere:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Set-LocalResearchConfig.ps1 -Model "llama3.1" -BaseUrl "http://127.0.0.1:11434/v1" -NoApiKeyRequired
+```
+
+Resolution order is:
+
+1. Process/User/Machine environment variables
+2. Local encrypted config in `.local`
+3. Built-in defaults
+
+Without a required API key, the frontend will correctly wait for the backend and then return a configuration-required response instead of generating a local shortcut answer.
 
 ## Test suite
 
