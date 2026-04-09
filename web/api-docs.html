@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="School Scanner backend API contract and local testing guide.">
+  <title>School Scanner API Docs</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <main id="main" class="page-shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Backend contract</p>
+        <h1>School Scanner API Docs</h1>
+        <p class="lede">A lightweight local Swagger-style reference for the PowerShell backend, with the OpenAPI contract served directly from this app.</p>
+      </div>
+    </section>
+
+    <section class="flow" aria-labelledby="docs-title">
+      <div class="section-head">
+        <p class="section-kicker">OpenAPI</p>
+        <h2 id="docs-title">Inspect the live contract and endpoint shapes.</h2>
+      </div>
+
+      <div class="question-panel">
+        <p class="field-help">Open the raw spec at <a href="/openapi.json" target="_blank" rel="noopener noreferrer">/openapi.json</a>.</p>
+        <div id="docs-status" class="form-status" role="status" aria-live="polite">Loading API contract…</div>
+      </div>
+
+      <div id="docs-summary" class="result-card" hidden>
+        <div class="result-free">
+          <p class="result-badge">Spec</p>
+          <h3 id="spec-title">School Scanner API</h3>
+          <p id="spec-description"></p>
+          <ul id="server-list" class="result-list"></ul>
+        </div>
+      </div>
+
+      <div id="endpoint-list" class="answer-sections"></div>
+    </section>
+  </main>
+  <script src="api-docs.js" defer></script>
+</body>
+</html>

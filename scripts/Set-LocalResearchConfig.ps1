@@ -3,6 +3,10 @@ param(
     [string]$Model,
     [string]$BaseUrl,
     [string]$ResponsesPath,
+    [ValidateSet("low","medium","high")]
+    [string]$ReasoningEffort,
+    [int]$RequestTimeoutSeconds,
+    [int]$MaxOutputTokens,
     [switch]$NoApiKeyRequired,
     [string]$Provider = "openai_compatible"
 )
@@ -26,6 +30,15 @@ if ($PSBoundParameters.ContainsKey("BaseUrl")) {
 if ($PSBoundParameters.ContainsKey("ResponsesPath")) {
     $configArgs.ResponsesPath = $ResponsesPath
 }
+if ($PSBoundParameters.ContainsKey("ReasoningEffort")) {
+    $configArgs.ReasoningEffort = $ReasoningEffort
+}
+if ($PSBoundParameters.ContainsKey("RequestTimeoutSeconds")) {
+    $configArgs.RequestTimeoutSeconds = $RequestTimeoutSeconds
+}
+if ($PSBoundParameters.ContainsKey("MaxOutputTokens")) {
+    $configArgs.MaxOutputTokens = $MaxOutputTokens
+}
 
 $configPath = Set-SchoolScannerResearchConfig @configArgs
 
@@ -42,6 +55,9 @@ $settings = Get-SchoolScannerResearchSettings
     Model = $settings.model
     BaseUrl = $settings.baseUrl
     ResponsesPath = $settings.responsesPath
+    ReasoningEffort = $settings.reasoningEffort
+    RequestTimeoutSeconds = $settings.requestTimeoutSeconds
+    MaxOutputTokens = $settings.maxOutputTokens
     ApiKeyRequired = $settings.apiKeyRequired
     ApiKeyConfigured = -not [string]::IsNullOrWhiteSpace([string]$settings.apiKey)
 } | Format-List

@@ -37,14 +37,14 @@ Quick run with environment variables:
 
 ```powershell
 $env:OPENAI_API_KEY="your_api_key_here"
-$env:OPENAI_MODEL="gpt-5"
+$env:OPENAI_MODEL="gpt-5-mini"
 $env:OPENAI_BASE_URL="https://api.openai.com/v1"
 ```
 
 Safer local setup with an encrypted key file:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\Set-LocalResearchConfig.ps1 -ApiKey "your_api_key_here" -Model "gpt-5"
+powershell -ExecutionPolicy Bypass -File .\scripts\Set-LocalResearchConfig.ps1 -ApiKey "your_api_key_here" -Model "gpt-5-mini" -ReasoningEffort "low" -RequestTimeoutSeconds 45 -MaxOutputTokens 1200
 ```
 
 That writes:
@@ -65,6 +65,13 @@ Resolution order is:
 1. Process/User/Machine environment variables
 2. Local encrypted config in `.local`
 3. Built-in defaults
+
+The built-in defaults now bias toward lower-cost live research:
+
+- model: `gpt-5-mini`
+- reasoning effort: `low`
+- request timeout: `45s`
+- max output tokens: `1200`
 
 Without a required API key, the frontend will correctly wait for the backend and then return a configuration-required response instead of generating a local shortcut answer.
 

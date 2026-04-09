@@ -52,10 +52,13 @@ function Get-ResearchSettingsDefaults {
 
     return [ordered]@{
         provider = "openai_compatible"
-        model = "gpt-5"
+        model = "gpt-5-mini"
         baseUrl = "https://api.openai.com/v1"
         responsesPath = "/responses"
         apiKeyRequired = $true
+        reasoningEffort = "low"
+        requestTimeoutSeconds = 45
+        maxOutputTokens = 1200
     }
 }
 
@@ -227,6 +230,9 @@ function Get-SchoolScannerResearchSettings {
         baseUrl = [string]$defaults.baseUrl
         responsesPath = [string]$defaults.responsesPath
         apiKeyRequired = [bool]$defaults.apiKeyRequired
+        reasoningEffort = [string]$defaults.reasoningEffort
+        requestTimeoutSeconds = [int]$defaults.requestTimeoutSeconds
+        maxOutputTokens = [int]$defaults.maxOutputTokens
         apiKey = $null
         sources = [ordered]@{
             provider = "default"
@@ -234,13 +240,22 @@ function Get-SchoolScannerResearchSettings {
             baseUrl = "default"
             responsesPath = "default"
             apiKeyRequired = "default"
+            reasoningEffort = "default"
+            requestTimeoutSeconds = "default"
+            maxOutputTokens = "default"
             apiKey = $null
         }
     }
 
-    foreach ($key in @("provider", "model", "baseUrl", "responsesPath", "apiKeyRequired")) {
+    foreach ($key in @("provider", "model", "baseUrl", "responsesPath", "apiKeyRequired", "reasoningEffort", "requestTimeoutSeconds", "maxOutputTokens")) {
         if ($configFile.ContainsKey($key) -and $null -ne $configFile[$key] -and "$($configFile[$key])" -ne "") {
-            $settings[$key] = if ($key -eq "apiKeyRequired") { [bool]$configFile[$key] } else { [string]$configFile[$key] }
+            $settings[$key] = if ($key -eq "apiKeyRequired") {
+                [bool]$configFile[$key]
+            } elseif ($key -in @("requestTimeoutSeconds", "maxOutputTokens")) {
+                [int]$configFile[$key]
+            } else {
+                [string]$configFile[$key]
+            }
             $settings.sources[$key] = "config"
         }
     }
@@ -268,6 +283,24 @@ function Get-SchoolScannerResearchSettings {
         $settings.sources.responsesPath = [string]$envResponsesPath.source
     }
 
+    $envReasoningEffort = Get-EnvValue -Name "OPENAI_REASONING_EFFORT"
+    if (-not [string]::IsNullOrWhiteSpace([string]$envReasoningEffort.value)) {
+        $settings.reasoningEffort = [string]$envReasoningEffort.value
+        $settings.sources.reasoningEffort = [string]$envReasoningEffort.source
+    }
+
+    $envRequestTimeout = Get-EnvValue -Name "SCHOOLSCANNER_REQUEST_TIMEOUT_SECONDS"
+    if (-not [string]::IsNullOrWhiteSpace([string]$envRequestTimeout.value)) {
+        $settings.requestTimeoutSeconds = [int]$envRequestTimeout.value
+        $settings.sources.requestTimeoutSeconds = [string]$envRequestTimeout.source
+    }
+
+    $envMaxOutputTokens = Get-EnvValue -Name "OPENAI_MAX_OUTPUT_TOKENS"
+    if (-not [string]::IsNullOrWhiteSpace([string]$envMaxOutputTokens.value)) {
+        $settings.maxOutputTokens = [int]$envMaxOutputTokens.value
+        $settings.sources.maxOutputTokens = [string]$envMaxOutputTokens.source
+    }
+
     $envApiKeyRequired = Get-EnvValue -Name "SCHOOLSCANNER_API_KEY_REQUIRED"
     if (-not [string]::IsNullOrWhiteSpace([string]$envApiKeyRequired.value)) {
         $settings.apiKeyRequired = [System.Convert]::ToBoolean($envApiKeyRequired.value)
@@ -290,13 +323,16 @@ function Set-SchoolScannerResearchConfig {
         [string]$Model,
         [string]$BaseUrl,
         [string]$ResponsesPath,
-        [Nullable[bool]]$ApiKeyRequired
+        [Nullable[bool]]$ApiKeyRequired,
+        [string]$ReasoningEffort,
+        [Nullable[int]]$RequestTimeoutSeconds,
+        [Nullable[int]]$MaxOutputTokens
     )
 
     $current = Get-JsonFileHashtable -Path (Get-SchoolScannerConfigPath)
     $updated = [ordered]@{}
 
-    foreach ($key in @("provider", "model", "baseUrl", "responsesPath", "apiKeyRequired")) {
+    foreach ($key in @("provider", "model", "baseUrl", "responsesPath", "apiKeyRequired", "reasoningEffort", "requestTimeoutSeconds", "maxOutputTokens")) {
         if ($current.ContainsKey($key)) {
             $updated[$key] = $current[$key]
         }
@@ -316,6 +352,15 @@ function Set-SchoolScannerResearchConfig {
     }
     if ($PSBoundParameters.ContainsKey("ApiKeyRequired")) {
         $updated.apiKeyRequired = [bool]$ApiKeyRequired
+    }
+    if ($PSBoundParameters.ContainsKey("ReasoningEffort")) {
+        $updated.reasoningEffort = $ReasoningEffort
+    }
+    if ($PSBoundParameters.ContainsKey("RequestTimeoutSeconds")) {
+        $updated.requestTimeoutSeconds = [int]$RequestTimeoutSeconds
+    }
+    if ($PSBoundParameters.ContainsKey("MaxOutputTokens")) {
+        $updated.maxOutputTokens = [int]$MaxOutputTokens
     }
 
     Initialize-SchoolScannerConfigStore | Out-Null

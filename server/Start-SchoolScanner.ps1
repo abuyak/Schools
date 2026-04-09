@@ -294,8 +294,24 @@ try {
                     Send-FileResponse -Client $client -Path (Join-Path $Root "styles.css")
                     continue
                 }
+                "GET /api-docs" {
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "api-docs.html")
+                    continue
+                }
+                "GET /api-docs.html" {
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "api-docs.html")
+                    continue
+                }
                 "GET /app.js" {
                     Send-FileResponse -Client $client -Path (Join-Path $Root "app.js")
+                    continue
+                }
+                "GET /api-docs.js" {
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "api-docs.js")
+                    continue
+                }
+                "GET /openapi.json" {
+                    Send-FileResponse -Client $client -Path (Join-Path (Join-Path $PSScriptRoot "..") "openapi.json")
                     continue
                 }
                 "GET /api/health" {

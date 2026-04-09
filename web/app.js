@@ -111,6 +111,26 @@
     resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function getResponseStatusMessage(response, result) {
+    if (response.ok) {
+      return "Answer ready.";
+    }
+
+    if (response.status === 429) {
+      return "Research provider is rate-limiting requests. Please retry shortly.";
+    }
+
+    if (response.status === 504) {
+      return "Research timed out before completion. Try a narrower question or retry.";
+    }
+
+    if (result && result.status === "configuration_required") {
+      return "Live research backend is not configured yet.";
+    }
+
+    return "The research request did not complete successfully.";
+  }
+
   async function submitQuestion(event) {
     event.preventDefault();
 
@@ -140,12 +160,7 @@
       });
 
       const result = await response.json();
-      renderResult(
-        result,
-        response.ok
-          ? "Answer ready."
-          : "Live research backend is not configured yet, so no local shortcut answer was generated."
-      );
+      renderResult(result, getResponseStatusMessage(response, result));
     } catch (error) {
       renderResult(
         {

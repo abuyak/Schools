@@ -1,0 +1,293 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "School Scanner API",
+    "version": "0.1.0",
+    "description": "Backend contract for School Scanner live research, health checks, and lightweight analytics."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8080",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "System",
+      "description": "Operational endpoints"
+    },
+    {
+      "name": "Research",
+      "description": "Branch-based school research workflow"
+    },
+    {
+      "name": "Analytics",
+      "description": "Low-volume product analytics events"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Get service health",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Current backend health and live retrieval settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/research": {
+      "post": {
+        "tags": ["Research"],
+        "summary": "Run a live research request",
+        "operationId": "postResearch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Completed researched answer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "API key rejected by upstream provider"
+          },
+          "429": {
+            "description": "Upstream rate limit"
+          },
+          "502": {
+            "description": "Unexpected upstream response"
+          },
+          "503": {
+            "description": "Backend not configured or provider unavailable"
+          },
+          "504": {
+            "description": "Upstream timeout"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Research"],
+        "summary": "Run a live research request via query string",
+        "operationId": "getResearch",
+        "parameters": [
+          {
+            "name": "branch",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Branch"
+            }
+          },
+          {
+            "name": "question",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 600
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Completed researched answer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "503": {
+            "description": "Backend not configured or provider unavailable"
+          }
+        }
+      }
+    },
+    "/api/analytics/click": {
+      "post": {
+        "tags": ["Analytics"],
+        "summary": "Record a click event",
+        "operationId": "postAnalyticsClick",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyticsClickRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Event recorded"
+          },
+          "400": {
+            "description": "Validation failed"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Branch": {
+        "type": "string",
+        "enum": [
+          "prompt_branch_1",
+          "prompt_branch_2",
+          "prompt_branch_3",
+          "prompt_branch_4"
+        ]
+      },
+      "ResearchRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["branch", "question"],
+        "properties": {
+          "branch": {
+            "$ref": "#/components/schemas/Branch"
+          },
+          "question": {
+            "type": "string",
+            "maxLength": 600
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "ResearchSection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["heading", "body"],
+        "properties": {
+          "heading": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          }
+        }
+      },
+      "ResearchResponse": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["status", "title", "summary", "keyPoints", "sections"],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "httpStatus": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "keyPoints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResearchSection"
+            }
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["status", "allowedBranches", "liveRetrieval"],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "allowedBranches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Branch"
+            }
+          },
+          "liveRetrieval": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "AnalyticsClickRequest": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["event"],
+        "properties": {
+          "event": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "branch": {
+            "$ref": "#/components/schemas/Branch"
+          },
+          "placement": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "utm_campaign": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "utm_content": {
+            "type": "string",
+            "maxLength": 128
+          }
+        }
+      }
+    }
+  }
+}

@@ -22,4 +22,8 @@ class HomePage {
     [bool] HasSecuritySection() {
         return $this.Html -match "OWASP-aware by design" -and $this.Html -match "Strict Content Security Policy"
     }
+
+    [bool] HasApiDocsLink() {
+        return $this.Html -match "/api-docs"
+    }
 }

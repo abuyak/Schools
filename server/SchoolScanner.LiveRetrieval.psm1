@@ -28,9 +28,12 @@ function Get-LiveRetrievalStatus {
         onlineSearchEnabled = [bool]$ready
         reason = if ($ready) { "Research settings detected. Live web research can be attempted." } else { "Set OPENAI_API_KEY or save an encrypted local key for live web research." }
         model = [string]$settings.model
+        reasoningEffort = [string]$settings.reasoningEffort
         provider = [string]$settings.provider
         baseUrl = [string]$settings.baseUrl
         apiKeyRequired = [bool]$settings.apiKeyRequired
+        requestTimeoutSeconds = [int]$settings.requestTimeoutSeconds
+        maxOutputTokens = [int]$settings.maxOutputTokens
         configRoot = Get-SchoolScannerConfigRoot
     }
 }
@@ -286,7 +289,7 @@ function New-OpenAIResearchRequest {
     return @{
         model = [string]$settings.model
         reasoning = @{
-            effort = "medium"
+            effort = [string]$settings.reasoningEffort
         }
         tools = @(
             @{
@@ -299,6 +302,7 @@ function New-OpenAIResearchRequest {
         include = @("web_search_call.action.sources")
         instructions = $instructions
         input = $Payload.question
+        max_output_tokens = [int]$settings.maxOutputTokens
         text = @{
             format = Get-ResearchJsonSchema
         }
@@ -312,7 +316,32 @@ function Convert-OpenAIResponseToResult {
         [hashtable]$ApiResponse
     )
 
-    $outputText = [string]$ApiResponse.output_text
+    $outputText = $null
+    if ($ApiResponse -is [hashtable] -and $ApiResponse.ContainsKey("output_text") -and $null -ne $ApiResponse["output_text"]) {
+        $outputText = [string]$ApiResponse["output_text"]
+    }
+
+    if ([string]::IsNullOrWhiteSpace($outputText) -and $ApiResponse -is [hashtable] -and $ApiResponse.ContainsKey("output")) {
+        $fragments = New-Object System.Collections.Generic.List[string]
+        foreach ($item in @($ApiResponse["output"])) {
+            if ($item -is [hashtable] -and $item.ContainsKey("content")) {
+                foreach ($contentItem in @($item["content"])) {
+                    if ($contentItem -is [hashtable]) {
+                        if ($contentItem.ContainsKey("text") -and -not [string]::IsNullOrWhiteSpace([string]$contentItem["text"])) {
+                            $fragments.Add([string]$contentItem["text"])
+                        } elseif ($contentItem.ContainsKey("output_text") -and -not [string]::IsNullOrWhiteSpace([string]$contentItem["output_text"])) {
+                            $fragments.Add([string]$contentItem["output_text"])
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($fragments.Count -gt 0) {
+            $outputText = ($fragments -join "`n")
+        }
+    }
+
     if ([string]::IsNullOrWhiteSpace($outputText)) {
         return @{
             status = "upstream_invalid_format"
@@ -349,13 +378,16 @@ function Convert-OpenAIResponseToResult {
     }
     $sources = @()
 
-    foreach ($item in @($ApiResponse.output)) {
-        if ($item.type -eq "web_search_call" -and $item.action -and $item.action.sources) {
-            foreach ($source in @($item.action.sources)) {
-                if ($source.url) {
-                    $sources += [ordered]@{
-                        heading = if ($source.title) { [string]$source.title } else { [string]$source.url }
-                        body = [string]$source.url
+    foreach ($item in @($ApiResponse["output"])) {
+        if ($item -is [hashtable] -and $item.ContainsKey("type") -and [string]$item["type"] -eq "web_search_call" -and $item.ContainsKey("action") -and $item["action"]) {
+            $action = $item["action"]
+            if ($action -is [hashtable] -and $action.ContainsKey("sources") -and $action["sources"]) {
+                foreach ($source in @($action["sources"])) {
+                    if ($source -is [hashtable] -and $source.ContainsKey("url") -and $source["url"]) {
+                        $sources += [ordered]@{
+                            heading = if ($source.ContainsKey("title") -and $source["title"]) { [string]$source["title"] } else { [string]$source["url"] }
+                            body = [string]$source["url"]
+                        }
                     }
                 }
             }
@@ -385,6 +417,31 @@ function Convert-OpenAIResponseToResult {
         keyPoints = @($parsed.keyPoints)
         sections = $sectionList
     }
+}
+
+function Get-ExceptionResponseBody {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [System.Exception]$Exception
+    )
+
+    try {
+        if ($Exception.Response -and $Exception.Response.GetResponseStream()) {
+            $reader = New-Object System.IO.StreamReader($Exception.Response.GetResponseStream())
+            try {
+                return $reader.ReadToEnd()
+            }
+            finally {
+                $reader.Dispose()
+            }
+        }
+    }
+    catch {
+        return $null
+    }
+
+    return $null
 }
 
 function Invoke-OpenAIResearch {
@@ -433,13 +490,32 @@ function Invoke-OpenAIResearch {
     $requestUri = "$baseUrl$responsesPath"
 
     try {
-        $response = Invoke-RestMethod -Uri $requestUri -Method Post -Headers $headers -Body $requestBody -TimeoutSec 120
+        $response = Invoke-RestMethod -Uri $requestUri -Method Post -Headers $headers -Body $requestBody -TimeoutSec ([int]$settings.requestTimeoutSeconds)
+        if ($null -eq $response) {
+            return @{
+                status = "upstream_empty_response"
+                httpStatus = 502
+                title = "Research provider error"
+                summary = "The research provider returned an empty response."
+                keyPoints = @(
+                    "No answer was generated."
+                    "The upstream service did not return a parseable body."
+                )
+                sections = @(
+                    @{
+                        heading = "Suggested next step"
+                        body = "Retry once. If this repeats, reduce request complexity or inspect the upstream provider response body."
+                    }
+                )
+            }
+        }
         $plain = ConvertTo-PlainHashtable -InputObject $response
         return Convert-OpenAIResponseToResult -ApiResponse $plain
     }
     catch {
         $statusCode = $null
         $detail = $_.Exception.Message
+        $responseBody = Get-ExceptionResponseBody -Exception $_.Exception
 
         if ($_.Exception -is [System.Net.WebException] -and $_.Exception.Response) {
             try {
@@ -459,10 +535,14 @@ function Invoke-OpenAIResearch {
             "The research provider rejected the API key. Check OPENAI_API_KEY."
         } elseif ($safeStatus -eq 429) {
             "The research provider is rate-limiting requests. Try again shortly."
-        } elseif ($safeStatus -eq 504) {
+        } elseif ($safeStatus -eq 504 -or $detail -match "timed out") {
             "The research provider timed out while retrieving sources. Try again."
         } else {
             "The research provider could not complete the request. Try again."
+        }
+
+        if ($detail -match "timed out") {
+            $safeStatus = 504
         }
 
         return @{
@@ -478,6 +558,14 @@ function Invoke-OpenAIResearch {
                 @{
                     heading = "What happened"
                     body = $detail
+                }
+                @{
+                    heading = "Upstream response body"
+                    body = if ([string]::IsNullOrWhiteSpace($responseBody)) { "No response body was returned by the provider." } else { $responseBody }
+                }
+                @{
+                    heading = "Suggested next step"
+                    body = "Retry once with a more specific school question, or lower the configured model and token budget if cost and latency are too high."
                 }
             )
         }

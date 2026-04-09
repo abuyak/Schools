@@ -17,7 +17,6 @@ function Get-AllowedBranches {
 function ConvertTo-PlainHashtable {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
         $InputObject
     )
 
