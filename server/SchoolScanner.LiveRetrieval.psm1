@@ -358,8 +358,23 @@ function Convert-OpenAIResponseToResult {
         }
     }
 
+    # Strip markdown code fences the model sometimes adds despite json_schema enforcement.
+    $cleanText = $outputText.Trim()
+    if ($cleanText -match "^``````(?:json)?\s*`r?`n") {
+        $cleanText = $cleanText -replace "^``````(?:json)?\s*`r?`n", ""
+        $cleanText = $cleanText -replace "`r?`n``````\s*$", ""
+        $cleanText = $cleanText.Trim()
+    }
+    # If the text still doesn't start with { try to locate the first JSON object boundary.
+    if (-not $cleanText.StartsWith("{")) {
+        $brace = $cleanText.IndexOf("{")
+        if ($brace -ge 0) {
+            $cleanText = $cleanText.Substring($brace)
+        }
+    }
+
     try {
-        $parsed = ConvertFrom-Json -InputObject $outputText -ErrorAction Stop
+        $parsed = ConvertFrom-Json -InputObject $cleanText -ErrorAction Stop
     }
     catch {
         return @{
@@ -369,6 +384,10 @@ function Convert-OpenAIResponseToResult {
             summary = "The research provider returned a response that did not match the expected JSON format."
             keyPoints = @("No answer was generated.", "Try again, or adjust the question to be more specific.")
             sections = @(
+                @{
+                    heading = "Raw output (first 400 chars)"
+                    body = if ($outputText.Length -gt 400) { $outputText.Substring(0, 400) } else { $outputText }
+                }
                 @{
                     heading = "Next step"
                     body = "Retry the request. If this repeats, the backend schema enforcement may need tightening."
