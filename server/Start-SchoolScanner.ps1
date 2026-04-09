@@ -44,6 +44,7 @@ function Send-HttpResponse {
         [Parameter(Mandatory)]
         [string]$ReasonPhrase,
         [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
         [byte[]]$BodyBytes,
         [Parameter(Mandatory)]
         [string]$ContentType,
@@ -379,7 +380,7 @@ try {
                     continue
                 }
 
-                $event = [string]$body.event
+                $event = if ($body.ContainsKey("event")) { [string]$body["event"] } else { "" }
                 if ([string]::IsNullOrWhiteSpace($event) -or $event.Length -gt 64) {
                     Send-JsonResponse -Client $client -StatusCode 400 -ReasonPhrase "Bad Request" -Body @{ error = "Invalid event." }
                     continue
@@ -396,7 +397,7 @@ try {
                 }
 
                 Write-AnalyticsEvent -Name $event -Properties $props
-                Send-HttpResponse -Client $client -StatusCode 204 -ReasonPhrase "No Content" -BodyBytes @() -ContentType "text/plain; charset=utf-8"
+                Send-HttpResponse -Client $client -StatusCode 204 -ReasonPhrase "No Content" -BodyBytes ([byte[]]::new(0)) -ContentType "text/plain; charset=utf-8"
                 continue
             }
 
