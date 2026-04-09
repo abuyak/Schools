@@ -43,6 +43,88 @@
     });
   }
 
+  // Appends text to an element, turning ([label](url)) markdown citations into
+  // real <a> elements. All non-link text is inserted as safe text nodes.
+  function appendTextWithLinks(el, text) {
+    var pattern = /\(\[([^\]]*)\]\(([^)]+)\)\)/g;
+    var lastIndex = 0;
+    var match;
+
+    while ((match = pattern.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        el.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+      }
+
+      var label = match[1];
+      var rawUrl = match[2];
+
+      if (/^https?:\/\//i.test(rawUrl)) {
+        var cleanUrl = rawUrl;
+        try {
+          var u = new URL(rawUrl);
+          u.searchParams.delete("utm_source");
+          cleanUrl = u.toString();
+        } catch (_e) {}
+
+        var a = document.createElement("a");
+        a.href = cleanUrl;
+        a.textContent = label;
+        a.rel = "noopener noreferrer";
+        a.target = "_blank";
+        el.appendChild(a);
+      } else {
+        el.appendChild(document.createTextNode(label));
+      }
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < text.length) {
+      el.appendChild(document.createTextNode(text.slice(lastIndex)));
+    }
+  }
+
+  function renderBodyText(container, rawText) {
+    container.replaceChildren();
+    var lines = (rawText || "").split("\n")
+      .map(function (l) { return l.trim(); })
+      .filter(function (l) { return l.length > 0; });
+
+    var currentList = null;
+    var currentListType = null;
+
+    lines.forEach(function (line) {
+      var bulletMatch = line.match(/^[-*]\s+(.+)/);
+      var numberedMatch = line.match(/^\d+[).]\s+(.+)/);
+
+      if (bulletMatch) {
+        if (currentListType !== "ul") {
+          currentList = document.createElement("ul");
+          container.appendChild(currentList);
+          currentListType = "ul";
+        }
+        var li = document.createElement("li");
+        appendTextWithLinks(li, bulletMatch[1]);
+        currentList.appendChild(li);
+      } else if (numberedMatch) {
+        if (currentListType !== "ol") {
+          currentList = document.createElement("ol");
+          container.appendChild(currentList);
+          currentListType = "ol";
+        }
+        var li = document.createElement("li");
+        appendTextWithLinks(li, numberedMatch[1]);
+        currentList.appendChild(li);
+      } else {
+        currentList = null;
+        currentListType = null;
+        var p = document.createElement("p");
+        appendTextWithLinks(p, line);
+        container.appendChild(p);
+      }
+    });
+  }
+
   function renderSections(sections) {
     answerSections.replaceChildren();
     (sections || []).forEach(function (section) {
@@ -52,8 +134,9 @@
       const heading = document.createElement("h4");
       heading.textContent = section.heading || "";
 
-      const body = document.createElement("p");
-      body.textContent = section.body || "";
+      const body = document.createElement("div");
+      body.className = "answer-section-body";
+      renderBodyText(body, section.body || "");
 
       article.appendChild(heading);
       article.appendChild(body);

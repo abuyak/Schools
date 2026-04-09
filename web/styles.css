@@ -287,9 +287,43 @@ input[type="email"]:focus,
   font-size: 1rem;
 }
 
-.answer-section p {
-  margin: 0;
+.answer-section-body p {
+  margin: 0 0 0.5rem;
   line-height: 1.6;
+}
+
+.answer-section-body p:last-child {
+  margin-bottom: 0;
+}
+
+.answer-section-body ul,
+.answer-section-body ol {
+  margin: 0.1rem 0 0.5rem;
+  padding-left: 1.4rem;
+  line-height: 1.7;
+}
+
+.answer-section-body ul:last-child,
+.answer-section-body ol:last-child {
+  margin-bottom: 0;
+}
+
+.answer-section-body li {
+  margin-bottom: 0.2rem;
+}
+
+.answer-section-body li:last-child {
+  margin-bottom: 0;
+}
+
+.answer-section-body a {
+  color: var(--accent-deep);
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+
+.answer-section-body a:hover {
+  color: var(--accent);
 }
 
 .support-panel {
