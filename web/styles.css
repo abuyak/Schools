@@ -320,6 +320,16 @@ input[type="email"]:focus,
   margin-bottom: 0;
 }
 
+.answer-section-body .nested-list {
+  margin: 0.2rem 0 0.4rem;
+  padding-left: 1.2rem;
+}
+
+.answer-section-body .nested-list li {
+  margin-bottom: 0.15rem;
+  color: var(--muted);
+}
+
 .md-table {
   width: 100%;
   border-collapse: collapse;

@@ -165,11 +165,6 @@
 
   function renderBodyText(container, rawText) {
     container.replaceChildren();
-    var lines = (rawText || "").split("\n")
-      .map(function (l) { return l.trim(); });
-
-    var currentList = null;
-    var currentListType = null;
     var tableLines = [];
     var inTable = false;
 
@@ -181,11 +176,25 @@
       inTable = false;
     }
 
-    lines.forEach(function (line) {
+    // raw lines including blank ones — we need indentation info
+    var rawLines = (rawText || "").split("\n");
+
+    var currentList = null;
+    var currentListType = null;
+    var lastOlLi = null;   // last <li> of an <ol>, so we can nest a <ul> inside it
+    var nestedUl = null;   // the current nested <ul> inside an <ol> <li>
+
+    rawLines.forEach(function (rawLine) {
+      var indented = /^[ \t]{2,}/.test(rawLine);
+      var line = rawLine.trim();
+
       if (!line.length) {
         if (inTable) flushTable();
+        // blank line resets nesting
         currentList = null;
         currentListType = null;
+        lastOlLi = null;
+        nestedUl = null;
         return;
       }
 
@@ -194,6 +203,8 @@
         inTable = true;
         currentList = null;
         currentListType = null;
+        lastOlLi = null;
+        nestedUl = null;
         tableLines.push(line);
         return;
       }
@@ -202,16 +213,9 @@
       var bulletMatch = line.match(/^[-*]\s+(.+)/);
       var numberedMatch = line.match(/^\d+[).]\s+(.+)/);
 
-      if (bulletMatch) {
-        if (currentListType !== "ul") {
-          currentList = document.createElement("ul");
-          container.appendChild(currentList);
-          currentListType = "ul";
-        }
-        var li = document.createElement("li");
-        appendTextWithLinks(li, bulletMatch[1]);
-        currentList.appendChild(li);
-      } else if (numberedMatch) {
+      if (numberedMatch) {
+        // top-level numbered item
+        nestedUl = null;
         if (currentListType !== "ol") {
           currentList = document.createElement("ol");
           container.appendChild(currentList);
@@ -220,9 +224,34 @@
         var li = document.createElement("li");
         appendTextWithLinks(li, numberedMatch[1]);
         currentList.appendChild(li);
+        lastOlLi = li;
+      } else if (bulletMatch && indented && lastOlLi) {
+        // indented bullet under a numbered item → nested <ul>
+        if (!nestedUl) {
+          nestedUl = document.createElement("ul");
+          nestedUl.className = "nested-list";
+          lastOlLi.appendChild(nestedUl);
+        }
+        var li = document.createElement("li");
+        appendTextWithLinks(li, bulletMatch[1]);
+        nestedUl.appendChild(li);
+      } else if (bulletMatch) {
+        // top-level bullet
+        nestedUl = null;
+        lastOlLi = null;
+        if (currentListType !== "ul") {
+          currentList = document.createElement("ul");
+          container.appendChild(currentList);
+          currentListType = "ul";
+        }
+        var li = document.createElement("li");
+        appendTextWithLinks(li, bulletMatch[1]);
+        currentList.appendChild(li);
       } else {
         currentList = null;
         currentListType = null;
+        lastOlLi = null;
+        nestedUl = null;
         var p = document.createElement("p");
         appendTextWithLinks(p, line);
         container.appendChild(p);

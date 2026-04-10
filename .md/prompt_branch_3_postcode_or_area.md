@@ -69,14 +69,16 @@ Start with a clear judgement on the area:
 - weak or limited
 
 ### 2. Top Recommendations
-Provide a shortlist of 3 to 5 relevant schools.
+Provide a numbered shortlist of 3 to 5 relevant schools.
 
-For each include:
-- school name
-- type
-- why it matters in this area
-- best for
-- main caution
+Format each school exactly like this:
+
+1. School Name (type, e.g. boys selective grammar)
+   - Why it matters: one sentence
+   - Best for: one sentence
+   - Main caution: one sentence
+
+Use a numbered list for the schools. Use indented bullet points (- ) for the three sub-items under each school. Do not add blank lines between the sub-items. Add a blank line between schools.
 
 ### 3. Quick Comparison Table
 Use a concise table to compare the shortlist.
