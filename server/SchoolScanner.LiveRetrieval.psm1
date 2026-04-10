@@ -394,35 +394,30 @@ function Convert-OpenAIResponseToResult {
         }
     }
 
-    # Merge fetched URLs into the model's own Sources section so there is one
-    # exhaustive list rather than two separate sections.
-    if ($sources.Count -gt 0) {
-        $sourcesIndex = -1
-        for ($i = 0; $i -lt $sectionList.Count; $i++) {
-            if ([string]$sectionList[$i].heading -match "(?i)^sources?$") {
-                $sourcesIndex = $i
-                break
+    # Rename the model's Sources section to "Primary Sources".
+    # Append any fetched URLs not already cited there as a separate "Secondary Sources" section.
+    $primarySourcesBody = $null
+    for ($i = 0; $i -lt $sectionList.Count; $i++) {
+        if ([string]$sectionList[$i].heading -match "(?i)^sources?$") {
+            $primarySourcesBody = [string]$sectionList[$i].body
+            $sectionList[$i] = @{
+                heading = "Primary Sources"
+                body    = $primarySourcesBody
             }
+            break
         }
+    }
 
-        $extraLinks = $sources | Where-Object {
+    if ($sources.Count -gt 0) {
+        $secondaryLinks = $sources | Where-Object {
             $url = [string]$_.body
-            $sourcesIndex -lt 0 -or -not ([string]$sectionList[$sourcesIndex].body).Contains($url)
+            $null -eq $primarySourcesBody -or -not $primarySourcesBody.Contains($url)
         } | ForEach-Object { "[$($_.heading)]($($_.body))" }
 
-        if ($extraLinks.Count -gt 0) {
-            $extraBlock = $extraLinks -join "`n"
-            if ($sourcesIndex -ge 0) {
-                $existing = [string]$sectionList[$sourcesIndex].body
-                $sectionList[$sourcesIndex] = @{
-                    heading = [string]$sectionList[$sourcesIndex].heading
-                    body    = ($existing.TrimEnd() + "`n" + $extraBlock)
-                }
-            } else {
-                $sectionList += @{
-                    heading = "Sources"
-                    body    = $extraBlock
-                }
+        if ($secondaryLinks.Count -gt 0) {
+            $sectionList += @{
+                heading = "Secondary Sources"
+                body    = ($secondaryLinks -join "`n")
             }
         }
     }

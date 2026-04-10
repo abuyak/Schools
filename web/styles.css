@@ -243,8 +243,12 @@ input[type="email"]:focus,
 
 .result-card {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1rem;
+}
+
+.result-card:has(.result-gated:not([hidden])) {
+  grid-template-columns: 1.2fr 1fr;
 }
 
 .result-free,
