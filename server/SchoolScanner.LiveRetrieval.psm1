@@ -175,6 +175,7 @@ function Get-BranchInstructions {
 
 ---
 ## Output Constraints (do not override)
+- Never ask the user clarifying questions. The user has paid for this query. Instead, make the most reasonable assumptions given the question, state them briefly at the start of the Direct Answer section, and produce a complete answer based on those assumptions. If the question is genuinely unanswerable (e.g. no matching schools exist), say so clearly and redirect to the closest useful answer.
 - Return valid JSON only. No markdown fences, no prose outside the JSON object.
 - Populate the scorecard array with 4-6 key dimensions. Each item: dimension (label), rating (strong|good|mixed|weak|unknown), note (one short sentence). Do not repeat scorecard content verbatim in the sections.
 - Cite each fact inline using markdown link format: [source name](url).
