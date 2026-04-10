@@ -82,8 +82,8 @@
   //   [label]<url>     – angle-bracket URL variant
   // All non-link text is inserted as safe text nodes.
   function appendTextWithLinks(el, text) {
-    // Group 1+2: ([label](url)) · Group 3+4: [label](url) · Group 5+6: [label]<url>
-    var pattern = /\(\[([^\]]+)\]\(([^)]+)\)\)|\[([^\]]+)\]\(([^)]+)\)|\[([^\]]+)\]<([^>]+)>/g;
+    // Group 1+2: ([label](url)) · Group 3+4: [label](url) · Group 5+6: [label]<url> (optional space before <)
+    var pattern = /\(\[([^\]]+)\]\(([^)]+)\)\)|\[([^\]]+)\]\(([^)\s][^)]*)\)|\[([^\]]+)\]\s*<([^>]+)>/g;
     var lastIndex = 0;
     var match;
 

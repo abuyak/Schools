@@ -179,6 +179,7 @@ function Get-BranchInstructions {
 - Populate the scorecard array with 4-6 key dimensions. Each item: dimension (label), rating (strong|good|mixed|weak|unknown), note (one short sentence). Do not repeat scorecard content verbatim in the sections.
 - Cite each fact inline using markdown link format: [source name](url).
 - For fee-paying schools always search for current fees. If not found on first search, try "[school name] fees" as a dedicated search.
+- Within each section body, use \n to separate paragraphs. Use \n- item for bullet points and \n1. item for numbered lists. Never write a section body as one long unbroken paragraph.
 "@
 
     return $branchPrompt + $outputConstraints
@@ -396,7 +397,7 @@ function Convert-OpenAIResponseToResult {
     if ($sources.Count -gt 0) {
         $sectionList += @{
             heading = "Live Sources"
-            body = (($sources | Select-Object -First 6 | ForEach-Object { "[$($_.heading)]($($_.body))" }) -join "  ")
+            body = (($sources | Select-Object -First 6 | ForEach-Object { "[$($_.heading)]($($_.body))" }) -join "`n")
         }
     }
 
