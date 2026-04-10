@@ -394,10 +394,36 @@ function Convert-OpenAIResponseToResult {
         }
     }
 
+    # Merge fetched URLs into the model's own Sources section so there is one
+    # exhaustive list rather than two separate sections.
     if ($sources.Count -gt 0) {
-        $sectionList += @{
-            heading = "Live Sources"
-            body = (($sources | Select-Object -First 6 | ForEach-Object { "[$($_.heading)]($($_.body))" }) -join "`n")
+        $sourcesIndex = -1
+        for ($i = 0; $i -lt $sectionList.Count; $i++) {
+            if ([string]$sectionList[$i].heading -match "(?i)^sources?$") {
+                $sourcesIndex = $i
+                break
+            }
+        }
+
+        $extraLinks = $sources | Where-Object {
+            $url = [string]$_.body
+            $sourcesIndex -lt 0 -or -not ([string]$sectionList[$sourcesIndex].body).Contains($url)
+        } | ForEach-Object { "[$($_.heading)]($($_.body))" }
+
+        if ($extraLinks.Count -gt 0) {
+            $extraBlock = $extraLinks -join "`n"
+            if ($sourcesIndex -ge 0) {
+                $existing = [string]$sectionList[$sourcesIndex].body
+                $sectionList[$sourcesIndex] = @{
+                    heading = [string]$sectionList[$sourcesIndex].heading
+                    body    = ($existing.TrimEnd() + "`n" + $extraBlock)
+                }
+            } else {
+                $sectionList += @{
+                    heading = "Sources"
+                    body    = $extraBlock
+                }
+            }
         }
     }
 
