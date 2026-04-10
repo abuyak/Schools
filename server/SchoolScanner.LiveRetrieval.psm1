@@ -61,7 +61,7 @@ function Get-BranchResearchPlan {
                 searchTasks = @(
                     "Resolve the exact school identity"
                     "Find the latest inspection"
-                    "Find admissions and fees if relevant"
+                    "Find admissions criteria and current fees or tuition costs from the official school website"
                     "Find official destination evidence"
                 )
             }
@@ -153,83 +153,35 @@ function Get-BranchInstructions {
         [string]$Branch
     )
 
-    $common = @"
-You are School Scanner, an AI school advisor.
-Use live web research and prefer primary sources: official school websites, government school information, Ofsted, ISI, official admissions documents, and official destination data.
-Follow the selected prompt structure strictly.
-Separate fact from interpretation.
-If a point cannot be verified, say so directly.
-Keep the tone calm, practical, parent-friendly, and non-promotional.
-Return valid JSON only.
-"@
-
-    switch ($Branch) {
-        "prompt_branch_1" {
-            return $common + @"
-
-This is branch 1: Specific School Due Diligence.
-Answer the parent's real question: what is this school actually like, and is it worth pursuing?
-Structure the answer around:
-1. Direct Answer
-2. School Snapshot
-3. Inspection And Review Takeaways
-4. Academic Position
-5. Admissions And Assessment
-6. Fees
-7. Destinations
-8. Tradeoffs And Risks
-9. Sources
-10. Best Next Moves
-"@
-        }
-        "prompt_branch_2" {
-            return $common + @"
-
-This is branch 2: Compare Schools.
-Help the parent decide, not just describe each school separately.
-Structure the answer around:
-1. Direct Answer
-2. Quick Comparison Table
-3. What Matters Most For This Decision
-4. Admissions And Assessment
-5. Fees And Cost
-6. Destinations
-7. Tradeoffs And Risks
-8. Sources
-9. Best Next Moves
-"@
-        }
-        "prompt_branch_3" {
-            return $common + @"
-
-This is branch 3: Postcode Or Area Search.
-Answer the real question: is this area a good place to target if we care about school options?
-Structure the answer around:
-1. Direct Answer
-2. Top Recommendations
-3. Quick Comparison Table
-4. Area View
-5. Tradeoffs And Risks
-6. Sources
-7. Best Next Moves
-"@
-        }
-        "prompt_branch_4" {
-            return $common + @"
-
-This is branch 4: Admissions Strategy And Fallback Planning.
-Answer the practical question: given this situation, what should we do next?
-Structure the answer around:
-1. Direct Answer
-2. Main Routes Or Fallback Options
-3. Admissions And Assessment
-4. What Matters Most For This Decision
-5. Tradeoffs And Risks
-6. Sources
-7. Best Next Moves
-"@
-        }
+    # Map branch ID to its .md file (one level up from server/, inside .md/)
+    $mdRoot = Join-Path (Split-Path $PSScriptRoot -Parent) ".md"
+    $branchFile = switch ($Branch) {
+        "prompt_branch_1" { Join-Path $mdRoot "prompt_branch_1_specific_school.md" }
+        "prompt_branch_2" { Join-Path $mdRoot "prompt_branch_2_compare_schools.md" }
+        "prompt_branch_3" { Join-Path $mdRoot "prompt_branch_3_postcode_or_area.md" }
+        "prompt_branch_4" { Join-Path $mdRoot "prompt_branch_4_admissions_strategy.md" }
+        default           { $null }
     }
+
+    if ($null -eq $branchFile -or -not (Test-Path $branchFile)) {
+        throw "Branch instructions file not found for branch '$Branch'. Expected: $branchFile"
+    }
+
+    $branchPrompt = Get-Content -Path $branchFile -Raw -Encoding UTF8
+
+    # Append code-level output constraints that must always apply regardless of
+    # how the .md files are edited. Keep these minimal — content belongs in .md.
+    $outputConstraints = @"
+
+---
+## Output Constraints (do not override)
+- Return valid JSON only. No markdown fences, no prose outside the JSON object.
+- Populate the scorecard array with 4-6 key dimensions. Each item: dimension (label), rating (strong|good|mixed|weak|unknown), note (one short sentence). Do not repeat scorecard content verbatim in the sections.
+- Cite each fact inline using markdown link format: [source name](url).
+- For fee-paying schools always search for current fees. If not found on first search, try "[school name] fees" as a dedicated search.
+"@
+
+    return $branchPrompt + $outputConstraints
 }
 
 function Get-ResearchJsonSchema {
@@ -246,9 +198,18 @@ function Get-ResearchJsonSchema {
             properties = @{
                 title = @{ type = "string" }
                 summary = @{ type = "string" }
-                keyPoints = @{
+                scorecard = @{
                     type = "array"
-                    items = @{ type = "string" }
+                    items = @{
+                        type = "object"
+                        additionalProperties = $false
+                        properties = @{
+                            dimension = @{ type = "string" }
+                            rating    = @{ type = "string"; enum = @("strong","good","mixed","weak","unknown") }
+                            note      = @{ type = "string" }
+                        }
+                        required = @("dimension","rating","note")
+                    }
                 }
                 sections = @{
                     type = "array"
@@ -263,7 +224,7 @@ function Get-ResearchJsonSchema {
                     }
                 }
             }
-            required = @("title","summary","keyPoints","sections")
+            required = @("title","summary","scorecard","sections")
         }
     }
 }
@@ -413,6 +374,17 @@ function Convert-OpenAIResponseToResult {
         }
     }
 
+    $scorecardList = @()
+    if ($parsed.PSObject.Properties["scorecard"]) {
+        foreach ($item in @($parsed.scorecard)) {
+            $scorecardList += @{
+                dimension = [string]$item.dimension
+                rating    = [string]$item.rating
+                note      = [string]$item.note
+            }
+        }
+    }
+
     $sectionList = @()
     foreach ($section in @($parsed.sections)) {
         $sectionList += @{
@@ -424,7 +396,7 @@ function Convert-OpenAIResponseToResult {
     if ($sources.Count -gt 0) {
         $sectionList += @{
             heading = "Live Sources"
-            body = (($sources | Select-Object -First 6 | ForEach-Object { $_.body }) -join "; ")
+            body = (($sources | Select-Object -First 6 | ForEach-Object { "[$($_.heading)]($($_.body))" }) -join "  ")
         }
     }
 
@@ -433,7 +405,7 @@ function Convert-OpenAIResponseToResult {
         httpStatus = 200
         title = [string]$parsed.title
         summary = [string]$parsed.summary
-        keyPoints = @($parsed.keyPoints)
+        scorecard = $scorecardList
         sections = $sectionList
     }
 }

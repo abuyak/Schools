@@ -61,15 +61,8 @@
           <p class="field-help">Keep it specific. The clearer the problem, the stronger the answer.</p>
         </div>
 
-        <div>
-          <label for="email">Email <span>(optional)</span></label>
-          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com">
-          <p class="field-help">Optional for future follow-up. It is not needed to generate the answer.</p>
-        </div>
-
         <div class="form-actions">
           <button id="submit-button" class="primary-cta" type="submit">Generate answer</button>
-          <p class="trust-note">No inline scripts, no third-party trackers, no unsafe HTML rendering. <a href="/api-docs">API docs</a>.</p>
         </div>
         <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
       </form>
@@ -86,7 +79,7 @@
           <p class="result-badge">Answer</p>
           <h3 id="result-title">Your school-choice answer</h3>
           <p id="result-summary"></p>
-          <ul id="preview-points" class="result-list"></ul>
+          <div id="scorecard" class="scorecard" hidden></div>
           <div id="answer-sections" class="answer-sections"></div>
         </div>
 
@@ -112,18 +105,6 @@
       </div>
     </section>
 
-    <section class="security" aria-labelledby="security-title">
-      <div class="section-head">
-        <p class="section-kicker">OWASP-aware by design</p>
-        <h2 id="security-title">The current implementation is shaped to survive security review, not just a demo day.</h2>
-      </div>
-      <ul class="security-list">
-        <li>Strict Content Security Policy and no inline JavaScript.</li>
-        <li>Server-side payload validation, size limits, and rate limiting.</li>
-        <li>Safer rendering with <code>textContent</code> only for user data.</li>
-        <li>Headers aligned with common ZAP findings: frame denial, no sniffing, tight referrer policy.</li>
-      </ul>
-    </section>
   </main>
   <script src="app.js" defer></script>
 </body>

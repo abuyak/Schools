@@ -7,13 +7,12 @@
   const branchInput = document.getElementById("branch-input");
   const branchGrid = document.getElementById("branch-grid");
   const questionField = document.getElementById("question");
-  const emailField = document.getElementById("email");
   const submitButton = document.getElementById("submit-button");
   const formStatus = document.getElementById("form-status");
   const resultCard = document.getElementById("result-card");
   const resultTitle = document.getElementById("result-title");
   const resultSummary = document.getElementById("result-summary");
-  const previewPoints = document.getElementById("preview-points");
+  const scorecardEl = document.getElementById("scorecard");
   const answerSections = document.getElementById("answer-sections");
   const premiumPoints = document.getElementById("premium-points");
   const gateNote = document.getElementById("gate-note");
@@ -43,10 +42,48 @@
     });
   }
 
-  // Appends text to an element, turning ([label](url)) markdown citations into
-  // real <a> elements. All non-link text is inserted as safe text nodes.
+  var RATING_LABELS = { strong: "Strong", good: "Good", mixed: "Mixed", weak: "Weak", unknown: "?" };
+
+  function renderScorecard(items) {
+    scorecardEl.replaceChildren();
+    if (!items || items.length === 0) {
+      scorecardEl.hidden = true;
+      return;
+    }
+    items.forEach(function (item) {
+      var row = document.createElement("div");
+      row.className = "scorecard-row";
+
+      var dim = document.createElement("span");
+      dim.className = "scorecard-dimension";
+      dim.textContent = item.dimension || "";
+
+      var badge = document.createElement("span");
+      var rating = (item.rating || "unknown").toLowerCase();
+      badge.className = "scorecard-badge rating-" + rating;
+      badge.textContent = RATING_LABELS[rating] || rating;
+
+      var note = document.createElement("span");
+      note.className = "scorecard-note";
+      note.textContent = item.note || "";
+
+      row.appendChild(dim);
+      row.appendChild(badge);
+      row.appendChild(note);
+      scorecardEl.appendChild(row);
+    });
+    scorecardEl.hidden = false;
+  }
+
+  // Appends text to an element, turning markdown citations into real <a> elements.
+  // Handles three formats the model may emit:
+  //   ([label](url))   – wrapped in outer parens
+  //   [label](url)     – plain markdown link
+  //   [label]<url>     – angle-bracket URL variant
+  // All non-link text is inserted as safe text nodes.
   function appendTextWithLinks(el, text) {
-    var pattern = /\(\[([^\]]*)\]\(([^)]+)\)\)/g;
+    // Group 1+2: ([label](url)) · Group 3+4: [label](url) · Group 5+6: [label]<url>
+    var pattern = /\(\[([^\]]+)\]\(([^)]+)\)\)|\[([^\]]+)\]\(([^)]+)\)|\[([^\]]+)\]<([^>]+)>/g;
     var lastIndex = 0;
     var match;
 
@@ -55,8 +92,8 @@
         el.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
       }
 
-      var label = match[1];
-      var rawUrl = match[2];
+      var label = match[1] || match[3] || match[5];
+      var rawUrl = match[2] || match[4] || match[6];
 
       if (/^https?:\/\//i.test(rawUrl)) {
         var cleanUrl = rawUrl;
@@ -147,7 +184,7 @@
   function renderResult(result, modeLabel) {
     resultTitle.textContent = result.title || "Answer";
     resultSummary.textContent = result.summary || "";
-    renderList(previewPoints, result.keyPoints || []);
+    renderScorecard(result.scorecard || []);
     renderSections(result.sections || []);
 
     if (coffeeCta) {
@@ -219,8 +256,7 @@
 
     const payload = {
       branch: branchInput.value,
-      question: questionField.value.trim(),
-      email: emailField.value.trim()
+      question: questionField.value.trim()
     };
 
     if (!payload.question) {
@@ -230,7 +266,7 @@
     }
 
     submitButton.disabled = true;
-    setStatus("Researching online sources. This should take longer than the old instant local path.");
+    setStatus("Researching online sources…");
 
     try {
       const response = await fetch("/api/research", {
