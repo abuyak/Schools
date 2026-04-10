@@ -320,6 +320,32 @@ input[type="email"]:focus,
   margin-bottom: 0;
 }
 
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 0.5rem 0;
+}
+
+.md-table th,
+.md-table td {
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.4;
+}
+
+.md-table thead th {
+  background: var(--bg);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.md-table tbody tr:nth-child(even) td {
+  background: rgba(213, 199, 175, 0.15);
+}
+
 .answer-section-body a {
   color: var(--accent-deep);
   text-underline-offset: 2px;

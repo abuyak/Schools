@@ -121,16 +121,84 @@
     }
   }
 
+  function isTableSeparator(line) {
+    return /^\|[\s|:-]+\|$/.test(line);
+  }
+
+  function parseTableRow(line) {
+    return line.replace(/^\||\|$/g, "").split("|").map(function (c) { return c.trim(); });
+  }
+
+  function renderTable(container, tableLines) {
+    var table = document.createElement("table");
+    table.className = "md-table";
+    var headerCells = null;
+    var tbody = null;
+
+    tableLines.forEach(function (line, i) {
+      if (isTableSeparator(line)) return;
+      var cells = parseTableRow(line);
+      if (i === 0) {
+        var thead = document.createElement("thead");
+        var tr = document.createElement("tr");
+        cells.forEach(function (cell) {
+          var th = document.createElement("th");
+          appendTextWithLinks(th, cell);
+          tr.appendChild(th);
+        });
+        thead.appendChild(tr);
+        table.appendChild(thead);
+        tbody = document.createElement("tbody");
+        table.appendChild(tbody);
+      } else {
+        var tr = document.createElement("tr");
+        cells.forEach(function (cell) {
+          var td = document.createElement("td");
+          appendTextWithLinks(td, cell);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      }
+    });
+    container.appendChild(table);
+  }
+
   function renderBodyText(container, rawText) {
     container.replaceChildren();
     var lines = (rawText || "").split("\n")
-      .map(function (l) { return l.trim(); })
-      .filter(function (l) { return l.length > 0; });
+      .map(function (l) { return l.trim(); });
 
     var currentList = null;
     var currentListType = null;
+    var tableLines = [];
+    var inTable = false;
+
+    function flushTable() {
+      if (tableLines.length > 0) {
+        renderTable(container, tableLines);
+        tableLines = [];
+      }
+      inTable = false;
+    }
 
     lines.forEach(function (line) {
+      if (!line.length) {
+        if (inTable) flushTable();
+        currentList = null;
+        currentListType = null;
+        return;
+      }
+
+      // Table row detection
+      if (/^\|.+\|$/.test(line)) {
+        inTable = true;
+        currentList = null;
+        currentListType = null;
+        tableLines.push(line);
+        return;
+      }
+      if (inTable) flushTable();
+
       var bulletMatch = line.match(/^[-*]\s+(.+)/);
       var numberedMatch = line.match(/^\d+[).]\s+(.+)/);
 
@@ -160,6 +228,8 @@
         container.appendChild(p);
       }
     });
+
+    if (inTable) flushTable();
   }
 
   function renderSections(sections) {

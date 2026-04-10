@@ -180,6 +180,8 @@ function Get-BranchInstructions {
 - Cite each fact inline using markdown link format: [source name](url).
 - For fee-paying schools always search for current fees. If not found on first search, try "[school name] fees" as a dedicated search.
 - Within each section body, use \n to separate paragraphs. Use \n- item for bullet points and \n1. item for numbered lists. Never write a section body as one long unbroken paragraph.
+- Use the section numbers from the prompt structure in every section heading field, e.g. "1. Direct Answer", "2. Quick Comparison Table". All branches must number their sections.
+- For any comparison table section, write the body as a markdown table using | col | col | syntax with a separator row of |---|---|.
 "@
 
     return $branchPrompt + $outputConstraints
