@@ -224,8 +224,9 @@
         appendTextWithLinks(li, numberedMatch[1]);
         currentList.appendChild(li);
         lastOlLi = li;
-      } else if (bulletMatch && indented && lastOlLi) {
-        // indented bullet under a numbered item → nested <ul>
+      } else if (bulletMatch && lastOlLi) {
+        // bullet while inside a numbered item context → always nest,
+        // regardless of indentation (model often drops leading spaces in JSON)
         if (!nestedUl) {
           nestedUl = document.createElement("ul");
           nestedUl.className = "nested-list";
@@ -235,7 +236,7 @@
         appendTextWithLinks(li, bulletMatch[1]);
         nestedUl.appendChild(li);
       } else if (bulletMatch) {
-        // top-level bullet
+        // top-level bullet — no numbered context active
         nestedUl = null;
         lastOlLi = null;
         if (currentListType !== "ul") {
