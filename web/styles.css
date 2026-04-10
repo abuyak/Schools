@@ -90,9 +90,10 @@ h1 {
 }
 
 .lede {
-  font-size: 1.12rem;
+  font-size: clamp(0.95rem, 2.5vw, 1.12rem);
   line-height: 1.6;
   max-width: 44rem;
+  margin: 0.75rem 0 0;
 }
 
 .trust-note {
@@ -477,9 +478,22 @@ input[type="email"]:focus,
 }
 
 @media (max-width: 900px) {
-  .branch-grid,
+  .branch-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
   .result-card {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .branch-grid {
+    grid-template-columns: 1fr;
+  }
+  .flow,
+  .results,
+  .hero {
+    padding: 1.25rem;
   }
 }
 
