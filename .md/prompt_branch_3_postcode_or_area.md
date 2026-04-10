@@ -71,14 +71,19 @@ Start with a clear judgement on the area:
 ### 2. Top Recommendations
 Provide a numbered shortlist of 3 to 5 relevant schools.
 
-Format each school exactly like this:
+Format each school exactly like this, with continuing numbers (1, 2, 3… not restarting at 1 each time):
 
 1. School Name (type, e.g. boys selective grammar)
    - Why it matters: one sentence
    - Best for: one sentence
    - Main caution: one sentence
 
-Use a numbered list for the schools. Use indented bullet points (- ) for the three sub-items under each school. Do not add blank lines between the sub-items. Add a blank line between schools.
+2. Next School Name (type)
+   - Why it matters: one sentence
+   - Best for: one sentence
+   - Main caution: one sentence
+
+Use continuing numbered list for the schools (1, 2, 3, 4…). Use indented bullet points (- ) for the three sub-items under each school. Do not add blank lines between the sub-items. Add a blank line between schools.
 
 ### 3. Quick Comparison Table
 Use a concise table to compare the shortlist.

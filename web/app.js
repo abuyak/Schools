@@ -190,10 +190,9 @@
 
       if (!line.length) {
         if (inTable) flushTable();
-        // blank line resets nesting
-        currentList = null;
-        currentListType = null;
-        lastOlLi = null;
+        // Blank lines between numbered items (e.g. school entries) should not
+        // break the <ol> — only reset nested state within the item.
+        // A non-list paragraph will reset currentList below.
         nestedUl = null;
         return;
       }
@@ -248,6 +247,7 @@
         appendTextWithLinks(li, bulletMatch[1]);
         currentList.appendChild(li);
       } else {
+        // A plain paragraph breaks any open list context entirely
         currentList = null;
         currentListType = null;
         lastOlLi = null;
