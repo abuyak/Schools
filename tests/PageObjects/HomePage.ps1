@@ -19,11 +19,7 @@ class HomePage {
         return $this.Html -match "Buy me a Coffee if you like the answer"
     }
 
-    [bool] HasSecuritySection() {
-        return $this.Html -match "OWASP-aware by design" -and $this.Html -match "Strict Content Security Policy"
-    }
-
-    [bool] HasApiDocsLink() {
-        return $this.Html -match "/api-docs"
+    [bool] HasFeedbackPanel() {
+        return $this.Html -match 'class="feedback-panel"' -and $this.Html -match "Leave feedback"
     }
 }

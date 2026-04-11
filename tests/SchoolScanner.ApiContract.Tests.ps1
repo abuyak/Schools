@@ -456,4 +456,211 @@ Describe "School Scanner API contract - analytics and HTTP" {
         $r = Invoke-AnalyticsRequest -Method GET -Path "/api/health"
         $r.Headers["Content-Security-Policy"] | Should Match "default-src 'self'"
     }
+
+    It "Served index.html contains the feedback panel" {
+        $r = Invoke-AnalyticsRequest -Method GET -Path "/"
+        $r.StatusCode | Should Be 200
+        $r.Content | Should Match 'class="feedback-panel"'
+        $r.Content | Should Match "Leave feedback"
+    }
+
+    It "POST /api/analytics/click accepts an event with an ms field" {
+        $payload = @{ event = "result_rendered"; branch = "prompt_branch_1"; ms = 4200 } | ConvertTo-Json -Compress
+        $r = Invoke-AnalyticsRequest -Method POST -Path "/api/analytics/click" -Body $payload
+        $r.StatusCode | Should Be 204
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Admin auth tests - port 8094 with an adminToken written to config root.
+# Tests that /analytics and /config correctly enforce token-based protection.
+# ---------------------------------------------------------------------------
+
+$script:adminAuthPort       = 8094
+$script:adminAuthBase       = "http://127.0.0.1:" + $script:adminAuthPort
+$script:adminAuthProcess    = $null
+$script:adminAuthConfigRoot = $null
+$script:adminAuthToken      = "test-admin-token-$(([guid]::NewGuid()).ToString('N').Substring(0,8))"
+
+function Invoke-AdminAuthRequest {
+    param(
+        [string]$Method      = "GET",
+        [string]$Path,
+        $Body                = $null,
+        [string]$ContentType = "application/json",
+        [string]$AuthHeader  = ""
+    )
+
+    $uri = $script:adminAuthBase + $Path
+
+    $parseJson = {
+        param($text)
+        if (-not [string]::IsNullOrWhiteSpace($text)) {
+            try { return ConvertFrom-Json -InputObject $text } catch { }
+        }
+        return $null
+    }
+
+    $readResponse = {
+        param($resp)
+        $stream  = $resp.GetResponseStream()
+        $reader  = New-Object System.IO.StreamReader($stream)
+        $content = $reader.ReadToEnd()
+        $reader.Close()
+        $resp.Close()
+        $hdrs = @{}
+        foreach ($k in $resp.Headers.AllKeys) { $hdrs[$k] = $resp.Headers[$k] }
+        return @{
+            StatusCode = [int]$resp.StatusCode
+            Content    = $content
+            Json       = (& $parseJson $content)
+            Headers    = $hdrs
+        }
+    }
+
+    [System.Net.ServicePointManager]::Expect100Continue = $false
+    $req        = [System.Net.HttpWebRequest]::Create($uri)
+    $req.Method = $Method
+    $req.Timeout = 10000
+    if ($AuthHeader -ne "") { $req.Headers["Authorization"] = $AuthHeader }
+
+    if ($null -ne $Body) {
+        $bytes             = [System.Text.Encoding]::UTF8.GetBytes([string]$Body)
+        $req.ContentType   = $ContentType
+        $req.ContentLength = $bytes.Length
+        $bodyStream        = $req.GetRequestStream()
+        $bodyStream.Write($bytes, 0, $bytes.Length)
+        $bodyStream.Close()
+    }
+
+    try {
+        $resp = $req.GetResponse()
+        return & $readResponse $resp
+    }
+    catch [System.Net.WebException] {
+        $resp = $_.Exception.Response
+        if ($null -eq $resp) { throw }
+        return & $readResponse $resp
+    }
+}
+
+Describe "School Scanner - admin auth and rate limiting" {
+
+    BeforeAll {
+        $serverScript = Join-Path $PSScriptRoot "..\server\Start-SchoolScanner.ps1"
+        $script:adminAuthConfigRoot = Join-Path $env:TEMP ("schoolscanner-adminauth-" + [guid]::NewGuid().ToString("N"))
+        New-Item -ItemType Directory -Path $script:adminAuthConfigRoot -Force | Out-Null
+
+        # Write the admin token to the settings file BEFORE the server starts
+        $settingsPath = Join-Path $script:adminAuthConfigRoot "research-settings.json"
+        '{"adminToken":"' + $script:adminAuthToken + '"}' | Set-Content -LiteralPath $settingsPath -Encoding UTF8
+
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $script:adminAuthConfigRoot, "Process")
+
+        $startInfo                        = New-Object System.Diagnostics.ProcessStartInfo
+        $startInfo.FileName               = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+        $startInfo.Arguments              = "-ExecutionPolicy Bypass -File `"$serverScript`" -Port $script:adminAuthPort"
+        $startInfo.UseShellExecute        = $false
+        $startInfo.CreateNoWindow         = $true
+        $startInfo.RedirectStandardOutput = $true
+        $startInfo.RedirectStandardError  = $true
+        $startInfo.EnvironmentVariables["SCHOOLSCANNER_CONFIG_ROOT"] = $script:adminAuthConfigRoot
+
+        $script:adminAuthProcess           = New-Object System.Diagnostics.Process
+        $script:adminAuthProcess.StartInfo = $startInfo
+        [void]$script:adminAuthProcess.Start()
+
+        $started = $false
+        for ($i = 0; $i -lt 20; $i++) {
+            if ($script:adminAuthProcess.HasExited) { break }
+            try {
+                $h = Invoke-RestMethod -Uri ($script:adminAuthBase + "/api/health") -Method Get -TimeoutSec 2
+                if ($h.status -eq "ok") { $started = $true; break }
+            }
+            catch { Start-Sleep -Milliseconds 500 }
+        }
+
+        if (-not $started) {
+            throw "Admin auth test server did not start on port $script:adminAuthPort."
+        }
+    }
+
+    AfterAll {
+        if ($script:adminAuthProcess -and -not $script:adminAuthProcess.HasExited) {
+            Stop-Process -Id $script:adminAuthProcess.Id -Force -ErrorAction SilentlyContinue
+        }
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $null, "Process")
+        if ($script:adminAuthConfigRoot) {
+            Remove-Item -LiteralPath $script:adminAuthConfigRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    # -----------------------------------------------------------------------
+    # GET /analytics auth
+    # -----------------------------------------------------------------------
+
+    It "GET /analytics returns 401 when no token is provided" {
+        $r = Invoke-AdminAuthRequest -Method GET -Path "/analytics"
+        $r.StatusCode | Should Be 401
+    }
+
+    It "GET /analytics returns 401 when a wrong query token is provided" {
+        $r = Invoke-AdminAuthRequest -Method GET -Path "/analytics?token=wrong-token"
+        $r.StatusCode | Should Be 401
+    }
+
+    It "GET /analytics returns 401 HTML with a login form" {
+        $r = Invoke-AdminAuthRequest -Method GET -Path "/analytics"
+        $r.StatusCode | Should Be 401
+        $r.Content | Should Match "Admin access required"
+        $r.Headers["Content-Type"] | Should Match "text/html"
+    }
+
+    It "GET /analytics returns 200 with the correct query-string token" {
+        $r = Invoke-AdminAuthRequest -Method GET -Path ("/analytics?token=" + $script:adminAuthToken)
+        $r.StatusCode | Should Be 200
+        $r.Content | Should Match "School Scanner - Analytics"
+    }
+
+    It "GET /analytics 200 response has a relaxed CSP allowing unsafe-inline scripts" {
+        $r = Invoke-AdminAuthRequest -Method GET -Path ("/analytics?token=" + $script:adminAuthToken)
+        $r.StatusCode | Should Be 200
+        $r.Headers["Content-Security-Policy"] | Should Match "unsafe-inline"
+    }
+
+    It "GET /analytics returns 200 with the correct Bearer token" {
+        $r = Invoke-AdminAuthRequest -Method GET -Path "/analytics" -AuthHeader ("Bearer " + $script:adminAuthToken)
+        $r.StatusCode | Should Be 200
+        $r.Content | Should Match "School Scanner - Analytics"
+    }
+
+    # -----------------------------------------------------------------------
+    # GET /config auth
+    # -----------------------------------------------------------------------
+
+    It "GET /config returns 401 when no token is provided" {
+        $r = Invoke-AdminAuthRequest -Method GET -Path "/config"
+        $r.StatusCode | Should Be 401
+    }
+
+    It "GET /config returns 200 HTML with the correct query-string token" {
+        $r = Invoke-AdminAuthRequest -Method GET -Path ("/config?token=" + $script:adminAuthToken)
+        $r.StatusCode | Should Be 200
+        $r.Headers["Content-Type"] | Should Match "text/html"
+    }
+
+    # -----------------------------------------------------------------------
+    # Rate limiting
+    # -----------------------------------------------------------------------
+
+    It "Rate limiter returns 429 after the request window is exhausted" {
+        # Send 31 lightweight GET /api/health requests; the 31st should be rate-limited.
+        # The window is 30 requests per 60s per IP. The server counts from request 1.
+        $last = $null
+        for ($i = 1; $i -le 31; $i++) {
+            $last = Invoke-AdminAuthRequest -Method GET -Path "/api/health"
+        }
+        $last.StatusCode | Should Be 429
+        $last.Json.error | Should Match "Rate limit"
+    }
 }

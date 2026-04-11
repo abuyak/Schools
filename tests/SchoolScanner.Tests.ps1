@@ -3,6 +3,7 @@ Set-StrictMode -Version Latest
 Import-Module (Join-Path $PSScriptRoot "..\server\SchoolScanner.Server.psm1") -Force -Global
 $script:configModule = Import-Module (Join-Path $PSScriptRoot "..\server\SchoolScanner.Config.psm1") -Force -PassThru
 Import-Module (Join-Path $PSScriptRoot "..\server\SchoolScanner.LiveRetrieval.psm1") -Force -Global
+Import-Module (Join-Path $PSScriptRoot "..\server\SchoolScanner.Analytics.psm1") -Force -Global
 . (Join-Path $PSScriptRoot "PageObjects\HomePage.ps1")
 
 $script:port = 8091
@@ -243,7 +244,7 @@ Describe "School Scanner live retrieval module" {
                     content = @(
                         @{
                             type = "output_text"
-                            text = '{"title":"School answer","summary":"Short summary","keyPoints":["A","B"],"sections":[{"heading":"Direct Answer","body":"It looks promising."}]}'
+                            text = '{"title":"School answer","summary":"Short summary","scorecard":[{"dimension":"Results","rating":"strong","note":"Top marks."}],"sections":[{"heading":"Direct Answer","body":"It looks promising."}]}'
                         }
                     )
                 },
@@ -263,7 +264,246 @@ Describe "School Scanner live retrieval module" {
 
         $result.status | Should Be "completed"
         $result.title | Should Be "School answer"
-        $result.sections.Count | Should BeGreaterThan 1
+        $result.scorecard.Count | Should BeGreaterThan 0
+        $result.sections.Count | Should BeGreaterThan 0
+    }
+}
+
+Describe "School Scanner analytics module" {
+
+    It "Get-GeoLocation identifies loopback as local" {
+        $geo = Get-GeoLocation -IP "127.0.0.1"
+        $geo.country | Should Be "local"
+        $geo.city    | Should Be ""
+    }
+
+    It "Get-GeoLocation identifies IPv6 loopback as local" {
+        $geo = Get-GeoLocation -IP "::1"
+        $geo.country | Should Be "local"
+    }
+
+    It "Get-GeoLocation identifies a private 10.x address as local" {
+        $geo = Get-GeoLocation -IP "10.0.0.5"
+        $geo.country | Should Be "local"
+    }
+
+    It "Get-GeoLocation identifies a 192.168.x address as local" {
+        $geo = Get-GeoLocation -IP "192.168.1.100"
+        $geo.country | Should Be "local"
+    }
+
+    It "Write-AnalyticsEvent appends a valid JSONL record to the log file" {
+        $logFile = Join-Path $env:TEMP ("analytics-test-" + [guid]::NewGuid().ToString("N") + ".jsonl")
+        try {
+            Write-AnalyticsEvent -Name "test_event" -LogPath $logFile -Properties @{ branch = "prompt_branch_1"; ms = 500 }
+            (Test-Path $logFile) | Should Be $true
+            $line = Get-Content -LiteralPath $logFile -Raw
+            $parsed = ConvertFrom-Json $line
+            $parsed.name | Should Be "test_event"
+            ($parsed.props.PSObject.Properties["branch"].Value) | Should Be "prompt_branch_1"
+        }
+        finally {
+            Remove-Item -LiteralPath $logFile -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "Write-AnalyticsEvent appends multiple records without overwriting" {
+        $logFile = Join-Path $env:TEMP ("analytics-test-" + [guid]::NewGuid().ToString("N") + ".jsonl")
+        try {
+            Write-AnalyticsEvent -Name "event_one" -LogPath $logFile
+            Write-AnalyticsEvent -Name "event_two" -LogPath $logFile
+            $lines = @(Get-Content -LiteralPath $logFile)
+            $lines.Count | Should Be 2
+            ($lines[0] | ConvertFrom-Json).name | Should Be "event_one"
+            ($lines[1] | ConvertFrom-Json).name | Should Be "event_two"
+        }
+        finally {
+            Remove-Item -LiteralPath $logFile -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "Write-AnalyticsEvent silently ignores an invalid log path" {
+        # Should not throw
+        Write-AnalyticsEvent -Name "test" -LogPath "Z:\no\such\path\file.jsonl"
+    }
+
+    It "Get-EventProp returns the property value when it exists" {
+        $ev = ConvertFrom-Json '{"ts":"2026-01-01T00:00:00Z","name":"research_request","props":{"branch":"prompt_branch_2","ms":3200}}'
+        Get-EventProp -Event $ev -Key "branch" | Should Be "prompt_branch_2"
+        Get-EventProp -Event $ev -Key "ms"     | Should Be 3200
+    }
+
+    It "Get-EventProp returns the default when the key is absent" {
+        $ev = ConvertFrom-Json '{"ts":"2026-01-01T00:00:00Z","name":"branch_selected","props":{"branch":"prompt_branch_1"}}'
+        Get-EventProp -Event $ev -Key "missing_key" -Default "fallback" | Should Be "fallback"
+    }
+
+    It "Get-EventProp returns the default when the event is null" {
+        Get-EventProp -Event $null -Key "branch" -Default "none" | Should Be "none"
+    }
+
+    It "Build-AnalyticsDashboard returns valid HTML for a non-existent log file" {
+        $html = Build-AnalyticsDashboard -LogPath (Join-Path $env:TEMP "does-not-exist-$(([guid]::NewGuid()).ToString('N')).jsonl")
+        $html | Should Match "<!DOCTYPE html>"
+        $html | Should Match "School Scanner"
+        $html | Should Match '"total":0'
+    }
+
+    It "Build-AnalyticsDashboard correctly counts research_request events" {
+        $logFile = Join-Path $env:TEMP ("analytics-dash-test-" + [guid]::NewGuid().ToString("N") + ".jsonl")
+        try {
+            $now = (Get-Date).ToUniversalTime().ToString("o")
+            @(
+                '{"ts":"' + $now + '","name":"research_request","props":{"branch":"prompt_branch_1","status":"ok","ms":3500}}',
+                '{"ts":"' + $now + '","name":"research_request","props":{"branch":"prompt_branch_2","status":"ok","ms":4200}}',
+                '{"ts":"' + $now + '","name":"research_request","props":{"branch":"prompt_branch_1","status":"error","ms":1000}}',
+                '{"ts":"' + $now + '","name":"branch_selected","props":{"branch":"prompt_branch_3"}}'
+            ) | Set-Content -LiteralPath $logFile -Encoding UTF8
+            $html = Build-AnalyticsDashboard -LogPath $logFile
+            $html | Should Match '"total":3'
+            $html | Should Match '"ok":2'
+            $html | Should Match '"errors":1'
+        }
+        finally {
+            Remove-Item -LiteralPath $logFile -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "Build-AnalyticsDashboard counts frontend events separately from research requests" {
+        $logFile = Join-Path $env:TEMP ("analytics-dash-fe-" + [guid]::NewGuid().ToString("N") + ".jsonl")
+        try {
+            $now = (Get-Date).ToUniversalTime().ToString("o")
+            @(
+                '{"ts":"' + $now + '","name":"branch_selected","props":{"branch":"prompt_branch_1"}}',
+                '{"ts":"' + $now + '","name":"branch_selected","props":{"branch":"prompt_branch_2"}}',
+                '{"ts":"' + $now + '","name":"question_submitted","props":{"branch":"prompt_branch_1"}}',
+                '{"ts":"' + $now + '","name":"cta_click","props":{"placement":"results"}}',
+                '{"ts":"' + $now + '","name":"feedback_click","props":{"placement":"results"}}'
+            ) | Set-Content -LiteralPath $logFile -Encoding UTF8
+            $html = Build-AnalyticsDashboard -LogPath $logFile
+            # research total is still 0
+            $html | Should Match '"total":0'
+            # Frontend stats embedded in the JSON blob
+            $html | Should Match '"branchSelects":2'
+            $html | Should Match '"submits":1'
+            $html | Should Match '"ctaClicks":1'
+            $html | Should Match '"feedbackClicks":1'
+        }
+        finally {
+            Remove-Item -LiteralPath $logFile -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "Test-AdminAuth returns true when no adminToken is configured" {
+        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
+        try {
+            $fakeRequest = @{
+                Headers = @{}
+                Query   = @{}
+            }
+            $result = Test-AdminAuth -Request $fakeRequest
+            $result | Should Be $true
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $null, "Process")
+            Remove-Item -LiteralPath $configRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "Test-AdminAuth returns false when token is set but no credentials are presented" {
+        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
+        try {
+            New-Item -ItemType Directory -Path $configRoot -Force | Out-Null
+            '{"adminToken":"secret-abc"}' | Set-Content -LiteralPath (Join-Path $configRoot "research-settings.json") -Encoding UTF8
+            $fakeRequest = @{
+                Headers = @{}
+                Query   = @{}
+            }
+            $result = Test-AdminAuth -Request $fakeRequest
+            $result | Should Be $false
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $null, "Process")
+            Remove-Item -LiteralPath $configRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "Test-AdminAuth returns true with a correct query-string token" {
+        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
+        try {
+            New-Item -ItemType Directory -Path $configRoot -Force | Out-Null
+            '{"adminToken":"secret-abc"}' | Set-Content -LiteralPath (Join-Path $configRoot "research-settings.json") -Encoding UTF8
+            $fakeRequest = @{
+                Headers = @{}
+                Query   = @{ "token" = "secret-abc" }
+            }
+            $result = Test-AdminAuth -Request $fakeRequest
+            $result | Should Be $true
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $null, "Process")
+            Remove-Item -LiteralPath $configRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "Test-AdminAuth returns false with an incorrect query-string token" {
+        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
+        try {
+            New-Item -ItemType Directory -Path $configRoot -Force | Out-Null
+            '{"adminToken":"secret-abc"}' | Set-Content -LiteralPath (Join-Path $configRoot "research-settings.json") -Encoding UTF8
+            $fakeRequest = @{
+                Headers = @{}
+                Query   = @{ "token" = "wrong-token" }
+            }
+            $result = Test-AdminAuth -Request $fakeRequest
+            $result | Should Be $false
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $null, "Process")
+            Remove-Item -LiteralPath $configRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "Test-AdminAuth returns true with a correct Bearer token in Authorization header" {
+        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
+        try {
+            New-Item -ItemType Directory -Path $configRoot -Force | Out-Null
+            '{"adminToken":"secret-abc"}' | Set-Content -LiteralPath (Join-Path $configRoot "research-settings.json") -Encoding UTF8
+            $fakeRequest = @{
+                Headers = @{ "authorization" = "Bearer secret-abc" }
+                Query   = @{}
+            }
+            $result = Test-AdminAuth -Request $fakeRequest
+            $result | Should Be $true
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $null, "Process")
+            Remove-Item -LiteralPath $configRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "Test-AdminAuth returns false with a wrong Bearer token" {
+        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
+        try {
+            New-Item -ItemType Directory -Path $configRoot -Force | Out-Null
+            '{"adminToken":"secret-abc"}' | Set-Content -LiteralPath (Join-Path $configRoot "research-settings.json") -Encoding UTF8
+            $fakeRequest = @{
+                Headers = @{ "authorization" = "Bearer not-the-token" }
+                Query   = @{}
+            }
+            $result = Test-AdminAuth -Request $fakeRequest
+            $result | Should Be $false
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $null, "Process")
+            Remove-Item -LiteralPath $configRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 
@@ -320,7 +560,7 @@ Describe "School Scanner page" {
         }
     }
 
-    It "serves the landing page with the expected flow and support button" {
+    It "serves the landing page with the expected flow, support button and feedback panel" {
         $response = Invoke-WebRequest -Uri "http://127.0.0.1:$script:port/" -UseBasicParsing -TimeoutSec 5
         $page = [HomePage]::new($response.Content)
 
@@ -328,8 +568,7 @@ Describe "School Scanner page" {
         $page.HasTitle() | Should Be $true
         $page.HasFourBranchCards() | Should Be $true
         $page.HasSupportButton() | Should Be $true
-        $page.HasSecuritySection() | Should Be $true
-        $page.HasApiDocsLink() | Should Be $true
+        $page.HasFeedbackPanel() | Should Be $true
     }
 
     It "serves health information with allowed branches" {
