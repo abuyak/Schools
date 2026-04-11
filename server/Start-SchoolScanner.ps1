@@ -326,7 +326,8 @@ function Get-EventProp {
 }
 
 function Build-AnalyticsDashboard {
-    $logPath = $script:analyticsLog
+    param([string]$LogPath)
+    $logPath = $LogPath
     $events = @()
     if (Test-Path -LiteralPath $logPath) {
         $events = @(Get-Content -LiteralPath $logPath -Tail 5000 | ForEach-Object {
@@ -615,7 +616,7 @@ try {
                         Send-AdminChallenge -Client $client -ReturnPath "/analytics"
                         continue
                     }
-                    $html = Build-AnalyticsDashboard
+                    $html = Build-AnalyticsDashboard -LogPath $analyticsLog
                     $htmlBytes = [System.Text.Encoding]::UTF8.GetBytes($html)
                     Send-HttpResponse -Client $client -StatusCode 200 -ReasonPhrase "OK" -ContentType "text/html; charset=utf-8" -BodyBytes $htmlBytes
                     continue
