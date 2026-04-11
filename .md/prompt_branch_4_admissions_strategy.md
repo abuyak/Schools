@@ -76,17 +76,19 @@ Start with a practical recommendation:
 - what fallback should stay alive
 
 ### 2. Main Routes Or Fallback Options
-List the most realistic options, such as:
+List the most realistic options as bullets. For each option use the format below. Do NOT use numbered lists here; do NOT repeat the section heading.
+
+- **Option name**
+  - Why it is realistic: one sentence
+  - Upside: one sentence
+  - Downside: one sentence
+
+Typical options include:
 - stay on current route
 - keep reserve list active
 - pursue named fallback schools
 - switch to state / private / grammar / boarding route
 - target in-year admission or later entry point
-
-For each option include:
-- why it is realistic
-- main upside
-- main downside
 
 ### 3. Admissions And Assessment
 Explain only the admissions mechanics relevant to the decision.
@@ -109,14 +111,14 @@ Examples:
 End with a short source list.
 
 ### 7. Best Next Moves
-Make this section especially concrete.
+Make this section especially concrete. Use a numbered list (1. 2. 3.) ONLY here because order and priority matter. Each item is one clear action.
 
 Examples:
-- keep current offer while pursuing X
-- book visits for Y and Z
-- verify deadlines
-- confirm catchment or in-year rules
-- prepare for next assessment point
+1. Keep current offer while pursuing X
+2. Book visits for Y and Z
+3. Verify deadlines
+4. Confirm catchment or in-year rules
+5. Prepare for next assessment point
 
 ## Tone
 

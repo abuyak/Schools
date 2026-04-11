@@ -181,9 +181,10 @@ function Get-BranchInstructions {
 - Cite each fact inline using markdown link format: [source name](url).
 - For fee-paying schools always search for current fees. If not found on first search, try "[school name] fees" as a dedicated search.
 - Within each section body, use \n to separate paragraphs. Use \n- item for bullet points and \n1. item for numbered lists. Never write a section body as one long unbroken paragraph.
-- Use the section numbers from the prompt structure in every section heading field, e.g. "1. Direct Answer", "2. Quick Comparison Table". All branches must number their sections.
-- Never repeat the section heading inside the body. The heading field is shown separately; the body should start with content immediately.
-- Only use numbered lists (1. 2. 3.) for genuinely enumerable items such as ranked options or steps. Do not number every paragraph or every sentence. Use plain paragraphs for prose and bullet points (- ) for unordered items.
+- Use the section numbers from the prompt structure in every section heading field, e.g. "1. Direct Answer", "2. Main Routes Or Fallback Options". All branches must number their sections.
+- CRITICAL: Never repeat the section heading text inside the body field. The heading is rendered separately by the UI. The body must begin with content, never with the heading repeated.
+- Numbered lists (1. 2. 3.) must only be used when ORDER genuinely matters, e.g. step-by-step instructions or a ranked priority list. Use bullets (-) for options, alternatives, and unordered items. Never number sub-points under a numbered item; use indented bullets instead.
+- For sections that list options (e.g. "Main Routes Or Fallback Options"): use a bullet (-) for each option name, then indent sub-points as nested bullets (  -) beneath it. Do not create a new numbered list for each option.
 - For any comparison table section, write the body as a markdown table using | col | col | syntax with a separator row of |---|---|.
 "@
 
