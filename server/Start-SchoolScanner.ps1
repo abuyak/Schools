@@ -251,16 +251,21 @@ function Write-AnalyticsEvent {
     param(
         [Parameter(Mandatory)]
         [string]$Name,
+        [Parameter(Mandatory)]
+        [string]$LogPath,
         [hashtable]$Properties = @{}
     )
 
-    $record = [ordered]@{
-        ts = (Get-Date).ToUniversalTime().ToString("o")
-        name = $Name
-        props = $Properties
+    try {
+        $record = [ordered]@{
+            ts    = (Get-Date).ToUniversalTime().ToString("o")
+            name  = $Name
+            props = $Properties
+        }
+        Add-Content -LiteralPath $LogPath -Value ($record | ConvertTo-Json -Depth 4 -Compress) -Encoding UTF8
+    } catch {
+        # Never let analytics writes crash the request handler
     }
-
-    Add-Content -LiteralPath $script:analyticsLog -Value ($record | ConvertTo-Json -Depth 4 -Compress)
 }
 
 function Test-AdminAuth {
@@ -682,7 +687,7 @@ try {
                 $statusCode = if ($result["status"] -eq "completed") { 200 } else { 503 }
                 $reason = if ($statusCode -eq 200) { "OK" } else { "Service Unavailable" }
 
-                Write-AnalyticsEvent -Name "research_request" -Properties @{
+                Write-AnalyticsEvent -Name "research_request" -LogPath $analyticsLog -Properties @{
                     branch = [string]$body["branch"]
                     ms     = [int]$sw.ElapsedMilliseconds
                     status = if ($result["status"] -eq "completed") { "ok" } else { "error" }
@@ -716,7 +721,7 @@ try {
                 $statusCode = if ($result.ContainsKey("httpStatus") -and $result["httpStatus"]) { [int]$result["httpStatus"] } elseif ($result["status"] -eq "completed") { 200 } else { 503 }
                 $reason = if ($statusCode -eq 200) { "OK" } elseif ($statusCode -eq 400) { "Bad Request" } elseif ($statusCode -eq 401) { "Unauthorized" } elseif ($statusCode -eq 429) { "Too Many Requests" } elseif ($statusCode -eq 502) { "Bad Gateway" } elseif ($statusCode -eq 504) { "Gateway Timeout" } else { "Service Unavailable" }
 
-                Write-AnalyticsEvent -Name "research_request" -Properties @{
+                Write-AnalyticsEvent -Name "research_request" -LogPath $analyticsLog -Properties @{
                     branch = [string]$body["branch"]
                     ms     = [int]$sw.ElapsedMilliseconds
                     status = if ($result["status"] -eq "completed") { "ok" } else { "error" }
@@ -753,7 +758,7 @@ try {
                     }
                 }
 
-                Write-AnalyticsEvent -Name $event -Properties $props
+                Write-AnalyticsEvent -Name $event -LogPath $analyticsLog -Properties $props
                 Send-HttpResponse -Client $client -StatusCode 204 -ReasonPhrase "No Content" -BodyBytes ([byte[]]::new(0)) -ContentType "text/plain; charset=utf-8"
                 continue
             }
