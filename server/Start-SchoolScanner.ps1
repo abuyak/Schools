@@ -260,7 +260,7 @@ function Write-AnalyticsEvent {
         props = $Properties
     }
 
-    Add-Content -LiteralPath $analyticsLog -Value ($record | ConvertTo-Json -Depth 4 -Compress)
+    Add-Content -LiteralPath $script:analyticsLog -Value ($record | ConvertTo-Json -Depth 4 -Compress)
 }
 
 function Test-AdminAuth {
@@ -307,9 +307,10 @@ function Send-AdminChallenge {
 }
 
 function Build-AnalyticsDashboard {
+    $logPath = $script:analyticsLog
     $events = @()
-    if (Test-Path -LiteralPath $analyticsLog) {
-        $events = @(Get-Content -LiteralPath $analyticsLog -Tail 5000 | ForEach-Object {
+    if (Test-Path -LiteralPath $logPath) {
+        $events = @(Get-Content -LiteralPath $logPath -Tail 5000 | ForEach-Object {
             try { ConvertFrom-Json $_ } catch { $null }
         } | Where-Object { $null -ne $_ })
     }
@@ -611,7 +612,7 @@ try {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>School Scanner — Config</title>
+<title>School Scanner - Config</title>
 <style>
   body { font-family: "Segoe UI", sans-serif; background: #f3ede2; color: #11203b; margin: 0; padding: 2rem; }
   h1 { font-size: 1.4rem; margin: 0 0 1.5rem; }
@@ -626,7 +627,7 @@ try {
 </style>
 </head>
 <body>
-<h1>School Scanner — Runtime Config</h1>
+<h1>School Scanner - Runtime Config</h1>
 <table>
   <tr><th>Model</th><td>$($rs.model)</td></tr>
   <tr><th>Provider</th><td>$($rs.provider)</td></tr>
@@ -752,7 +753,7 @@ try {
             $message = [string]$_.Exception.Message
             $stackTrace = [string]$_.ScriptStackTrace
             $logLine = "[{0}] {1}`n  at: {2}" -f (Get-Date).ToString("s"), $message, $stackTrace
-            try { Add-Content -LiteralPath $errorLog -Value $logLine } catch {}
+            try { Add-Content -LiteralPath $script:errorLog -Value $logLine } catch {}
             Write-Host $logLine  # also echo to console so we can see it
 
             if ($client.Connected) {
