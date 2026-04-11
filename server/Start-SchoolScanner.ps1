@@ -306,6 +306,18 @@ function Send-AdminChallenge {
     Send-HttpResponse -Client $Client -StatusCode 401 -ReasonPhrase "Unauthorized" -ContentType "text/html; charset=utf-8" -BodyBytes $bytes
 }
 
+function Get-EventProp {
+    param($Event, [string]$Key, $Default = "")
+    try {
+        if ($null -eq $Event) { return $Default }
+        $props = $Event.props
+        if ($null -eq $props) { return $Default }
+        $val = $props.PSObject.Properties[$Key]
+        if ($null -eq $val) { return $Default }
+        return $val.Value
+    } catch { return $Default }
+}
+
 function Build-AnalyticsDashboard {
     $logPath = $script:analyticsLog
     $events = @()
@@ -317,16 +329,16 @@ function Build-AnalyticsDashboard {
 
     $requests = @($events | Where-Object { [string]$_.name -eq "research_request" })
     $total    = $requests.Count
-    $okReqs   = @($requests | Where-Object { [string]$_.props.status -eq "ok" })
+    $okReqs   = @($requests | Where-Object { (Get-EventProp $_ "status") -eq "ok" })
     $ok       = $okReqs.Count
     $errors   = $total - $ok
     $successRate = if ($total -gt 0) { [Math]::Round($ok * 100.0 / $total, 1) } else { 0 }
     $avgMs = if ($ok -gt 0) {
-        [Math]::Round(($okReqs | ForEach-Object { [int]$_.props.ms } | Measure-Object -Sum).Sum / $ok)
+        [Math]::Round(($okReqs | ForEach-Object { [int](Get-EventProp $_ "ms" 0) } | Measure-Object -Sum).Sum / $ok)
     } else { 0 }
 
     $cutoff7d = (Get-Date).ToUniversalTime().AddDays(-7)
-    $last7d = @($requests | Where-Object { ([datetime]$_.ts) -ge $cutoff7d }).Count
+    $last7d = @($requests | Where-Object { try { ([datetime]$_.ts) -ge $cutoff7d } catch { $false } }).Count
 
     $branchMap = @{
         "prompt_branch_1" = "01 Evaluate"
@@ -335,10 +347,10 @@ function Build-AnalyticsDashboard {
         "prompt_branch_4" = "04 Backup"
     }
     $byBranch = foreach ($key in @("prompt_branch_1","prompt_branch_2","prompt_branch_3","prompt_branch_4")) {
-        $br   = @($requests | Where-Object { [string]$_.props.branch -eq $key })
-        $brOk = @($br | Where-Object { [string]$_.props.status -eq "ok" })
+        $br   = @($requests | Where-Object { (Get-EventProp $_ "branch") -eq $key })
+        $brOk = @($br | Where-Object { (Get-EventProp $_ "status") -eq "ok" })
         $brAvg = if ($brOk.Count -gt 0) {
-            [Math]::Round(($brOk | ForEach-Object { [int]$_.props.ms } | Measure-Object -Sum).Sum / $brOk.Count)
+            [Math]::Round(($brOk | ForEach-Object { [int](Get-EventProp $_ "ms" 0) } | Measure-Object -Sum).Sum / $brOk.Count)
         } else { 0 }
         [ordered]@{ label=$branchMap[$key]; total=$br.Count; ok=$brOk.Count; errors=($br.Count-$brOk.Count); avgMs=$brAvg }
     }
@@ -354,26 +366,27 @@ function Build-AnalyticsDashboard {
 
     $fe = @($events | Where-Object { [string]$_.name -ne "research_request" })
     $feStats = [ordered]@{
-        branchSelects    = @($fe | Where-Object { [string]$_.name -eq "branch_selected" }).Count
-        submits          = @($fe | Where-Object { [string]$_.name -eq "question_submitted" }).Count
-        resultsRendered  = @($fe | Where-Object { [string]$_.name -eq "result_rendered" }).Count
-        ctaClicks        = @($fe | Where-Object { [string]$_.name -eq "cta_click" }).Count
-        feedbackClicks   = @($fe | Where-Object { [string]$_.name -eq "feedback_click" }).Count
+        branchSelects   = @($fe | Where-Object { [string]$_.name -eq "branch_selected" }).Count
+        submits         = @($fe | Where-Object { [string]$_.name -eq "question_submitted" }).Count
+        resultsRendered = @($fe | Where-Object { [string]$_.name -eq "result_rendered" }).Count
+        ctaClicks       = @($fe | Where-Object { [string]$_.name -eq "cta_click" }).Count
+        feedbackClicks  = @($fe | Where-Object { [string]$_.name -eq "feedback_click" }).Count
     }
 
     $recentRows = @()
     if ($events.Count -gt 0) {
-        $recentRows = @($events | Select-Object -Last 30) | Sort-Object { [datetime]$_.ts } -Descending | ForEach-Object {
+        $recentRows = @($events | Select-Object -Last 30) | Sort-Object { try { [datetime]$_.ts } catch { [datetime]::MinValue } } -Descending | ForEach-Object {
             $ts   = try { ([datetime]$_.ts).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") } catch { [string]$_.ts }
             $name = [string]$_.name
-            $detail = switch ($name) {
-                "research_request"    { "$([string]$_.props.branch -replace 'prompt_branch_','p'), $([string]$_.props.status), $([Math]::Round([int]$_.props.ms/1000,1))s" }
-                "branch_selected"     { [string]$_.props.branch -replace "prompt_branch_","p" }
-                "question_submitted"  { [string]$_.props.branch -replace "prompt_branch_","p" }
-                "result_rendered"     { "$([string]$_.props.branch -replace 'prompt_branch_','p'), $([Math]::Round([int](if ($_.props.ms) { $_.props.ms } else { 0 })/1000,1))s" }
-                "cta_click"           { [string]$_.props.placement }
-                default               { "" }
-            }
+            $detail = try { switch ($name) {
+                "research_request"   { "$((Get-EventProp $_ 'branch') -replace 'prompt_branch_','p'), $(Get-EventProp $_ 'status'), $([Math]::Round([int](Get-EventProp $_ 'ms' 0)/1000,1))s" }
+                "branch_selected"    { (Get-EventProp $_ "branch") -replace "prompt_branch_","p" }
+                "question_submitted" { (Get-EventProp $_ "branch") -replace "prompt_branch_","p" }
+                "result_rendered"    { "$((Get-EventProp $_ 'branch') -replace 'prompt_branch_','p'), $([Math]::Round([int](Get-EventProp $_ 'ms' 0)/1000,1))s" }
+                "cta_click"          { Get-EventProp $_ "placement" }
+                "feedback_click"     { Get-EventProp $_ "placement" }
+                default              { "" }
+            } } catch { "" }
             [ordered]@{ ts=$ts; name=$name; detail=$detail }
         }
     }
