@@ -261,6 +261,10 @@ input[type="email"]:focus,
 
 .result-free {
   border-radius: calc(var(--radius) - 8px);
+  min-width: 0;
+  overflow: hidden;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .result-gated {
@@ -328,6 +332,28 @@ input[type="email"]:focus,
 
 .answer-section-body .nested-list li {
   margin-bottom: 0.15rem;
+  color: var(--muted);
+}
+
+/* Bold-header bullets (e.g. option names in prompt 4) */
+.answer-section-body .group-header {
+  margin: 0.75rem 0 0.15rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.answer-section-body .group-header:first-child {
+  margin-top: 0;
+}
+
+.answer-section-body .group-list {
+  margin: 0 0 0.4rem 0.25rem;
+  padding-left: 1.2rem;
+  line-height: 1.7;
+}
+
+.answer-section-body .group-list li {
+  margin-bottom: 0.2rem;
   color: var(--muted);
 }
 

@@ -65,7 +65,7 @@
 
       var note = document.createElement("span");
       note.className = "scorecard-note";
-      note.textContent = item.note || "";
+      appendTextWithLinks(note, item.note || "");
 
       row.appendChild(dim);
       row.appendChild(badge);
@@ -75,15 +75,17 @@
     scorecardEl.hidden = false;
   }
 
-  // Appends text to an element, turning markdown citations into real <a> elements.
-  // Handles three formats the model may emit:
+  // Appends text to an element, turning markdown citations into real <a> elements
+  // and **bold** spans into <strong> elements.
+  // Handles:
+  //   **bold**         – bold text
   //   ([label](url))   – wrapped in outer parens
   //   [label](url)     – plain markdown link
   //   [label]<url>     – angle-bracket URL variant
-  // All non-link text is inserted as safe text nodes.
+  // All other text is inserted as safe text nodes.
   function appendTextWithLinks(el, text) {
-    // Group 1+2: ([label](url)) · Group 3+4: [label](url) · Group 5+6: [label]<url> (optional space before <)
-    var pattern = /\(\[([^\]]+)\]\(([^)]+)\)\)|\[([^\]]+)\]\(([^)\s][^)]*)\)|\[([^\]]+)\]\s*<([^>]+)>/g;
+    // G1: **bold**  G2+3: ([label](url))  G4+5: [label](url)  G6+7: [label]<url>
+    var pattern = /\*\*([^*]+)\*\*|\(\[([^\]]+)\]\(([^)]+)\)\)|\[([^\]]+)\]\(([^)\s][^)]*)\)|\[([^\]]+)\]\s*<([^>]+)>/g;
     var lastIndex = 0;
     var match;
 
@@ -92,25 +94,32 @@
         el.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
       }
 
-      var label = match[1] || match[3] || match[5];
-      var rawUrl = match[2] || match[4] || match[6];
-
-      if (/^https?:\/\//i.test(rawUrl)) {
-        var cleanUrl = rawUrl;
-        try {
-          var u = new URL(rawUrl);
-          u.searchParams.delete("utm_source");
-          cleanUrl = u.toString();
-        } catch (_e) {}
-
-        var a = document.createElement("a");
-        a.href = cleanUrl;
-        a.textContent = label;
-        a.rel = "noopener noreferrer";
-        a.target = "_blank";
-        el.appendChild(a);
+      if (match[1] !== undefined) {
+        // **bold** match
+        var strong = document.createElement("strong");
+        strong.textContent = match[1];
+        el.appendChild(strong);
       } else {
-        el.appendChild(document.createTextNode(label));
+        var label = match[2] || match[4] || match[6];
+        var rawUrl = match[3] || match[5] || match[7];
+
+        if (/^https?:\/\//i.test(rawUrl)) {
+          var cleanUrl = rawUrl;
+          try {
+            var u = new URL(rawUrl);
+            u.searchParams.delete("utm_source");
+            cleanUrl = u.toString();
+          } catch (_e) {}
+
+          var a = document.createElement("a");
+          a.href = cleanUrl;
+          a.textContent = label;
+          a.rel = "noopener noreferrer";
+          a.target = "_blank";
+          el.appendChild(a);
+        } else {
+          el.appendChild(document.createTextNode(label));
+        }
       }
 
       lastIndex = match.index + match[0].length;
@@ -176,23 +185,21 @@
       inTable = false;
     }
 
-    // raw lines including blank ones — we need indentation info
     var rawLines = (rawText || "").split("\n");
 
     var currentList = null;
     var currentListType = null;
-    var lastOlLi = null;   // last <li> of an <ol>, so we can nest a <ul> inside it
-    var nestedUl = null;   // the current nested <ul> inside an <ol> <li>
+    var lastOlLi = null;   // last <li> of an <ol> — bullets after it nest inside
+    var nestedUl = null;   // nested <ul> inside an <ol> <li>
+    var groupList = null;  // <ul> collecting sub-bullets under a bold-header bullet
 
     rawLines.forEach(function (rawLine) {
-      var indented = /^[ \t]{2,}/.test(rawLine);
       var line = rawLine.trim();
 
       if (!line.length) {
         if (inTable) flushTable();
-        // Blank lines between numbered items (e.g. school entries) should not
-        // break the <ol> — only reset nested state within the item.
-        // A non-list paragraph will reset currentList below.
+        // Blank lines don't break an active list context (e.g. school entries
+        // in a numbered list separated by blank lines). Only reset nested state.
         nestedUl = null;
         return;
       }
@@ -200,21 +207,25 @@
       // Table row detection
       if (/^\|.+\|$/.test(line)) {
         inTable = true;
-        currentList = null;
-        currentListType = null;
-        lastOlLi = null;
-        nestedUl = null;
+        currentList = null; currentListType = null;
+        lastOlLi = null; nestedUl = null; groupList = null;
         tableLines.push(line);
         return;
       }
       if (inTable) flushTable();
 
-      var bulletMatch = line.match(/^[-*]\s+(.+)/);
+      var bulletMatch   = line.match(/^[-*]\s+(.+)/);
       var numberedMatch = line.match(/^\d+[).]\s+(.+)/);
 
+      // Bold-only bullet: - **Option name** (nothing else after the closing **)
+      // Rendered as a group header <p><strong>…</strong></p> with subsequent
+      // bullets collected into a nested <ul class="group-list">.
+      var boldOnlyBullet = bulletMatch && /^\*\*[^*]+\*\*\s*$/.test(bulletMatch[1]);
+
       if (numberedMatch) {
-        // top-level numbered item
+        // Top-level numbered item — resets group and nested state
         nestedUl = null;
+        groupList = null;
         if (currentListType !== "ol") {
           currentList = document.createElement("ol");
           container.appendChild(currentList);
@@ -224,9 +235,32 @@
         appendTextWithLinks(li, numberedMatch[1]);
         currentList.appendChild(li);
         lastOlLi = li;
+
+      } else if (boldOnlyBullet) {
+        // Bold-only bullet → group header paragraph + new groupList
+        currentList = null; currentListType = null;
+        lastOlLi = null; nestedUl = null;
+        var boldText = bulletMatch[1].replace(/^\*\*|\*\*\s*$/g, "");
+        var groupP = document.createElement("p");
+        groupP.className = "group-header";
+        var strong = document.createElement("strong");
+        strong.textContent = boldText;
+        groupP.appendChild(strong);
+        container.appendChild(groupP);
+        groupList = document.createElement("ul");
+        groupList.className = "group-list";
+        container.appendChild(groupList);
+
+      } else if (bulletMatch && groupList) {
+        // Regular bullet following a bold group header → sub-item of that group
+        var li = document.createElement("li");
+        appendTextWithLinks(li, bulletMatch[1]);
+        groupList.appendChild(li);
+
       } else if (bulletMatch && lastOlLi) {
-        // bullet while inside a numbered item context → always nest,
-        // regardless of indentation (model often drops leading spaces in JSON)
+        // Bullet inside a numbered-list context → always nest (model often
+        // drops leading spaces when serialising to JSON)
+        groupList = null;
         if (!nestedUl) {
           nestedUl = document.createElement("ul");
           nestedUl.className = "nested-list";
@@ -235,10 +269,10 @@
         var li = document.createElement("li");
         appendTextWithLinks(li, bulletMatch[1]);
         nestedUl.appendChild(li);
+
       } else if (bulletMatch) {
-        // top-level bullet — no numbered context active
-        nestedUl = null;
-        lastOlLi = null;
+        // Top-level bullet — no numbered or group context active
+        nestedUl = null; lastOlLi = null; groupList = null;
         if (currentListType !== "ul") {
           currentList = document.createElement("ul");
           container.appendChild(currentList);
@@ -247,12 +281,11 @@
         var li = document.createElement("li");
         appendTextWithLinks(li, bulletMatch[1]);
         currentList.appendChild(li);
+
       } else {
-        // A plain paragraph breaks any open list context entirely
-        currentList = null;
-        currentListType = null;
-        lastOlLi = null;
-        nestedUl = null;
+        // Plain paragraph — resets all list/group context
+        currentList = null; currentListType = null;
+        lastOlLi = null; nestedUl = null; groupList = null;
         var p = document.createElement("p");
         appendTextWithLinks(p, line);
         container.appendChild(p);

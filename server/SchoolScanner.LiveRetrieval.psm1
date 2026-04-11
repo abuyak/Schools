@@ -184,7 +184,8 @@ function Get-BranchInstructions {
 - Use the section numbers from the prompt structure in every section heading field, e.g. "1. Direct Answer", "2. Main Routes Or Fallback Options". All branches must number their sections.
 - CRITICAL: Never repeat the section heading text inside the body field. The heading is rendered separately by the UI. The body must begin with content, never with the heading repeated.
 - Numbered lists (1. 2. 3.) must only be used when ORDER genuinely matters, e.g. step-by-step instructions or a ranked priority list. Use bullets (-) for options, alternatives, and unordered items. Never number sub-points under a numbered item; use indented bullets instead.
-- For sections that list options (e.g. "Main Routes Or Fallback Options"): use a bullet (-) for each option name, then indent sub-points as nested bullets (  -) beneath it. Do not create a new numbered list for each option.
+- For sections that list options (e.g. "Main Routes Or Fallback Options"): use a bold-only bullet (- **Option name**) for each option header; follow it with regular bullets for the sub-points (Why realistic / Upside / Downside). Do NOT create a numbered list for options.
+- When a topic has a colon label (e.g. "11+ mechanics:", "Timing:", "Upside:"), write the label as a plain text line (no leading -) and put the details as bullet sub-points on the following lines. Never merge a label and its content into a single bullet.
 - For any comparison table section, write the body as a markdown table using | col | col | syntax with a separator row of |---|---|.
 "@
 
