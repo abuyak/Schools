@@ -16,7 +16,7 @@ class HomePage {
     }
 
     [bool] HasSupportButton() {
-        return $this.Html -match "Buy me a Coffee if you like the answer"
+        return $this.Html -match "Buy me a coffee"
     }
 
     [bool] HasFeedbackPanel() {

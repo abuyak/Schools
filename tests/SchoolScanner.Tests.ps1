@@ -352,13 +352,12 @@ Describe "School Scanner analytics module" {
     It "Build-AnalyticsDashboard correctly counts research_request events" {
         $logFile = Join-Path $env:TEMP ("analytics-dash-test-" + [guid]::NewGuid().ToString("N") + ".jsonl")
         try {
-            $now = (Get-Date).ToUniversalTime().ToString("o")
-            @(
-                '{"ts":"' + $now + '","name":"research_request","props":{"branch":"prompt_branch_1","status":"ok","ms":3500}}',
-                '{"ts":"' + $now + '","name":"research_request","props":{"branch":"prompt_branch_2","status":"ok","ms":4200}}',
-                '{"ts":"' + $now + '","name":"research_request","props":{"branch":"prompt_branch_1","status":"error","ms":1000}}',
-                '{"ts":"' + $now + '","name":"branch_selected","props":{"branch":"prompt_branch_3"}}'
-            ) | Set-Content -LiteralPath $logFile -Encoding UTF8
+            # Use Write-AnalyticsEvent so the test data matches the exact on-disk format
+            Write-AnalyticsEvent -Name "research_request" -LogPath $logFile -Properties @{ branch = "prompt_branch_1"; status = "ok";    ms = 3500 }
+            Write-AnalyticsEvent -Name "research_request" -LogPath $logFile -Properties @{ branch = "prompt_branch_2"; status = "ok";    ms = 4200 }
+            Write-AnalyticsEvent -Name "research_request" -LogPath $logFile -Properties @{ branch = "prompt_branch_1"; status = "error"; ms = 1000 }
+            Write-AnalyticsEvent -Name "branch_selected"  -LogPath $logFile -Properties @{ branch = "prompt_branch_3" }
+
             $html = Build-AnalyticsDashboard -LogPath $logFile
             $html | Should Match '"total":3'
             $html | Should Match '"ok":2'
@@ -372,18 +371,15 @@ Describe "School Scanner analytics module" {
     It "Build-AnalyticsDashboard counts frontend events separately from research requests" {
         $logFile = Join-Path $env:TEMP ("analytics-dash-fe-" + [guid]::NewGuid().ToString("N") + ".jsonl")
         try {
-            $now = (Get-Date).ToUniversalTime().ToString("o")
-            @(
-                '{"ts":"' + $now + '","name":"branch_selected","props":{"branch":"prompt_branch_1"}}',
-                '{"ts":"' + $now + '","name":"branch_selected","props":{"branch":"prompt_branch_2"}}',
-                '{"ts":"' + $now + '","name":"question_submitted","props":{"branch":"prompt_branch_1"}}',
-                '{"ts":"' + $now + '","name":"cta_click","props":{"placement":"results"}}',
-                '{"ts":"' + $now + '","name":"feedback_click","props":{"placement":"results"}}'
-            ) | Set-Content -LiteralPath $logFile -Encoding UTF8
+            Write-AnalyticsEvent -Name "branch_selected"    -LogPath $logFile -Properties @{ branch = "prompt_branch_1" }
+            Write-AnalyticsEvent -Name "branch_selected"    -LogPath $logFile -Properties @{ branch = "prompt_branch_2" }
+            Write-AnalyticsEvent -Name "question_submitted" -LogPath $logFile -Properties @{ branch = "prompt_branch_1" }
+            Write-AnalyticsEvent -Name "cta_click"          -LogPath $logFile -Properties @{ placement = "results" }
+            Write-AnalyticsEvent -Name "feedback_click"     -LogPath $logFile -Properties @{ placement = "results" }
+
             $html = Build-AnalyticsDashboard -LogPath $logFile
-            # research total is still 0
+            # Research total is still 0 — front-end events are counted separately
             $html | Should Match '"total":0'
-            # Frontend stats embedded in the JSON blob
             $html | Should Match '"branchSelects":2'
             $html | Should Match '"submits":1'
             $html | Should Match '"ctaClicks":1'

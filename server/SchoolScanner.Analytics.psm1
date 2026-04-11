@@ -85,18 +85,27 @@ function Test-AdminAuth {
         [hashtable]$Request
     )
 
-    $configFile = @{}
+    # Inline config-root lookup — avoids cross-module scope issues in PS5
+    $token = ""
     try {
-        $settingsPath = Join-Path (Get-SchoolScannerConfigRoot) "research-settings.json"
-        if (Test-Path -LiteralPath $settingsPath) {
-            $configFile = ConvertTo-PlainHashtable -InputObject (
-                ConvertFrom-Json -InputObject (Get-Content -LiteralPath $settingsPath -Raw)
-            )
+        $cr = [System.Environment]::GetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", "Process")
+        if ([string]::IsNullOrWhiteSpace($cr)) {
+            $cr = [System.Environment]::GetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", "User")
+        }
+        if ([string]::IsNullOrWhiteSpace($cr)) {
+            $cr = [System.Environment]::GetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", "Machine")
+        }
+        if ([string]::IsNullOrWhiteSpace($cr)) {
+            $cr = Join-Path $PSScriptRoot "..\.local"
+        }
+        $sp = Join-Path $cr "research-settings.json"
+        if (Test-Path -LiteralPath $sp) {
+            $parsed = ConvertFrom-Json -InputObject (Get-Content -LiteralPath $sp -Raw)
+            $prop = $parsed.PSObject.Properties["adminToken"]
+            if ($null -ne $prop) { $token = [string]$prop.Value }
         }
     }
     catch { }
-
-    $token = if ($configFile.ContainsKey("adminToken")) { [string]$configFile["adminToken"] } else { "" }
 
     # No token configured - open dev mode
     if ([string]::IsNullOrWhiteSpace($token)) { return $true }

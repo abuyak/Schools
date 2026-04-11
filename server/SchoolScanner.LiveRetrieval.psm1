@@ -423,7 +423,7 @@ function Convert-OpenAIResponseToResult {
             $null -eq $primarySourcesBody -or -not $primarySourcesBody.Contains($url)
         } | ForEach-Object { "[$($_.heading)]($($_.body))" }
 
-        if ($secondaryLinks.Count -gt 0) {
+        if (@($secondaryLinks).Count -gt 0) {
             $sectionList += @{
                 heading = "Secondary Sources"
                 body    = ($secondaryLinks -join "`n")
