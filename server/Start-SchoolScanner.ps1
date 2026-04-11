@@ -16,9 +16,16 @@ $listener.Start()
 $rateWindowSeconds = 60
 $maxRequestsPerWindow = 30
 $requestLog = @{}
-$configRoot = Get-SchoolScannerConfigRoot
-$errorLog     = Join-Path $configRoot "server-error.log"
-$analyticsLog = Join-Path $configRoot "analytics.jsonl"
+# Prefer config root for persistent logs; fall back to TEMP if module
+# is unavailable or the root directory cannot be resolved.
+try {
+    $configRoot   = Get-SchoolScannerConfigRoot
+    $errorLog     = Join-Path $configRoot "server-error.log"
+    $analyticsLog = Join-Path $configRoot "analytics.jsonl"
+} catch {
+    $errorLog     = Join-Path $env:TEMP "schoolscanner-server-error.log"
+    $analyticsLog = Join-Path $env:TEMP "schoolscanner-analytics.jsonl"
+}
 $maxHeaderBytes = 16384
 $maxBodyBytes = 4096
 
@@ -734,7 +741,10 @@ try {
         }
         catch {
             $message = [string]$_.Exception.Message
-            Add-Content -LiteralPath $errorLog -Value ("[{0}] {1}" -f (Get-Date).ToString("s"), $message)
+            $stackTrace = [string]$_.ScriptStackTrace
+            $logLine = "[{0}] {1}`n  at: {2}" -f (Get-Date).ToString("s"), $message, $stackTrace
+            try { Add-Content -LiteralPath $errorLog -Value $logLine } catch {}
+            Write-Host $logLine  # also echo to console so we can see it
 
             if ($client.Connected) {
                 try {
@@ -746,7 +756,6 @@ try {
                     }
                 }
                 catch {
-                    # If the client has already disconnected, avoid cascading errors.
                     try { $client.Close() } catch { }
                 }
             }
