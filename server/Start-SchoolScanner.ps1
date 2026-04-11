@@ -323,6 +323,49 @@ try {
                     }
                     continue
                 }
+                "GET /config" {
+                    $rs = Get-LiveRetrievalStatus
+                    $html = @"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>School Scanner — Config</title>
+<style>
+  body { font-family: "Segoe UI", sans-serif; background: #f3ede2; color: #11203b; margin: 0; padding: 2rem; }
+  h1 { font-size: 1.4rem; margin: 0 0 1.5rem; }
+  table { border-collapse: collapse; width: 100%; max-width: 640px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  th, td { padding: 0.7rem 1rem; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 0.9rem; }
+  th { background: #f8f2e7; font-weight: 700; width: 45%; color: #8f3b16; }
+  tr:last-child th, tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; padding: 0.15em 0.6em; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
+  .ok { background: #d1fae5; color: #065f46; }
+  .warn { background: #fef9c3; color: #854d0e; }
+  p.note { font-size: 0.82rem; color: #55637d; margin-top: 1rem; max-width: 640px; }
+</style>
+</head>
+<body>
+<h1>School Scanner — Runtime Config</h1>
+<table>
+  <tr><th>Model</th><td>$($rs.model)</td></tr>
+  <tr><th>Provider</th><td>$($rs.provider)</td></tr>
+  <tr><th>Base URL</th><td>$($rs.baseUrl)</td></tr>
+  <tr><th>Online search</th><td>$(if ($rs.onlineSearchEnabled) { '<span class="badge ok">Enabled</span>' } else { '<span class="badge warn">Disabled — API key missing</span>' })</td></tr>
+  <tr><th>API key required</th><td>$(if ($rs.apiKeyRequired) { 'Yes' } else { 'No' })</td></tr>
+  <tr><th>Reasoning effort</th><td>$($rs.reasoningEffort)</td></tr>
+  <tr><th>Request timeout</th><td>$($rs.requestTimeoutSeconds) seconds</td></tr>
+  <tr><th>Max output tokens</th><td>$($rs.maxOutputTokens)</td></tr>
+  <tr><th>Config root</th><td>$($rs.configRoot)</td></tr>
+</table>
+<p class="note">Settings are stored in <code>$($rs.configRoot)\research-settings.json</code>. Changes take effect on the next request without a server restart.</p>
+</body>
+</html>
+"@
+                    $htmlBytes = [System.Text.Encoding]::UTF8.GetBytes($html)
+                    Send-HttpResponse -Client $client -StatusCode 200 -ReasonPhrase "OK" -ContentType "text/html; charset=utf-8" -BodyBytes $htmlBytes
+                    continue
+                }
             }
 
             if ($request.Method -eq "GET" -and $request.Path -eq "/api/research") {
