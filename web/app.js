@@ -169,7 +169,10 @@
         tbody.appendChild(tr);
       }
     });
-    container.appendChild(table);
+    var scroll = document.createElement("div");
+    scroll.className = "table-scroll";
+    scroll.appendChild(table);
+    container.appendChild(scroll);
   }
 
   function renderBodyText(container, rawText) {
