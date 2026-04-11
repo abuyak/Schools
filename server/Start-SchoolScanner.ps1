@@ -408,20 +408,20 @@ function Build-AnalyticsDashboard {
     $recentRows = @()
     if ($events.Count -gt 0) {
         $recentRows = @($events | Select-Object -Last 30) | Sort-Object { try { [datetime]$_.ts } catch { [datetime]::MinValue } } -Descending | ForEach-Object {
-            $ts   = try { ([datetime]$_.ts).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") } catch { [string]$_.ts }
-            $name = [string]$_.name
-            $detail = try { switch ($name) {
-                "research_request"   { $loc = Get-EventProp $_ 'city'; $ctr = Get-EventProp $_ 'country'; $locStr = if ($loc) { "$loc, $ctr" } elseif ($ctr) { $ctr } else { Get-EventProp $_ 'ip' }; "$((Get-EventProp $_ 'branch') -replace 'prompt_branch_','p'), $(Get-EventProp $_ 'status'), $([Math]::Round([int](Get-EventProp $_ 'ms' 0)/1000,1))s, $locStr" }
-                "branch_selected"    { (Get-EventProp $_ "branch") -replace "prompt_branch_","p" }
-                "question_submitted" { (Get-EventProp $_ "branch") -replace "prompt_branch_","p" }
-                "result_rendered"    { "$((Get-EventProp $_ 'branch') -replace 'prompt_branch_','p'), $([Math]::Round([int](Get-EventProp $_ 'ms' 0)/1000,1))s" }
-                "cta_click"          { Get-EventProp $_ "placement" }
-                "feedback_click"     { Get-EventProp $_ "placement" }
+            $ev   = $_   # named variable — $_ is unreliable inside nested try/switch in PS5
+            $ts   = try { ([datetime]$ev.ts).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") } catch { [string]$ev.ts }
+            $name = [string]$ev.name
+            $detail = switch ($name) {
+                "research_request"   { "$((Get-EventProp $ev 'branch') -replace 'prompt_branch_','p'), $(Get-EventProp $ev 'status'), $([Math]::Round([int](Get-EventProp $ev 'ms' 0)/1000,1))s" }
+                "branch_selected"    { (Get-EventProp $ev "branch") -replace "prompt_branch_","p" }
+                "question_submitted" { (Get-EventProp $ev "branch") -replace "prompt_branch_","p" }
+                "result_rendered"    { "$((Get-EventProp $ev 'branch') -replace 'prompt_branch_','p'), $([Math]::Round([int](Get-EventProp $ev 'ms' 0)/1000,1))s" }
+                "cta_click"          { Get-EventProp $ev "placement" }
+                "feedback_click"     { Get-EventProp $ev "placement" }
                 default              { "" }
-            } } catch { "" }
-            $city    = Get-EventProp $_ "city"
-            $region  = Get-EventProp $_ "region"
-            $country = Get-EventProp $_ "country"
+            }
+            $city    = Get-EventProp $ev "city"
+            $country = Get-EventProp $ev "country"
             $loc = if ($city -and $country -and $city -ne $country) { "$city, $country" } elseif ($country -and $country -ne "local") { $country } else { "" }
             [ordered]@{ ts=$ts; name=$name; detail=$detail; loc=$loc }
         }
