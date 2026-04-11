@@ -30,6 +30,15 @@ $maxHeaderBytes = 16384
 $maxBodyBytes = 4096
 
 Write-Host "School Scanner PoC listening on http://localhost:$Port/"
+Write-Host "Analytics log: $analyticsLog"
+Write-Host "Error log:     $errorLog"
+# Write a startup event to confirm the path works
+try {
+    Add-Content -LiteralPath $analyticsLog -Value "{`"ts`":`"$(Get-Date -Format o)`",`"name`":`"server_start`",`"props`":{}}" -Encoding UTF8
+    Write-Host "Analytics log write: OK"
+} catch {
+    Write-Host "Analytics log write FAILED: $_"
+}
 
 function Get-ResponseHeaderLines {
     param(
