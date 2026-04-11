@@ -57,16 +57,24 @@ function ConvertTo-PlainHashtable {
 function Get-SecurityHeaders {
     [CmdletBinding()]
     param(
-        [switch]$ApiResponse
+        [switch]$ApiResponse,
+        [switch]$AdminPage
     )
 
+    # Admin pages use inline scripts/styles — relax CSP accordingly
+    $csp = if ($AdminPage) {
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
+    } else {
+        "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
+    }
+
     $headers = [ordered]@{
-        "Content-Security-Policy" = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
-        "X-Content-Type-Options"  = "nosniff"
-        "X-Frame-Options"         = "DENY"
-        "Referrer-Policy"         = "no-referrer"
-        "Permissions-Policy"      = "camera=(), geolocation=(), microphone=(), payment=(), usb=()"
-        "Cross-Origin-Opener-Policy" = "same-origin"
+        "Content-Security-Policy"      = $csp
+        "X-Content-Type-Options"       = "nosniff"
+        "X-Frame-Options"              = "DENY"
+        "Referrer-Policy"              = "no-referrer"
+        "Permissions-Policy"           = "camera=(), geolocation=(), microphone=(), payment=(), usb=()"
+        "Cross-Origin-Opener-Policy"   = "same-origin"
         "Cross-Origin-Resource-Policy" = "same-origin"
     }
 

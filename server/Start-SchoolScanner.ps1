@@ -618,7 +618,8 @@ try {
                     }
                     $html = Build-AnalyticsDashboard -LogPath $analyticsLog
                     $htmlBytes = [System.Text.Encoding]::UTF8.GetBytes($html)
-                    Send-HttpResponse -Client $client -StatusCode 200 -ReasonPhrase "OK" -ContentType "text/html; charset=utf-8" -BodyBytes $htmlBytes
+                    $adminCsp = @{ "Content-Security-Policy" = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'" }
+                    Send-HttpResponse -Client $client -StatusCode 200 -ReasonPhrase "OK" -ContentType "text/html; charset=utf-8" -BodyBytes $htmlBytes -ExtraHeaders $adminCsp
                     continue
                 }
                 "GET /config" {
@@ -665,7 +666,8 @@ try {
 </html>
 "@
                     $htmlBytes = [System.Text.Encoding]::UTF8.GetBytes($html)
-                    Send-HttpResponse -Client $client -StatusCode 200 -ReasonPhrase "OK" -ContentType "text/html; charset=utf-8" -BodyBytes $htmlBytes
+                    $adminCsp = @{ "Content-Security-Policy" = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'" }
+                    Send-HttpResponse -Client $client -StatusCode 200 -ReasonPhrase "OK" -ContentType "text/html; charset=utf-8" -BodyBytes $htmlBytes -ExtraHeaders $adminCsp
                     continue
                 }
             }
