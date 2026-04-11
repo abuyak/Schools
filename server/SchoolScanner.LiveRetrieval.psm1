@@ -182,6 +182,8 @@ function Get-BranchInstructions {
 - For fee-paying schools always search for current fees. If not found on first search, try "[school name] fees" as a dedicated search.
 - Within each section body, use \n to separate paragraphs. Use \n- item for bullet points and \n1. item for numbered lists. Never write a section body as one long unbroken paragraph.
 - Use the section numbers from the prompt structure in every section heading field, e.g. "1. Direct Answer", "2. Quick Comparison Table". All branches must number their sections.
+- Never repeat the section heading inside the body. The heading field is shown separately — the body should start with content immediately.
+- Only use numbered lists (1. 2. 3.) for genuinely enumerable items such as ranked options or steps. Do not number every paragraph or every sentence. Use plain paragraphs for prose and bullet points (- ) for unordered items.
 - For any comparison table section, write the body as a markdown table using | col | col | syntax with a separator row of |---|---|.
 "@
 
