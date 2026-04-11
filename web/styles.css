@@ -63,6 +63,7 @@ body {
 .hero {
   padding: 2rem;
   margin-bottom: 1.5rem;
+  overflow: hidden;
 }
 
 .eyebrow,
@@ -92,7 +93,7 @@ h1 {
 .lede {
   font-size: clamp(0.95rem, 2.5vw, 1.12rem);
   line-height: 1.6;
-  max-width: 44rem;
+  width: min(44rem, 100%);
   margin: 0.75rem 0 0;
 }
 
