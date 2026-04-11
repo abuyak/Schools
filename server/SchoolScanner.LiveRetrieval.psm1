@@ -252,14 +252,12 @@ function New-OpenAIResearchRequest {
     }
 
     $settings = Get-SchoolScannerResearchSettings
-    $modelName = [string]$settings.model
-
-    # reasoning field is only valid for o-series models (o1, o3, o4-mini etc.)
-    # Sending it to GPT models causes a 400 Bad Request.
-    $isReasoningModel = $modelName -match "^o\d"
 
     $requestBody = @{
-        model = $modelName
+        model = [string]$settings.model
+        reasoning = @{
+            effort = [string]$settings.reasoningEffort
+        }
         tools = @(
             @{
                 type = "web_search"
@@ -275,10 +273,6 @@ function New-OpenAIResearchRequest {
         text = @{
             format = Get-ResearchJsonSchema
         }
-    }
-
-    if ($isReasoningModel) {
-        $requestBody["reasoning"] = @{ effort = [string]$settings.reasoningEffort }
     }
 
     return $requestBody
