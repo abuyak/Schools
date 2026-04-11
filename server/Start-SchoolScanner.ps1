@@ -428,7 +428,8 @@ function Build-AnalyticsDashboard {
     foreach ($r in $requests) {
         $c = Get-EventProp $r "country"
         if ([string]::IsNullOrWhiteSpace($c) -or $c -eq "local") { $c = "Unknown" }
-        $countryCounts[$c] = (if ($countryCounts.ContainsKey($c)) { $countryCounts[$c] } else { 0 }) + 1
+        $prev = if ($countryCounts.ContainsKey($c)) { $countryCounts[$c] } else { 0 }
+        $countryCounts[$c] = $prev + 1
     }
     $topCountries = @($countryCounts.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First 8 | ForEach-Object {
         [ordered]@{ country = $_.Key; count = $_.Value }
