@@ -438,7 +438,7 @@ function Build-AnalyticsDashboard {
   .mono{font-family:Consolas,monospace;font-size:.8rem}
 </style></head>
 <body>
-<h1>School Scanner — Analytics</h1>
+<h1>School Scanner - Analytics</h1>
 <p class="sub" id="sub"></p>
 
 <h2>Overview</h2>
@@ -447,7 +447,7 @@ function Build-AnalyticsDashboard {
 <h2>By Branch</h2>
 <table><thead><tr><th>Branch</th><th>Total</th><th>OK</th><th>Errors</th><th>Avg time</th></tr></thead><tbody id="branch-body"></tbody></table>
 
-<h2>Daily Requests — last 14 days</h2>
+<h2>Daily Requests - last 14 days</h2>
 <div class="chart-wrap"><div class="chart" id="chart"></div></div>
 
 <h2>Frontend Events</h2>
@@ -458,7 +458,7 @@ function Build-AnalyticsDashboard {
 
 <script>
 var S = $statsJson;
-document.getElementById('sub').textContent = 'Generated ' + S.generatedAt + '  —  refresh to update';
+document.getElementById('sub').textContent = 'Generated ' + S.generatedAt + ' - refresh to update';
 
 // Overview
 var ov = [
@@ -645,7 +645,7 @@ try {
   <tr><th>Model</th><td>$($rs.model)</td></tr>
   <tr><th>Provider</th><td>$($rs.provider)</td></tr>
   <tr><th>Base URL</th><td>$($rs.baseUrl)</td></tr>
-  <tr><th>Online search</th><td>$(if ($rs.onlineSearchEnabled) { '<span class="badge ok">Enabled</span>' } else { '<span class="badge warn">Disabled — API key missing</span>' })</td></tr>
+  <tr><th>Online search</th><td>$(if ($rs.onlineSearchEnabled) { '<span class="badge ok">Enabled</span>' } else { '<span class="badge warn">Disabled - API key missing</span>' })</td></tr>
   <tr><th>API key required</th><td>$(if ($rs.apiKeyRequired) { 'Yes' } else { 'No' })</td></tr>
   <tr><th>Reasoning effort</th><td>$($rs.reasoningEffort)</td></tr>
   <tr><th>Request timeout</th><td>$($rs.requestTimeoutSeconds) seconds</td></tr>
