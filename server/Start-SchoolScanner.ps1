@@ -419,7 +419,11 @@ function Build-AnalyticsDashboard {
                 "feedback_click"     { Get-EventProp $_ "placement" }
                 default              { "" }
             } } catch { "" }
-            [ordered]@{ ts=$ts; name=$name; detail=$detail }
+            $city    = Get-EventProp $_ "city"
+            $region  = Get-EventProp $_ "region"
+            $country = Get-EventProp $_ "country"
+            $loc = if ($city -and $country -and $city -ne $country) { "$city, $country" } elseif ($country -and $country -ne "local") { $country } else { "" }
+            [ordered]@{ ts=$ts; name=$name; detail=$detail; loc=$loc }
         }
     }
 
@@ -502,7 +506,7 @@ function Build-AnalyticsDashboard {
 <div class="grid4 grid5" id="fe-grid"></div>
 
 <h2>Recent Events</h2>
-<table><thead><tr><th>Time</th><th>Event</th><th>Detail</th></tr></thead><tbody id="recent-body"></tbody></table>
+<table><thead><tr><th>Time</th><th>Event</th><th>Detail</th><th>Location</th></tr></thead><tbody id="recent-body"></tbody></table>
 
 <script>
 var S = $statsJson;
@@ -580,14 +584,15 @@ feItems.forEach(function(o){
 var rb=document.getElementById('recent-body');
 var rows=S.recentRows||[];
 if(rows.length===0){
-  var tr=document.createElement('tr');tr.innerHTML='<td colspan="3" style="color:#55637d;text-align:center;padding:1.5rem">No events yet</td>';rb.appendChild(tr);
+  var tr=document.createElement('tr');tr.innerHTML='<td colspan="4" style="color:#55637d;text-align:center;padding:1.5rem">No events yet</td>';rb.appendChild(tr);
 }else{
   rows.forEach(function(r){
     var cls = r.name==='research_request' ? (r.detail&&r.detail.indexOf(',ok,')>=0?'b-ok':'b-err') : 'b-fe';
     var tr=document.createElement('tr');
     tr.innerHTML='<td class="mono">'+(r.ts||'')+'</td>'
       +'<td><span class="badge '+cls+'">'+(r.name||'')+'</span></td>'
-      +'<td class="mono">'+(r.detail||'')+'</td>';
+      +'<td class="mono">'+(r.detail||'')+'</td>'
+      +'<td>'+(r.loc||'')+'</td>';
     rb.appendChild(tr);
   });
 }
