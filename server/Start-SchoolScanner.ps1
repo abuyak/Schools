@@ -265,7 +265,16 @@ function Write-AnalyticsEvent {
 
 function Test-AdminAuth {
     param([hashtable]$Request)
-    $token = Get-AdminToken
+    # Read token directly from settings file — avoids module export issues
+    $configFile = @{}
+    try {
+        $settingsPath = Join-Path (Get-SchoolScannerConfigRoot) "research-settings.json"
+        if (Test-Path -LiteralPath $settingsPath) {
+            $configFile = ConvertTo-PlainHashtable -InputObject (ConvertFrom-Json -InputObject (Get-Content -LiteralPath $settingsPath -Raw))
+        }
+    } catch {}
+    $token = if ($configFile.ContainsKey("adminToken")) { [string]$configFile["adminToken"] } else { "" }
+
     if ([string]::IsNullOrWhiteSpace($token)) { return $true }  # no token = open (dev mode)
     if ($Request.Headers.ContainsKey("authorization")) {
         if ([string]$Request.Headers["authorization"] -eq "Bearer $token") { return $true }
