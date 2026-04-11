@@ -401,4 +401,14 @@ function Clear-SchoolScannerApiKey {
     }
 }
 
-Export-ModuleMember -Function Get-SchoolScannerConfigRoot, Get-SchoolScannerConfigPath, Get-SchoolScannerSecretsPath, Get-SchoolScannerResearchSettings, Set-SchoolScannerResearchConfig, Set-SchoolScannerApiKey, Clear-SchoolScannerApiKey
+function Get-AdminToken {
+    [CmdletBinding()]
+    param()
+    $configFile = Get-JsonFileHashtable -Path (Get-SchoolScannerConfigPath)
+    if ($configFile.ContainsKey("adminToken") -and -not [string]::IsNullOrWhiteSpace([string]$configFile["adminToken"])) {
+        return [string]$configFile["adminToken"]
+    }
+    return ""
+}
+
+Export-ModuleMember -Function Get-SchoolScannerConfigRoot, Get-SchoolScannerConfigPath, Get-SchoolScannerSecretsPath, Get-SchoolScannerResearchSettings, Set-SchoolScannerResearchConfig, Set-SchoolScannerApiKey, Clear-SchoolScannerApiKey, Get-AdminToken

@@ -16,8 +16,9 @@ $listener.Start()
 $rateWindowSeconds = 60
 $maxRequestsPerWindow = 30
 $requestLog = @{}
-$errorLog = Join-Path $env:TEMP "schoolscanner-server-error.log"
-$analyticsLog = Join-Path $env:TEMP "schoolscanner-analytics.jsonl"
+$configRoot = Get-SchoolScannerConfigRoot
+$errorLog     = Join-Path $configRoot "server-error.log"
+$analyticsLog = Join-Path $configRoot "analytics.jsonl"
 $maxHeaderBytes = 16384
 $maxBodyBytes = 4096
 
@@ -255,6 +256,251 @@ function Write-AnalyticsEvent {
     Add-Content -LiteralPath $analyticsLog -Value ($record | ConvertTo-Json -Depth 4 -Compress)
 }
 
+function Test-AdminAuth {
+    param([hashtable]$Request)
+    $token = Get-AdminToken
+    if ([string]::IsNullOrWhiteSpace($token)) { return $true }  # no token = open (dev mode)
+    if ($Request.Headers.ContainsKey("authorization")) {
+        if ([string]$Request.Headers["authorization"] -eq "Bearer $token") { return $true }
+    }
+    if ($Request.Query.ContainsKey("token") -and [string]$Request.Query["token"] -eq $token) {
+        return $true
+    }
+    return $false
+}
+
+function Send-AdminChallenge {
+    param([System.Net.Sockets.TcpClient]$Client, [string]$ReturnPath = "/analytics")
+    $html = @"
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Admin Login</title>
+<style>
+  *{box-sizing:border-box}body{font-family:"Segoe UI",sans-serif;background:#f3ede2;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+  form{background:#fff;border:1px solid #d5c7af;border-radius:16px;padding:2rem;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.08)}
+  h1{font-size:1.1rem;margin:0 0 1rem;color:#11203b}
+  input{width:100%;padding:.7rem .9rem;border:1px solid #baa889;border-radius:10px;font:inherit;margin-bottom:.75rem}
+  button{width:100%;padding:.75rem;background:#8f3b16;color:#fff;border:none;border-radius:10px;font:inherit;font-weight:700;cursor:pointer}
+</style></head>
+<body><form method="get" action="$ReturnPath">
+  <h1>Admin access required</h1>
+  <input type="password" name="token" placeholder="Admin token" autofocus required>
+  <button type="submit">Enter</button>
+</form></body></html>
+"@
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($html)
+    Send-HttpResponse -Client $Client -StatusCode 401 -ReasonPhrase "Unauthorized" -ContentType "text/html; charset=utf-8" -BodyBytes $bytes
+}
+
+function Build-AnalyticsDashboard {
+    $events = @()
+    if (Test-Path -LiteralPath $analyticsLog) {
+        $events = @(Get-Content -LiteralPath $analyticsLog -Tail 5000 | ForEach-Object {
+            try { ConvertFrom-Json $_ } catch { $null }
+        } | Where-Object { $null -ne $_ })
+    }
+
+    $requests = @($events | Where-Object { [string]$_.name -eq "research_request" })
+    $total    = $requests.Count
+    $okReqs   = @($requests | Where-Object { [string]$_.props.status -eq "ok" })
+    $ok       = $okReqs.Count
+    $errors   = $total - $ok
+    $successRate = if ($total -gt 0) { [Math]::Round($ok * 100.0 / $total, 1) } else { 0 }
+    $avgMs = if ($ok -gt 0) {
+        [Math]::Round(($okReqs | ForEach-Object { [int]$_.props.ms } | Measure-Object -Sum).Sum / $ok)
+    } else { 0 }
+
+    $cutoff7d = (Get-Date).ToUniversalTime().AddDays(-7)
+    $last7d = @($requests | Where-Object { ([datetime]$_.ts) -ge $cutoff7d }).Count
+
+    $branchMap = @{
+        "prompt_branch_1" = "01 Evaluate"
+        "prompt_branch_2" = "02 Compare"
+        "prompt_branch_3" = "03 Area"
+        "prompt_branch_4" = "04 Backup"
+    }
+    $byBranch = foreach ($key in @("prompt_branch_1","prompt_branch_2","prompt_branch_3","prompt_branch_4")) {
+        $br   = @($requests | Where-Object { [string]$_.props.branch -eq $key })
+        $brOk = @($br | Where-Object { [string]$_.props.status -eq "ok" })
+        $brAvg = if ($brOk.Count -gt 0) {
+            [Math]::Round(($brOk | ForEach-Object { [int]$_.props.ms } | Measure-Object -Sum).Sum / $brOk.Count)
+        } else { 0 }
+        [ordered]@{ label=$branchMap[$key]; total=$br.Count; ok=$brOk.Count; errors=($br.Count-$brOk.Count); avgMs=$brAvg }
+    }
+
+    $daily = [ordered]@{}
+    for ($i = 13; $i -ge 0; $i--) {
+        $d = (Get-Date).AddDays(-$i).ToString("yyyy-MM-dd")
+        $daily[$d] = 0
+    }
+    foreach ($r in $requests) {
+        try { $d = ([datetime]$r.ts).ToLocalTime().ToString("yyyy-MM-dd"); if ($daily.ContainsKey($d)) { $daily[$d]++ } } catch {}
+    }
+
+    $fe = @($events | Where-Object { [string]$_.name -ne "research_request" })
+    $feStats = [ordered]@{
+        branchSelects    = @($fe | Where-Object { [string]$_.name -eq "branch_selected" }).Count
+        submits          = @($fe | Where-Object { [string]$_.name -eq "question_submitted" }).Count
+        resultsRendered  = @($fe | Where-Object { [string]$_.name -eq "result_rendered" }).Count
+        ctaClicks        = @($fe | Where-Object { [string]$_.name -eq "cta_click" }).Count
+    }
+
+    $recentRows = @()
+    if ($events.Count -gt 0) {
+        $recentRows = @($events | Select-Object -Last 30) | Sort-Object { [datetime]$_.ts } -Descending | ForEach-Object {
+            $ts   = try { ([datetime]$_.ts).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") } catch { [string]$_.ts }
+            $name = [string]$_.name
+            $detail = switch ($name) {
+                "research_request"    { "$([string]$_.props.branch -replace 'prompt_branch_','p'), $([string]$_.props.status), $([Math]::Round([int]$_.props.ms/1000,1))s" }
+                "branch_selected"     { [string]$_.props.branch -replace "prompt_branch_","p" }
+                "question_submitted"  { [string]$_.props.branch -replace "prompt_branch_","p" }
+                "result_rendered"     { "$([string]$_.props.branch -replace 'prompt_branch_','p'), $([Math]::Round([int]($_.props.ms ?? 0)/1000,1))s" }
+                "cta_click"           { [string]$_.props.placement }
+                default               { "" }
+            }
+            [ordered]@{ ts=$ts; name=$name; detail=$detail }
+        }
+    }
+
+    $statsJson = [ordered]@{
+        total=$total; ok=$ok; errors=$errors; successRate=$successRate
+        avgMs=$avgMs; last7d=$last7d
+        byBranch=@($byBranch); daily=$daily; fe=$feStats
+        recentRows=@($recentRows)
+        generatedAt=(Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+    } | ConvertTo-Json -Depth 6 -Compress
+
+    return @"
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>School Scanner - Analytics</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI",sans-serif;background:#f3ede2;color:#11203b;margin:0;padding:2rem}
+  h1{font-size:1.3rem;margin:0 0 .2rem}
+  .sub{color:#55637d;font-size:.82rem;margin:0 0 2rem}
+  h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#8f3b16;margin:2rem 0 .6rem;border-bottom:1px solid #d5c7af;padding-bottom:.3rem}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+  @media(max-width:640px){.grid4{grid-template-columns:repeat(2,1fr)}}
+  .card{background:#fff;border:1px solid #d5c7af;border-radius:12px;padding:1rem 1.25rem}
+  .val{font-size:1.8rem;font-weight:700;line-height:1;margin-bottom:.25rem}
+  .lbl{font-size:.75rem;color:#55637d}
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.05);font-size:.875rem}
+  th{background:#f8f2e7;font-weight:700;color:#8f3b16;text-align:left;padding:.55rem 1rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+  td{padding:.5rem 1rem;border-bottom:1px solid #f0ebe0}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fffdf9}
+  .ok{color:#065f46;font-weight:600}
+  .err{color:#991b1b;font-weight:600}
+  .badge{display:inline-block;padding:.1em .55em;border-radius:999px;font-size:.7rem;font-weight:700}
+  .b-ok{background:#d1fae5;color:#065f46}
+  .b-err{background:#fee2e2;color:#991b1b}
+  .b-fe{background:#dbeafe;color:#1e40af}
+  .chart-wrap{background:#fff;border:1px solid #d5c7af;border-radius:12px;padding:1.25rem 1.25rem .75rem}
+  .chart{display:flex;align-items:flex-end;height:100px;gap:3px}
+  .bcol{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0}
+  .bfill{background:#d26a32;border-radius:3px 3px 0 0;width:100%;min-height:2px}
+  .bfill.zero{background:#e8dfd0}
+  .bcnt{font-size:.58rem;color:#55637d;margin-top:2px;min-height:.8em}
+  .blbl{font-size:.55rem;color:#55637d;transform:rotate(-40deg) translateX(-2px);white-space:nowrap;margin-top:6px;transform-origin:top left}
+  .mono{font-family:Consolas,monospace;font-size:.8rem}
+</style></head>
+<body>
+<h1>School Scanner — Analytics</h1>
+<p class="sub" id="sub"></p>
+
+<h2>Overview</h2>
+<div class="grid4" id="overview"></div>
+
+<h2>By Branch</h2>
+<table><thead><tr><th>Branch</th><th>Total</th><th>OK</th><th>Errors</th><th>Avg time</th></tr></thead><tbody id="branch-body"></tbody></table>
+
+<h2>Daily Requests — last 14 days</h2>
+<div class="chart-wrap"><div class="chart" id="chart"></div></div>
+
+<h2>Frontend Events</h2>
+<div class="grid4" id="fe-grid"></div>
+
+<h2>Recent Events</h2>
+<table><thead><tr><th>Time</th><th>Event</th><th>Detail</th></tr></thead><tbody id="recent-body"></tbody></table>
+
+<script>
+var S = $statsJson;
+document.getElementById('sub').textContent = 'Generated ' + S.generatedAt + '  —  refresh to update';
+
+// Overview
+var ov = [
+  {v: S.total,                      l: 'Total requests'},
+  {v: S.successRate + '%',          l: 'Success rate'},
+  {v: (S.avgMs/1000).toFixed(1)+'s',l: 'Avg response (ok)'},
+  {v: S.last7d,                     l: 'Last 7 days'}
+];
+var ovEl = document.getElementById('overview');
+ov.forEach(function(o){
+  var d = document.createElement('div'); d.className='card';
+  d.innerHTML='<div class="val">'+o.v+'</div><div class="lbl">'+o.l+'</div>';
+  ovEl.appendChild(d);
+});
+
+// Branch table
+var bb = document.getElementById('branch-body');
+(S.byBranch||[]).forEach(function(b){
+  var avg = b.avgMs > 0 ? (b.avgMs/1000).toFixed(1)+'s' : '-';
+  var tr = document.createElement('tr');
+  tr.innerHTML='<td>'+b.label+'</td><td>'+b.total+'</td><td class="ok">'+b.ok+'</td><td class="err">'+(b.errors||0)+'</td><td>'+avg+'</td>';
+  bb.appendChild(tr);
+});
+if(!(S.byBranch||[]).some(function(b){return b.total>0;})){
+  var tr=document.createElement('tr');tr.innerHTML='<td colspan="5" style="color:#55637d;text-align:center;padding:1.5rem">No requests yet</td>';bb.appendChild(tr);
+}
+
+// Daily chart
+var daily=S.daily||{};var dates=Object.keys(daily);
+var mx=Math.max.apply(null,dates.map(function(d){return daily[d];}).concat([1]));
+var ch=document.getElementById('chart');
+dates.forEach(function(d){
+  var cnt=daily[d];var pct=Math.max(Math.round(cnt/mx*100),cnt>0?3:0);
+  var col=document.createElement('div');col.className='bcol';
+  col.innerHTML='<div class="bfill'+(cnt===0?' zero':'')+'" style="height:'+pct+'%"></div>'
+    +'<div class="bcnt">'+(cnt||'')+'</div>'
+    +'<div class="blbl">'+d.slice(5)+'</div>';
+  ch.appendChild(col);
+});
+
+// Frontend events
+var fe=S.fe||{};
+var feItems=[
+  {v:fe.branchSelects||0,   l:'Branch selections'},
+  {v:fe.submits||0,          l:'Questions submitted'},
+  {v:fe.resultsRendered||0,  l:'Results rendered'},
+  {v:fe.ctaClicks||0,        l:'Coffee CTA clicks'}
+];
+var feEl=document.getElementById('fe-grid');
+feItems.forEach(function(o){
+  var d=document.createElement('div');d.className='card';
+  d.innerHTML='<div class="val">'+o.v+'</div><div class="lbl">'+o.l+'</div>';
+  feEl.appendChild(d);
+});
+
+// Recent events
+var rb=document.getElementById('recent-body');
+var rows=S.recentRows||[];
+if(rows.length===0){
+  var tr=document.createElement('tr');tr.innerHTML='<td colspan="3" style="color:#55637d;text-align:center;padding:1.5rem">No events yet</td>';rb.appendChild(tr);
+}else{
+  rows.forEach(function(r){
+    var cls = r.name==='research_request' ? (r.detail&&r.detail.indexOf(',ok,')>=0?'b-ok':'b-err') : 'b-fe';
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="mono">'+(r.ts||'')+'</td>'
+      +'<td><span class="badge '+cls+'">'+(r.name||'')+'</span></td>'
+      +'<td class="mono">'+(r.detail||'')+'</td>';
+    rb.appendChild(tr);
+  });
+}
+</script>
+</body></html>
+"@
+}
+
 try {
     while ($true) {
         $client = $listener.AcceptTcpClient()
@@ -323,7 +569,21 @@ try {
                     }
                     continue
                 }
+                "GET /analytics" {
+                    if (-not (Test-AdminAuth -Request $request)) {
+                        Send-AdminChallenge -Client $client -ReturnPath "/analytics"
+                        continue
+                    }
+                    $html = Build-AnalyticsDashboard
+                    $htmlBytes = [System.Text.Encoding]::UTF8.GetBytes($html)
+                    Send-HttpResponse -Client $client -StatusCode 200 -ReasonPhrase "OK" -ContentType "text/html; charset=utf-8" -BodyBytes $htmlBytes
+                    continue
+                }
                 "GET /config" {
+                    if (-not (Test-AdminAuth -Request $request)) {
+                        Send-AdminChallenge -Client $client -ReturnPath "/config"
+                        continue
+                    }
                     $rs = Get-LiveRetrievalStatus
                     $html = @"
 <!DOCTYPE html>
@@ -381,9 +641,20 @@ try {
                     continue
                 }
 
+                $sw = [System.Diagnostics.Stopwatch]::StartNew()
                 $result = Invoke-OpenAIResearch -Payload $body
+                $sw.Stop()
+
                 $statusCode = if ($result["status"] -eq "completed") { 200 } else { 503 }
                 $reason = if ($statusCode -eq 200) { "OK" } else { "Service Unavailable" }
+
+                Write-AnalyticsEvent -Name "research_request" -Properties @{
+                    branch = [string]$body["branch"]
+                    ms     = [int]$sw.ElapsedMilliseconds
+                    status = if ($result["status"] -eq "completed") { "ok" } else { "error" }
+                    model  = [string](Get-SchoolScannerResearchSettings).model
+                }
+
                 Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
                 continue
             }
@@ -405,9 +676,20 @@ try {
                     continue
                 }
 
+                $sw = [System.Diagnostics.Stopwatch]::StartNew()
                 $result = Invoke-OpenAIResearch -Payload $body
+                $sw.Stop()
+
                 $statusCode = if ($result.ContainsKey("httpStatus") -and $result["httpStatus"]) { [int]$result["httpStatus"] } elseif ($result["status"] -eq "completed") { 200 } else { 503 }
                 $reason = if ($statusCode -eq 200) { "OK" } elseif ($statusCode -eq 400) { "Bad Request" } elseif ($statusCode -eq 401) { "Unauthorized" } elseif ($statusCode -eq 429) { "Too Many Requests" } elseif ($statusCode -eq 502) { "Bad Gateway" } elseif ($statusCode -eq 504) { "Gateway Timeout" } else { "Service Unavailable" }
+
+                Write-AnalyticsEvent -Name "research_request" -Properties @{
+                    branch = [string]$body["branch"]
+                    ms     = [int]$sw.ElapsedMilliseconds
+                    status = if ($result["status"] -eq "completed") { "ok" } else { "error" }
+                    model  = [string](Get-SchoolScannerResearchSettings).model
+                }
+
                 Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
                 continue
             }
@@ -430,7 +712,7 @@ try {
                 }
 
                 $props = @{}
-                foreach ($key in @("branch", "placement", "utm_campaign", "utm_content")) {
+                foreach ($key in @("branch", "placement", "ms", "utm_campaign", "utm_content")) {
                     if ($body.ContainsKey($key)) {
                         $value = [string]$body[$key]
                         if ($value.Length -le 128) {

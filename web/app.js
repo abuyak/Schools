@@ -23,6 +23,25 @@
     formStatus.textContent = message;
   }
 
+  // Fire-and-forget analytics event. Silently swallows all errors.
+  function trackEvent(name, props) {
+    try {
+      var payload = Object.assign({ event: name }, props || {});
+      if (navigator.sendBeacon) {
+        try {
+          navigator.sendBeacon("/api/analytics/click", new Blob([JSON.stringify(payload)], { type: "application/json" }));
+          return;
+        } catch (_e) {}
+      }
+      fetch("/api/analytics/click", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        keepalive: true
+      }).catch(function () {});
+    } catch (_e) {}
+  }
+
   function selectBranch(branch) {
     branchInput.value = branch;
     const cards = branchGrid.querySelectorAll("[data-branch]");
@@ -31,6 +50,7 @@
       card.classList.toggle("is-selected", selected);
       card.setAttribute("aria-pressed", selected ? "true" : "false");
     });
+    trackEvent("branch_selected", { branch: branch });
   }
 
   function renderList(target, items) {
@@ -403,6 +423,8 @@
 
     submitButton.disabled = true;
     setStatus("Researching online sources…");
+    trackEvent("question_submitted", { branch: payload.branch });
+    const _t0 = Date.now();
 
     try {
       const response = await fetch("/api/research", {
@@ -415,7 +437,9 @@
       });
 
       const result = await response.json();
+      const _ms = Date.now() - _t0;
       renderResult(result, getResponseStatusMessage(response, result));
+      trackEvent("result_rendered", { branch: payload.branch, ms: _ms });
     } catch (error) {
       renderResult(
         {
@@ -450,31 +474,9 @@
 
   if (coffeeCta) {
     coffeeCta.addEventListener("click", function () {
-      const payload = {
-        event: "donation_click",
+      trackEvent("cta_click", {
         branch: branchInput.value || "",
-        placement: coffeeCta.getAttribute("data-placement") || "results",
-        utm_campaign: "donation",
-        utm_content: "cta"
-      };
-
-      try {
-        if (navigator.sendBeacon) {
-          const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-          navigator.sendBeacon("/api/analytics/click", blob);
-          return;
-        }
-      } catch (_error) {
-        // fall through to fetch
-      }
-
-      fetch("/api/analytics/click", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        keepalive: true
-      }).catch(function () {
-        // ignore analytics failures
+        placement: coffeeCta.getAttribute("data-placement") || "results"
       });
     });
   }
