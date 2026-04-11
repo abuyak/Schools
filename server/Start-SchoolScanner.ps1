@@ -772,10 +772,17 @@ try {
         }
         catch {
             $message = [string]$_.Exception.Message
+
+            # Silently ignore abrupt client disconnects (sendBeacon, keep-alive probes, etc.)
+            if ($message -like "*disposed object*" -or $message -like "*transport connection*" -or $message -like "*forcibly closed*") {
+                try { $client.Close() } catch { }
+                continue
+            }
+
             $stackTrace = [string]$_.ScriptStackTrace
             $logLine = "[{0}] {1}`n  at: {2}" -f (Get-Date).ToString("s"), $message, $stackTrace
-            try { Add-Content -LiteralPath $script:errorLog -Value $logLine } catch {}
-            Write-Host $logLine  # also echo to console so we can see it
+            try { Add-Content -LiteralPath $errorLog -Value $logLine } catch {}
+            Write-Host $logLine
 
             if ($client.Connected) {
                 try {
