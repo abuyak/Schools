@@ -16,29 +16,24 @@ $listener.Start()
 $rateWindowSeconds = 60
 $maxRequestsPerWindow = 30
 $requestLog = @{}
-# Prefer config root for persistent logs; fall back to TEMP if module
-# is unavailable or the root directory cannot be resolved.
-try {
-    $configRoot   = Get-SchoolScannerConfigRoot
-    $errorLog     = Join-Path $configRoot "server-error.log"
-    $analyticsLog = Join-Path $configRoot "analytics.jsonl"
-} catch {
-    $errorLog     = Join-Path $env:TEMP "schoolscanner-server-error.log"
-    $analyticsLog = Join-Path $env:TEMP "schoolscanner-analytics.jsonl"
+# Use the config root env var directly — avoids module scope issues
+$_configRoot = [System.Environment]::GetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", "Process")
+if ([string]::IsNullOrWhiteSpace($_configRoot)) {
+    $_configRoot = [System.Environment]::GetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", "User")
 }
+if ([string]::IsNullOrWhiteSpace($_configRoot)) {
+    $_configRoot = [System.Environment]::GetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", "Machine")
+}
+if ([string]::IsNullOrWhiteSpace($_configRoot)) {
+    $_configRoot = Join-Path $PSScriptRoot "..\..\.local"
+}
+$errorLog     = Join-Path $_configRoot "server-error.log"
+$analyticsLog = Join-Path $_configRoot "analytics.jsonl"
 $maxHeaderBytes = 16384
 $maxBodyBytes = 4096
 
-Write-Host "School Scanner PoC listening on http://localhost:$Port/"
-Write-Host "Analytics log: $analyticsLog"
-Write-Host "Error log:     $errorLog"
-# Write a startup event to confirm the path works
-try {
-    Add-Content -LiteralPath $analyticsLog -Value "{`"ts`":`"$(Get-Date -Format o)`",`"name`":`"server_start`",`"props`":{}}" -Encoding UTF8
-    Write-Host "Analytics log write: OK"
-} catch {
-    Write-Host "Analytics log write FAILED: $_"
-}
+Write-Host "School Scanner listening on http://localhost:$Port/"
+Write-Host "Analytics: $analyticsLog"
 
 function Get-ResponseHeaderLines {
     param(
@@ -272,9 +267,7 @@ function Write-AnalyticsEvent {
             props = $Properties
         }
         Add-Content -LiteralPath $LogPath -Value ($record | ConvertTo-Json -Depth 4 -Compress) -Encoding UTF8
-    } catch {
-        # Never let analytics writes crash the request handler
-    }
+    } catch { }
 }
 
 function Test-AdminAuth {
@@ -768,7 +761,10 @@ try {
                 }
 
                 Write-AnalyticsEvent -Name $event -LogPath $analyticsLog -Properties $props
-                Send-HttpResponse -Client $client -StatusCode 204 -ReasonPhrase "No Content" -BodyBytes ([byte[]]::new(0)) -ContentType "text/plain; charset=utf-8"
+                # sendBeacon closes the connection immediately — ignore disposed client errors
+                try {
+                    Send-HttpResponse -Client $client -StatusCode 204 -ReasonPhrase "No Content" -BodyBytes ([byte[]]::new(0)) -ContentType "text/plain; charset=utf-8"
+                } catch { }
                 continue
             }
 
