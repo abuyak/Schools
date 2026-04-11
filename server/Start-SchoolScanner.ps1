@@ -251,6 +251,30 @@ function Read-Request {
     }
 }
 
+# In-memory geo cache: IP -> @{country; city; region} — avoids repeat lookups
+$geoCache = @{}
+
+function Get-GeoLocation {
+    param([string]$IP)
+    # Loopback / private ranges — skip lookup
+    if ($IP -eq "127.0.0.1" -or $IP -eq "::1" -or $IP -match "^10\." -or $IP -match "^192\.168\." -or $IP -match "^172\.(1[6-9]|2\d|3[01])\.") {
+        return @{ country = "local"; city = ""; region = "" }
+    }
+    if ($geoCache.ContainsKey($IP)) { return $geoCache[$IP] }
+    try {
+        $resp = Invoke-RestMethod -Uri "http://ip-api.com/json/$IP`?fields=country,regionName,city,status" -TimeoutSec 3 -ErrorAction Stop
+        $geo = @{
+            country = if ($resp.status -eq "success") { [string]$resp.country } else { "" }
+            region  = if ($resp.status -eq "success") { [string]$resp.regionName } else { "" }
+            city    = if ($resp.status -eq "success") { [string]$resp.city } else { "" }
+        }
+    } catch {
+        $geo = @{ country = ""; region = ""; city = "" }
+    }
+    $script:geoCache[$IP] = $geo
+    return $geo
+}
+
 function Write-AnalyticsEvent {
     param(
         [Parameter(Mandatory)]
@@ -387,7 +411,7 @@ function Build-AnalyticsDashboard {
             $ts   = try { ([datetime]$_.ts).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") } catch { [string]$_.ts }
             $name = [string]$_.name
             $detail = try { switch ($name) {
-                "research_request"   { "$((Get-EventProp $_ 'branch') -replace 'prompt_branch_','p'), $(Get-EventProp $_ 'status'), $([Math]::Round([int](Get-EventProp $_ 'ms' 0)/1000,1))s" }
+                "research_request"   { $loc = Get-EventProp $_ 'city'; $ctr = Get-EventProp $_ 'country'; $locStr = if ($loc) { "$loc, $ctr" } elseif ($ctr) { $ctr } else { Get-EventProp $_ 'ip' }; "$((Get-EventProp $_ 'branch') -replace 'prompt_branch_','p'), $(Get-EventProp $_ 'status'), $([Math]::Round([int](Get-EventProp $_ 'ms' 0)/1000,1))s, $locStr" }
                 "branch_selected"    { (Get-EventProp $_ "branch") -replace "prompt_branch_","p" }
                 "question_submitted" { (Get-EventProp $_ "branch") -replace "prompt_branch_","p" }
                 "result_rendered"    { "$((Get-EventProp $_ 'branch') -replace 'prompt_branch_','p'), $([Math]::Round([int](Get-EventProp $_ 'ms' 0)/1000,1))s" }
@@ -399,10 +423,22 @@ function Build-AnalyticsDashboard {
         }
     }
 
+    # Top countries
+    $countryCounts = @{}
+    foreach ($r in $requests) {
+        $c = Get-EventProp $r "country"
+        if ([string]::IsNullOrWhiteSpace($c) -or $c -eq "local") { $c = "Unknown" }
+        $countryCounts[$c] = (if ($countryCounts.ContainsKey($c)) { $countryCounts[$c] } else { 0 }) + 1
+    }
+    $topCountries = @($countryCounts.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First 8 | ForEach-Object {
+        [ordered]@{ country = $_.Key; count = $_.Value }
+    })
+
     $statsJson = [ordered]@{
         total=$total; ok=$ok; errors=$errors; successRate=$successRate
         avgMs=$avgMs; last7d=$last7d
         byBranch=@($byBranch); daily=$daily; fe=$feStats
+        topCountries=@($topCountries)
         recentRows=@($recentRows)
         generatedAt=(Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
     } | ConvertTo-Json -Depth 6 -Compress
@@ -455,6 +491,9 @@ function Build-AnalyticsDashboard {
 <h2>By Branch</h2>
 <table><thead><tr><th>Branch</th><th>Total</th><th>OK</th><th>Errors</th><th>Avg time</th></tr></thead><tbody id="branch-body"></tbody></table>
 
+<h2>By Country</h2>
+<table><thead><tr><th>Country</th><th>Requests</th></tr></thead><tbody id="country-body"></tbody></table>
+
 <h2>Daily Requests - last 14 days</h2>
 <div class="chart-wrap"><div class="chart" id="chart"></div></div>
 
@@ -492,6 +531,19 @@ var bb = document.getElementById('branch-body');
 });
 if(!(S.byBranch||[]).some(function(b){return b.total>0;})){
   var tr=document.createElement('tr');tr.innerHTML='<td colspan="5" style="color:#55637d;text-align:center;padding:1.5rem">No requests yet</td>';bb.appendChild(tr);
+}
+
+// Country table
+var cb=document.getElementById('country-body');
+var countries=S.topCountries||[];
+if(countries.length===0){
+  var tr=document.createElement('tr');tr.innerHTML='<td colspan="2" style="color:#55637d;text-align:center;padding:1.5rem">No data yet</td>';cb.appendChild(tr);
+}else{
+  countries.forEach(function(c){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td>'+c.country+'</td><td>'+c.count+'</td>';
+    cb.appendChild(tr);
+  });
 }
 
 // Daily chart
@@ -692,10 +744,15 @@ try {
                 $statusCode = if ($result["status"] -eq "completed") { 200 } else { 503 }
                 $reason = if ($statusCode -eq 200) { "OK" } else { "Service Unavailable" }
 
+                $geo = Get-GeoLocation -IP $request.ClientAddress
                 Write-AnalyticsEvent -Name "research_request" -LogPath $analyticsLog -Properties @{
-                    branch = [string]$body["branch"]
-                    ms     = [int]$sw.ElapsedMilliseconds
-                    status = if ($result["status"] -eq "completed") { "ok" } else { "error" }
+                    branch  = [string]$body["branch"]
+                    ms      = [int]$sw.ElapsedMilliseconds
+                    status  = if ($result["status"] -eq "completed") { "ok" } else { "error" }
+                    ip      = [string]$request.ClientAddress
+                    country = [string]$geo.country
+                    region  = [string]$geo.region
+                    city    = [string]$geo.city
                 }
 
                 Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
@@ -726,10 +783,15 @@ try {
                 $statusCode = if ($result.ContainsKey("httpStatus") -and $result["httpStatus"]) { [int]$result["httpStatus"] } elseif ($result["status"] -eq "completed") { 200 } else { 503 }
                 $reason = if ($statusCode -eq 200) { "OK" } elseif ($statusCode -eq 400) { "Bad Request" } elseif ($statusCode -eq 401) { "Unauthorized" } elseif ($statusCode -eq 429) { "Too Many Requests" } elseif ($statusCode -eq 502) { "Bad Gateway" } elseif ($statusCode -eq 504) { "Gateway Timeout" } else { "Service Unavailable" }
 
+                $geo = Get-GeoLocation -IP $request.ClientAddress
                 Write-AnalyticsEvent -Name "research_request" -LogPath $analyticsLog -Properties @{
-                    branch = [string]$body["branch"]
-                    ms     = [int]$sw.ElapsedMilliseconds
-                    status = if ($result["status"] -eq "completed") { "ok" } else { "error" }
+                    branch  = [string]$body["branch"]
+                    ms      = [int]$sw.ElapsedMilliseconds
+                    status  = if ($result["status"] -eq "completed") { "ok" } else { "error" }
+                    ip      = [string]$request.ClientAddress
+                    country = [string]$geo.country
+                    region  = [string]$geo.region
+                    city    = [string]$geo.city
                 }
 
                 Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
