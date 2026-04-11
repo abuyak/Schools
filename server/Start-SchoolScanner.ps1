@@ -341,6 +341,7 @@ function Build-AnalyticsDashboard {
         submits          = @($fe | Where-Object { [string]$_.name -eq "question_submitted" }).Count
         resultsRendered  = @($fe | Where-Object { [string]$_.name -eq "result_rendered" }).Count
         ctaClicks        = @($fe | Where-Object { [string]$_.name -eq "cta_click" }).Count
+        feedbackClicks   = @($fe | Where-Object { [string]$_.name -eq "feedback_click" }).Count
     }
 
     $recentRows = @()
@@ -380,7 +381,9 @@ function Build-AnalyticsDashboard {
   .sub{color:#55637d;font-size:.82rem;margin:0 0 2rem}
   h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#8f3b16;margin:2rem 0 .6rem;border-bottom:1px solid #d5c7af;padding-bottom:.3rem}
   .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
-  @media(max-width:640px){.grid4{grid-template-columns:repeat(2,1fr)}}
+  .grid5{grid-template-columns:repeat(5,1fr)}
+  @media(max-width:800px){.grid5{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:640px){.grid4,.grid5{grid-template-columns:repeat(2,1fr)}}
   .card{background:#fff;border:1px solid #d5c7af;border-radius:12px;padding:1rem 1.25rem}
   .val{font-size:1.8rem;font-weight:700;line-height:1;margin-bottom:.25rem}
   .lbl{font-size:.75rem;color:#55637d}
@@ -418,7 +421,7 @@ function Build-AnalyticsDashboard {
 <div class="chart-wrap"><div class="chart" id="chart"></div></div>
 
 <h2>Frontend Events</h2>
-<div class="grid4" id="fe-grid"></div>
+<div class="grid4 grid5" id="fe-grid"></div>
 
 <h2>Recent Events</h2>
 <table><thead><tr><th>Time</th><th>Event</th><th>Detail</th></tr></thead><tbody id="recent-body"></tbody></table>
@@ -472,7 +475,8 @@ var feItems=[
   {v:fe.branchSelects||0,   l:'Branch selections'},
   {v:fe.submits||0,          l:'Questions submitted'},
   {v:fe.resultsRendered||0,  l:'Results rendered'},
-  {v:fe.ctaClicks||0,        l:'Coffee CTA clicks'}
+  {v:fe.ctaClicks||0,        l:'Coffee CTA clicks'},
+  {v:fe.feedbackClicks||0,   l:'Feedback clicks'}
 ];
 var feEl=document.getElementById('fe-grid');
 feItems.forEach(function(o){

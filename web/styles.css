@@ -561,6 +561,63 @@ input[type="email"]:focus,
   outline-offset: 2px;
 }
 
+/* ── Feedback panel ────────────────────────────────────────────────── */
+.feedback-panel {
+  margin-top: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) - 8px);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.feedback-copy {
+  flex: 1;
+  min-width: 14rem;
+}
+
+.feedback-heading {
+  margin: 0 0 0.2rem;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.feedback-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.feedback-cta {
+  display: inline-block;
+  color: var(--accent-deep);
+  text-decoration: none;
+  border: 1.5px solid var(--accent-deep);
+  border-radius: 999px;
+  padding: 0.55rem 1.2rem;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.feedback-cta:hover {
+  background: var(--accent-deep);
+  color: #fff;
+}
+
+.feedback-cta:focus {
+  outline: 3px solid rgba(143, 59, 22, 0.25);
+  outline-offset: 2px;
+}
+
 .security-list code {
   font-family: Consolas, monospace;
 }

@@ -18,6 +18,7 @@
   const gateNote = document.getElementById("gate-note");
   const premiumPanel = document.getElementById("premium-panel");
   const coffeeCta = document.getElementById("coffee-cta");
+  const feedbackCta = document.getElementById("feedback-cta");
 
   function setStatus(message) {
     formStatus.textContent = message;
@@ -477,6 +478,15 @@
       trackEvent("cta_click", {
         branch: branchInput.value || "",
         placement: coffeeCta.getAttribute("data-placement") || "results"
+      });
+    });
+  }
+
+  if (feedbackCta) {
+    feedbackCta.addEventListener("click", function () {
+      trackEvent("feedback_click", {
+        branch: branchInput.value || "",
+        placement: feedbackCta.getAttribute("data-placement") || "results"
       });
     });
   }
