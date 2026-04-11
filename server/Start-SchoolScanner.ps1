@@ -353,7 +353,7 @@ function Build-AnalyticsDashboard {
                 "research_request"    { "$([string]$_.props.branch -replace 'prompt_branch_','p'), $([string]$_.props.status), $([Math]::Round([int]$_.props.ms/1000,1))s" }
                 "branch_selected"     { [string]$_.props.branch -replace "prompt_branch_","p" }
                 "question_submitted"  { [string]$_.props.branch -replace "prompt_branch_","p" }
-                "result_rendered"     { "$([string]$_.props.branch -replace 'prompt_branch_','p'), $([Math]::Round([int]($_.props.ms ?? 0)/1000,1))s" }
+                "result_rendered"     { "$([string]$_.props.branch -replace 'prompt_branch_','p'), $([Math]::Round([int](if ($_.props.ms) { $_.props.ms } else { 0 })/1000,1))s" }
                 "cta_click"           { [string]$_.props.placement }
                 default               { "" }
             }
