@@ -686,7 +686,6 @@ try {
                     branch = [string]$body["branch"]
                     ms     = [int]$sw.ElapsedMilliseconds
                     status = if ($result["status"] -eq "completed") { "ok" } else { "error" }
-                    model  = [string](Get-SchoolScannerResearchSettings).model
                 }
 
                 Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
@@ -721,7 +720,6 @@ try {
                     branch = [string]$body["branch"]
                     ms     = [int]$sw.ElapsedMilliseconds
                     status = if ($result["status"] -eq "completed") { "ok" } else { "error" }
-                    model  = [string](Get-SchoolScannerResearchSettings).model
                 }
 
                 Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
