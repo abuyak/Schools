@@ -25,3 +25,6 @@ playwright-report/
 
 # Docs — local reference only, not needed in cloud
 docs/
+
+# Claude Code working directory
+.claude/
