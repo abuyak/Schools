@@ -22,3 +22,6 @@ facebook_group_posts*.json
 # Temporary/test output
 test-results/
 playwright-report/
+
+# Docs — local reference only, not needed in cloud
+docs/
