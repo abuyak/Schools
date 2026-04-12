@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900"
+     font-family="'Segoe UI', system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <!-- Arrowheads -->
+    <marker id="a-red"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 3, 0 6" fill="#8f3b16"/>
+    </marker>
+    <marker id="a-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 3, 0 6" fill="#2563eb"/>
+    </marker>
+    <marker id="a-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+    </marker>
+    <marker id="a-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 3, 0 6" fill="#16a34a"/>
+    </marker>
+    <!-- Drop shadow -->
+    <filter id="shadow" x="-4%" y="-6%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#00000014"/>
+    </filter>
+  </defs>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  PAGE BACKGROUND                                       -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <rect width="1200" height="900" fill="#f8f2e7"/>
+
+  <!-- Title bar -->
+  <rect x="0" y="0" width="1200" height="44" fill="#11203b"/>
+  <text x="600" y="28" text-anchor="middle" font-size="17" font-weight="700" fill="white" letter-spacing="0.02em">
+    School Scanner — System Architecture
+  </text>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  SWIM LANE BACKGROUNDS  (y=44 to y=762)               -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- Browser lane: x 0–370 -->
+  <rect x="0"   y="44"  width="370" height="718" fill="#fffdf9"/>
+  <!-- Server lane: x 370–840 -->
+  <rect x="370" y="44"  width="470" height="718" fill="#f3ede2"/>
+  <!-- External lane: x 840–1200 -->
+  <rect x="840" y="44"  width="360" height="718" fill="#eff6ff"/>
+
+  <!-- Divider lines -->
+  <line x1="370" y1="44"  x2="370" y2="762" stroke="#d5c7af" stroke-width="1.5"/>
+  <line x1="840" y1="44"  x2="840" y2="762" stroke="#c7d9f5" stroke-width="1.5"/>
+
+  <!-- Storage band: y=762–900 -->
+  <rect x="0" y="762" width="1200" height="138" fill="#f0fdf4"/>
+  <line x1="0" y1="762" x2="1200" y2="762" stroke="#86efac" stroke-width="1.5"/>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  LANE HEADERS                                          -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <rect x="0"   y="44" width="370" height="36" fill="#d5c7af"/>
+  <rect x="370" y="44" width="470" height="36" fill="#c4a882"/>
+  <rect x="840" y="44" width="360" height="36" fill="#bfdbfe"/>
+
+  <text x="185"  y="67" text-anchor="middle" font-size="12.5" font-weight="700" fill="#11203b">Browser  /  app.js</text>
+  <text x="605"  y="67" text-anchor="middle" font-size="12.5" font-weight="700" fill="#11203b">PowerShell Server  (Start-SchoolScanner.ps1  ·  :8080)</text>
+  <text x="1020" y="67" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e40af">External Services</text>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  BOXES — main flow                                     -->
+  <!--  Each box: (cx, cy) with standard 220×48 or noted size -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <!-- ── B1: User Interface  cy=126 ──────────────────────── -->
+  <rect x="75" y="102" width="220" height="48" rx="9" fill="white" stroke="#d26a32" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="185" y="122" text-anchor="middle" font-size="12" font-weight="600" fill="#11203b">User Interface</text>
+  <text x="185" y="139" text-anchor="middle" font-size="10" fill="#55637d">branch selector · question input</text>
+
+  <!-- ── B2: POST request  cy=210 ─────────────────────────── -->
+  <rect x="75" y="186" width="220" height="48" rx="9" fill="white" stroke="#d26a32" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="185" y="206" text-anchor="middle" font-size="12" font-weight="600" fill="#11203b">fetch() → POST /api/research</text>
+  <text x="185" y="223" text-anchor="middle" font-size="10" fill="#55637d">{branch, question, email?}</text>
+
+  <!-- ── S1: Rate Limiter  cy=210 ─────────────────────────── -->
+  <rect x="492" y="186" width="226" height="48" rx="9" fill="white" stroke="#8f3b16" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="605" y="206" text-anchor="middle" font-size="12" font-weight="600" fill="#11203b">Rate Limiter</text>
+  <text x="605" y="223" text-anchor="middle" font-size="10" fill="#55637d">30 req / 60s per IP  ·  → 429 if exceeded</text>
+
+  <!-- ── S2: Validate payload  cy=296 ─────────────────────── -->
+  <rect x="492" y="272" width="226" height="48" rx="9" fill="white" stroke="#8f3b16" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="605" y="292" text-anchor="middle" font-size="12" font-weight="600" fill="#11203b">Test-QuestionPayload</text>
+  <text x="605" y="309" text-anchor="middle" font-size="10" fill="#55637d">branch · question ≤600 chars · email  ·  → 400</text>
+
+  <!-- ── S3: Build OpenAI request  cy=382 ─────────────────── -->
+  <rect x="492" y="358" width="226" height="48" rx="9" fill="white" stroke="#8f3b16" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="605" y="378" text-anchor="middle" font-size="12" font-weight="600" fill="#11203b">New-OpenAIResearchRequest</text>
+  <text x="605" y="395" text-anchor="middle" font-size="10" fill="#55637d">research plan · JSON schema · reasoning effort</text>
+
+  <!-- ── E1: OpenAI Responses API  cy=382 ─────────────────── -->
+  <rect x="910" y="358" width="222" height="48" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="1021" y="378" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af">OpenAI Responses API</text>
+  <text x="1021" y="395" text-anchor="middle" font-size="10" fill="#1e40af">gpt-5-mini / gpt-4o · JSON schema enforced</text>
+
+  <!-- ── E2: web_search tool  cy=462 ──────────────────────── -->
+  <rect x="910" y="438" width="222" height="48" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="1021" y="458" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af">web_search tool</text>
+  <text x="1021" y="475" text-anchor="middle" font-size="10" fill="#1e40af">live web results · source citations</text>
+
+  <!-- ── S4: Parse response  cy=462  (wider box) ──────────── -->
+  <rect x="464" y="438" width="282" height="48" rx="9" fill="white" stroke="#8f3b16" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="605" y="458" text-anchor="middle" font-size="12" font-weight="600" fill="#11203b">Convert-OpenAIResponseToResult</text>
+  <text x="605" y="475" text-anchor="middle" font-size="10" fill="#55637d">title · summary · scorecard · sections · sources</text>
+
+  <!-- ── S5: Analytics write + GeoIP  cy=548 ──────────────── -->
+  <rect x="492" y="524" width="226" height="48" rx="9" fill="white" stroke="#8f3b16" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="605" y="544" text-anchor="middle" font-size="12" font-weight="600" fill="#11203b">Write-AnalyticsEvent + GeoIP</text>
+  <text x="605" y="561" text-anchor="middle" font-size="10" fill="#55637d">log to analytics.jsonl · resolve IP location</text>
+
+  <!-- ── E3: ip-api.com  cy=548 ───────────────────────────── -->
+  <rect x="910" y="524" width="222" height="48" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="1021" y="544" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af">ip-api.com</text>
+  <text x="1021" y="561" text-anchor="middle" font-size="10" fill="#1e40af">country · region · city  ·  45 req/min free</text>
+
+  <!-- ── B3: Render pipeline  cy=548 ──────────────────────── -->
+  <rect x="55" y="524" width="255" height="48" rx="9" fill="white" stroke="#d26a32" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="182" y="544" text-anchor="middle" font-size="12" font-weight="600" fill="#11203b">Render Pipeline</text>
+  <text x="182" y="561" text-anchor="middle" font-size="10" fill="#55637d">renderBodyText · appendTextWithLinks · renderScorecard</text>
+
+  <!-- ── B4: Result displayed  cy=634 ─────────────────────── -->
+  <rect x="75" y="610" width="220" height="48" rx="9" fill="white" stroke="#d26a32" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="185" y="630" text-anchor="middle" font-size="12" font-weight="600" fill="#11203b">Result Displayed</text>
+  <text x="185" y="647" text-anchor="middle" font-size="10" fill="#55637d">Scorecard · Sections · Sources · Links</text>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  SIDE / ASYNC BOXES                                    -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <!-- sendBeacon async box (browser, cy=449) -->
+  <rect x="64" y="427" width="220" height="44" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="174" y="447" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">sendBeacon  (async)</text>
+  <text x="174" y="462" text-anchor="middle" font-size="9.5" fill="#64748b">POST /api/analytics/click  →  event logged</text>
+
+  <!-- Admin routes box (server lane, offset right, cy=122) -->
+  <rect x="608" y="98" width="218" height="60" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4" stroke-dasharray="5,3" filter="url(#shadow)"/>
+  <text x="717" y="117" text-anchor="middle" font-size="11" font-weight="700" fill="#78350f">&#128274;  Admin Routes</text>
+  <text x="717" y="133" text-anchor="middle" font-size="9.5" fill="#92400e">GET /analytics · GET /config</text>
+  <text x="717" y="149" text-anchor="middle" font-size="9.5" fill="#92400e">Test-AdminAuth · Build-AnalyticsDashboard</text>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  MODULE BAR (server lane foot, y=698–742)             -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <rect x="373" y="698" width="463" height="46" rx="6" fill="#e7ddd0" stroke="#baa889" stroke-width="1"/>
+  <!-- Dividers -->
+  <line x1="488" y1="698" x2="488" y2="744" stroke="#baa889" stroke-width="1"/>
+  <line x1="597" y1="698" x2="597" y2="744" stroke="#baa889" stroke-width="1"/>
+  <line x1="718" y1="698" x2="718" y2="744" stroke="#baa889" stroke-width="1"/>
+  <!-- Module labels -->
+  <text x="430" y="715" text-anchor="middle" font-size="9" font-weight="700" fill="#8f3b16">Server.psm1</text>
+  <text x="430" y="729" text-anchor="middle" font-size="8" fill="#55637d">HTTP · security headers</text>
+  <text x="542" y="715" text-anchor="middle" font-size="9" font-weight="700" fill="#8f3b16">Config.psm1</text>
+  <text x="542" y="729" text-anchor="middle" font-size="8" fill="#55637d">settings · API key (DPAPI)</text>
+  <text x="657" y="715" text-anchor="middle" font-size="9" font-weight="700" fill="#8f3b16">LiveRetrieval.psm1</text>
+  <text x="657" y="729" text-anchor="middle" font-size="8" fill="#55637d">OpenAI request · parser</text>
+  <text x="782" y="715" text-anchor="middle" font-size="9" font-weight="700" fill="#8f3b16">Analytics.psm1</text>
+  <text x="782" y="729" text-anchor="middle" font-size="8" fill="#55637d">events · auth · dashboard</text>
+
+  <!-- Module bar label -->
+  <text x="605" y="756" text-anchor="middle" font-size="8.5" fill="#8f3b16" letter-spacing="0.08em" font-weight="600">POWERSHELL MODULES</text>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  STORAGE BAND  (y=762–900)                            -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <text x="600" y="783" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46" letter-spacing="0.1em">PERSISTENT STORAGE  ·  CONFIG</text>
+
+  <!-- analytics.jsonl -->
+  <rect x="24"  y="790" width="238" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="143" y="810" text-anchor="middle" font-size="11" font-weight="600" fill="#065f46">analytics.jsonl</text>
+  <text x="143" y="826" text-anchor="middle" font-size="9" fill="#16a34a">JSONL event log · written by S5 · read by admin</text>
+
+  <!-- research-settings.json -->
+  <rect x="282" y="790" width="270" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="417" y="810" text-anchor="middle" font-size="11" font-weight="600" fill="#065f46">research-settings.json</text>
+  <text x="417" y="826" text-anchor="middle" font-size="9" fill="#16a34a">model · timeout · adminToken · baseUrl</text>
+
+  <!-- research-secrets.clixml -->
+  <rect x="572" y="790" width="238" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="691" y="810" text-anchor="middle" font-size="11" font-weight="600" fill="#065f46">research-secrets.clixml</text>
+  <text x="691" y="826" text-anchor="middle" font-size="9" fill="#16a34a">DPAPI-encrypted OpenAI API key</text>
+
+  <!-- openapi.json + api-docs -->
+  <rect x="830" y="790" width="342" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="1001" y="810" text-anchor="middle" font-size="11" font-weight="600" fill="#065f46">openapi.json  ·  api-docs.html</text>
+  <text x="1001" y="826" text-anchor="middle" font-size="9" fill="#16a34a">OpenAPI 3.1 spec · served as static files · /api-docs</text>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  ARROWS — main flow                                    -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <!-- 1 ─ B1 → B2 (down) -->
+  <line x1="185" y1="150" x2="185" y2="182" stroke="#8f3b16" stroke-width="2" marker-end="url(#a-red)"/>
+
+  <!-- 2 ─ B2 → S1 (right, labeled) -->
+  <line x1="295" y1="210" x2="488" y2="210" stroke="#8f3b16" stroke-width="2" marker-end="url(#a-red)"/>
+  <rect x="299" y="197" width="185" height="14" rx="2" fill="#f3ede2"/>
+  <text x="392" y="208" text-anchor="middle" font-size="9" font-weight="600" fill="#8f3b16">POST /api/research</text>
+
+  <!-- 3 ─ S1 → S2 (down) -->
+  <line x1="605" y1="234" x2="605" y2="268" stroke="#8f3b16" stroke-width="2" marker-end="url(#a-red)"/>
+
+  <!-- 4 ─ S2 → S3 (down) -->
+  <line x1="605" y1="320" x2="605" y2="354" stroke="#8f3b16" stroke-width="2" marker-end="url(#a-red)"/>
+
+  <!-- 5 ─ S3 → E1 (right, labeled) -->
+  <line x1="718" y1="382" x2="906" y2="382" stroke="#2563eb" stroke-width="2" marker-end="url(#a-blue)"/>
+  <rect x="720" y="369" width="182" height="14" rx="2" fill="#f3ede2"/>
+  <text x="812" y="380" text-anchor="middle" font-size="9" font-weight="600" fill="#2563eb">structured request + JSON schema</text>
+
+  <!-- 6 ─ E1 → E2 (down: OpenAI calls web_search) -->
+  <line x1="1021" y1="406" x2="1021" y2="434" stroke="#2563eb" stroke-width="1.8" marker-end="url(#a-blue)"/>
+  <text x="1058" y="424" font-size="9" fill="#2563eb">calls</text>
+
+  <!-- 7 ─ E2 → S4 (left, labeled) -->
+  <line x1="906" y1="462" x2="750" y2="462" stroke="#8f3b16" stroke-width="2" marker-end="url(#a-red)"/>
+  <rect x="752" y="449" width="150" height="14" rx="2" fill="#eff6ff"/>
+  <text x="828" y="460" text-anchor="middle" font-size="9" font-weight="600" fill="#8f3b16">JSON {title, scorecard, sections}</text>
+
+  <!-- 8 ─ S4 → S5 (down) -->
+  <line x1="605" y1="486" x2="605" y2="520" stroke="#8f3b16" stroke-width="2" marker-end="url(#a-red)"/>
+
+  <!-- 9 ─ S5 ↔ E3 (dashed: GeoIP lookup) -->
+  <line x1="718" y1="548" x2="906" y2="548" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#a-gray)"/>
+  <text x="812" y="543" text-anchor="middle" font-size="9" fill="#64748b">IP lookup</text>
+
+  <!-- 10 ─ S5 → B3 (left, labeled: JSON response to browser) -->
+  <line x1="488" y1="548" x2="314" y2="548" stroke="#8f3b16" stroke-width="2" marker-end="url(#a-red)"/>
+  <rect x="319" y="535" width="165" height="14" rx="2" fill="#f3ede2"/>
+  <text x="402" y="546" text-anchor="middle" font-size="9" font-weight="600" fill="#8f3b16">JSON response</text>
+
+  <!-- 11 ─ B3 → B4 (down) -->
+  <line x1="185" y1="572" x2="185" y2="606" stroke="#8f3b16" stroke-width="2" marker-end="url(#a-red)"/>
+
+  <!-- ── sendBeacon async path (dashed, L-shape) ─────────── -->
+  <!-- from sendBeacon right edge (284, 449) → server lane → S5 top -->
+  <polyline points="284,449 370,449 370,524 488,524"
+            fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#a-gray)"/>
+  <text x="355" y="492" text-anchor="end" font-size="8.5" fill="#64748b">async</text>
+  <text x="355" y="503" text-anchor="end" font-size="8.5" fill="#64748b">events</text>
+
+  <!-- ── Step number badges on main flow ─────────────────── -->
+  <!-- Small filled circles with step numbers -->
+  <!-- 1 -->
+  <circle cx="198" cy="167" r="9" fill="#8f3b16"/>
+  <text x="198" y="171" text-anchor="middle" font-size="9" font-weight="700" fill="white">1</text>
+  <!-- 2 -->
+  <circle cx="345" cy="200" r="9" fill="#8f3b16"/>
+  <text x="345" y="204" text-anchor="middle" font-size="9" font-weight="700" fill="white">2</text>
+  <!-- 3 -->
+  <circle cx="618" cy="251" r="9" fill="#8f3b16"/>
+  <text x="618" y="255" text-anchor="middle" font-size="9" font-weight="700" fill="white">3</text>
+  <!-- 4 -->
+  <circle cx="618" cy="337" r="9" fill="#8f3b16"/>
+  <text x="618" y="341" text-anchor="middle" font-size="9" font-weight="700" fill="white">4</text>
+  <!-- 5 -->
+  <circle cx="741" cy="372" r="9" fill="#2563eb"/>
+  <text x="741" y="376" text-anchor="middle" font-size="9" font-weight="700" fill="white">5</text>
+  <!-- 6 -->
+  <circle cx="1034" cy="420" r="9" fill="#2563eb"/>
+  <text x="1034" y="424" text-anchor="middle" font-size="9" font-weight="700" fill="white">6</text>
+  <!-- 7 -->
+  <circle cx="876" cy="452" r="9" fill="#8f3b16"/>
+  <text x="876" y="456" text-anchor="middle" font-size="9" font-weight="700" fill="white">7</text>
+  <!-- 8 -->
+  <circle cx="618" cy="503" r="9" fill="#8f3b16"/>
+  <text x="618" y="507" text-anchor="middle" font-size="9" font-weight="700" fill="white">8</text>
+  <!-- 9 -->
+  <circle cx="812" cy="538" r="9" fill="#64748b"/>
+  <text x="812" y="542" text-anchor="middle" font-size="9" font-weight="700" fill="white">9</text>
+  <!-- 10 -->
+  <circle cx="430" cy="538" r="9" fill="#8f3b16"/>
+  <text x="430" y="542" text-anchor="middle" font-size="9" font-weight="700" fill="white">10</text>
+  <!-- 11 -->
+  <circle cx="198" cy="589" r="9" fill="#8f3b16"/>
+  <text x="198" y="593" text-anchor="middle" font-size="9" font-weight="700" fill="white">11</text>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  LEGEND (bottom-left of diagram, above storage)        -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- Legend is embedded in the lane labels themselves; step numbers serve as the guide -->
+
+  <!-- Small "Pester tests" badge at bottom right of diagram -->
+  <rect x="856" y="700" width="180" height="40" rx="6" fill="#e0e7ff" stroke="#818cf8" stroke-width="1.2"/>
+  <text x="946" y="717" text-anchor="middle" font-size="9.5" font-weight="700" fill="#3730a3">98 Pester Tests</text>
+  <text x="946" y="731" text-anchor="middle" font-size="9" fill="#4338ca">unit · integration · link rendering</text>
+
+</svg>
