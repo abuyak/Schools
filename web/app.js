@@ -105,8 +105,13 @@
   //   [label]<url>     – angle-bracket URL variant
   // All other text is inserted as safe text nodes.
   function appendTextWithLinks(el, text) {
-    // G1: **bold**  G2+3: ([label](url))  G4+5: [label](url)  G6+7: [label]<url>
-    var pattern = /\*\*([^*]+)\*\*|\(\[([^\]]+)\]\(([^)]+)\)\)|\[([^\]]+)\]\(([^)\s][^)]*)\)|\[([^\]]+)\]\s*<([^>]+)>/g;
+    // G1:   **bold**
+    // G2+3: ([label](url))  — parenthesised citation variant
+    // G4+5: [label](url) or [label] (url) — standard markdown link; \s* tolerates a space
+    // G6+7: [label]<url>   — angle-bracket URL variant
+    // G8:   [label]        — orphaned label with no URL; rendered as plain text (brackets stripped)
+    // G9:   bare https?:// URL
+    var pattern = /\*\*([^*]+)\*\*|\(\[([^\]]+)\]\s*\(([^)]+)\)\)|\[([^\]]+)\]\s*\(([^)\s][^)]*)\)|\[([^\]]+)\]\s*<([^>]+)>|\[([^\]]+)\](?!\s*[(<])|(https?:\/\/[^\s<>"'\]]+)/g;
     var lastIndex = 0;
     var match;
 
@@ -116,18 +121,30 @@
       }
 
       if (match[1] !== undefined) {
-        // **bold** match
+        // **bold**
         var strong = document.createElement("strong");
         strong.textContent = match[1];
         el.appendChild(strong);
+      } else if (match[8] !== undefined) {
+        // Orphaned [label] — drop the brackets, show label as plain text
+        el.appendChild(document.createTextNode(match[8]));
+      } else if (match[9] !== undefined) {
+        // Bare URL — make it a link using the URL as both href and label
+        var bareUrl = match[9].replace(/[.,;:!?]+$/, ""); // trim trailing punctuation
+        var a = document.createElement("a");
+        a.href = bareUrl;
+        a.textContent = bareUrl;
+        a.rel = "noopener noreferrer";
+        a.target = "_blank";
+        el.appendChild(a);
       } else {
         var label = match[2] || match[4] || match[6];
         var rawUrl = match[3] || match[5] || match[7];
 
         if (/^https?:\/\//i.test(rawUrl)) {
-          var cleanUrl = rawUrl;
+          var cleanUrl = rawUrl.trim();
           try {
-            var u = new URL(rawUrl);
+            var u = new URL(cleanUrl);
             u.searchParams.delete("utm_source");
             cleanUrl = u.toString();
           } catch (_e) {}
