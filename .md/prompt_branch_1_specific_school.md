@@ -142,15 +142,18 @@ Provide ethnicity background for the School
 For state schools
 - provide the free school meal eligibility 
 
-### 11. Sources
-End with a short source list. 
-DO NOT provide the link to any of the prompts or resources stored locally
-
-### 12. Best Next Moves
+### 11. Best Next Moves
 Give practical next actions such as:
 - visit (search for the days of the next Open Day in the school)
 - check admissions stage
 - compare with one or two nearby alternatives
+
+
+### 12. Sources
+End with a short source list. 
+DO NOT provide the link to any of the prompts or resources stored locally
+
+
 
 ## Tone
 

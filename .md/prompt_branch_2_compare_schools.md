@@ -98,6 +98,12 @@ Include only if relevant.
 ### 6. Destinations
 Only include if the evidence is source-backed and reasonably comparable.
 
+For secondary schools:
+- Parse UCAS data on admissions in search of the school in question
+- Oxford evidence from local file /sources/Oxford/oxford_admissions_merged.csv
+- Cambridge evidence from here: https://www.undergraduate.study.cam.ac.uk/apply/before/application-statistics and from local file /sources/Cambridge/cambridge_admissions_merged.csv
+- other top-university destinations if source-backed (for each university parse official university websites for the admissions data)
+
 Keep separate:
 - published destinations
 - Oxbridge applications / offers / acceptances
