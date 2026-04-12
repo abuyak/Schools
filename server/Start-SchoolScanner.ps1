@@ -424,13 +424,14 @@ try {
 
                 $geo = Get-GeoLocation -IP $request.ClientAddress
                 Write-AnalyticsEvent -Name "research_request" -LogPath $analyticsLog -Properties @{
-                    branch  = [string]$body["branch"]
-                    ms      = [int]$sw.ElapsedMilliseconds
-                    status  = if ($result["status"] -eq "completed") { "ok" } else { "error" }
-                    ip      = [string]$request.ClientAddress
-                    country = [string]$geo.country
-                    region  = [string]$geo.region
-                    city    = [string]$geo.city
+                    branch   = [string]$body["branch"]
+                    question = [string]$body["question"]
+                    ms       = [int]$sw.ElapsedMilliseconds
+                    status   = if ($result["status"] -eq "completed") { "ok" } else { "error" }
+                    ip       = [string]$request.ClientAddress
+                    country  = [string]$geo.country
+                    region   = [string]$geo.region
+                    city     = [string]$geo.city
                 }
 
                 Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result
@@ -463,13 +464,14 @@ try {
 
                 $geo = Get-GeoLocation -IP $request.ClientAddress
                 Write-AnalyticsEvent -Name "research_request" -LogPath $analyticsLog -Properties @{
-                    branch  = [string]$body["branch"]
-                    ms      = [int]$sw.ElapsedMilliseconds
-                    status  = if ($result["status"] -eq "completed") { "ok" } else { "error" }
-                    ip      = [string]$request.ClientAddress
-                    country = [string]$geo.country
-                    region  = [string]$geo.region
-                    city    = [string]$geo.city
+                    branch   = [string]$body["branch"]
+                    question = [string]$body["question"]
+                    ms       = [int]$sw.ElapsedMilliseconds
+                    status   = if ($result["status"] -eq "completed") { "ok" } else { "error" }
+                    ip       = [string]$request.ClientAddress
+                    country  = [string]$geo.country
+                    region   = [string]$geo.region
+                    city     = [string]$geo.city
                 }
 
                 Send-JsonResponse -Client $client -StatusCode $statusCode -ReasonPhrase $reason -Body $result

@@ -188,8 +188,14 @@ label {
 label span,
 .field-help,
 .form-status,
-.gate-note {
+.gate-note,
+.privacy-notice {
   color: var(--muted);
+}
+
+.privacy-notice {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 textarea,
