@@ -1,0 +1,7 @@
+{
+  "name": "school-scanner-research",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Lambda handler for /api/research",
+  "main": "index.js"
+}

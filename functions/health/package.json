@@ -1,0 +1,7 @@
+{
+  "name": "school-scanner-health",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Lambda handler for /api/health",
+  "main": "index.js"
+}

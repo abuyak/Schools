@@ -28,3 +28,7 @@ docs/
 
 # Claude Code working directory
 .claude/
+
+# SAM local env vars (contains API keys)
+env.json
+.aws-sam/
