@@ -17,8 +17,8 @@ env:
 
 jobs:
 
-  test:
-    name: Run tests
+  test-jest:
+    name: Jest unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,8 +38,11 @@ jobs:
         run: npm test -- --testPathPatterns='handler'
         working-directory: functions/research
 
-      - name: Set up PowerShell
-        uses: actions/setup-dotnet@v4  # pwsh is pre-installed on ubuntu-latest
+  test-pester:
+    name: Pester tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Run Pester tests
         shell: pwsh
@@ -52,7 +55,7 @@ jobs:
   deploy:
     name: Deploy to AWS
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test-jest, test-pester]
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
 
     steps:
