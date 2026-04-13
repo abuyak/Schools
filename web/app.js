@@ -357,7 +357,8 @@
 
   function renderResult(result, modeLabel) {
     resultTitle.textContent = result.title || "Answer";
-    resultSummary.textContent = result.summary || "";
+    resultSummary.replaceChildren();
+    appendTextWithLinks(resultSummary, result.summary || "");
     renderScorecard(result.scorecard || []);
     renderSections(result.sections || []);
 
