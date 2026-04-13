@@ -33,5 +33,9 @@ docs/
 env.json
 .aws-sam/
 
+# AWS config files with account-specific details
+cf-distribution.json
+s3-policy.json
+
 # Node dependencies
 node_modules/
