@@ -105,7 +105,8 @@ function Send-JsonResponse {
 function Send-FileResponse {
     param(
         [System.Net.Sockets.TcpClient]$Client,
-        [string]$Path
+        [string]$Path,
+        [switch]$AdminPage
     )
 
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
@@ -115,7 +116,8 @@ function Send-FileResponse {
 
     $bytes = [System.IO.File]::ReadAllBytes($Path)
     $contentType = Get-MimeType -Path $Path
-    Send-HttpResponse -Client $Client -StatusCode 200 -ReasonPhrase "OK" -BodyBytes $bytes -ContentType $contentType
+    $extraHeaders = if ($AdminPage) { Get-SecurityHeaders -AdminPage } else { @{} }
+    Send-HttpResponse -Client $Client -StatusCode 200 -ReasonPhrase "OK" -BodyBytes $bytes -ContentType $contentType -ExtraHeaders $extraHeaders
 }
 
 function Read-Request {
@@ -326,15 +328,15 @@ try {
                     continue
                 }
                 "GET /admin/" {
-                    Send-FileResponse -Client $client -Path (Join-Path $Root "admin\index.html")
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "admin\index.html") -AdminPage
                     continue
                 }
                 "GET /admin/index.html" {
-                    Send-FileResponse -Client $client -Path (Join-Path $Root "admin\index.html")
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "admin\index.html") -AdminPage
                     continue
                 }
                 "GET /admin/result.html" {
-                    Send-FileResponse -Client $client -Path (Join-Path $Root "admin\result.html")
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "admin\result.html") -AdminPage
                     continue
                 }
                 "GET /api-docs.js" {

@@ -226,13 +226,13 @@
 
     variants.forEach((v, i) => {
       const p = new URLSearchParams({ label: v.label, branch, question, model: v.model, promptFile: v.promptFile, adminKey });
-      const a = document.createElement('a');
-      a.href = 'result.html#' + p.toString();
-      a.target = '_blank';
-      a.textContent = '↗ ' + v.label;
-      a.style.cssText = `display:inline-block;padding:0.5rem 1.1rem;background:${colours[i]};color:#fff;
-        border-radius:6px;font-weight:600;font-size:0.9rem;text-decoration:none;`;
-      container.appendChild(a);
+      const url = 'http://127.0.0.1:8080/admin/result.html#' + p.toString();
+      const btn = document.createElement('button');
+      btn.textContent = '↗ Open ' + v.label;
+      btn.style.cssText = `padding:0.5rem 1.1rem;background:${colours[i]};color:#fff;border:none;
+        border-radius:6px;font-weight:600;font-size:0.9rem;cursor:pointer;`;
+      btn.addEventListener('click', () => window.open(url, '_blank'));
+      container.appendChild(btn);
     });
 
     document.getElementById('links').style.display = 'block';

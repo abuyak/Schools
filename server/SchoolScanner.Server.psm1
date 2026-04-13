@@ -63,7 +63,7 @@ function Get-SecurityHeaders {
 
     # Admin pages use inline scripts/styles — relax CSP accordingly
     $csp = if ($AdminPage) {
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.lambda-url.eu-west-2.on.aws; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
     } else {
         "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://*.lambda-url.eu-west-2.on.aws; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
     }
