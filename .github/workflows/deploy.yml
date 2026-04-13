@@ -1,0 +1,85 @@
+name: Test and Deploy
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  id-token: write   # needed for OIDC auth to AWS
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+  S3_BUCKET: school-scanner-web
+  CLOUDFRONT_DIST_ID: E2NZ0O827VD30U
+
+jobs:
+
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: functions/research/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: functions/research
+
+      - name: Run Jest unit tests
+        run: npm test
+        working-directory: functions/research
+
+      - name: Set up PowerShell
+        uses: actions/setup-dotnet@v4  # pwsh is pre-installed on ubuntu-latest
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Install-Module Pester -Force -SkipPublisherCheck -RequiredVersion 3.4.6
+          Import-Module Pester
+          $result = Invoke-Pester tests/SchoolScanner.Tests.ps1 -PassThru
+          if ($result.FailedCount -gt 0) { exit 1 }
+
+  deploy:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Set up SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy Lambda
+        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+
+      - name: Deploy frontend to S3
+        run: aws s3 sync web/ s3://${{ env.S3_BUCKET }} --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DIST_ID }} \
+            --paths "/*"
