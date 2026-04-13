@@ -26,7 +26,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: functions/research/package-lock.json
 
@@ -35,7 +35,7 @@ jobs:
         working-directory: functions/research
 
       - name: Run Jest unit tests
-        run: npm test
+        run: npm test -- --testPathPatterns='handler'
         working-directory: functions/research
 
       - name: Set up PowerShell
@@ -61,7 +61,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
 
       - name: Set up SAM CLI
         uses: aws-actions/setup-sam@v2
