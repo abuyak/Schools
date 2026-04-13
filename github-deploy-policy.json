@@ -1,0 +1,108 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CloudFormationStack",
+      "Effect": "Allow",
+      "Action": ["cloudformation:*"],
+      "Resource": [
+        "arn:aws:cloudformation:eu-west-2:118722469024:stack/schoolscanner/*",
+        "arn:aws:cloudformation:eu-west-2:118722469024:stack/aws-sam-cli-managed-default/*",
+        "arn:aws:cloudformation:eu-west-2:aws:transform/Serverless-2016-10-31"
+      ]
+    },
+    {
+      "Sid": "CloudFormationGlobal",
+      "Effect": "Allow",
+      "Action": [
+        "cloudformation:GetTemplateSummary",
+        "cloudformation:ValidateTemplate",
+        "cloudformation:ListStacks"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "Lambda",
+      "Effect": "Allow",
+      "Action": ["lambda:*"],
+      "Resource": [
+        "arn:aws:lambda:eu-west-2:118722469024:function:schoolscanner-*"
+      ]
+    },
+    {
+      "Sid": "ApiGateway",
+      "Effect": "Allow",
+      "Action": ["apigateway:*"],
+      "Resource": ["arn:aws:apigateway:eu-west-2::*"]
+    },
+    {
+      "Sid": "IAMScoped",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:DeleteRole",
+        "iam:AttachRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:GetRole",
+        "iam:GetRolePolicy",
+        "iam:ListRolePolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:PassRole",
+        "iam:TagRole"
+      ],
+      "Resource": [
+        "arn:aws:iam::118722469024:role/schoolscanner-*"
+      ]
+    },
+    {
+      "Sid": "S3Frontend",
+      "Effect": "Allow",
+      "Action": ["s3:*"],
+      "Resource": [
+        "arn:aws:s3:::school-scanner-web",
+        "arn:aws:s3:::school-scanner-web/*"
+      ]
+    },
+    {
+      "Sid": "S3SAMArtifacts",
+      "Effect": "Allow",
+      "Action": ["s3:*"],
+      "Resource": [
+        "arn:aws:s3:::aws-sam-cli-managed-default-samclisourcebucket-*",
+        "arn:aws:s3:::aws-sam-cli-managed-default-samclisourcebucket-*/*"
+      ]
+    },
+    {
+      "Sid": "CloudFront",
+      "Effect": "Allow",
+      "Action": [
+        "cloudfront:CreateInvalidation",
+        "cloudfront:GetDistribution",
+        "cloudfront:GetDistributionConfig",
+        "cloudfront:UpdateDistribution",
+        "cloudfront:CreateResponseHeadersPolicy",
+        "cloudfront:UpdateResponseHeadersPolicy",
+        "cloudfront:DeleteResponseHeadersPolicy",
+        "cloudfront:GetResponseHeadersPolicy",
+        "cloudfront:ListResponseHeadersPolicies"
+      ],
+      "Resource": [
+        "arn:aws:cloudfront::118722469024:distribution/E2NZ0O827VD30U",
+        "arn:aws:cloudfront::118722469024:response-headers-policy/*"
+      ]
+    },
+    {
+      "Sid": "SSM",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetParameter",
+        "ssm:GetParameters"
+      ],
+      "Resource": [
+        "arn:aws:ssm:eu-west-2:118722469024:parameter/schoolscanner/*"
+      ]
+    }
+  ]
+}

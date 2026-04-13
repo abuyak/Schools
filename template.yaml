@@ -25,6 +25,39 @@ Globals:
 
 Resources:
 
+  SecurityHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: schoolscanner-security-headers
+        SecurityHeadersConfig:
+          StrictTransportSecurity:
+            AccessControlMaxAgeSec: 31536000
+            IncludeSubdomains: true
+            Override: true
+          ContentTypeOptions:
+            Override: true
+          FrameOptions:
+            FrameOption: DENY
+            Override: true
+          ReferrerPolicy:
+            ReferrerPolicy: strict-origin-when-cross-origin
+            Override: true
+          XSSProtection:
+            ModeBlock: true
+            Protection: true
+            Override: true
+          ContentSecurityPolicy:
+            ContentSecurityPolicy: >-
+              default-src 'none';
+              script-src 'self';
+              style-src 'self';
+              img-src 'self' data:;
+              connect-src 'self' https://*.lambda-url.eu-west-2.on.aws;
+              form-action 'self';
+              base-uri 'self'
+            Override: true
+
   ResearchFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -34,7 +67,7 @@ Resources:
         AuthType: NONE
         Cors:
           AllowOrigins:
-            - "*"
+            - "https://d3jaoys6w4aver.cloudfront.net"
           AllowMethods:
             - "*"
           AllowHeaders:
@@ -57,3 +90,6 @@ Outputs:
   HealthUrl:
     Description: API Gateway health endpoint
     Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/api/health'
+  SecurityHeadersPolicyId:
+    Description: CloudFront response headers policy ID
+    Value: !Ref SecurityHeadersPolicy

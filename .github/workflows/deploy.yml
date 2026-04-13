@@ -78,6 +78,30 @@ jobs:
       - name: Deploy Lambda
         run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
 
+      - name: Attach security-headers policy to CloudFront
+        run: |
+          POLICY_ID=$(aws cloudformation describe-stacks \
+            --stack-name schoolscanner \
+            --query "Stacks[0].Outputs[?OutputKey=='SecurityHeadersPolicyId'].OutputValue" \
+            --output text)
+
+          DIST=$(aws cloudfront get-distribution-config --id ${{ env.CLOUDFRONT_DIST_ID }})
+          ETAG=$(echo "$DIST" | jq -r '.ETag')
+          CURRENT=$(echo "$DIST" | jq -r '.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyId // ""')
+
+          if [ "$CURRENT" != "$POLICY_ID" ]; then
+            UPDATED=$(echo "$DIST" | \
+              jq ".DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyId = \"$POLICY_ID\"" | \
+              jq '.DistributionConfig')
+            aws cloudfront update-distribution \
+              --id ${{ env.CLOUDFRONT_DIST_ID }} \
+              --distribution-config "$UPDATED" \
+              --if-match "$ETAG"
+            echo "Security headers policy attached: $POLICY_ID"
+          else
+            echo "Security headers policy already up to date."
+          fi
+
       - name: Deploy frontend to S3
         run: aws s3 sync web/ s3://${{ env.S3_BUCKET }} --delete
 
