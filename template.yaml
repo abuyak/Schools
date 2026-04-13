@@ -18,6 +18,7 @@ Globals:
     Runtime: nodejs22.x
     Timeout: 120
     MemorySize: 512
+    ReservedConcurrentExecutions: 20
     Environment:
       Variables:
         OPENAI_API_KEY: !Ref OpenAIApiKey
