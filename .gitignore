@@ -32,3 +32,6 @@ docs/
 # SAM local env vars (contains API keys)
 env.json
 .aws-sam/
+
+# Node dependencies
+node_modules/
