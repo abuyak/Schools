@@ -200,23 +200,32 @@ function okResponse(body) {
   };
 }
 
+function log(event, props = {}) {
+  console.log(JSON.stringify({ event, ts: new Date().toISOString(), ...props }));
+}
+
 export const handler = async (event) => {
+  const t0 = Date.now();
+
   // Parse body
   let body;
   try {
     body = JSON.parse(event.body ?? '{}');
   } catch {
+    log('research_request', { status: 'invalid_json', httpStatus: 400 });
     return errorResponse(400, { error: 'Invalid JSON payload.' });
   }
 
   // Validate
   const errors = validatePayload(body);
   if (errors.length) {
+    log('research_request', { status: 'validation_failed', httpStatus: 400, branch: body.branch ?? null });
     return errorResponse(400, { error: 'Validation failed.', details: errors });
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
+    log('research_request', { status: 'misconfigured', httpStatus: 503, branch: body.branch });
     return errorResponse(503, { error: 'OPENAI_API_KEY is not configured.' });
   }
 
@@ -257,12 +266,14 @@ export const handler = async (event) => {
         res.status === 401 || res.status === 403 ? 'The research provider rejected the API key. Check OPENAI_API_KEY.' :
         res.status === 429 ? 'The research provider is rate-limiting requests. Try again shortly.' :
         'The research provider could not complete the request.';
+      log('research_request', { status: 'upstream_error', httpStatus: res.status, branch: body.branch, ms: Date.now() - t0 });
       return okResponse({ status: 'upstream_error', httpStatus: res.status, title: 'Research provider error', summary, scorecard: [], sections: [{ heading: 'What happened', body: text.slice(0, 400) }] });
     }
 
     apiResponse = await res.json();
   } catch (err) {
     const timedOut = err.name === 'TimeoutError' || err.message?.includes('timed out');
+    log('research_request', { status: timedOut ? 'timeout' : 'upstream_error', httpStatus: timedOut ? 504 : 502, branch: body.branch, ms: Date.now() - t0 });
     return okResponse({
       status: 'upstream_error',
       httpStatus: timedOut ? 504 : 502,
@@ -273,5 +284,16 @@ export const handler = async (event) => {
     });
   }
 
-  return okResponse(parseOpenAIResponse(apiResponse));
+  const result = parseOpenAIResponse(apiResponse);
+  const ms = Date.now() - t0;
+
+  log('research_request', {
+    status: result.status,
+    httpStatus: result.httpStatus ?? 200,
+    branch: body.branch,
+    question: body.question.slice(0, 200),
+    ms,
+  });
+
+  return okResponse(result);
 };

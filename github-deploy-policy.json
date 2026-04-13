@@ -98,6 +98,17 @@
       "Resource": "*"
     },
     {
+      "Sid": "CloudWatch",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:PutDashboard",
+        "cloudwatch:GetDashboard",
+        "cloudwatch:DeleteDashboards",
+        "cloudwatch:ListDashboards"
+      ],
+      "Resource": "*"
+    },
+    {
       "Sid": "SSM",
       "Effect": "Allow",
       "Action": [

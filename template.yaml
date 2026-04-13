@@ -86,6 +86,71 @@ Resources:
             Path: /api/health
             Method: get
 
+  AnalyticsDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: schoolscanner
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "log",
+              "x": 0, "y": 0, "width": 8, "height": 6,
+              "properties": {
+                "title": "Requests per day",
+                "region": "${AWS::Region}",
+                "view": "bar",
+                "query": "SOURCE '/aws/lambda/schoolscanner-ResearchFunction' | filter event = 'research_request' | stats count() as requests by bin(1d)",
+                "period": 86400
+              }
+            },
+            {
+              "type": "log",
+              "x": 8, "y": 0, "width": 8, "height": 6,
+              "properties": {
+                "title": "Status breakdown",
+                "region": "${AWS::Region}",
+                "view": "pie",
+                "query": "SOURCE '/aws/lambda/schoolscanner-ResearchFunction' | filter event = 'research_request' | stats count() as requests by status",
+                "period": 86400
+              }
+            },
+            {
+              "type": "log",
+              "x": 16, "y": 0, "width": 8, "height": 6,
+              "properties": {
+                "title": "Requests by branch",
+                "region": "${AWS::Region}",
+                "view": "pie",
+                "query": "SOURCE '/aws/lambda/schoolscanner-ResearchFunction' | filter event = 'research_request' and status = 'completed' | stats count() as requests by branch",
+                "period": 86400
+              }
+            },
+            {
+              "type": "log",
+              "x": 0, "y": 6, "width": 12, "height": 6,
+              "properties": {
+                "title": "Latency (p50 / p90 / p99) ms",
+                "region": "${AWS::Region}",
+                "view": "timeSeries",
+                "query": "SOURCE '/aws/lambda/schoolscanner-ResearchFunction' | filter event = 'research_request' and status = 'completed' | stats pct(ms, 50) as p50, pct(ms, 90) as p90, pct(ms, 99) as p99 by bin(1h)",
+                "period": 3600
+              }
+            },
+            {
+              "type": "log",
+              "x": 12, "y": 6, "width": 12, "height": 6,
+              "properties": {
+                "title": "Recent questions",
+                "region": "${AWS::Region}",
+                "view": "table",
+                "query": "SOURCE '/aws/lambda/schoolscanner-ResearchFunction' | filter event = 'research_request' and status = 'completed' | fields ts, branch, ms, question | sort ts desc | limit 20",
+                "period": 86400
+              }
+            }
+          ]
+        }
+
 Outputs:
   HealthUrl:
     Description: API Gateway health endpoint
@@ -93,3 +158,6 @@ Outputs:
   SecurityHeadersPolicyId:
     Description: CloudFront response headers policy ID
     Value: !Ref SecurityHeadersPolicy
+  DashboardUrl:
+    Description: CloudWatch analytics dashboard
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=schoolscanner'
