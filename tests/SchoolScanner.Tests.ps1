@@ -580,8 +580,14 @@ Describe "School Scanner page" {
             $response = Invoke-WebRequest -Uri "http://127.0.0.1:$script:port/api/research?branch=prompt_branch_1&question=Is%20Highgate%20a%20strong%20option%20for%20a%20shy%20child%3F&email=parent%40example.com" -UseBasicParsing -TimeoutSec 5
             throw "Expected 503 but request succeeded."
         }
-        catch [System.Net.WebException] {
-            $statusCode = [int]$_.Exception.Response.StatusCode
+        catch {
+            # PS5 throws WebException; PS7 throws HttpResponseException
+            $statusCode = $null
+            if ($_.Exception.Response) {
+                $statusCode = [int]$_.Exception.Response.StatusCode
+            } elseif ($_.Exception -match '503') {
+                $statusCode = 503
+            }
             $statusCode | Should Be 503
         }
     }
