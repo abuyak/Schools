@@ -78,7 +78,7 @@ Describe "School Scanner API contract" {
 
     BeforeAll {
         $serverScript = Join-Path $PSScriptRoot "..\server\Start-SchoolScanner.ps1"
-        $script:contractConfigRoot = Join-Path $env:TEMP ("schoolscanner-contract-" + [guid]::NewGuid().ToString("N"))
+        $script:contractConfigRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("schoolscanner-contract-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $script:contractConfigRoot, "Process")
 
         $startInfo                        = New-Object System.Diagnostics.ProcessStartInfo
@@ -354,7 +354,7 @@ Describe "School Scanner API contract - analytics and HTTP" {
 
     BeforeAll {
         $serverScript = Join-Path $PSScriptRoot "..\server\Start-SchoolScanner.ps1"
-        $script:analyticsConfigRoot = Join-Path $env:TEMP ("schoolscanner-analytics-cfg-" + [guid]::NewGuid().ToString("N"))
+        $script:analyticsConfigRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("schoolscanner-analytics-cfg-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $script:analyticsConfigRoot, "Process")
 
         $startInfo                        = New-Object System.Diagnostics.ProcessStartInfo
@@ -548,7 +548,7 @@ Describe "School Scanner - admin auth and rate limiting" {
 
     BeforeAll {
         $serverScript = Join-Path $PSScriptRoot "..\server\Start-SchoolScanner.ps1"
-        $script:adminAuthConfigRoot = Join-Path $env:TEMP ("schoolscanner-adminauth-" + [guid]::NewGuid().ToString("N"))
+        $script:adminAuthConfigRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("schoolscanner-adminauth-" + [guid]::NewGuid().ToString("N"))
         New-Item -ItemType Directory -Path $script:adminAuthConfigRoot -Force | Out-Null
 
         # Write the admin token to the settings file BEFORE the server starts

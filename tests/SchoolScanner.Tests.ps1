@@ -8,8 +8,8 @@ Import-Module (Join-Path $PSScriptRoot "..\server\SchoolScanner.Analytics.psm1")
 
 $script:port = 8091
 $script:serverProcess = $null
-$script:stdoutLog = Join-Path $env:TEMP "schoolscanner-stdout.log"
-$script:stderrLog = Join-Path $env:TEMP "schoolscanner-stderr.log"
+$script:stdoutLog = Join-Path ([System.IO.Path]::GetTempPath()) "schoolscanner-stdout.log"
+$script:stderrLog = Join-Path ([System.IO.Path]::GetTempPath()) "schoolscanner-stderr.log"
 $script:pageTestConfigRoot = $null
 
 function Invoke-ConfigCommand {
@@ -125,7 +125,7 @@ Describe "School Scanner server module" {
 
 Describe "School Scanner live retrieval module" {
     It "loads encrypted local settings when environment variables are absent" {
-        $configRoot = Join-Path $env:TEMP ("schoolscanner-config-test-" + [guid]::NewGuid().ToString("N"))
+        $configRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("schoolscanner-config-test-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
         [System.Environment]::SetEnvironmentVariable("OPENAI_API_KEY", $null, "Process")
         [System.Environment]::SetEnvironmentVariable("OPENAI_MODEL", $null, "Process")
@@ -157,7 +157,7 @@ Describe "School Scanner live retrieval module" {
     }
 
     It "prefers process environment overrides over local config" {
-        $configRoot = Join-Path $env:TEMP ("schoolscanner-config-test-" + [guid]::NewGuid().ToString("N"))
+        $configRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("schoolscanner-config-test-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
 
         try {
@@ -201,7 +201,7 @@ Describe "School Scanner live retrieval module" {
     }
 
     It "builds an OpenAI responses request for live web research" {
-        $configRoot = Join-Path $env:TEMP ("schoolscanner-config-test-" + [guid]::NewGuid().ToString("N"))
+        $configRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("schoolscanner-config-test-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
 
         try {
@@ -293,7 +293,7 @@ Describe "School Scanner analytics module" {
     }
 
     It "Write-AnalyticsEvent appends a valid JSONL record to the log file" {
-        $logFile = Join-Path $env:TEMP ("analytics-test-" + [guid]::NewGuid().ToString("N") + ".jsonl")
+        $logFile = Join-Path ([System.IO.Path]::GetTempPath()) ("analytics-test-" + [guid]::NewGuid().ToString("N") + ".jsonl")
         try {
             Write-AnalyticsEvent -Name "test_event" -LogPath $logFile -Properties @{ branch = "prompt_branch_1"; ms = 500 }
             (Test-Path $logFile) | Should Be $true
@@ -308,7 +308,7 @@ Describe "School Scanner analytics module" {
     }
 
     It "Write-AnalyticsEvent appends multiple records without overwriting" {
-        $logFile = Join-Path $env:TEMP ("analytics-test-" + [guid]::NewGuid().ToString("N") + ".jsonl")
+        $logFile = Join-Path ([System.IO.Path]::GetTempPath()) ("analytics-test-" + [guid]::NewGuid().ToString("N") + ".jsonl")
         try {
             Write-AnalyticsEvent -Name "event_one" -LogPath $logFile
             Write-AnalyticsEvent -Name "event_two" -LogPath $logFile
@@ -343,14 +343,14 @@ Describe "School Scanner analytics module" {
     }
 
     It "Build-AnalyticsDashboard returns valid HTML for a non-existent log file" {
-        $html = Build-AnalyticsDashboard -LogPath (Join-Path $env:TEMP "does-not-exist-$(([guid]::NewGuid()).ToString('N')).jsonl")
+        $html = Build-AnalyticsDashboard -LogPath (Join-Path ([System.IO.Path]::GetTempPath()) "does-not-exist-$(([guid]::NewGuid()).ToString('N')).jsonl")
         $html | Should Match "<!DOCTYPE html>"
         $html | Should Match "School Scanner"
         $html | Should Match '"total":0'
     }
 
     It "Build-AnalyticsDashboard correctly counts research_request events" {
-        $logFile = Join-Path $env:TEMP ("analytics-dash-test-" + [guid]::NewGuid().ToString("N") + ".jsonl")
+        $logFile = Join-Path ([System.IO.Path]::GetTempPath()) ("analytics-dash-test-" + [guid]::NewGuid().ToString("N") + ".jsonl")
         try {
             # Use Write-AnalyticsEvent so the test data matches the exact on-disk format
             Write-AnalyticsEvent -Name "research_request" -LogPath $logFile -Properties @{ branch = "prompt_branch_1"; status = "ok";    ms = 3500 }
@@ -369,7 +369,7 @@ Describe "School Scanner analytics module" {
     }
 
     It "Build-AnalyticsDashboard counts frontend events separately from research requests" {
-        $logFile = Join-Path $env:TEMP ("analytics-dash-fe-" + [guid]::NewGuid().ToString("N") + ".jsonl")
+        $logFile = Join-Path ([System.IO.Path]::GetTempPath()) ("analytics-dash-fe-" + [guid]::NewGuid().ToString("N") + ".jsonl")
         try {
             Write-AnalyticsEvent -Name "branch_selected"    -LogPath $logFile -Properties @{ branch = "prompt_branch_1" }
             Write-AnalyticsEvent -Name "branch_selected"    -LogPath $logFile -Properties @{ branch = "prompt_branch_2" }
@@ -391,7 +391,7 @@ Describe "School Scanner analytics module" {
     }
 
     It "Test-AdminAuth returns true when no adminToken is configured" {
-        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        $configRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
         try {
             $fakeRequest = @{
@@ -408,7 +408,7 @@ Describe "School Scanner analytics module" {
     }
 
     It "Test-AdminAuth returns false when token is set but no credentials are presented" {
-        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        $configRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
         try {
             New-Item -ItemType Directory -Path $configRoot -Force | Out-Null
@@ -427,7 +427,7 @@ Describe "School Scanner analytics module" {
     }
 
     It "Test-AdminAuth returns true with a correct query-string token" {
-        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        $configRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
         try {
             New-Item -ItemType Directory -Path $configRoot -Force | Out-Null
@@ -446,7 +446,7 @@ Describe "School Scanner analytics module" {
     }
 
     It "Test-AdminAuth returns false with an incorrect query-string token" {
-        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        $configRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
         try {
             New-Item -ItemType Directory -Path $configRoot -Force | Out-Null
@@ -465,7 +465,7 @@ Describe "School Scanner analytics module" {
     }
 
     It "Test-AdminAuth returns true with a correct Bearer token in Authorization header" {
-        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        $configRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
         try {
             New-Item -ItemType Directory -Path $configRoot -Force | Out-Null
@@ -484,7 +484,7 @@ Describe "School Scanner analytics module" {
     }
 
     It "Test-AdminAuth returns false with a wrong Bearer token" {
-        $configRoot = Join-Path $env:TEMP ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
+        $configRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("admin-auth-test-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $configRoot, "Process")
         try {
             New-Item -ItemType Directory -Path $configRoot -Force | Out-Null
@@ -506,7 +506,7 @@ Describe "School Scanner analytics module" {
 Describe "School Scanner page" {
     BeforeAll {
         $serverScript = Join-Path $PSScriptRoot "..\server\Start-SchoolScanner.ps1"
-        $script:pageTestConfigRoot = Join-Path $env:TEMP ("schoolscanner-page-config-" + [guid]::NewGuid().ToString("N"))
+        $script:pageTestConfigRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("schoolscanner-page-config-" + [guid]::NewGuid().ToString("N"))
         [System.Environment]::SetEnvironmentVariable("SCHOOLSCANNER_CONFIG_ROOT", $script:pageTestConfigRoot, "Process")
         Remove-Item -LiteralPath $script:stdoutLog, $script:stderrLog -Force -ErrorAction SilentlyContinue
         $startInfo = New-Object System.Diagnostics.ProcessStartInfo
