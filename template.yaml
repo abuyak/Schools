@@ -12,6 +12,9 @@ Parameters:
   AdminKey:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /schoolscanner/admin_key
+  AnthropicApiKey:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /schoolscanner/anthropic_api_key
 
 Globals:
   Function:
@@ -23,6 +26,7 @@ Globals:
         OPENAI_API_KEY: !Ref OpenAIApiKey
         OPENAI_MODEL: !Ref OpenAIModel
         ADMIN_KEY: !Ref AdminKey
+        ANTHROPIC_API_KEY: !Ref AnthropicApiKey
         OPENAI_REASONING_EFFORT: low
         OPENAI_MAX_TOKENS: '4000'
         OPENAI_BASE_URL: https://api.openai.com/v1
