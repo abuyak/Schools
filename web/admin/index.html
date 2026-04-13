@@ -164,10 +164,13 @@
 </div>
 
 <div class="actions">
-  <button class="run" onclick="run()">Run variants</button>
-  <span class="hint">Opens one tab per enabled variant. Allow popups if blocked.</span>
+  <button class="run" onclick="run()">Prepare variants</button>
+  <span class="hint">Builds links — click each to open a tab.</span>
 </div>
-<div class="warn" id="warn">⚠ Popup blocked — allow popups for this page and try again.</div>
+<div id="links" style="display:none; margin-top:1rem; display:none;">
+  <p style="font-size:0.8rem;color:#888;margin-bottom:0.5rem;">Click each to open in a new tab:</p>
+  <div id="link-buttons" style="display:flex;gap:0.75rem;flex-wrap:wrap;"></div>
+</div>
 
 <script>
   // Persist admin key in session
@@ -217,14 +220,22 @@
 
     if (!variants.length) { alert('Enable at least one variant.'); return; }
 
-    let blocked = false;
-    variants.forEach(v => {
+    const colours = ['#2563eb', '#7c3aed', '#059669'];
+    const container = document.getElementById('link-buttons');
+    container.replaceChildren();
+
+    variants.forEach((v, i) => {
       const p = new URLSearchParams({ label: v.label, branch, question, model: v.model, promptFile: v.promptFile, adminKey });
-      const tab = window.open('result.html#' + p.toString(), '_blank');
-      if (!tab) blocked = true;
+      const a = document.createElement('a');
+      a.href = 'result.html#' + p.toString();
+      a.target = '_blank';
+      a.textContent = '↗ ' + v.label;
+      a.style.cssText = `display:inline-block;padding:0.5rem 1.1rem;background:${colours[i]};color:#fff;
+        border-radius:6px;font-weight:600;font-size:0.9rem;text-decoration:none;`;
+      container.appendChild(a);
     });
 
-    document.getElementById('warn').style.display = blocked ? 'block' : 'none';
+    document.getElementById('links').style.display = 'block';
   }
 </script>
 </body>
