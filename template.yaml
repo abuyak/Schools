@@ -9,6 +9,9 @@ Parameters:
   OpenAIModel:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /schoolscanner/openai_model
+  AdminKey:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /schoolscanner/admin_key
 
 Globals:
   Function:
@@ -19,6 +22,7 @@ Globals:
       Variables:
         OPENAI_API_KEY: !Ref OpenAIApiKey
         OPENAI_MODEL: !Ref OpenAIModel
+        ADMIN_KEY: !Ref AdminKey
         OPENAI_REASONING_EFFORT: low
         OPENAI_MAX_TOKENS: '4000'
         OPENAI_BASE_URL: https://api.openai.com/v1
@@ -68,6 +72,8 @@ Resources:
         Cors:
           AllowOrigins:
             - "https://d3jaoys6w4aver.cloudfront.net"
+            - "http://localhost:8080"
+            - "http://127.0.0.1:8080"
           AllowMethods:
             - "*"
           AllowHeaders:

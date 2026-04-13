@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Result — School Scanner</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; font-size: 15px; color: #1a1a1a; max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* Header strip */
+    .meta { background: #f0f0f0; border: 1px solid #ddd; border-radius: 8px; padding: 0.9rem 1.1rem; margin-bottom: 1.5rem; }
+    .meta .label { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .meta .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.4rem; }
+    .chip { background: #1a1a1a; color: #fff; font-size: 0.75rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 999px; }
+    .meta .question { font-size: 0.875rem; color: #555; font-style: italic; }
+
+    /* Status */
+    #status { font-size: 0.9rem; color: #555; margin-bottom: 1.25rem; }
+    .dot { display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #aaa; margin-right: 0.4rem; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .done .dot { background: #16a34a; animation: none; }
+    .error .dot { background: #dc2626; animation: none; }
+
+    /* Result */
+    h2 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .summary { font-size: 0.95rem; color: #444; line-height: 1.6; margin-bottom: 1.5rem; }
+    .summary a { color: #2563eb; }
+
+    /* Scorecard */
+    .scorecard { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.5rem; }
+    .sc-row { display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; }
+    .sc-dim { flex: 1; }
+    .sc-badge { padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; color: #fff; flex-shrink: 0; min-width: 4.5rem; text-align: center; }
+    .rating-strong { background: #16a34a; } .rating-good { background: #2563eb; }
+    .rating-mixed  { background: #d97706; } .rating-weak  { background: #dc2626; }
+    .rating-unknown { background: #9ca3af; }
+    .sc-note { color: #666; font-size: 0.8rem; flex: 2; }
+
+    /* Sections */
+    .section { margin-bottom: 1.5rem; }
+    .section h3 { font-size: 1rem; margin-bottom: 0.4rem; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; }
+    .section-body { font-size: 0.9rem; line-height: 1.65; color: #333; }
+    .section-body a { color: #2563eb; }
+    .section-body p { margin-bottom: 0.4rem; }
+    .section-body ul, .section-body ol { padding-left: 1.25rem; margin-bottom: 0.4rem; }
+    .section-body li { margin-bottom: 0.2rem; }
+    .section-body strong { font-weight: 600; }
+
+    /* Table */
+    .table-scroll { overflow-x: auto; margin-bottom: 0.75rem; }
+    .md-table { border-collapse: collapse; font-size: 0.85rem; min-width: 28rem; width: 100%; }
+    .md-table th, .md-table td { border: 1px solid #e5e7eb; padding: 0.45rem 0.65rem; text-align: left; vertical-align: top; }
+    .md-table thead { background: #f9fafb; font-weight: 600; }
+
+    /* Timing */
+    .timing { font-size: 0.8rem; color: #999; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+
+<div class="meta">
+  <div class="label" id="meta-label">—</div>
+  <div class="chips" id="meta-chips"></div>
+  <div class="question" id="meta-question"></div>
+</div>
+
+<div id="status"><span class="dot"></span>Calling Lambda…</div>
+
+<div id="result" hidden>
+  <h2 id="r-title"></h2>
+  <div class="summary" id="r-summary"></div>
+  <div class="scorecard" id="r-scorecard"></div>
+  <div id="r-sections"></div>
+  <div class="timing" id="r-timing"></div>
+</div>
+
+<script>
+  // ── Parse URL hash params ──────────────────────────────────────────────────
+  const params    = new URLSearchParams(location.hash.slice(1));
+  const label     = params.get('label')      || 'Variant';
+  const branch    = params.get('branch')     || '';
+  const question  = params.get('question')   || '';
+  const model     = params.get('model')      || 'o4-mini';
+  const promptFile= params.get('promptFile') || '';
+  const adminKey  = params.get('adminKey')   || '';
+
+  document.title = label + ' — School Scanner';
+
+  // ── Populate meta strip ───────────────────────────────────────────────────
+  document.getElementById('meta-label').textContent = label;
+  document.getElementById('meta-question').textContent = '"' + question + '"';
+
+  const chips = document.getElementById('meta-chips');
+  [model, promptFile, branch].filter(Boolean).forEach(t => {
+    const c = document.createElement('span');
+    c.className = 'chip';
+    c.textContent = t;
+    chips.appendChild(c);
+  });
+
+  // ── Rendering helpers ─────────────────────────────────────────────────────
+  const LINK_RE = /\*\*([^*]+)\*\*|\(\[([^\]]+)\]\s*\(([^)]+)\)\)|\[([^\]]+)\]\s*\(([^)\s][^)]*)\)|\[([^\]]+)\]\s*<([^>]+)>|\[([^\]]+)\](?!\s*[(<])|(https?:\/\/[^\s<>"'\]]+)/g;
+
+  function appendLinks(el, text) {
+    let last = 0, m;
+    LINK_RE.lastIndex = 0;
+    while ((m = LINK_RE.exec(text)) !== null) {
+      if (m.index > last) el.appendChild(document.createTextNode(text.slice(last, m.index)));
+      if (m[1]) {
+        const s = document.createElement('strong'); s.textContent = m[1]; el.appendChild(s);
+      } else if (m[8]) {
+        el.appendChild(document.createTextNode(m[8]));
+      } else if (m[9]) {
+        const a = document.createElement('a'); a.href = m[9]; a.textContent = m[9];
+        a.rel = 'noopener noreferrer'; a.target = '_blank'; el.appendChild(a);
+      } else {
+        const lbl = m[2]||m[4]||m[6], url = (m[3]||m[5]||m[7]||'').trim();
+        if (/^https?:\/\//i.test(url)) {
+          const a = document.createElement('a'); a.href = url; a.textContent = lbl;
+          a.rel = 'noopener noreferrer'; a.target = '_blank'; el.appendChild(a);
+        } else {
+          el.appendChild(document.createTextNode(lbl));
+        }
+      }
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) el.appendChild(document.createTextNode(text.slice(last)));
+  }
+
+  function isTableSep(l) { return /^\|[\s|:-]+\|$/.test(l); }
+  function parseRow(l) { return l.replace(/^\||\|$/g,'').split('|').map(c=>c.trim()); }
+
+  function renderTable(container, lines) {
+    const table = document.createElement('table'); table.className = 'md-table';
+    let tbody = null;
+    lines.forEach((line, i) => {
+      if (isTableSep(line)) return;
+      const cells = parseRow(line);
+      if (i === 0) {
+        const thead = document.createElement('thead');
+        const tr = document.createElement('tr');
+        cells.forEach(c => { const th = document.createElement('th'); appendLinks(th,c); tr.appendChild(th); });
+        thead.appendChild(tr); table.appendChild(thead);
+        tbody = document.createElement('tbody'); table.appendChild(tbody);
+      } else if (tbody) {
+        const tr = document.createElement('tr');
+        cells.forEach(c => { const td = document.createElement('td'); appendLinks(td,c); tr.appendChild(td); });
+        tbody.appendChild(tr);
+      }
+    });
+    const scroll = document.createElement('div'); scroll.className = 'table-scroll';
+    scroll.appendChild(table); container.appendChild(scroll);
+  }
+
+  function renderBody(container, raw) {
+    container.replaceChildren();
+    const lines = (raw||'').split('\n');
+    let tableLines = [], listEl = null;
+    function flushTable() { if (tableLines.length) { renderTable(container, tableLines); tableLines = []; } }
+    function flushList() { if (listEl) { container.appendChild(listEl); listEl = null; } }
+    lines.forEach(line => {
+      if (/^\|/.test(line)) { flushList(); tableLines.push(line); return; }
+      flushTable();
+      if (/^(\d+\.\s|-\s)/.test(line)) {
+        const isOrdered = /^\d+\./.test(line);
+        const text = line.replace(/^(\d+\.\s|-\s)/,'');
+        if (!listEl || listEl.tagName !== (isOrdered?'OL':'UL')) {
+          flushList(); listEl = document.createElement(isOrdered?'ol':'ul');
+        }
+        const li = document.createElement('li'); appendLinks(li, text); listEl.appendChild(li);
+        return;
+      }
+      flushList();
+      if (line.trim() === '') { container.appendChild(document.createElement('p')); return; }
+      const p = document.createElement('p');
+      appendLinks(p, line);
+      container.appendChild(p);
+    });
+    flushTable(); flushList();
+  }
+
+  // ── Scorecard ─────────────────────────────────────────────────────────────
+  function renderScorecard(items) {
+    const el = document.getElementById('r-scorecard');
+    el.replaceChildren();
+    (items||[]).forEach(item => {
+      const row = document.createElement('div'); row.className = 'sc-row';
+      const dim = document.createElement('span'); dim.className = 'sc-dim'; dim.textContent = item.dimension||'';
+      const badge = document.createElement('span');
+      const r = (item.rating||'unknown').toLowerCase();
+      badge.className = 'sc-badge rating-' + r;
+      badge.textContent = r.charAt(0).toUpperCase() + r.slice(1);
+      const note = document.createElement('span'); note.className = 'sc-note'; note.textContent = item.note||'';
+      row.appendChild(dim); row.appendChild(badge); row.appendChild(note);
+      el.appendChild(row);
+    });
+  }
+
+  // ── Sections ──────────────────────────────────────────────────────────────
+  function renderSections(sections) {
+    const el = document.getElementById('r-sections');
+    el.replaceChildren();
+    (sections||[]).forEach(s => {
+      const art = document.createElement('div'); art.className = 'section';
+      const h3 = document.createElement('h3'); h3.textContent = s.heading||'';
+      const body = document.createElement('div'); body.className = 'section-body';
+      renderBody(body, s.body||'');
+      art.appendChild(h3); art.appendChild(body); el.appendChild(art);
+    });
+  }
+
+  // ── Call Lambda ───────────────────────────────────────────────────────────
+  const LAMBDA = 'https://ep6az35owvnis2c6n6wcl7axyy0elrlh.lambda-url.eu-west-2.on.aws/';
+
+  function setStatus(cls, text) {
+    const el = document.getElementById('status');
+    el.className = cls;
+    el.innerHTML = '<span class="dot"></span>' + text;
+  }
+
+  async function callLambda() {
+    const t0 = Date.now();
+    const payload = { branch, question, _adminKey: adminKey, _model: model };
+    if (promptFile) payload._promptFile = promptFile;
+
+    try {
+      const res = await fetch(LAMBDA, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(120_000),
+      });
+
+      const data = await res.json();
+      const ms = Date.now() - t0;
+
+      if (!res.ok || data.status === 'upstream_error' || data.status === 'upstream_invalid_format') {
+        setStatus('error', 'Error — ' + (data.summary || res.status));
+        return;
+      }
+
+      document.getElementById('r-title').textContent = data.title || '';
+      const sumEl = document.getElementById('r-summary');
+      sumEl.replaceChildren(); appendLinks(sumEl, data.summary || '');
+      renderScorecard(data.scorecard);
+      renderSections(data.sections);
+      document.getElementById('r-timing').textContent = (ms / 1000).toFixed(1) + 's';
+      document.getElementById('result').hidden = false;
+      setStatus('done', 'Completed in ' + (ms / 1000).toFixed(1) + 's');
+
+    } catch (err) {
+      const timed = err.name === 'TimeoutError';
+      setStatus('error', timed ? 'Timed out after 120s' : 'Network error — ' + err.message);
+    }
+  }
+
+  callLambda();
+</script>
+</body>
+</html>

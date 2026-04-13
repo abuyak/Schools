@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prompt Tester — School Scanner</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; font-size: 15px; background: #f5f5f5; color: #1a1a1a; padding: 2rem; }
+    h1 { font-size: 1.25rem; margin-bottom: 1.5rem; }
+    .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+    .card h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 1rem; }
+    label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.3rem; margin-top: 0.8rem; }
+    label:first-of-type { margin-top: 0; }
+    input[type=text], select, textarea {
+      width: 100%; padding: 0.5rem 0.6rem; border: 1px solid #ccc; border-radius: 5px;
+      font-size: 0.875rem; font-family: inherit; background: #fff;
+    }
+    textarea { resize: vertical; min-height: 90px; }
+    .variants { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+    .variant { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; }
+    .variant.off { opacity: 0.4; pointer-events: none; }
+    .v-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.9rem; }
+    .badge { display: inline-flex; align-items: center; justify-content: center;
+             width: 1.5rem; height: 1.5rem; border-radius: 50%; font-size: 0.75rem;
+             font-weight: 700; color: #fff; flex-shrink: 0; }
+    .a { background: #2563eb; } .b { background: #7c3aed; } .c { background: #059669; }
+    .v-head strong { font-size: 0.9rem; flex: 1; }
+    .toggle { display: flex; align-items: center; gap: 0.3rem; font-size: 0.8rem;
+              font-weight: 400; color: #555; pointer-events: all; cursor: pointer; }
+    .actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .run { padding: 0.6rem 1.6rem; background: #1a1a1a; color: #fff; border: none;
+           border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+    .run:hover { background: #333; }
+    .hint { font-size: 0.8rem; color: #888; }
+    .warn { font-size: 0.8rem; color: #b45309; display: none; margin-top: 0.5rem; }
+    small { display: block; font-size: 0.75rem; color: #888; margin-top: 0.2rem; }
+  </style>
+</head>
+<body>
+
+<h1>🧪 Prompt A/B Tester</h1>
+
+<!-- Setup -->
+<div class="card">
+  <h2>Request</h2>
+
+  <label for="admin-key">Admin key</label>
+  <input type="text" id="admin-key" placeholder="Paste admin key (stored in session)">
+
+  <label for="branch">Branch</label>
+  <select id="branch">
+    <option value="prompt_branch_1">01 — Evaluate a school</option>
+    <option value="prompt_branch_2">02 — Compare schools</option>
+    <option value="prompt_branch_3">03 — Check an area</option>
+    <option value="prompt_branch_4">04 — Plan backup options</option>
+  </select>
+
+  <label for="question">Question</label>
+  <textarea id="question" placeholder="E.g. Tell me about Eton College"></textarea>
+</div>
+
+<!-- Variants -->
+<div class="variants">
+
+  <!-- A (always on) -->
+  <div class="variant" id="va">
+    <div class="v-head">
+      <span class="badge a">A</span>
+      <strong>Variant A</strong>
+    </div>
+    <label>Model</label>
+    <select class="v-model">
+      <option value="o4-mini">o4-mini — ~$0.03 (default)</option>
+      <option value="gpt-4.1-mini">gpt-4.1-mini — ~$0.01</option>
+      <option value="gpt-4o-mini">gpt-4o-mini — ~$0.01</option>
+      <option value="gpt-4.1">gpt-4.1 — ~$0.10</option>
+      <option value="gpt-4o">gpt-4o — ~$0.10</option>
+      <option value="o3">o3 — ~$0.30</option>
+    </select>
+    <label>Prompt file</label>
+    <select class="v-prompt">
+      <option value="prompt_branch_1_specific_school.md">prompt_branch_1_specific_school.md</option>
+      <option value="prompt_branch_2_compare_schools.md">prompt_branch_2_compare_schools.md</option>
+      <option value="prompt_branch_3_postcode_or_area.md">prompt_branch_3_postcode_or_area.md</option>
+      <option value="prompt_branch_4_admissions_strategy.md">prompt_branch_4_admissions_strategy.md</option>
+    </select>
+    <small>Add new .md files here as you create them.</small>
+    <label>Tab label</label>
+    <input type="text" class="v-label" value="Variant A">
+  </div>
+
+  <!-- B -->
+  <div class="variant off" id="vb">
+    <div class="v-head">
+      <span class="badge b">B</span>
+      <strong>Variant B</strong>
+      <label class="toggle"><input type="checkbox" class="v-enable" onchange="toggle('vb',this)"> Enable</label>
+    </div>
+    <label>Model</label>
+    <select class="v-model">
+      <option value="o4-mini">o4-mini — ~$0.03 (default)</option>
+      <option value="gpt-4.1-mini">gpt-4.1-mini — ~$0.01</option>
+      <option value="gpt-4o-mini">gpt-4o-mini — ~$0.01</option>
+      <option value="gpt-4.1">gpt-4.1 — ~$0.10</option>
+      <option value="gpt-4o">gpt-4o — ~$0.10</option>
+      <option value="o3">o3 — ~$0.30</option>
+    </select>
+    <label>Prompt file</label>
+    <select class="v-prompt">
+      <option value="prompt_branch_1_specific_school.md">prompt_branch_1_specific_school.md</option>
+      <option value="prompt_branch_2_compare_schools.md">prompt_branch_2_compare_schools.md</option>
+      <option value="prompt_branch_3_postcode_or_area.md">prompt_branch_3_postcode_or_area.md</option>
+      <option value="prompt_branch_4_admissions_strategy.md">prompt_branch_4_admissions_strategy.md</option>
+    </select>
+    <small>Add new .md files here as you create them.</small>
+    <label>Tab label</label>
+    <input type="text" class="v-label" value="Variant B">
+  </div>
+
+  <!-- C -->
+  <div class="variant off" id="vc">
+    <div class="v-head">
+      <span class="badge c">C</span>
+      <strong>Variant C</strong>
+      <label class="toggle"><input type="checkbox" class="v-enable" onchange="toggle('vc',this)"> Enable</label>
+    </div>
+    <label>Model</label>
+    <select class="v-model">
+      <option value="o4-mini">o4-mini — ~$0.03 (default)</option>
+      <option value="gpt-4.1-mini">gpt-4.1-mini — ~$0.01</option>
+      <option value="gpt-4o-mini">gpt-4o-mini — ~$0.01</option>
+      <option value="gpt-4.1">gpt-4.1 — ~$0.10</option>
+      <option value="gpt-4o">gpt-4o — ~$0.10</option>
+      <option value="o3">o3 — ~$0.30</option>
+    </select>
+    <label>Prompt file</label>
+    <select class="v-prompt">
+      <option value="prompt_branch_1_specific_school.md">prompt_branch_1_specific_school.md</option>
+      <option value="prompt_branch_2_compare_schools.md">prompt_branch_2_compare_schools.md</option>
+      <option value="prompt_branch_3_postcode_or_area.md">prompt_branch_3_postcode_or_area.md</option>
+      <option value="prompt_branch_4_admissions_strategy.md">prompt_branch_4_admissions_strategy.md</option>
+    </select>
+    <small>Add new .md files here as you create them.</small>
+    <label>Tab label</label>
+    <input type="text" class="v-label" value="Variant C">
+  </div>
+
+</div>
+
+<div class="actions">
+  <button class="run" onclick="run()">Run variants</button>
+  <span class="hint">Opens one tab per enabled variant. Allow popups if blocked.</span>
+</div>
+<div class="warn" id="warn">⚠ Popup blocked — allow popups for this page and try again.</div>
+
+<script>
+  // Persist admin key in session
+  const keyEl = document.getElementById('admin-key');
+  keyEl.value = sessionStorage.getItem('sk_admin_key') || '';
+  keyEl.addEventListener('input', () => sessionStorage.setItem('sk_admin_key', keyEl.value.trim()));
+
+  // Sync prompt dropdown with selected branch
+  document.getElementById('branch').addEventListener('change', syncPromptDropdowns);
+
+  const BRANCH_FILES = {
+    prompt_branch_1: 'prompt_branch_1_specific_school.md',
+    prompt_branch_2: 'prompt_branch_2_compare_schools.md',
+    prompt_branch_3: 'prompt_branch_3_postcode_or_area.md',
+    prompt_branch_4: 'prompt_branch_4_admissions_strategy.md',
+  };
+
+  function syncPromptDropdowns() {
+    const branch = document.getElementById('branch').value;
+    const defaultFile = BRANCH_FILES[branch];
+    document.querySelectorAll('.v-prompt').forEach(sel => {
+      sel.value = defaultFile;
+    });
+  }
+  syncPromptDropdowns();
+
+  function toggle(id, cb) {
+    document.getElementById(id).classList.toggle('off', !cb.checked);
+  }
+
+  function run() {
+    const adminKey = keyEl.value.trim();
+    const branch   = document.getElementById('branch').value;
+    const question = document.getElementById('question').value.trim();
+
+    if (!adminKey)  { alert('Enter the admin key.'); return; }
+    if (!question)  { alert('Enter a question.'); return; }
+
+    const variants = ['va', 'vb', 'vc']
+      .map(id => document.getElementById(id))
+      .filter(el => !el.classList.contains('off'))
+      .map(el => ({
+        model:      el.querySelector('.v-model').value,
+        promptFile: el.querySelector('.v-prompt').value,
+        label:      el.querySelector('.v-label').value.trim(),
+      }));
+
+    if (!variants.length) { alert('Enable at least one variant.'); return; }
+
+    let blocked = false;
+    variants.forEach(v => {
+      const p = new URLSearchParams({ label: v.label, branch, question, model: v.model, promptFile: v.promptFile, adminKey });
+      const tab = window.open('result.html#' + p.toString(), '_blank');
+      if (!tab) blocked = true;
+    });
+
+    document.getElementById('warn').style.display = blocked ? 'block' : 'none';
+  }
+</script>
+</body>
+</html>

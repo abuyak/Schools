@@ -98,9 +98,18 @@ function validatePayload(body) {
   return errors;
 }
 
-function getBranchInstructions(branch) {
-  const file = BRANCH_FILES[branch];
-  if (!file) throw new Error(`Unknown branch: ${branch}`);
+function getBranchInstructions(branch, promptFile) {
+  // If a specific file is requested (admin test), validate and use it.
+  // Otherwise fall back to the branch default.
+  let file;
+  if (promptFile) {
+    // Security: allow only safe filenames (no path traversal)
+    if (!/^[\w-]+\.md$/.test(promptFile)) throw new Error('Invalid prompt file name.');
+    file = promptFile;
+  } else {
+    file = BRANCH_FILES[branch];
+    if (!file) throw new Error(`Unknown branch: ${branch}`);
+  }
   const prompt = readFileSync(join(MD_ROOT, file), 'utf8');
   return prompt + OUTPUT_CONSTRAINTS;
 }
@@ -229,10 +238,16 @@ export const handler = async (event) => {
     return errorResponse(503, { error: 'OPENAI_API_KEY is not configured.' });
   }
 
+  // Admin overrides — only honoured when _adminKey matches ADMIN_KEY env var
+  const adminKey = process.env.ADMIN_KEY;
+  const isAdmin  = adminKey && body._adminKey === adminKey;
+  const model     = (isAdmin && body._model)      ? body._model      : (process.env.OPENAI_MODEL ?? 'o4-mini');
+  const promptFile= (isAdmin && body._promptFile) ? body._promptFile : null;
+
   // Build request
-  const instructions = getBranchInstructions(body.branch);
+  const instructions = getBranchInstructions(body.branch, promptFile);
   const requestBody = {
-    model: process.env.OPENAI_MODEL ?? 'o4-mini',
+    model,
     reasoning: { effort: process.env.OPENAI_REASONING_EFFORT ?? 'medium' },
     tools: [{
       type: 'web_search',

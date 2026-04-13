@@ -28,7 +28,7 @@ if (-not $FrontendOnly) {
 if (-not $LambdaOnly) {
     Write-Host ""
     Write-Host "Uploading frontend to S3..." -ForegroundColor Yellow
-    aws s3 sync "$PSScriptRoot\web" "s3://$S3Bucket" --delete
+    aws s3 sync "$PSScriptRoot\web" "s3://$S3Bucket" --delete --exclude "admin/*"
     if ($LASTEXITCODE -ne 0) { Write-Host "S3 upload failed." -ForegroundColor Red; exit 1 }
     Write-Host "Frontend uploaded." -ForegroundColor Green
 
