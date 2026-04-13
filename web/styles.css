@@ -314,6 +314,9 @@ input[type="email"]:focus,
   border-radius: 18px;
   padding: 1.25rem;
   background: linear-gradient(180deg, #fffdf9, #fff7f0);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 /* Section heading — sans-serif label, visually separate from body */
@@ -413,7 +416,7 @@ input[type="email"]:focus,
 
 .md-table {
   width: 100%;
-  min-width: 32rem;          /* prevents squishing before scroll kicks in */
+  min-width: 28rem;          /* prevents squishing before scroll kicks in */
   border-collapse: collapse;
   font-size: 0.875rem;
   line-height: 1.45;
