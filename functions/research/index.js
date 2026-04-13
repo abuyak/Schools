@@ -193,105 +193,6 @@ function parseOpenAIResponse(apiResponse) {
   };
 }
 
-// ── Provider helpers ────────────────────────────────────────────────────────
-
-function isAnthropicModel(model) {
-  return typeof model === 'string' && model.startsWith('claude-');
-}
-
-// Instruction appended to system prompt for Anthropic (replaces OpenAI text.format)
-const ANTHROPIC_JSON_INSTRUCTION = `
-
-Return ONLY a valid JSON object with exactly these fields — no prose, no markdown fences:
-{
-  "title": "string",
-  "summary": "string",
-  "scorecard": [{"dimension": "string", "rating": "strong|good|mixed|weak|unknown", "note": "string"}],
-  "sections": [{"heading": "string", "body": "string"}]
-}`;
-
-async function callOpenAI({ model, instructions, question, apiKey, baseUrl, maxTokens, reasoningEffort }) {
-  const url = `${baseUrl.replace(/\/$/, '')}/responses`;
-  return fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model,
-      reasoning: { effort: reasoningEffort },
-      tools: [{
-        type: 'web_search',
-        user_location: { type: 'approximate', country: 'GB', city: 'London', region: 'London', timezone: 'Europe/London' },
-        external_web_access: true,
-      }],
-      tool_choice: 'auto',
-      include: ['web_search_call.action.sources'],
-      instructions,
-      input: question,
-      max_output_tokens: maxTokens,
-      text: { format: RESPONSE_SCHEMA },
-    }),
-    signal: AbortSignal.timeout(110000),
-  });
-}
-
-async function callAnthropic({ model, instructions, question, apiKey }) {
-  return fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: 4000,
-      system: instructions + ANTHROPIC_JSON_INSTRUCTION,
-      messages: [{ role: 'user', content: question }],
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-    }),
-    signal: AbortSignal.timeout(110000),
-  });
-}
-
-function parseAnthropicResponse(apiResponse) {
-  const textBlock = (apiResponse.content ?? []).find(c => c.type === 'text');
-  const outputText = textBlock?.text ?? '';
-
-  if (!outputText.trim()) {
-    return { status: 'upstream_invalid_format', httpStatus: 502, title: 'Unexpected upstream response', summary: 'The research provider returned an empty response.', scorecard: [], sections: [] };
-  }
-
-  let clean = outputText.trim();
-  if (/^```(?:json)?\s*\n/.test(clean)) {
-    clean = clean.replace(/^```(?:json)?\s*\n/, '').replace(/\n```\s*$/, '').trim();
-  }
-  if (!clean.startsWith('{')) {
-    const brace = clean.indexOf('{');
-    if (brace >= 0) clean = clean.slice(brace);
-  }
-
-  let parsed;
-  try {
-    parsed = JSON.parse(clean);
-  } catch {
-    return { status: 'upstream_invalid_format', httpStatus: 502, title: 'Unexpected upstream response', summary: 'The research provider returned a response that did not match the expected JSON format.', scorecard: [], sections: [{ heading: 'Raw output (first 400 chars)', body: outputText.slice(0, 400) }] };
-  }
-
-  const sections = (parsed.sections ?? []).map(s => ({ ...s }));
-  for (const s of sections) {
-    if (/^sources?$/i.test(s.heading)) { s.heading = 'Primary Sources'; break; }
-  }
-
-  return {
-    status: 'completed',
-    httpStatus: 200,
-    title: parsed.title ?? '',
-    summary: parsed.summary ?? '',
-    scorecard: parsed.scorecard ?? [],
-    sections,
-  };
-}
-
 function errorResponse(statusCode, body) {
   return {
     statusCode,
@@ -343,33 +244,38 @@ export const handler = async (event) => {
   const model     = (isAdmin && body._model)      ? body._model      : (process.env.OPENAI_MODEL ?? 'o4-mini');
   const promptFile= (isAdmin && body._promptFile) ? body._promptFile : null;
 
-  // Choose provider based on model name
-  const anthropic = isAnthropicModel(model);
-  const providerKey = anthropic ? process.env.ANTHROPIC_API_KEY : apiKey;
-
-  if (anthropic && !providerKey) {
-    log('research_request', { status: 'misconfigured', httpStatus: 503, branch: body.branch, model });
-    return errorResponse(503, { error: 'ANTHROPIC_API_KEY is not configured.' });
-  }
-
   const instructions = getBranchInstructions(body.branch, promptFile);
 
-  // Call provider
+  // Call OpenAI
+  const baseUrl = (process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1').replace(/\/$/, '');
+
   let apiResponse;
   try {
-    const res = anthropic
-      ? await callAnthropic({ model, instructions, question: body.question, apiKey: providerKey })
-      : await callOpenAI({
-          model, instructions, question: body.question, apiKey: providerKey,
-          baseUrl: process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1',
-          maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS ?? '8000', 10),
-          reasoningEffort: process.env.OPENAI_REASONING_EFFORT ?? 'low',
-        });
+    const res = await fetch(`${baseUrl}/responses`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model,
+        reasoning: { effort: process.env.OPENAI_REASONING_EFFORT ?? 'low' },
+        tools: [{
+          type: 'web_search',
+          user_location: { type: 'approximate', country: 'GB', city: 'London', region: 'London', timezone: 'Europe/London' },
+          external_web_access: true,
+        }],
+        tool_choice: 'auto',
+        include: ['web_search_call.action.sources'],
+        instructions,
+        input: body.question,
+        max_output_tokens: parseInt(process.env.OPENAI_MAX_TOKENS ?? '8000', 10),
+        text: { format: RESPONSE_SCHEMA },
+      }),
+      signal: AbortSignal.timeout(110000),
+    });
 
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       const summary =
-        res.status === 401 || res.status === 403 ? 'The research provider rejected the API key.' :
+        res.status === 401 || res.status === 403 ? 'The research provider rejected the API key. Check OPENAI_API_KEY.' :
         res.status === 429 ? 'The research provider is rate-limiting requests. Try again shortly.' :
         'The research provider could not complete the request.';
       log('research_request', { status: 'upstream_error', httpStatus: res.status, branch: body.branch, model, ms: Date.now() - t0 });
@@ -390,7 +296,7 @@ export const handler = async (event) => {
     });
   }
 
-  const result = anthropic ? parseAnthropicResponse(apiResponse) : parseOpenAIResponse(apiResponse);
+  const result = parseOpenAIResponse(apiResponse);
   const ms = Date.now() - t0;
 
   log('research_request', {
