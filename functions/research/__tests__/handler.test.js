@@ -19,6 +19,24 @@ beforeEach(() => {
 });
 
 // ---------------------------------------------------------------------------
+// Logging helper — captures structured JSON emitted via console.log
+// ---------------------------------------------------------------------------
+
+function captureLog(fn) {
+  const entries = [];
+  const spy = jest.spyOn(console, 'log').mockImplementation((line) => {
+    try { entries.push(JSON.parse(line)); } catch { /* ignore non-JSON */ }
+  });
+  return fn().then(result => {
+    spy.mockRestore();
+    return { result, entries };
+  }).catch(err => {
+    spy.mockRestore();
+    throw err;
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -47,6 +65,84 @@ const VALID_OPENAI_RESPONSE = {
   }),
   output: [],
 };
+
+// ---------------------------------------------------------------------------
+// Analytics logging tests
+// ---------------------------------------------------------------------------
+
+describe('Analytics logging', () => {
+  test('logs research_request with status=completed on success', async () => {
+    mockOpenAI(VALID_OPENAI_RESPONSE);
+    const { entries } = await captureLog(() =>
+      handler(makeEvent({ branch: 'prompt_branch_1', question: 'Tell me about Eton' }))
+    );
+    const entry = entries.find(e => e.event === 'research_request');
+    expect(entry).toBeDefined();
+    expect(entry.status).toBe('completed');
+    expect(entry.branch).toBe('prompt_branch_1');
+    expect(entry.httpStatus).toBe(200);
+    expect(typeof entry.ms).toBe('number');
+    expect(entry.ts).toMatch(/^\d{4}-/); // ISO timestamp
+    expect(entry.question).toBe('Tell me about Eton');
+  });
+
+  test('logs research_request with status=validation_failed on bad input', async () => {
+    const { entries } = await captureLog(() =>
+      handler(makeEvent({ question: 'No branch here' }))
+    );
+    const entry = entries.find(e => e.event === 'research_request');
+    expect(entry).toBeDefined();
+    expect(entry.status).toBe('validation_failed');
+    expect(entry.httpStatus).toBe(400);
+  });
+
+  test('logs research_request with status=invalid_json on bad body', async () => {
+    const { entries } = await captureLog(() =>
+      handler({ body: 'not json' })
+    );
+    const entry = entries.find(e => e.event === 'research_request');
+    expect(entry).toBeDefined();
+    expect(entry.status).toBe('invalid_json');
+    expect(entry.httpStatus).toBe(400);
+  });
+
+  test('logs research_request with status=upstream_error on OpenAI 429', async () => {
+    mockOpenAI({}, 429);
+    const { entries } = await captureLog(() =>
+      handler(makeEvent({ branch: 'prompt_branch_1', question: 'Test' }))
+    );
+    const entry = entries.find(e => e.event === 'research_request');
+    expect(entry).toBeDefined();
+    expect(entry.status).toBe('upstream_error');
+    expect(entry.httpStatus).toBe(429);
+    expect(entry.branch).toBe('prompt_branch_1');
+    expect(typeof entry.ms).toBe('number');
+  });
+
+  test('logs research_request with status=timeout on AbortError', async () => {
+    const timeoutErr = new Error('The operation timed out.');
+    timeoutErr.name = 'TimeoutError';
+    mockFetch.mockRejectedValueOnce(timeoutErr);
+    const { entries } = await captureLog(() =>
+      handler(makeEvent({ branch: 'prompt_branch_2', question: 'Compare schools' }))
+    );
+    const entry = entries.find(e => e.event === 'research_request');
+    expect(entry).toBeDefined();
+    expect(entry.status).toBe('timeout');
+    expect(entry.httpStatus).toBe(504);
+    expect(entry.branch).toBe('prompt_branch_2');
+  });
+
+  test('truncates question to 200 characters in log', async () => {
+    mockOpenAI(VALID_OPENAI_RESPONSE);
+    const longQuestion = 'x'.repeat(300);
+    const { entries } = await captureLog(() =>
+      handler(makeEvent({ branch: 'prompt_branch_1', question: longQuestion }))
+    );
+    const entry = entries.find(e => e.event === 'research_request');
+    expect(entry.question.length).toBe(200);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Validation tests
