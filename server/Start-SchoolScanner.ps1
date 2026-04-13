@@ -325,6 +325,18 @@ try {
                     Send-FileResponse -Client $client -Path (Join-Path $Root "app.js")
                     continue
                 }
+                "GET /admin/" {
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "admin\index.html")
+                    continue
+                }
+                "GET /admin/index.html" {
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "admin\index.html")
+                    continue
+                }
+                "GET /admin/result.html" {
+                    Send-FileResponse -Client $client -Path (Join-Path $Root "admin\result.html")
+                    continue
+                }
                 "GET /api-docs.js" {
                     Send-FileResponse -Client $client -Path (Join-Path $Root "api-docs.js")
                     continue
