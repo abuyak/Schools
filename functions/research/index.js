@@ -257,7 +257,7 @@ export const handler = async (event) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
       body: JSON.stringify(requestBody),
-      signal: AbortSignal.timeout(55000), // just under Lambda timeout
+      signal: AbortSignal.timeout(110000), // just under Lambda timeout
     });
 
     if (!res.ok) {
