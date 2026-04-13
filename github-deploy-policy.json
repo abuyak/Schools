@@ -75,23 +75,27 @@
       ]
     },
     {
-      "Sid": "CloudFront",
+      "Sid": "CloudFrontDistribution",
       "Effect": "Allow",
       "Action": [
         "cloudfront:CreateInvalidation",
         "cloudfront:GetDistribution",
         "cloudfront:GetDistributionConfig",
-        "cloudfront:UpdateDistribution",
+        "cloudfront:UpdateDistribution"
+      ],
+      "Resource": "arn:aws:cloudfront::118722469024:distribution/E2NZ0O827VD30U"
+    },
+    {
+      "Sid": "CloudFrontResponseHeadersPolicy",
+      "Effect": "Allow",
+      "Action": [
         "cloudfront:CreateResponseHeadersPolicy",
         "cloudfront:UpdateResponseHeadersPolicy",
         "cloudfront:DeleteResponseHeadersPolicy",
         "cloudfront:GetResponseHeadersPolicy",
         "cloudfront:ListResponseHeadersPolicies"
       ],
-      "Resource": [
-        "arn:aws:cloudfront::118722469024:distribution/E2NZ0O827VD30U",
-        "arn:aws:cloudfront::118722469024:response-headers-policy/*"
-      ]
+      "Resource": "*"
     },
     {
       "Sid": "SSM",
