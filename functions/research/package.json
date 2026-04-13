@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:live": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=live"
+    "test:live": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=live",
+    "test:smoke": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=smoke --testTimeout=120000"
   },
   "jest": {
     "testEnvironment": "node",
