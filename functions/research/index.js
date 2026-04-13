@@ -248,27 +248,32 @@ export const handler = async (event) => {
 
   // Call OpenAI
   const baseUrl = (process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1').replace(/\/$/, '');
+  const isReasoningModel = /^o\d/i.test(model);
 
   let apiResponse;
   try {
+    const requestPayload = {
+      model,
+      tools: [{
+        type: 'web_search',
+        user_location: { type: 'approximate', country: 'GB', city: 'London', region: 'London', timezone: 'Europe/London' },
+        external_web_access: true,
+      }],
+      tool_choice: 'auto',
+      include: ['web_search_call.action.sources'],
+      instructions,
+      input: body.question,
+      max_output_tokens: parseInt(process.env.OPENAI_MAX_TOKENS ?? '8000', 10),
+      text: { format: RESPONSE_SCHEMA },
+    };
+    if (isReasoningModel) {
+      requestPayload.reasoning = { effort: process.env.OPENAI_REASONING_EFFORT ?? 'low' };
+    }
+
     const res = await fetch(`${baseUrl}/responses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model,
-        reasoning: { effort: process.env.OPENAI_REASONING_EFFORT ?? 'low' },
-        tools: [{
-          type: 'web_search',
-          user_location: { type: 'approximate', country: 'GB', city: 'London', region: 'London', timezone: 'Europe/London' },
-          external_web_access: true,
-        }],
-        tool_choice: 'auto',
-        include: ['web_search_call.action.sources'],
-        instructions,
-        input: body.question,
-        max_output_tokens: parseInt(process.env.OPENAI_MAX_TOKENS ?? '8000', 10),
-        text: { format: RESPONSE_SCHEMA },
-      }),
+      body: JSON.stringify(requestPayload),
       signal: AbortSignal.timeout(110000),
     });
 
