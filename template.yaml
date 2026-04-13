@@ -24,7 +24,7 @@ Globals:
         OPENAI_MODEL: !Ref OpenAIModel
         ADMIN_KEY: !Ref AdminKey
         OPENAI_REASONING_EFFORT: low
-        OPENAI_MAX_TOKENS: '4000'
+        OPENAI_MAX_TOKENS: '16000'
         OPENAI_BASE_URL: https://api.openai.com/v1
 
 Resources:
