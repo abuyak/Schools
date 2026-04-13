@@ -187,7 +187,7 @@ function parseOpenAIResponse(apiResponse) {
 function errorResponse(statusCode, body) {
   return {
     statusCode,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   };
 }
@@ -195,7 +195,7 @@ function errorResponse(statusCode, body) {
 function okResponse(body) {
   return {
     statusCode: body.httpStatus ?? 200,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   };
 }

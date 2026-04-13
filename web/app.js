@@ -445,7 +445,7 @@
     const _t0 = Date.now();
 
     try {
-      const response = await fetch("/api/research", {
+      const response = await fetch("https://ep6az35owvnis2c6n6wcl7axyy0elrlh.lambda-url.eu-west-2.on.aws/", {
         method: "POST",
         headers: {
           "Accept": "application/json",
