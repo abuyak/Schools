@@ -2,23 +2,26 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: School Scanner API
 
+Parameters:
+  OpenAIApiKey:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /schoolscanner/openai_api_key
+  OpenAIModel:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /schoolscanner/openai_model
+
 Globals:
   Function:
     Runtime: nodejs22.x
-    Timeout: 60
+    Timeout: 120
     MemorySize: 512
     Environment:
       Variables:
-        OPENAI_API_KEY: !Sub '{{resolve:ssm:/schoolscanner/openai_api_key}}'
-        OPENAI_MODEL: !Sub '{{resolve:ssm:/schoolscanner/openai_model}}'
-        OPENAI_REASONING_EFFORT: medium
-        OPENAI_MAX_TOKENS: '8000'
+        OPENAI_API_KEY: !Ref OpenAIApiKey
+        OPENAI_MODEL: !Ref OpenAIModel
+        OPENAI_REASONING_EFFORT: low
+        OPENAI_MAX_TOKENS: '4000'
         OPENAI_BASE_URL: https://api.openai.com/v1
-  Api:
-    Cors:
-      AllowMethods: "'GET,POST,OPTIONS'"
-      AllowHeaders: "'Content-Type,Accept'"
-      AllowOrigin: "'*'"
 
 Resources:
 
@@ -27,12 +30,16 @@ Resources:
     Properties:
       Handler: functions/research/index.handler
       Description: Handles POST /api/research requests
-      Events:
-        ResearchApi:
-          Type: Api
-          Properties:
-            Path: /api/research
-            Method: post
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins:
+            - "*"
+          AllowMethods:
+            - "*"
+          AllowHeaders:
+            - Content-Type
+            - Accept
 
   HealthFunction:
     Type: AWS::Serverless::Function
@@ -47,6 +54,6 @@ Resources:
             Method: get
 
 Outputs:
-  ApiUrl:
-    Description: API Gateway endpoint
-    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod'
+  HealthUrl:
+    Description: API Gateway health endpoint
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/api/health'
