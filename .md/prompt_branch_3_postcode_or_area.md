@@ -38,8 +38,12 @@ If the parent has described their child, weave fit assessment throughout every r
 Prefer:
 1. Government school data
 2. Official school websites
-3. Ofsted / ISI / equivalent
+3. Ofsted / ISI / equivalent — reports.ofsted.gov.uk / isi.net
 4. Official admissions documents where catchment or entry rules matter
+5. Good Schools Guide — goodschoolsguide.co.uk
+6. Schoolsmith — schoolsmith.co.uk
+7. Independent School Parent — independentschoolparent.com
+8. ISC — isc.co.uk
 
 You must:
 - focus on decision-useful interpretation, not a long school dump
@@ -201,12 +205,12 @@ Include for all fee-paying schools in the shortlist. Use the most recent publish
 
 For each fee-paying school, provide a breakdown by stage:
 
-| Stage | Annual Day Fee | Annual Boarding Fee (if applicable) |
-|---|---|---|
-| Reception / Pre-Prep | | |
-| Junior / Prep | | |
-| Senior | | |
-| Sixth Form | | |
+| Stage | Day (per term) | Day (annual) | Boarding (per term) | Boarding (annual) |
+|---|---|---|---|---|
+| Reception / Pre-Prep | | | | |
+| Junior / Prep | | | | |
+| Senior | | | | |
+| Sixth Form | | | | |
 
 - Notable extras: include only if reliably sourced.
 - Bursaries and scholarships: note availability and approximate value if published.
@@ -222,6 +226,9 @@ Include for shortlisted schools only where source-backed. Do not speculate.
 - Top destination secondary schools for each school (list with ranking context)
 - For each destination school: published GCSE and A-level results (or equivalent) if available
 - Ranking of destination schools locally and nationally where sourced
+- For each destination secondary that is a senior school: check Oxford and Cambridge admissions data:
+  - Oxford: check local file /sources/Oxford/oxford_admissions_merged.csv
+  - Cambridge: check https://www.undergraduate.study.cam.ac.uk/apply/before/application-statistics and local file /sources/Cambridge/cambridge_admissions_merged.csv
 
 **Secondary schools**
 - University destinations:
@@ -245,10 +252,17 @@ Cover the area-level picture and census data. Do not repeat school-level detail 
 - Moving-for-schools verdict: is this area worth targeting for a school-led move?
 
 **Area census data**
-- Average household income in the area under search (ONS, census data, or equivalent public source)
-- Ethnicity breakdown for each shortlisted school's pupil population (school census or government data)
-- Free school meal eligibility for state schools in the shortlist (% eligible; note whether above or below national average)
-- Parent profile: brief characterisation of the likely parent community for each school based on area income, school type, and available data
+
+Use these sources (search by postcode or first part of postcode):
+- https://www.postcodearea.co.uk — area demographics and income data
+- https://crystalroof.co.uk/report/postcode/ — area profile and amenities
+- https://www.rightmove.co.uk/house-prices — property price data
+
+- **Average Household Income**: average household income in the area under search
+- **Property Costs**: average and typical property prices in the area (from Rightmove or equivalent)
+- **Ethnicity**: breakdown for each shortlisted school's pupil population (school census or government data)
+- **Free school meal eligibility** for state schools in the shortlist (% eligible; note whether above or below national average)
+- **Parent profile**: brief characterisation of the likely parent community for each school based on area income, property costs, school type, and available data
 
 ---
 

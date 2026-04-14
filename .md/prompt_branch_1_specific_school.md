@@ -38,9 +38,13 @@ If the parent has described their child, weave fit assessment throughout every r
 Prefer:
 1. Official school website
 2. Government school information sources
-3. Ofsted, ISI, or equivalent official inspectorates
+3. Ofsted, ISI, or equivalent official inspectorates — reports.ofsted.gov.uk / isi.net
 4. Official admissions policies and school documents
 5. Official destination data where available
+6. Good Schools Guide — goodschoolsguide.co.uk
+7. Schoolsmith — schoolsmith.co.uk
+8. Independent School Parent — independentschoolparent.com
+9. ISC — isc.co.uk
 
 You must:
 - separate fact from interpretation
@@ -199,12 +203,12 @@ Include this section only if the school has a religious character.
 
 Provide a full breakdown by stage using the most recent published figures. Present as a table.
 
-| Stage | Annual Day Fee | Annual Boarding Fee (if applicable) |
-|---|---|---|
-| Reception / Pre-Prep | | |
-| Junior / Prep | | |
-| Senior | | |
-| Sixth Form | | |
+| Stage | Day (per term) | Day (annual) | Boarding (per term) | Boarding (annual) |
+|---|---|---|---|---|
+| Reception / Pre-Prep | | | | |
+| Junior / Prep | | | | |
+| Senior | | | | |
+| Sixth Form | | | | |
 
 - Notable extras: include only if reliably sourced (e.g. lunch, compulsory trips, uniform levy, registration or exam fees). Do not list speculative or typical extras without a source.
 - Bursaries and scholarships: note availability and approximate value if published.
@@ -221,6 +225,9 @@ Include only if source-backed. Do not speculate.
 - Top destination secondary schools (list with ranking context)
 - For each destination school: published GCSE and A-level results (or equivalent) if available
 - Ranking of destination schools locally and nationally where sourced
+- For each destination secondary school that is itself a senior school: check Oxford and Cambridge admissions data:
+  - Oxford: check local file /sources/Oxford/oxford_admissions_merged.csv
+  - Cambridge: check https://www.undergraduate.study.cam.ac.uk/apply/before/application-statistics and local file /sources/Cambridge/cambridge_admissions_merged.csv
 
 **Secondary schools**
 - Post-16 or university destinations if published by the school
@@ -235,12 +242,19 @@ Include only if source-backed. Do not speculate.
 
 ### 10. Surrounding Area And Census
 
-Search public sources. Do not repeat school-level data already covered elsewhere.
+Search public sources using the school's postcode. Do not repeat school-level data already covered elsewhere.
 
-- **Average income**: average household income within 0.5 miles of the school (ONS, census data, or equivalent public source)
+Use these sources (search by postcode or first part of postcode):
+- https://www.postcodearea.co.uk — area demographics and income data
+- https://crystalroof.co.uk/report/postcode/ — area profile and amenities
+- https://www.rightmove.co.uk/house-prices — property price data
+
+Cover:
+- **Average Household Income**: average household income within 0.5 miles of the school
+- **Property Costs**: average and typical property prices in the immediate area (from Rightmove or equivalent)
 - **Ethnicity**: ethnic breakdown of the school's pupil population (from school census or government data)
 - **Free school meal eligibility** (state schools only): percentage of pupils eligible; note whether this is above or below national average
-- **Parent profile**: brief characterisation of the likely parent community based on area income, school type, and available data
+- **Parent profile**: brief characterisation of the likely parent community based on area income, property costs, school type, and available data
 
 ---
 

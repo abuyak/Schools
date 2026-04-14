@@ -36,9 +36,13 @@ If the parent has described their child, weave fit assessment throughout every r
 Prefer:
 1. Official school websites
 2. Government data
-3. Ofsted / ISI / equivalent
+3. Ofsted / ISI / equivalent — reports.ofsted.gov.uk / isi.net
 4. Official admissions policies
 5. Official university or destination data where available
+6. Good Schools Guide — goodschoolsguide.co.uk
+7. Schoolsmith — schoolsmith.co.uk
+8. Independent School Parent — independentschoolparent.com
+9. ISC — isc.co.uk
 
 You must:
 - compare like with like where possible
@@ -187,12 +191,12 @@ Include for all fee-paying schools. Use a table per school where multiple stages
 
 **School A**
 
-| Stage | Annual Day Fee | Annual Boarding Fee (if applicable) |
-|---|---|---|
-| Reception / Pre-Prep | | |
-| Junior / Prep | | |
-| Senior | | |
-| Sixth Form | | |
+| Stage | Day (per term) | Day (annual) | Boarding (per term) | Boarding (annual) |
+|---|---|---|---|---|
+| Reception / Pre-Prep | | | | |
+| Junior / Prep | | | | |
+| Senior | | | | |
+| Sixth Form | | | | |
 
 **School B** (same format)
 
@@ -212,6 +216,9 @@ Include only if the evidence is source-backed and reasonably comparable. Do not 
 - Top destination secondary schools for each school (list with ranking context)
 - For each destination school: published GCSE and A-level results (or equivalent) if available
 - Ranking of destination schools locally and nationally where sourced
+- For each destination secondary that is a senior school: check Oxford and Cambridge admissions data:
+  - Oxford: check local file /sources/Oxford/oxford_admissions_merged.csv
+  - Cambridge: check https://www.undergraduate.study.cam.ac.uk/apply/before/application-statistics and local file /sources/Cambridge/cambridge_admissions_merged.csv
 
 **Secondary schools**
 - University destinations:
@@ -226,11 +233,17 @@ Include only if the evidence is source-backed and reasonably comparable. Do not 
 
 ### 9. Surrounding Area And Census
 
-Search public sources for each school. Present in tabular format where possible.
+Search public sources for each school using its postcode. Present in tabular format.
+
+Use these sources (search by postcode or first part of postcode):
+- https://www.postcodearea.co.uk — area demographics and income data
+- https://crystalroof.co.uk/report/postcode/ — area profile and amenities
+- https://www.rightmove.co.uk/house-prices — property price data
 
 | Dimension | School A | School B | School C (if applicable) |
 |---|---|---|---|
 | Average household income within 0.5 miles | | | |
+| Typical property prices in the area | | | |
 | Pupil ethnicity breakdown | | | |
 | Free school meal eligibility (state schools only) | | | |
 | Parent profile summary | | | |

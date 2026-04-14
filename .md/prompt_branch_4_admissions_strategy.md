@@ -45,8 +45,12 @@ Prefer:
 1. Official admissions policies
 2. Government school admissions information
 3. Official school websites
-4. Ofsted / ISI where school quality context matters
+4. Ofsted / ISI where school quality context matters — reports.ofsted.gov.uk / isi.net
 5. Official destination or feeder information where relevant
+6. Good Schools Guide — goodschoolsguide.co.uk
+7. Schoolsmith — schoolsmith.co.uk
+8. Independent School Parent — independentschoolparent.com
+9. ISC — isc.co.uk
 
 You must:
 - focus on actionable strategy
@@ -152,12 +156,12 @@ Include if affordability affects the strategy — for example, if one fallback r
 
 For each fee-paying fallback school:
 
-| Stage | Annual Day Fee | Annual Boarding Fee (if applicable) |
-|---|---|---|
-| Reception / Pre-Prep | | |
-| Junior / Prep | | |
-| Senior | | |
-| Sixth Form | | |
+| Stage | Day (per term) | Day (annual) | Boarding (per term) | Boarding (annual) |
+|---|---|---|---|---|
+| Reception / Pre-Prep | | | | |
+| Junior / Prep | | | | |
+| Senior | | | | |
+| Sixth Form | | | | |
 
 - Notable extras: include only if reliably sourced.
 - Bursaries and scholarships: note availability and approximate value if published, as these can change the affordability calculation for a fallback route.
@@ -179,11 +183,17 @@ For each relevant fallback school, briefly note:
 
 Include if the choice between fallbacks involves moving area or if area context changes the strategic picture.
 
+Use these sources (search by school postcode or first part of postcode):
+- https://www.postcodearea.co.uk — area demographics and income data
+- https://crystalroof.co.uk/report/postcode/ — area profile and amenities
+- https://www.rightmove.co.uk/house-prices — property price data
+
 For each relevant fallback school:
-- Average household income within 0.5 miles (ONS or census data)
-- Ethnic breakdown of the school's pupil population
-- Free school meal eligibility (state schools only; note whether above or below national average)
-- Parent profile: brief characterisation based on area income, school type, and available data
+- **Average Household Income**: within 0.5 miles
+- **Property Costs**: average and typical property prices in the immediate area
+- **Ethnicity**: ethnic breakdown of the school's pupil population
+- **Free school meal eligibility** (state schools only; note whether above or below national average)
+- **Parent profile**: brief characterisation based on area income, property costs, school type, and available data
 
 ---
 

@@ -1,6 +1,7 @@
 Prompt Issues Log
 
 1. There is a lot of duplicated information that is repeated from section on section. Information needs to be crisp and short and to the point. You're dealing with tired parents who don't have time to  read through tons of diluted information. Try not to repeat any info that has already been mentioned in some other sections
+   STATUS: RESOLVED — Anti-Duplication Rule added to all 4 prompts. Each section explicitly instructed to cover new ground only.
 
 2. When you refer to Ofsted or ISI inspection report, we need to go few levels deeper. Phrases like "excellent in all areas" don't really mean much unless you specify this. Let's make sure that prompts 1, 2 and 3 have a section about Inspection And Review Takeaways. And in this section there's a clear breakdown of:
 - what areas are good
@@ -13,31 +14,52 @@ Prompt Issues Log
 prompts 2 and 3 should have this in tabular format for easier comparison
 
 Remember - the main goal is to save people time gooling. So Ofsted and ISI require a solid summary and key takeaways to help people
+   STATUS: RESOLVED — Inspection And Review Takeaways section expanded in prompts 1, 2, 3. Named areas required, top 5 parent positives/negatives, Mumsnet/Reddit sentiment. Prompts 2 and 3 use tabular format.
 
 3. Extracurricular activities. One of the important factors that parents look after is the list of afterschool clubs that is provided by school. Please find the list of clubs offered by the school and summarise
+   STATUS: RESOLVED — Extracurricular Activities section added to all 4 prompts with structured categories (sports, arts, academic clubs, other).
 
 4. Primary School Destinations. All prompts need to be updated with better information on destination schools. Parents want to see how well the most popular destination school performs. So when the quesiton is being asked about primary school, a research needs to be made on:
 - top destination schools
 - ranking of the destination schools
 - key GCSE and A level grades of destination schools
+   STATUS: RESOLVED — Destinations section updated in all prompts to include destination school rankings and GCSE/A-level grades for primary/prep schools.
 
 5. More detail about pupil academic performance. Each prompt needs to include detailed informaiton on:
 - latest KS1 exam results and ranking locally and on country level (year on year last 3 years where applicable). If the school is private and does not disclose this informaiton. Try finding applicable exam information (i.e. SATs)
 - latest KS2 exam results and ranking locally and on country level (year on year last 3 years where applicable). If the school is private and does not disclose this informaiton. Try finding applicable exam information (i.e. SATs)
 - GCSE results and ranking locally and on country level (year on year last 3 years where applicable)
 - A-levels and ranking locally and on country level (year on year last 3 years where applicable)
+   STATUS: RESOLVED — Academic Performance section expanded in all prompts with KS1/KS2/GCSE/A-level, local and national ranking, 3-year trend. Private school alternative benchmarks specified.
 
 6. All prompts need to put more focus on children personality fit. Make sure all prompts have this in mind. Also update the memo on the main page that describes or suggests the questions parent might want to ask (section where you say "Keep it specific. The clearer the problem, the stronger the answer.")
+   STATUS: PARTIALLY RESOLVED — Child Personality Fit section added to all 4 prompts, woven through all relevant sections. Main page hint text (app.js) not yet updated — pending.
 
 7. All prompts need to have what we have in prompt 1 as "Surrounding Area and Census". Please make sure the information there covers
 - The average income 0.5 miles around the school or in the area under search (if prompt 3 chosen)
 - Ethnicity background for each school covered by search
 - Free school meal eligibility information (if state school)
 - parent profile
+   STATUS: RESOLVED — Surrounding Area And Census section added/updated in all 4 prompts with all required fields.
 
-8. Fees section needs to be precise with all possible information on all age groups underneath. 
+8. Fees section needs to be precise with all possible information on all age groups underneath.
+   STATUS: RESOLVED — Fees table updated in all 4 prompts with breakdown by stage (Reception/Pre-Prep, Junior/Prep, Senior, Sixth Form).
 
-9 Class size needs to be provided in every prompt for every school
+9. Class size needs to be provided in every prompt for every school
+   STATUS: RESOLVED — Class size added to School Snapshot (prompt 1), Quick Comparison Table (prompts 2 and 3), Academic And School Quality Context (prompt 4).
 
+10. Model for some reason was not able to find information easily accessible by simple google search (class sizes in particular). So probably worth collating a list of reliable sources where the information can be taken for sure. Make sure we use information from /sources/data_sources.txt when searching (alongside other webpages of course).
+   STATUS: RESOLVED — Reliable sources from data_sources.txt (goodschoolsguide.co.uk, schoolsmith.co.uk, independentschoolparent.com, isc.co.uk, reports.ofsted.gov.uk, isi.net) added to Source Rules in all 4 prompts.
 
+11. Add termly fees to the "Fees" prompt section alongside annual fees
+   STATUS: RESOLVED — Fees table updated in all 4 prompts to include per-term and annual columns for both day and boarding fees.
+
+12. Add Oxford and Cambridge admissions statistics to Destinations section (when searching for secondary schools or when analysing destination secondary schools for primary schools)
+   STATUS: RESOLVED — Oxford/Cambridge admissions data instructions added to Destinations section in all 3 relevant prompts (1, 2, 3) for both secondary schools and destination secondaries from primary/prep schools. Prompt 4 already references this selectively.
+
+13. Make sure that "Surrounding Area and Census" section in prompts covers the following areas:
+- Average Household Income
+- Property Costs
+- other key information from the /sources/data_sources.txt. Perform a search by post code or first part of the post code in the websites mentioned in the "Surrounding Area and Census" section of data_sources.txt
+   STATUS: RESOLVED — Surrounding Area And Census updated in all 4 prompts to include Average Household Income, Property Costs, and explicit instructions to search postcodearea.co.uk, crystalroof.co.uk/report/postcode/, and rightmove.co.uk/house-prices by postcode.
 
