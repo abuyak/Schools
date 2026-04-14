@@ -339,6 +339,17 @@ try {
                     Send-FileResponse -Client $client -Path (Join-Path $Root "admin\result.html") -AdminPage
                     continue
                 }
+                "GET /admin/prompts" {
+                    $mdDir = Join-Path $PSScriptRoot "..\.md"
+                    $files = @()
+                    if (Test-Path -LiteralPath $mdDir -PathType Container) {
+                        $files = Get-ChildItem -LiteralPath $mdDir -Filter "*.md" |
+                                 Sort-Object Name |
+                                 ForEach-Object { $_.Name }
+                    }
+                    Send-JsonResponse -Client $client -StatusCode 200 -ReasonPhrase "OK" -Body $files
+                    continue
+                }
                 "GET /api-docs.js" {
                     Send-FileResponse -Client $client -Path (Join-Path $Root "api-docs.js")
                     continue

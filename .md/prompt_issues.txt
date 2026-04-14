@@ -63,3 +63,9 @@ Remember - the main goal is to save people time gooling. So Ofsted and ISI requi
 - other key information from the /sources/data_sources.txt. Perform a search by post code or first part of the post code in the websites mentioned in the "Surrounding Area and Census" section of data_sources.txt
    STATUS: RESOLVED — Surrounding Area And Census updated in all 4 prompts to include Average Household Income, Property Costs, and explicit instructions to search postcodearea.co.uk, crystalroof.co.uk/report/postcode/, and rightmove.co.uk/house-prices by postcode.
 
+14. Model was skipping Census searches — just listing the URLs rather than actually searching them.
+   STATUS: RESOLVED — All 4 prompts updated with mandatory "You MUST perform web searches" step-by-step instructions: Step 1 find postcode, Step 2 run named site: searches with fallback search terms, Step 3 report findings. Explicit instruction to state when data is unavailable rather than silently omitting.
+
+15. Model was returning "not available" for class sizes without searching for them first. goodschoolsguide.co.uk, schoolsmith.co.uk, and independentschoolparent.com reliably carry this data.
+   STATUS: RESOLVED — All 4 prompts updated with mandatory class size search instructions: search goodschoolsguide.co.uk, schoolsmith.co.uk, independentschoolparent.com, and school website before marking as unavailable.
+

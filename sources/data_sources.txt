@@ -1,0 +1,22 @@
+Sources:
+
+General Info:
+https://www.goodschoolsguide.co.uk
+https://www.schoolsmith.co.uk
+https://snobe.co.uk/
+https://www.independentschoolparent.com
+https://www.isc.co.uk
+
+Inspections:
+https://reports.ofsted.gov.uk
+https://www.isi.net
+
+
+Admissions:
+Oxford Admissions: "/Oxford"
+Cambridge Admissions: "/Cambridge"
+
+Surrounding Area And Census:
+https://www.postcodearea.co.uk
+https://crystalroof.co.uk/
+https://www.rightmove.co.uk/house-prices

@@ -130,29 +130,98 @@ Side-by-side table covering the most decision-relevant dimensions for the shortl
 | Destination strength | | | | | |
 | Best for | | | | | |
 
-State "not available" rather than leaving cells blank. Include only columns for the schools in the shortlist.
+For the **Average class size** row: you MUST search before marking as not available. For each school search: `[school name] class size site:goodschoolsguide.co.uk`, then `[school name] class size site:schoolsmith.co.uk`, then `[school name] class size site:independentschoolparent.com`, then check the school's own website. Only write "not available" if all searches return nothing.
+
+State "not available" rather than leaving other cells blank. Include only columns for the schools in the shortlist.
 
 ---
 
 ### 4. Inspection And Review Takeaways
 
-Use a tabular format for easier side-by-side comparison across the shortlisted schools. Go beyond headline grades.
+You MUST actively fetch each school's full inspection report PDF before filling this table. Do not mark any cell as "not available" or "not verified" without searching first.
+
+For each school:
+- State schools: search `[school name] site:reports.ofsted.gov.uk` — on the school's provider page, find the PDF link for the most recent inspection (at files.ofsted.gov.uk). Fetch that PDF directly. Fallback: search `[school name] Ofsted report [year]`
+- Independent schools: search `[school name] site:isi.net` — fetch the most recent ISI report PDF
+
+Include only columns for the schools in the shortlist. State "not available" only if the search returned no report.
+
+**Inspection grades and framework**
 
 | Dimension | School 1 | School 2 | School 3 | School 4 | School 5 |
 |---|---|---|---|---|---|
 | Inspectorate | | | | | |
-| Overall grade and date | | | | | |
-| Areas rated good / outstanding | | | | | |
-| Areas rated requires improvement | | | | | |
-| Pastoral care findings | | | | | |
+| Inspection date and framework | | | | | |
+| Achievement | | | | | |
+| Attendance and behaviour | | | | | |
+| Curriculum and teaching | | | | | |
+| Inclusion | | | | | |
+| Leadership and governance | | | | | |
+| Personal development and wellbeing | | | | | |
+| Post-16 provision (if applicable) | | | | | |
+| Safeguarding | | | | | |
+| Next steps (verbatim) | | | | | |
+
+Note: for schools inspected under the old pre-Nov 2025 Ofsted framework, replace the 7 area rows with: Overall grade, Quality of Education, Behaviour and Attitudes, Personal Development, Leadership and Management, Sixth Form (if applicable).
+
+**What it's like to be a pupil** — per school, 2–3 sentences summarising the inspector's pupil experience description: culture, daily atmosphere, what kind of child thrives here.
+
+**School and pupil context** (from the "Facts and figures" section of each Ofsted report)
+
+| Dimension | School 1 | School 2 | School 3 | School 4 | School 5 |
+|---|---|---|---|---|---|
+| Total pupils (vs avg) | | | | | |
+| School capacity (vs avg) | | | | | |
+| FSM eligibility % (vs national avg) | | | | | |
+| EHC plan % (vs national avg) | | | | | |
+| SEN support % (vs national avg) | | | | | |
+| Location deprivation | | | | | |
+| Resourced provision / SEND unit | | | | | |
+
+**All pupils' GCSE performance** (3 years; from Ofsted "Facts and figures")
+
+| Metric | School 1 | School 2 | School 3 | School 4 | School 5 | National avg |
+|---|---|---|---|---|---|---|
+| Grade 5+ Eng & maths 2024/25 | | | | | | |
+| Grade 5+ Eng & maths 2023/24 | | | | | | |
+| Grade 5+ Eng & maths 2022/23 | | | | | | |
+| Attainment 8 2024/25 | | | | | | |
+| Attainment 8 2023/24 | | | | | | |
+| Progress 8 2023/24 | | | | | | |
+| Progress 8 2022/23 | | | | | | |
+
+**Disadvantaged pupils' GCSE performance**
+
+| Metric | School 1 | School 2 | School 3 | School 4 | School 5 | National avg (disadv.) |
+|---|---|---|---|---|---|---|
+| Grade 5+ Eng & maths 2023/24 | | | | | | |
+| Attainment 8 2023/24 | | | | | | |
+| Progress 8 2023/24 | | | | | | |
+
+**Absence**
+
+| Metric | School 1 | School 2 | School 3 | School 4 | School 5 | National avg |
+|---|---|---|---|---|---|---|
+| Overall absence % 2023/24 | | | | | | |
+| Persistent absence % 2023/24 | | | | | | |
+
+**Post-16 performance** (if applicable)
+
+| Metric | School 1 | School 2 | School 3 | School 4 | School 5 | National avg |
+|---|---|---|---|---|---|---|
+| A-level avg point score 2023/24 | | | | | | |
+| Destinations after 16 % | | | | | | |
+
+**Parent and community feedback**
+
+| Dimension | School 1 | School 2 | School 3 | School 4 | School 5 |
+|---|---|---|---|---|---|
 | Top 5 parent positives | | | | | |
 | Top 5 parent negatives | | | | | |
-| Mumsnet / Reddit: key positive themes | | | | | |
-| Mumsnet / Reddit: key negative themes | | | | | |
+| Mumsnet / Reddit: positives | | | | | |
+| Mumsnet / Reddit: negatives | | | | | |
 
-Include only columns for the schools in the shortlist. State "not available" where data cannot be found.
-
-**Child fit note** (only if a child description was provided): one or two sentences on which school's inspection findings and community feedback best suit the described child.
+**Child fit note** (only if a child description was provided): one or two sentences on which school's inspection findings, pupil context, and "What it's like to be a pupil" section best suit the described child.
 
 ---
 
@@ -253,16 +322,24 @@ Cover the area-level picture and census data. Do not repeat school-level detail 
 
 **Area census data**
 
-Use these sources (search by postcode or first part of postcode):
-- https://www.postcodearea.co.uk — area demographics and income data
-- https://crystalroof.co.uk/report/postcode/ — area profile and amenities
-- https://www.rightmove.co.uk/house-prices — property price data
+You MUST perform web searches for this section. Do not skip or summarise without searching.
 
-- **Average Household Income**: average household income in the area under search
-- **Property Costs**: average and typical property prices in the area (from Rightmove or equivalent)
-- **Ethnicity**: breakdown for each shortlisted school's pupil population (school census or government data)
+**Step 1 — Find the area postcode** (use the postcode the user provided, or the postcode of the main school or area under search).
+
+**Step 2 — Run these searches now:**
+- Search: `site:postcodearea.co.uk [postcode]` — for income and demographic data
+- Search: `site:crystalroof.co.uk [postcode]` — for area profile
+- Search: `[postcode] average house prices site:rightmove.co.uk` — for property costs
+- Fallback if site searches fail: search `[postcode] average household income`, `[postcode] average house prices`, `[postcode] demographics`
+
+**Step 3 — Report what you found:**
+- **Average Household Income**: state the figure and source. If not found from primary sources, state clearly that data could not be retrieved and give best available estimate with caveat.
+- **Property Costs**: average and typical property prices in the area (from Rightmove or equivalent). Include average sold price if available.
+- **Ethnicity**: breakdown for each shortlisted school's pupil population (school census or government data) if applicable or population ethnicity in the area
 - **Free school meal eligibility** for state schools in the shortlist (% eligible; note whether above or below national average)
 - **Parent profile**: brief characterisation of the likely parent community for each school based on area income, property costs, school type, and available data
+
+If a source is inaccessible or returns no data, say so explicitly — do not silently omit the field.
 
 ---
 

@@ -6,180 +6,243 @@
   <title>Prompt Tester — School Scanner</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; font-size: 15px; background: #f5f5f5; color: #1a1a1a; padding: 2rem; }
-    h1 { font-size: 1.25rem; margin-bottom: 1.5rem; }
-    .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
-    .card h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 1rem; }
-    label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.3rem; margin-top: 0.8rem; }
+    body { font-family: system-ui, sans-serif; font-size: 15px; background: #f5f5f5;
+           color: #1a1a1a; padding: 2rem; max-width: 980px; margin: 0 auto; }
+    h1 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+    .card { background: #fff; border: 1px solid #ddd; border-radius: 8px;
+            padding: 1.25rem; margin-bottom: 1rem; }
+    .card-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+                  color: #888; margin-bottom: 1rem; }
+
+    label { display: block; font-size: 0.875rem; font-weight: 500;
+            margin-bottom: 0.3rem; margin-top: 0.75rem; }
     label:first-of-type { margin-top: 0; }
     input[type=text], select, textarea {
-      width: 100%; padding: 0.5rem 0.6rem; border: 1px solid #ccc; border-radius: 5px;
-      font-size: 0.875rem; font-family: inherit; background: #fff;
+      width: 100%; padding: 0.5rem 0.6rem; border: 1px solid #ccc;
+      border-radius: 5px; font-size: 0.875rem; font-family: inherit; background: #fff;
     }
-    textarea { resize: vertical; min-height: 90px; }
-    .variants { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
-    .variant { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; }
-    .variant.off { opacity: 0.4; pointer-events: none; }
-    .v-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.9rem; }
-    .badge { display: inline-flex; align-items: center; justify-content: center;
-             width: 1.5rem; height: 1.5rem; border-radius: 50%; font-size: 0.75rem;
-             font-weight: 700; color: #fff; flex-shrink: 0; }
-    .a { background: #2563eb; } .b { background: #7c3aed; } .c { background: #059669; }
-    .v-head strong { font-size: 0.9rem; flex: 1; }
-    .toggle { display: flex; align-items: center; gap: 0.3rem; font-size: 0.8rem;
-              font-weight: 400; color: #555; pointer-events: all; cursor: pointer; }
-    .actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-    .run { padding: 0.6rem 1.6rem; background: #1a1a1a; color: #fff; border: none;
+    textarea { resize: vertical; min-height: 72px; }
+
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* Variants */
+    .variants { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.75rem; }
+    .variant-row { display: grid; grid-template-columns: auto 1fr 1fr; gap: 0.6rem;
+                   align-items: end; padding: 0.75rem; background: #fafafa;
+                   border: 1px solid #e5e7eb; border-radius: 6px; }
+    .variant-row.disabled { opacity: 0.45; }
+    .variant-label { font-size: 0.8rem; font-weight: 700; color: #555;
+                     white-space: nowrap; padding-bottom: 0.2rem; }
+    .variant-row select { margin-top: 0; }
+    .v-toggle { display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem;
+                color: #555; cursor: pointer; margin-top: 0.35rem; }
+    .v-toggle input { width: auto; }
+
+    .actions { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; }
+    .btn { padding: 0.6rem 1.8rem; background: #1a1a1a; color: #fff; border: none;
            border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
-    .run:hover { background: #333; }
-    .hint { font-size: 0.8rem; color: #888; }
-    .warn { font-size: 0.8rem; color: #b45309; display: none; margin-top: 0.5rem; }
-    small { display: block; font-size: 0.75rem; color: #888; margin-top: 0.2rem; }
+    .btn:hover:not(:disabled) { background: #333; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Results grid */
+    #results-area { display: none; margin-top: 0; }
+    .results-grid { display: grid; gap: 1rem; }
+    .results-grid.cols-1 { grid-template-columns: 1fr; }
+    .results-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .results-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    /* Result card */
+    .result-card { background: #fff; border: 1px solid #ddd; border-radius: 8px;
+                   padding: 1.1rem; min-width: 0; }
+    .r-header { display: flex; align-items: flex-start; justify-content: space-between;
+                gap: 0.5rem; margin-bottom: 0.75rem; }
+    .r-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .chip { background: #1a1a1a; color: #fff; font-size: 0.7rem; font-weight: 600;
+            padding: 0.12rem 0.5rem; border-radius: 999px; }
+    .chip.blue { background: #2563eb; }
+    .chip.purple { background: #7c3aed; }
+    .chip.green { background: #059669; }
+
+    .r-status { font-size: 0.82rem; color: #777; white-space: nowrap; }
+    .dot { display: inline-block; width: 0.42rem; height: 0.42rem; border-radius: 50%;
+           background: #aaa; margin-right: 0.3rem; animation: pulse 1s infinite;
+           vertical-align: middle; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .done  .dot { background: #16a34a; animation: none; }
+    .error .dot { background: #dc2626; animation: none; }
+
+    h2.r-title { font-size: 1.05rem; margin-bottom: 0.4rem; }
+    .summary { font-size: 0.875rem; color: #444; line-height: 1.6; margin-bottom: 1rem; }
+    .summary a { color: #2563eb; }
+
+    .scorecard { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1rem; }
+    .sc-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; }
+    .sc-dim { flex: 1; min-width: 0; }
+    .sc-badge { padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.68rem;
+                font-weight: 600; color: #fff; flex-shrink: 0; min-width: 3.8rem;
+                text-align: center; }
+    .rating-strong{background:#16a34a}.rating-good{background:#2563eb}
+    .rating-mixed{background:#d97706}.rating-weak{background:#dc2626}
+    .rating-unknown{background:#9ca3af}
+    .sc-note { color: #666; font-size: 0.75rem; flex: 2; min-width: 0; }
+
+    .section { margin-bottom: 1rem; }
+    .section h3 { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.3rem;
+                  border-bottom: 1px solid #eee; padding-bottom: 0.2rem; }
+    .section-body { font-size: 0.82rem; line-height: 1.6; color: #333; }
+    .section-body a { color: #2563eb; }
+    .section-body p { margin-bottom: 0.3rem; }
+    .section-body ul, .section-body ol { padding-left: 1.1rem; margin-bottom: 0.3rem; }
+    .section-body li { margin-bottom: 0.1rem; }
+    .section-body strong { font-weight: 600; }
+    .table-scroll { overflow-x: auto; margin-bottom: 0.5rem; }
+    .md-table { border-collapse: collapse; font-size: 0.78rem; min-width: 20rem; width: 100%; }
+    .md-table th, .md-table td { border: 1px solid #e5e7eb; padding: 0.35rem 0.5rem;
+                                  text-align: left; vertical-align: top; }
+    .md-table thead { background: #f9fafb; font-weight: 600; }
+    .timing { font-size: 0.72rem; color: #bbb; margin-top: 1rem; }
   </style>
 </head>
 <body>
 
-<h1>🧪 Prompt A/B Tester</h1>
+<h1>🧪 Prompt Tester</h1>
 
-<!-- Setup -->
+<!-- Config card -->
 <div class="card">
-  <h2>Request</h2>
+  <div class="card-title">Request</div>
 
   <label for="admin-key">Admin key</label>
-  <input type="text" id="admin-key" placeholder="Paste admin key (stored in session)">
+  <input type="text" id="admin-key" placeholder="Paste admin key">
 
-  <label for="branch">Branch</label>
-  <select id="branch">
-    <option value="prompt_branch_1">01 — Evaluate a school</option>
-    <option value="prompt_branch_2">02 — Compare schools</option>
-    <option value="prompt_branch_3">03 — Check an area</option>
-    <option value="prompt_branch_4">04 — Plan backup options</option>
-  </select>
+  <div class="row2">
+    <div>
+      <label for="branch">Branch</label>
+      <select id="branch">
+        <option value="prompt_branch_1">01 — Evaluate a school</option>
+        <option value="prompt_branch_2">02 — Compare schools</option>
+        <option value="prompt_branch_3">03 — Check an area</option>
+        <option value="prompt_branch_4">04 — Plan backup options</option>
+      </select>
+    </div>
+    <div></div>
+  </div>
 
   <label for="question">Question</label>
   <textarea id="question" placeholder="E.g. Tell me about Eton College"></textarea>
-</div>
 
-<!-- Variants -->
-<div class="variants">
+  <!-- Variants -->
+  <label style="margin-top:1rem;">Variants <span style="font-weight:400;color:#888;font-size:0.8rem;">— runs sequentially</span></label>
+  <div class="variants">
 
-  <!-- A (always on) -->
-  <div class="variant" id="va">
-    <div class="v-head">
-      <span class="badge a">A</span>
-      <strong>Variant A</strong>
+    <div class="variant-row" id="vrow-0">
+      <div class="variant-label">A</div>
+      <div>
+        <label style="margin-top:0;font-size:0.78rem;color:#666;">Model</label>
+        <select class="v-model" data-idx="0">
+          <option value="gpt-5-mini">gpt-5-mini</option>
+          <option value="gpt-5.4-nano">gpt-5.4-nano</option>
+          <option value="gpt-5.4-mini">gpt-5.4-mini</option>
+          <option value="gpt-5.4">gpt-5.4</option>
+          <option value="o4-mini">o4-mini</option>
+          <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+          <option value="gpt-4o-mini">gpt-4o-mini</option>
+          <option value="gpt-4.1">gpt-4.1</option>
+          <option value="gpt-4o">gpt-4o</option>
+          <option value="o3">o3</option>
+          <option value="gpt-5">gpt-5</option>
+        </select>
+      </div>
+      <div>
+        <label style="margin-top:0;font-size:0.78rem;color:#666;">Prompt file</label>
+        <select class="v-prompt" data-idx="0">
+          <option value="prompt_branch_1_specific_school.md">prompt_branch_1_specific_school.md</option>
+          <option value="prompt_branch_2_compare_schools.md">prompt_branch_2_compare_schools.md</option>
+          <option value="prompt_branch_3_postcode_or_area.md">prompt_branch_3_postcode_or_area.md</option>
+          <option value="prompt_branch_4_admissions_strategy.md">prompt_branch_4_admissions_strategy.md</option>
+        </select>
+      </div>
     </div>
-    <label>Model</label>
-    <select class="v-model">
-      <option value="gpt-5-mini">gpt-5-mini (current default)</option>
-      <option value="gpt-5.4-nano">gpt-5.4-nano</option>
-      <option value="gpt-5.4-mini">gpt-5.4-mini</option>
-      <option value="gpt-5.4">gpt-5.4</option>
-      <option value="o4-mini">o4-mini</option>
-      <option value="gpt-4.1-mini">gpt-4.1-mini</option>
-      <option value="gpt-4o-mini">gpt-4o-mini</option>
-      <option value="gpt-4.1">gpt-4.1</option>
-      <option value="gpt-4o">gpt-4o</option>
-      <option value="o3">o3</option>
-      <option value="gpt-5">gpt-5</option>
-    </select>
-    <label>Prompt file</label>
-    <select class="v-prompt">
-      <option value="prompt_branch_1_specific_school.md">prompt_branch_1_specific_school.md</option>
-      <option value="prompt_branch_2_compare_schools.md">prompt_branch_2_compare_schools.md</option>
-      <option value="prompt_branch_3_postcode_or_area.md">prompt_branch_3_postcode_or_area.md</option>
-      <option value="prompt_branch_4_admissions_strategy.md">prompt_branch_4_admissions_strategy.md</option>
-    </select>
-    <small>Add new .md files here as you create them.</small>
-    <label>Tab label</label>
-    <input type="text" class="v-label" value="Variant A">
+
+    <div class="variant-row disabled" id="vrow-1">
+      <div>
+        <div class="variant-label">B</div>
+        <label class="v-toggle"><input type="checkbox" class="v-enable" data-idx="1" onchange="toggleVariant(1,this)"> on</label>
+      </div>
+      <div>
+        <label style="margin-top:0;font-size:0.78rem;color:#666;">Model</label>
+        <select class="v-model" data-idx="1" disabled>
+          <option value="gpt-5-mini">gpt-5-mini</option>
+          <option value="gpt-5.4-nano">gpt-5.4-nano</option>
+          <option value="gpt-5.4-mini">gpt-5.4-mini</option>
+          <option value="gpt-5.4">gpt-5.4</option>
+          <option value="o4-mini">o4-mini</option>
+          <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+          <option value="gpt-4o-mini">gpt-4o-mini</option>
+          <option value="gpt-4.1">gpt-4.1</option>
+          <option value="gpt-4o">gpt-4o</option>
+          <option value="o3">o3</option>
+          <option value="gpt-5">gpt-5</option>
+        </select>
+      </div>
+      <div>
+        <label style="margin-top:0;font-size:0.78rem;color:#666;">Prompt file</label>
+        <select class="v-prompt" data-idx="1" disabled>
+          <option value="prompt_branch_1_specific_school.md">prompt_branch_1_specific_school.md</option>
+          <option value="prompt_branch_2_compare_schools.md">prompt_branch_2_compare_schools.md</option>
+          <option value="prompt_branch_3_postcode_or_area.md">prompt_branch_3_postcode_or_area.md</option>
+          <option value="prompt_branch_4_admissions_strategy.md">prompt_branch_4_admissions_strategy.md</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="variant-row disabled" id="vrow-2">
+      <div>
+        <div class="variant-label">C</div>
+        <label class="v-toggle"><input type="checkbox" class="v-enable" data-idx="2" onchange="toggleVariant(2,this)"> on</label>
+      </div>
+      <div>
+        <label style="margin-top:0;font-size:0.78rem;color:#666;">Model</label>
+        <select class="v-model" data-idx="2" disabled>
+          <option value="gpt-5-mini">gpt-5-mini</option>
+          <option value="gpt-5.4-nano">gpt-5.4-nano</option>
+          <option value="gpt-5.4-mini">gpt-5.4-mini</option>
+          <option value="gpt-5.4">gpt-5.4</option>
+          <option value="o4-mini">o4-mini</option>
+          <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+          <option value="gpt-4o-mini">gpt-4o-mini</option>
+          <option value="gpt-4.1">gpt-4.1</option>
+          <option value="gpt-4o">gpt-4o</option>
+          <option value="o3">o3</option>
+          <option value="gpt-5">gpt-5</option>
+        </select>
+      </div>
+      <div>
+        <label style="margin-top:0;font-size:0.78rem;color:#666;">Prompt file</label>
+        <select class="v-prompt" data-idx="2" disabled>
+          <option value="prompt_branch_1_specific_school.md">prompt_branch_1_specific_school.md</option>
+          <option value="prompt_branch_2_compare_schools.md">prompt_branch_2_compare_schools.md</option>
+          <option value="prompt_branch_3_postcode_or_area.md">prompt_branch_3_postcode_or_area.md</option>
+          <option value="prompt_branch_4_admissions_strategy.md">prompt_branch_4_admissions_strategy.md</option>
+        </select>
+      </div>
+    </div>
+
   </div>
 
-  <!-- B -->
-  <div class="variant off" id="vb">
-    <div class="v-head">
-      <span class="badge b">B</span>
-      <strong>Variant B</strong>
-      <label class="toggle"><input type="checkbox" class="v-enable" onchange="toggle('vb',this)"> Enable</label>
-    </div>
-    <label>Model</label>
-    <select class="v-model">
-      <option value="gpt-5-mini">gpt-5-mini (current default)</option>
-      <option value="gpt-5.4-nano">gpt-5.4-nano</option>
-      <option value="gpt-5.4-mini">gpt-5.4-mini</option>
-      <option value="gpt-5.4">gpt-5.4</option>
-      <option value="o4-mini">o4-mini</option>
-      <option value="gpt-4.1-mini">gpt-4.1-mini</option>
-      <option value="gpt-4o-mini">gpt-4o-mini</option>
-      <option value="gpt-4.1">gpt-4.1</option>
-      <option value="gpt-4o">gpt-4o</option>
-      <option value="o3">o3</option>
-      <option value="gpt-5">gpt-5</option>
-    </select>
-    <label>Prompt file</label>
-    <select class="v-prompt">
-      <option value="prompt_branch_1_specific_school.md">prompt_branch_1_specific_school.md</option>
-      <option value="prompt_branch_2_compare_schools.md">prompt_branch_2_compare_schools.md</option>
-      <option value="prompt_branch_3_postcode_or_area.md">prompt_branch_3_postcode_or_area.md</option>
-      <option value="prompt_branch_4_admissions_strategy.md">prompt_branch_4_admissions_strategy.md</option>
-    </select>
-    <small>Add new .md files here as you create them.</small>
-    <label>Tab label</label>
-    <input type="text" class="v-label" value="Variant B">
+  <div class="actions">
+    <button class="btn" id="gen-btn" onclick="generate()">Generate</button>
   </div>
-
-  <!-- C -->
-  <div class="variant off" id="vc">
-    <div class="v-head">
-      <span class="badge c">C</span>
-      <strong>Variant C</strong>
-      <label class="toggle"><input type="checkbox" class="v-enable" onchange="toggle('vc',this)"> Enable</label>
-    </div>
-    <label>Model</label>
-    <select class="v-model">
-      <option value="gpt-5-mini">gpt-5-mini (current default)</option>
-      <option value="gpt-5.4-nano">gpt-5.4-nano</option>
-      <option value="gpt-5.4-mini">gpt-5.4-mini</option>
-      <option value="gpt-5.4">gpt-5.4</option>
-      <option value="o4-mini">o4-mini</option>
-      <option value="gpt-4.1-mini">gpt-4.1-mini</option>
-      <option value="gpt-4o-mini">gpt-4o-mini</option>
-      <option value="gpt-4.1">gpt-4.1</option>
-      <option value="gpt-4o">gpt-4o</option>
-      <option value="o3">o3</option>
-      <option value="gpt-5">gpt-5</option>
-    </select>
-    <label>Prompt file</label>
-    <select class="v-prompt">
-      <option value="prompt_branch_1_specific_school.md">prompt_branch_1_specific_school.md</option>
-      <option value="prompt_branch_2_compare_schools.md">prompt_branch_2_compare_schools.md</option>
-      <option value="prompt_branch_3_postcode_or_area.md">prompt_branch_3_postcode_or_area.md</option>
-      <option value="prompt_branch_4_admissions_strategy.md">prompt_branch_4_admissions_strategy.md</option>
-    </select>
-    <small>Add new .md files here as you create them.</small>
-    <label>Tab label</label>
-    <input type="text" class="v-label" value="Variant C">
-  </div>
-
 </div>
 
-<div class="actions">
-  <button class="run" onclick="run()">Prepare variants</button>
-  <span class="hint">Builds links — click each to open a tab.</span>
-</div>
-<div id="links" style="display:none; margin-top:1rem; display:none;">
-  <p style="font-size:0.8rem;color:#888;margin-bottom:0.5rem;">Click each to open in a new tab:</p>
-  <div id="link-buttons" style="display:flex;gap:0.75rem;flex-wrap:wrap;"></div>
+<!-- Results -->
+<div id="results-area">
+  <div class="results-grid" id="results-grid"></div>
 </div>
 
 <script>
-  // Persist admin key in session
-  const keyEl = document.getElementById('admin-key');
-  keyEl.value = sessionStorage.getItem('sk_admin_key') || '';
-  keyEl.addEventListener('input', () => sessionStorage.setItem('sk_admin_key', keyEl.value.trim()));
-
-  // Sync prompt dropdown with selected branch
-  document.getElementById('branch').addEventListener('change', syncPromptDropdowns);
+  const LAMBDA = 'https://ep6az35owvnis2c6n6wcl7axyy0elrlh.lambda-url.eu-west-2.on.aws/';
+  const CHIP_COLOURS = ['', 'blue', 'purple', 'green'];
 
   const BRANCH_FILES = {
     prompt_branch_1: 'prompt_branch_1_specific_school.md',
@@ -188,54 +251,266 @@
     prompt_branch_4: 'prompt_branch_4_admissions_strategy.md',
   };
 
-  function syncPromptDropdowns() {
-    const branch = document.getElementById('branch').value;
-    const defaultFile = BRANCH_FILES[branch];
-    document.querySelectorAll('.v-prompt').forEach(sel => {
-      sel.value = defaultFile;
+  // ── Load prompt files from server ───────────────────────────────────────────
+  async function loadPromptFiles() {
+    try {
+      const res = await fetch('/admin/prompts');
+      if (!res.ok) return;
+      const files = await res.json();
+      if (!Array.isArray(files) || files.length === 0) return;
+      document.querySelectorAll('.v-prompt').forEach(sel => {
+        const current = sel.value;
+        sel.replaceChildren();
+        files.forEach(f => {
+          const opt = document.createElement('option');
+          opt.value = f; opt.textContent = f;
+          sel.appendChild(opt);
+        });
+        // Restore previously selected value if still available
+        if (files.includes(current)) sel.value = current;
+      });
+    } catch { /* server not available — keep hardcoded fallback */ }
+  }
+  loadPromptFiles();
+
+  // ── Persist ─────────────────────────────────────────────────────────────────
+  const ss = { get: k => sessionStorage.getItem('sk_' + k), set: (k,v) => sessionStorage.setItem('sk_'+k, v) };
+
+  function saveAll() {
+    ss.set('adminKey', document.getElementById('admin-key').value);
+    ss.set('branch',   document.getElementById('branch').value);
+    ss.set('question', document.getElementById('question').value);
+    [0,1,2].forEach(i => {
+      ss.set('v'+i+'_on',     document.querySelector(`.v-enable[data-idx="${i}"]`)?.checked ? '1' : (i===0?'1':'0'));
+      ss.set('v'+i+'_model',  document.querySelector(`.v-model[data-idx="${i}"]`).value);
+      ss.set('v'+i+'_prompt', document.querySelector(`.v-prompt[data-idx="${i}"]`).value);
     });
   }
-  syncPromptDropdowns();
 
-  function toggle(id, cb) {
-    document.getElementById(id).classList.toggle('off', !cb.checked);
+  function restoreAll() {
+    const adminKey = ss.get('adminKey'); if (adminKey) document.getElementById('admin-key').value = adminKey;
+    const branch   = ss.get('branch');   if (branch)   document.getElementById('branch').value   = branch;
+    const question = ss.get('question'); if (question)  document.getElementById('question').value = question;
+    [0,1,2].forEach(i => {
+      const model  = ss.get('v'+i+'_model');  if (model)  document.querySelector(`.v-model[data-idx="${i}"]`).value  = model;
+      const prompt = ss.get('v'+i+'_prompt'); if (prompt) document.querySelector(`.v-prompt[data-idx="${i}"]`).value = prompt;
+      if (i > 0) {
+        const on = ss.get('v'+i+'_on') === '1';
+        if (on) toggleVariant(i, { checked: true }, /*silent*/true);
+      }
+    });
   }
 
-  function run() {
-    const adminKey = keyEl.value.trim();
+  document.getElementById('admin-key').addEventListener('input', saveAll);
+  document.getElementById('branch').addEventListener('change', () => {
+    const def = BRANCH_FILES[document.getElementById('branch').value];
+    document.querySelectorAll('.v-prompt').forEach(s => { if (!s.disabled) s.value = def; });
+    saveAll();
+  });
+  document.getElementById('question').addEventListener('input', saveAll);
+  document.querySelectorAll('.v-model, .v-prompt').forEach(el => el.addEventListener('change', saveAll));
+
+  function toggleVariant(idx, cb, silent) {
+    const row = document.getElementById('vrow-' + idx);
+    const on  = cb.checked;
+    row.classList.toggle('disabled', !on);
+    row.querySelectorAll('select').forEach(s => s.disabled = !on);
+    if (!silent) saveAll();
+  }
+
+  restoreAll();
+
+  // ── Rendering helpers ───────────────────────────────────────────────────────
+  const LINK_RE = /\*\*([^*]+)\*\*|\(\[([^\]]+)\]\s*\(([^)]+)\)\)|\[([^\]]+)\]\s*\(([^)\s][^)]*)\)|\[([^\]]+)\]\s*<([^>]+)>|\[([^\]]+)\](?!\s*[(<])|(https?:\/\/[^\s<>"'\]]+)/g;
+
+  function appendLinks(el, text) {
+    let last = 0, m; LINK_RE.lastIndex = 0;
+    while ((m = LINK_RE.exec(text)) !== null) {
+      if (m.index > last) el.appendChild(document.createTextNode(text.slice(last, m.index)));
+      if (m[1]) { const s = document.createElement('strong'); s.textContent = m[1]; el.appendChild(s); }
+      else if (m[8]) { el.appendChild(document.createTextNode(m[8])); }
+      else if (m[9]) { const a = document.createElement('a'); a.href=m[9]; a.textContent=m[9]; a.rel='noopener noreferrer'; a.target='_blank'; el.appendChild(a); }
+      else {
+        const lbl = m[2]||m[4]||m[6], url = (m[3]||m[5]||m[7]||'').trim();
+        if (/^https?:\/\//i.test(url)) { const a = document.createElement('a'); a.href=url; a.textContent=lbl; a.rel='noopener noreferrer'; a.target='_blank'; el.appendChild(a); }
+        else { el.appendChild(document.createTextNode(lbl)); }
+      }
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) el.appendChild(document.createTextNode(text.slice(last)));
+  }
+
+  function isTableSep(l) { return /^\|[\s|:-]+\|$/.test(l); }
+  function parseRow(l) { return l.replace(/^\||\|$/g,'').split('|').map(c=>c.trim()); }
+
+  function renderTable(container, lines) {
+    const table = document.createElement('table'); table.className = 'md-table';
+    let tbody = null;
+    lines.forEach((line, i) => {
+      if (isTableSep(line)) return;
+      const cells = parseRow(line);
+      if (i === 0) {
+        const thead = document.createElement('thead'), tr = document.createElement('tr');
+        cells.forEach(c => { const th = document.createElement('th'); appendLinks(th,c); tr.appendChild(th); });
+        thead.appendChild(tr); table.appendChild(thead);
+        tbody = document.createElement('tbody'); table.appendChild(tbody);
+      } else if (tbody) {
+        const tr = document.createElement('tr');
+        cells.forEach(c => { const td = document.createElement('td'); appendLinks(td,c); tr.appendChild(td); });
+        tbody.appendChild(tr);
+      }
+    });
+    const scroll = document.createElement('div'); scroll.className = 'table-scroll';
+    scroll.appendChild(table); container.appendChild(scroll);
+  }
+
+  function renderBody(container, raw) {
+    container.replaceChildren();
+    const lines = (raw||'').split('\n'); let tableLines=[], listEl=null;
+    const flushTable = () => { if (tableLines.length) { renderTable(container, tableLines); tableLines=[]; } };
+    const flushList  = () => { if (listEl) { container.appendChild(listEl); listEl=null; } };
+    lines.forEach(line => {
+      if (/^\|/.test(line)) { flushList(); tableLines.push(line); return; }
+      flushTable();
+      if (/^(\d+\.\s|-\s)/.test(line)) {
+        const isOrd = /^\d+\./.test(line), text = line.replace(/^(\d+\.\s|-\s)/,'');
+        if (!listEl || listEl.tagName !== (isOrd?'OL':'UL')) { flushList(); listEl = document.createElement(isOrd?'ol':'ul'); }
+        const li = document.createElement('li'); appendLinks(li, text); listEl.appendChild(li); return;
+      }
+      flushList();
+      if (line.trim() === '') { container.appendChild(document.createElement('p')); return; }
+      const p = document.createElement('p'); appendLinks(p, line); container.appendChild(p);
+    });
+    flushTable(); flushList();
+  }
+
+  // ── Result card builder ──────────────────────────────────────────────────────
+  function makeCard(variant, colourClass) {
+    const card = document.createElement('div'); card.className = 'result-card';
+
+    // Header
+    const header = document.createElement('div'); header.className = 'r-header';
+    const chips  = document.createElement('div'); chips.className  = 'r-chips';
+    [variant.label, variant.model, variant.promptFile].forEach(t => {
+      const c = document.createElement('span'); c.className = 'chip ' + colourClass; c.textContent = t; chips.appendChild(c);
+    });
+    const statusEl = document.createElement('div'); statusEl.className = 'r-status';
+    statusEl.innerHTML = '<span class="dot"></span>Waiting…';
+    header.append(chips, statusEl); card.appendChild(header);
+
+    // Placeholder content areas
+    const titleEl    = document.createElement('h2');   titleEl.className = 'r-title';
+    const summaryEl  = document.createElement('div');  summaryEl.className = 'summary';
+    const scorecardEl= document.createElement('div');  scorecardEl.className = 'scorecard';
+    const sectionsEl = document.createElement('div');
+    const timingEl   = document.createElement('div');  timingEl.className = 'timing';
+    card.append(titleEl, summaryEl, scorecardEl, sectionsEl, timingEl);
+
+    return { card, statusEl, titleEl, summaryEl, scorecardEl, sectionsEl, timingEl };
+  }
+
+  function fillCard(els, data, secs) {
+    els.titleEl.textContent = data.title || '';
+    els.summaryEl.replaceChildren(); appendLinks(els.summaryEl, data.summary || '');
+
+    els.scorecardEl.replaceChildren();
+    (data.scorecard||[]).forEach(item => {
+      const row   = document.createElement('div'); row.className = 'sc-row';
+      const dim   = document.createElement('span'); dim.className = 'sc-dim'; dim.textContent = item.dimension||'';
+      const r     = (item.rating||'unknown').toLowerCase();
+      const badge = document.createElement('span'); badge.className = 'sc-badge rating-'+r;
+      badge.textContent = r.charAt(0).toUpperCase()+r.slice(1);
+      const note  = document.createElement('span'); note.className = 'sc-note'; note.textContent = item.note||'';
+      row.append(dim, badge, note); els.scorecardEl.appendChild(row);
+    });
+
+    els.sectionsEl.replaceChildren();
+    (data.sections||[]).forEach(s => {
+      const art  = document.createElement('div'); art.className = 'section';
+      const h3   = document.createElement('h3');  h3.textContent = s.heading||'';
+      const body = document.createElement('div'); body.className = 'section-body';
+      renderBody(body, s.body||''); art.append(h3, body); els.sectionsEl.appendChild(art);
+    });
+
+    els.timingEl.textContent = secs + 's';
+  }
+
+  // ── Generate (sequential) ───────────────────────────────────────────────────
+  async function generate() {
+    const adminKey = document.getElementById('admin-key').value.trim();
     const branch   = document.getElementById('branch').value;
     const question = document.getElementById('question').value.trim();
+    if (!adminKey) { alert('Enter the admin key.'); return; }
+    if (!question) { alert('Enter a question.'); return; }
 
-    if (!adminKey)  { alert('Enter the admin key.'); return; }
-    if (!question)  { alert('Enter a question.'); return; }
+    // Collect enabled variants
+    const variants = [0,1,2].map(i => {
+      const enableEl = document.querySelector(`.v-enable[data-idx="${i}"]`);
+      const enabled  = i === 0 || (enableEl && enableEl.checked);
+      if (!enabled) return null;
+      return {
+        label:      String.fromCharCode(65+i),
+        model:      document.querySelector(`.v-model[data-idx="${i}"]`).value,
+        promptFile: document.querySelector(`.v-prompt[data-idx="${i}"]`).value,
+      };
+    }).filter(Boolean);
 
-    const variants = ['va', 'vb', 'vc']
-      .map(id => document.getElementById(id))
-      .filter(el => !el.classList.contains('off'))
-      .map(el => ({
-        model:      el.querySelector('.v-model').value,
-        promptFile: el.querySelector('.v-prompt').value,
-        label:      el.querySelector('.v-label').value.trim(),
-      }));
-
-    if (!variants.length) { alert('Enable at least one variant.'); return; }
-
-    const colours = ['#2563eb', '#7c3aed', '#059669'];
-    const container = document.getElementById('link-buttons');
-    container.replaceChildren();
-
-    variants.forEach((v, i) => {
-      const p = new URLSearchParams({ label: v.label, branch, question, model: v.model, promptFile: v.promptFile, adminKey });
-      const url = 'http://127.0.0.1:8080/admin/result.html#' + p.toString();
-      const btn = document.createElement('button');
-      btn.textContent = '↗ Open ' + v.label;
-      btn.style.cssText = `padding:0.5rem 1.1rem;background:${colours[i]};color:#fff;border:none;
-        border-radius:6px;font-weight:600;font-size:0.9rem;cursor:pointer;`;
-      btn.addEventListener('click', () => window.open(url, '_blank'));
-      container.appendChild(btn);
+    // Build result grid
+    const grid = document.getElementById('results-grid');
+    grid.className = 'results-grid cols-' + variants.length;
+    grid.replaceChildren();
+    const cardEls = variants.map((v, i) => {
+      const { card, ...els } = makeCard(v, CHIP_COLOURS[i]);
+      grid.appendChild(card);
+      return els;
     });
 
-    document.getElementById('links').style.display = 'block';
+    document.getElementById('results-area').style.display = 'block';
+    document.getElementById('gen-btn').disabled = true;
+
+    // Run sequentially
+    for (let i = 0; i < variants.length; i++) {
+      const v   = variants[i];
+      const els = cardEls[i];
+      els.statusEl.className  = 'r-status';
+      els.statusEl.innerHTML  = '<span class="dot"></span>Calling Lambda…';
+
+      const t0 = Date.now();
+      try {
+        const res  = await fetch(LAMBDA, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ branch, question, _adminKey: adminKey, _model: v.model, _promptFile: v.promptFile }),
+          signal: AbortSignal.timeout(125_000),
+        });
+
+        let data;
+        try { data = await res.json(); } catch {
+          // Lambda returned empty body (unhandled exception — likely prompt file not found on Lambda)
+          els.statusEl.className = 'r-status error';
+          els.statusEl.innerHTML = '<span class="dot"></span>Lambda error (HTTP ' + res.status + ') — prompt file may not be deployed yet';
+          continue;
+        }
+
+        const secs = ((Date.now() - t0) / 1000).toFixed(1);
+
+        if (!res.ok || data.status === 'upstream_error' || data.status === 'upstream_invalid_format') {
+          els.statusEl.className = 'r-status error';
+          els.statusEl.innerHTML = '<span class="dot"></span>' + (data.summary || 'Error ' + res.status);
+          if (data.sections?.length) fillCard(els, data, secs);
+        } else {
+          fillCard(els, data, secs);
+          els.statusEl.className = 'r-status done';
+          els.statusEl.innerHTML = '<span class="dot"></span>' + secs + 's';
+        }
+      } catch (err) {
+        const timed = err.name === 'TimeoutError';
+        els.statusEl.className = 'r-status error';
+        els.statusEl.innerHTML = '<span class="dot"></span>' + (timed ? 'Timed out' : 'Network error — ' + err.message);
+      }
+    }
+
+    document.getElementById('gen-btn').disabled = false;
   }
 </script>
 </body>

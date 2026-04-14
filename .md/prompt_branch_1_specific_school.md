@@ -94,22 +94,75 @@ Cover only what is not already stated in the Direct Answer:
 - School type (state / independent / grammar / faith)
 - Co-ed or single-sex
 - Religious character (and how embedded — assemblies, compulsory worship, faith ethos)
-- Average class size — state the figure; if unavailable, say so
+- Average class size — you MUST search for this before stating it is unavailable. Search: `[school name] class size site:goodschoolsguide.co.uk`, then `[school name] class size site:schoolsmith.co.uk`, then `[school name] class size site:independentschoolparent.com`, then check the school's own website (admissions or about pages often state it). State the figure and source; only say unavailable if all searches return nothing.
 - One or two sentences on the school's overall character and reputation
 
 ---
 
 ### 3. Inspection And Review Takeaways
 
-Summarise the most recent Ofsted, ISI, or equivalent inspection. Go beyond headline grades — provide substantive detail. Then layer in parent and community voice. Do not repeat school type or basic facts already in the Snapshot.
+You MUST actively fetch the full inspection report PDF before filling this section. Do not mark any field as "not available" or "not verified" without searching first.
 
-**Inspection summary**
-- Overall grade and date of inspection
-- Areas specifically rated good or outstanding (name them)
-- Areas specifically rated requires improvement or inadequate (name them)
-- Pastoral care findings
+**Step 1 — Find and fetch the report:**
+- State schools: search `[school name] site:reports.ofsted.gov.uk` — on the school's provider page, find the PDF link for the most recent inspection (it will be at files.ofsted.gov.uk). Fetch that PDF directly.
+- Fallback: search `[school name] Ofsted report [year]` to find the PDF link
+- Independent schools: search `[school name] site:isi.net` — fetch the most recent ISI report PDF
 
-**Parent feedback** (sourced from Ofsted parent survey, school review sites, or similar)
+**Step 2 — Extract and present every section below:**
+
+**Inspection framework and grades**
+- Inspection date
+- Framework: state whether this is the new Nov 2025 report card format or the old pre-Nov 2025 Ofsted framework
+- New framework — extract all 7 area grades: Achievement, Attendance and Behaviour, Curriculum and Teaching, Inclusion, Leadership and Governance, Personal Development and Wellbeing, Post-16 Provision (if applicable). Grade scale: Exceptional → Strong Standard → Expected Standard → Needs Attention → Urgent Improvement
+- Old framework — extract: overall grade + individual sub-grades (Quality of Education, Behaviour and Attitudes, Personal Development, Leadership and Management, Sixth Form if applicable)
+- Safeguarding: Met or Not Met
+
+**What it's like to be a pupil**
+Summarise the inspector's "What it's like to be a pupil at this school" section. Extract the key character, culture and personality descriptors — what kind of child thrives here, what the daily atmosphere feels like, what values are emphasised. Do not just repeat inspection grades.
+
+**Next steps**
+List every bullet point from the "Next steps" section of the report verbatim. These are the inspectors' honest improvement flags and should not be omitted or softened.
+
+**School and pupil context** (from the "Facts and figures" section of the Ofsted report)
+- Total pupils and whether this is above / close to / below average for this phase
+- School capacity and comparison to average
+- FSM eligibility % — school figure vs national average; note whether well above / above / close to / below / well below average
+- Pupils with EHC plan % — school vs national average
+- Pupils with SEN support % — school vs national average
+- Location deprivation: above / close to / below average
+- Resourced provision or SEND unit: yes or no
+
+**All pupils' performance** (from the Ofsted report "Facts and figures" — extract 3 years for each metric)
+
+| Metric | 2024/25 (provisional) | 2023/24 (final) | 2022/23 (final) | National average |
+|---|---|---|---|---|
+| Grade 5+ English and maths GCSE | | | | |
+| Attainment 8 | | | | |
+| Progress 8 | | | | |
+
+**Disadvantaged pupils' performance** (extract 3 years for each metric)
+
+| Metric | 2024/25 (provisional) | 2023/24 (final) | 2022/23 (final) | National avg (disadvantaged) |
+|---|---|---|---|---|
+| Grade 5+ English and maths GCSE | | | | |
+| Attainment 8 | | | | |
+| Progress 8 | | | | |
+
+Also note the disadvantage gap: school's disadvantaged pupils vs national non-disadvantaged pupils for grade 5+ and Attainment 8.
+
+**Absence** (extract 3 years)
+
+| Metric | 2024/25 | 2023/24 | 2022/23 | National average |
+|---|---|---|---|---|
+| Overall absence % | | | | |
+| Persistent absence % | | | | |
+
+**Post-16 performance** (if applicable — extract from the Ofsted report)
+- A-level average point score vs national average (2–3 years)
+- A-level value added vs national
+- Destinations after 16 % vs national
+
+**Parent feedback** (sourced from Ofsted Parent View, school review sites, or similar)
 - Top 5 positive themes from parent reviews
 - Top 5 negative themes from parent reviews
 
@@ -119,13 +172,13 @@ Summarise the most recent Ofsted, ISI, or equivalent inspection. Go beyond headl
 - Key negative takeaways (recurring concerns, cautionary anecdotes)
 
 **Child fit note** (only if a child description was provided)
-- One or two sentences on whether the inspection findings and community feedback point to a good or poor fit for the described child
+- One or two sentences on whether the inspection findings, pupil context, "What it's like to be a pupil" section, and community feedback point to a good or poor fit for the described child
 
 ---
 
 ### 4. Academic Position And Benchmarking
 
-Cover selectivity and exam performance. Do not repeat school type already in the Snapshot.
+Cover selectivity and contextual benchmarking. Grade 5+, Attainment 8, Progress 8, and A-level point scores are already extracted from the Ofsted report in Section 3 — do not repeat them here. This section adds local ranking, national percentile, EBacc, and any data not available from the Ofsted report.
 
 **Selectivity**: selective, partially selective, or non-selective
 
@@ -141,14 +194,13 @@ Cover selectivity and exam performance. Do not repeat school type already in the
 - National ranking or percentile
 - Year-on-year trend for the last 3 years where data is available
 
-**GCSE results** (if applicable)
-- Latest results: % achieving grades 9–5 and 9–4 in English and Maths; Ebacc entry and performance
-- Local ranking
+**GCSE results** (if applicable — add what is not already in Section 3)
+- EBacc entry rate and EBacc average point score
+- Local ranking (LA or borough)
 - National ranking or percentile
-- Year-on-year trend for the last 3 years where data is available
 
-**A-level results** (if applicable)
-- Latest results: % achieving A*/A or A*–B; average grade
+**A-level results** (if applicable — add what is not already in Section 3)
+- % achieving A*/A or A*–B; average grade
 - Local ranking
 - National ranking or percentile
 - Year-on-year trend for the last 3 years where data is available
@@ -242,19 +294,24 @@ Include only if source-backed. Do not speculate.
 
 ### 10. Surrounding Area And Census
 
-Search public sources using the school's postcode. Do not repeat school-level data already covered elsewhere.
+You MUST perform web searches for this section. Do not skip or summarise without searching. Do not repeat school-level data already covered elsewhere.
 
-Use these sources (search by postcode or first part of postcode):
-- https://www.postcodearea.co.uk — area demographics and income data
-- https://crystalroof.co.uk/report/postcode/ — area profile and amenities
-- https://www.rightmove.co.uk/house-prices — property price data
+**Step 1 — Find the school's postcode** (from the school website if not already known).
 
-Cover:
-- **Average Household Income**: average household income within 0.5 miles of the school
-- **Property Costs**: average and typical property prices in the immediate area (from Rightmove or equivalent)
-- **Ethnicity**: ethnic breakdown of the school's pupil population (from school census or government data)
+**Step 2 — Run these searches now:**
+- Search: `site:postcodearea.co.uk [postcode]` — for income and demographic data
+- Search: `site:crystalroof.co.uk [postcode]` — for area profile
+- Search: `[postcode] average house prices site:rightmove.co.uk` — for property costs
+- Fallback if site searches fail: search `[postcode] average household income`, `[postcode] average house prices`, `[postcode] demographics`
+
+**Step 3 — Report what you found:**
+- **Average Household Income**: state the figure and source. If not found from primary sources, state clearly that data could not be retrieved and give best available estimate with caveat.
+- **Property Costs**: average and typical property prices in the immediate area (from Rightmove or equivalent). Include average sold price if available.
+- **Ethnicity**: ethnic breakdown of the general population in the area (from census or government data)
 - **Free school meal eligibility** (state schools only): percentage of pupils eligible; note whether this is above or below national average
 - **Parent profile**: brief characterisation of the likely parent community based on area income, property costs, school type, and available data
+
+If a source is inaccessible or returns no data, say so explicitly — do not silently omit the field.
 
 ---
 

@@ -12,10 +12,24 @@ const LAMBDA_URL =
 
 const TIMEOUT_MS = 120_000; // Lambda can take up to 110s
 
+/** Retry a fetch-based call up to maxAttempts times on 5xx responses. */
+async function fetchWithRetry(url, options, { maxAttempts = 3, delayMs = 3000 } = {}) {
+  let lastRes;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    lastRes = await fetch(url, options);
+    if (lastRes.status < 500) return lastRes;
+    if (attempt < maxAttempts) {
+      console.warn(`Attempt ${attempt} got ${lastRes.status} — retrying in ${delayMs}ms…`);
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+  return lastRes;
+}
+
 describe('Smoke — deployed Lambda', () => {
 
   test('returns a completed research response with valid structure', async () => {
-    const res = await fetch(LAMBDA_URL, {
+    const res = await fetchWithRetry(LAMBDA_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

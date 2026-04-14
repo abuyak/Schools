@@ -139,7 +139,7 @@ For each relevant fallback school, note:
 - Ofsted / ISI overall grade and one key finding
 - Headline exam results (most recent available: KS2, GCSE, or A-level as appropriate)
 - Local or national ranking if readily sourced
-- Average class size if available
+- Average class size — you MUST search for this before stating it is unavailable. Search: `[school name] class size site:goodschoolsguide.co.uk`, then `[school name] class size site:schoolsmith.co.uk`, then `[school name] class size site:independentschoolparent.com`, then check the school's own website. Only say unavailable if all searches return nothing.
 - One sentence on whether this is a strong enough fallback academically
 
 For private fallback schools that do not publish national curriculum data, note any available benchmarks (ISEB, scholarship outcomes, ISI academic commentary).
@@ -183,17 +183,26 @@ For each relevant fallback school, briefly note:
 
 Include if the choice between fallbacks involves moving area or if area context changes the strategic picture.
 
-Use these sources (search by school postcode or first part of postcode):
-- https://www.postcodearea.co.uk — area demographics and income data
-- https://crystalroof.co.uk/report/postcode/ — area profile and amenities
-- https://www.rightmove.co.uk/house-prices — property price data
+You MUST perform web searches for this section. Do not skip or summarise without searching.
 
 For each relevant fallback school:
-- **Average Household Income**: within 0.5 miles
-- **Property Costs**: average and typical property prices in the immediate area
-- **Ethnicity**: ethnic breakdown of the school's pupil population
+
+**Step 1 — Find the school's postcode** (from the school website if not already known).
+
+**Step 2 — Run these searches for each school:**
+- Search: `site:postcodearea.co.uk [postcode]` — for income and demographic data
+- Search: `site:crystalroof.co.uk [postcode]` — for area profile
+- Search: `[postcode] average house prices site:rightmove.co.uk` — for property costs
+- Fallback if site searches fail: search `[postcode] average household income`, `[postcode] average house prices`, `[postcode] demographics`
+
+**Step 3 — Report what you found:**
+- **Average Household Income**: state the figure and source. If not found from primary sources, state clearly that data could not be retrieved and give best available estimate with caveat.
+- **Property Costs**: average and typical property prices in the immediate area (from Rightmove or equivalent). Include average sold price if available.
+- **Ethnicity**: ethnic breakdown of the population in the area (same post code as the school)
 - **Free school meal eligibility** (state schools only; note whether above or below national average)
 - **Parent profile**: brief characterisation based on area income, property costs, school type, and available data
+
+If a source is inaccessible or returns no data, say so explicitly — do not silently omit the field.
 
 ---
 
