@@ -33,7 +33,7 @@ Remember - the main goal is to save people time gooling. So Ofsted and ISI requi
    STATUS: RESOLVED — Academic Performance section expanded in all prompts with KS1/KS2/GCSE/A-level, local and national ranking, 3-year trend. Private school alternative benchmarks specified.
 
 6. All prompts need to put more focus on children personality fit. Make sure all prompts have this in mind. Also update the memo on the main page that describes or suggests the questions parent might want to ask (section where you say "Keep it specific. The clearer the problem, the stronger the answer.")
-   STATUS: PARTIALLY RESOLVED — Child Personality Fit section added to all 4 prompts, woven through all relevant sections. Main page hint text (app.js) not yet updated — pending.
+   STATUS: RESOLVED — Child Personality Fit section added to all 4 prompts, woven through all relevant sections. Main page hint text and question placeholder updated to prompt parents to describe their child.
 
 7. All prompts need to have what we have in prompt 1 as "Surrounding Area and Census". Please make sure the information there covers
 - The average income 0.5 miles around the school or in the area under search (if prompt 3 chosen)
