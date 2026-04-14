@@ -1,0 +1,43 @@
+Prompt Issues Log
+
+1. There is a lot of duplicated information that is repeated from section on section. Information needs to be crisp and short and to the point. You're dealing with tired parents who don't have time to  read through tons of diluted information. Try not to repeat any info that has already been mentioned in some other sections
+
+2. When you refer to Ofsted or ISI inspection report, we need to go few levels deeper. Phrases like "excellent in all areas" don't really mean much unless you specify this. Let's make sure that prompts 1, 2 and 3 have a section about Inspection And Review Takeaways. And in this section there's a clear breakdown of:
+- what areas are good
+- what areas average or require improvement
+- top 5 positive feedback items from the parents
+- top 5 negative feedback items from the parents
+- what works best for the child in question (if child description is provided)
+- key rumours on the internet. Analyse mumsnet and reddit searching for the school feedback and provide key takeways (both positive and negative)
+
+prompts 2 and 3 should have this in tabular format for easier comparison
+
+Remember - the main goal is to save people time gooling. So Ofsted and ISI require a solid summary and key takeaways to help people
+
+3. Extracurricular activities. One of the important factors that parents look after is the list of afterschool clubs that is provided by school. Please find the list of clubs offered by the school and summarise
+
+4. Primary School Destinations. All prompts need to be updated with better information on destination schools. Parents want to see how well the most popular destination school performs. So when the quesiton is being asked about primary school, a research needs to be made on:
+- top destination schools
+- ranking of the destination schools
+- key GCSE and A level grades of destination schools
+
+5. More detail about pupil academic performance. Each prompt needs to include detailed informaiton on:
+- latest KS1 exam results and ranking locally and on country level (year on year last 3 years where applicable). If the school is private and does not disclose this informaiton. Try finding applicable exam information (i.e. SATs)
+- latest KS2 exam results and ranking locally and on country level (year on year last 3 years where applicable). If the school is private and does not disclose this informaiton. Try finding applicable exam information (i.e. SATs)
+- GCSE results and ranking locally and on country level (year on year last 3 years where applicable)
+- A-levels and ranking locally and on country level (year on year last 3 years where applicable)
+
+6. All prompts need to put more focus on children personality fit. Make sure all prompts have this in mind. Also update the memo on the main page that describes or suggests the questions parent might want to ask (section where you say "Keep it specific. The clearer the problem, the stronger the answer.")
+
+7. All prompts need to have what we have in prompt 1 as "Surrounding Area and Census". Please make sure the information there covers
+- The average income 0.5 miles around the school or in the area under search (if prompt 3 chosen)
+- Ethnicity background for each school covered by search
+- Free school meal eligibility information (if state school)
+- parent profile
+
+8. Fees section needs to be precise with all possible information on all age groups underneath. 
+
+9 Class size needs to be provided in every prompt for every school
+
+
+
