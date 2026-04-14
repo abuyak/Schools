@@ -104,7 +104,7 @@ function getBranchInstructions(branch, promptFile) {
   let file;
   if (promptFile) {
     // Security: allow only safe filenames (no path traversal)
-    if (!/^[\w-]+\.md$/.test(promptFile)) throw new Error('Invalid prompt file name.');
+    if (!/^[\w\s()-]+\.md$/.test(promptFile)) throw new Error('Invalid prompt file name.');
     file = promptFile;
   } else {
     file = BRANCH_FILES[branch];
