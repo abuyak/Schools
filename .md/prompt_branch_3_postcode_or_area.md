@@ -89,11 +89,17 @@ One short paragraph. State a clear judgement on the area:
 - strong for both
 - weak or limited
 
-If a child description was provided, include a one-line fit verdict on which schools in the area best match the child. Do not pre-empt detail in later sections.
+If a child description was provided, include a one-line fit verdict on which schools in the area best match the child and why. Do not pre-empt detail in later sections.
 
 ---
 
 ### 2. Top Recommendations
+
+Cover:
+- best nearby state options (if state schools were specified in the search)
+- best nearby private options (if private or independent schools were specified in the search)
+- both best nearby state AND private options (in any other case)
+- SEN provision and special schools within 5 miles (ONLY if specifically requested in the search)											
 
 Provide a numbered shortlist of 3 to 5 relevant schools. Use continuing numbers (1, 2, 3… not restarting at 1 each time).
 
@@ -116,6 +122,23 @@ Use indented bullet points (- ) for the three sub-items. Do not add blank lines 
 ### 3. Quick Comparison Table
 
 Side-by-side table covering the most decision-relevant dimensions for the shortlisted schools.
+You MUST actively fetch each school's full inspection report PDF before filling this table. Do not mark any cell as "not available" or "not verified" without searching first.
+
+For each school:
+- State schools: search `[school name] site:reports.ofsted.gov.uk` — on the school's provider page, find the PDF link for the most recent inspection (at files.ofsted.gov.uk). Fetch that PDF directly. Fallback: search `[school name] Ofsted report [year]`
+- Independent schools: search `[school name] site:isi.net` — fetch the most recent ISI report PDF
+
+Note: for schools inspected under the old pre-Nov 2025 Ofsted framework, replace the 7 area rows with: Overall grade, Quality of Education, Behaviour and Attitudes, Personal Development, Leadership and Management, Sixth Form (if applicable).
+
+						   
+For the **Average class size** row: you MUST search before marking as not available. For each school search: 
+`[school name] class size site:goodschoolsguide.co.uk`, then `[school name] class size site:schoolsmith.co.uk`, then `[school name] class size site:independentschoolparent.com`, then check the school's own website. 
+Only write "not available" if all searches return nothing.	
+
+For the **Fees** row: Use the most recent published figures per term on the school's own website. For each fee-paying school, provide a breakdown by stage.				 
+**What it's like to be a pupil** row — per school, 2–3 sentences summarising the inspector's pupil experience description: culture, daily atmosphere, what kind of child thrives here.
+
+State "not available" rather than leaving other cells blank. Include only columns for the schools in the shortlist.
 
 | Dimension | School 1 | School 2 | School 3 | School 4 | School 5 |
 |---|---|---|---|---|---|
@@ -126,190 +149,21 @@ Side-by-side table covering the most decision-relevant dimensions for the shortl
 | Selective? | | | | | |
 | Academic profile | | | | | |
 | Admissions realism | | | | | |
-| Fees (headline) | | | | | |
+| Fees per term | | | | | |
 | Destination strength | | | | | |
 | Best for | | | | | |
-
-For the **Average class size** row: you MUST search before marking as not available. For each school search: `[school name] class size site:goodschoolsguide.co.uk`, then `[school name] class size site:schoolsmith.co.uk`, then `[school name] class size site:independentschoolparent.com`, then check the school's own website. Only write "not available" if all searches return nothing.
-
-State "not available" rather than leaving other cells blank. Include only columns for the schools in the shortlist.
-
----
-
-### 4. Inspection And Review Takeaways
-
-You MUST actively fetch each school's full inspection report PDF before filling this table. Do not mark any cell as "not available" or "not verified" without searching first.
-
-For each school:
-- State schools: search `[school name] site:reports.ofsted.gov.uk` — on the school's provider page, find the PDF link for the most recent inspection (at files.ofsted.gov.uk). Fetch that PDF directly. Fallback: search `[school name] Ofsted report [year]`
-- Independent schools: search `[school name] site:isi.net` — fetch the most recent ISI report PDF
-
-Include only columns for the schools in the shortlist. State "not available" only if the search returned no report.
-
-**Inspection grades and framework**
-
-| Dimension | School 1 | School 2 | School 3 | School 4 | School 5 |
-|---|---|---|---|---|---|
-| Inspectorate | | | | | |
-| Inspection date and framework | | | | | |
-| Achievement | | | | | |
-| Attendance and behaviour | | | | | |
-| Curriculum and teaching | | | | | |
-| Inclusion | | | | | |
-| Leadership and governance | | | | | |
-| Personal development and wellbeing | | | | | |
-| Post-16 provision (if applicable) | | | | | |
-| Safeguarding | | | | | |
-| Next steps (verbatim) | | | | | |
-
-Note: for schools inspected under the old pre-Nov 2025 Ofsted framework, replace the 7 area rows with: Overall grade, Quality of Education, Behaviour and Attitudes, Personal Development, Leadership and Management, Sixth Form (if applicable).
-
-**What it's like to be a pupil** — per school, 2–3 sentences summarising the inspector's pupil experience description: culture, daily atmosphere, what kind of child thrives here.
-
-**School and pupil context** (from the "Facts and figures" section of each Ofsted report)
-
-| Dimension | School 1 | School 2 | School 3 | School 4 | School 5 |
-|---|---|---|---|---|---|
-| Total pupils (vs avg) | | | | | |
-| School capacity (vs avg) | | | | | |
-| FSM eligibility % (vs national avg) | | | | | |
-| EHC plan % (vs national avg) | | | | | |
-| SEN support % (vs national avg) | | | | | |
-| Location deprivation | | | | | |
-| Resourced provision / SEND unit | | | | | |
-
-**All pupils' GCSE performance** (3 years; from Ofsted "Facts and figures")
-
-| Metric | School 1 | School 2 | School 3 | School 4 | School 5 | National avg |
-|---|---|---|---|---|---|---|
-| Grade 5+ Eng & maths 2024/25 | | | | | | |
-| Grade 5+ Eng & maths 2023/24 | | | | | | |
-| Grade 5+ Eng & maths 2022/23 | | | | | | |
-| Attainment 8 2024/25 | | | | | | |
-| Attainment 8 2023/24 | | | | | | |
-| Progress 8 2023/24 | | | | | | |
-| Progress 8 2022/23 | | | | | | |
-
-**Disadvantaged pupils' GCSE performance**
-
-| Metric | School 1 | School 2 | School 3 | School 4 | School 5 | National avg (disadv.) |
-|---|---|---|---|---|---|---|
-| Grade 5+ Eng & maths 2023/24 | | | | | | |
-| Attainment 8 2023/24 | | | | | | |
-| Progress 8 2023/24 | | | | | | |
-
-**Absence**
-
-| Metric | School 1 | School 2 | School 3 | School 4 | School 5 | National avg |
-|---|---|---|---|---|---|---|
-| Overall absence % 2023/24 | | | | | | |
-| Persistent absence % 2023/24 | | | | | | |
-
-**Post-16 performance** (if applicable)
-
-| Metric | School 1 | School 2 | School 3 | School 4 | School 5 | National avg |
-|---|---|---|---|---|---|---|
-| A-level avg point score 2023/24 | | | | | | |
-| Destinations after 16 % | | | | | | |
-
-**Parent and community feedback**
-
-| Dimension | School 1 | School 2 | School 3 | School 4 | School 5 |
-|---|---|---|---|---|---|
-| Top 5 parent positives | | | | | |
-| Top 5 parent negatives | | | | | |
-| Mumsnet / Reddit: positives | | | | | |
-| Mumsnet / Reddit: negatives | | | | | |
+| What it's like to be a pupil | | | | | |
 
 **Child fit note** (only if a child description was provided): one or two sentences on which school's inspection findings, pupil context, and "What it's like to be a pupil" section best suit the described child.
-
+							
 ---
 
-### 5. Academic Performance Summary
+### 4. Area View
+Cover:
 
-Use a tabular format for comparison across the shortlisted schools. Only include rows relevant to the phase of each school.
-
-| Metric | School 1 | School 2 | School 3 | School 4 | School 5 |
-|---|---|---|---|---|---|
-| KS1: latest result | | | | | |
-| KS1: local ranking | | | | | |
-| KS1: national ranking / percentile | | | | | |
-| KS1: 3-year trend | | | | | |
-| KS2: latest result | | | | | |
-| KS2: local ranking | | | | | |
-| KS2: national ranking / percentile | | | | | |
-| KS2: 3-year trend | | | | | |
-| GCSE: latest result | | | | | |
-| GCSE: local ranking | | | | | |
-| GCSE: national ranking / percentile | | | | | |
-| GCSE: 3-year trend | | | | | |
-| A-level: latest result | | | | | |
-| A-level: local ranking | | | | | |
-| A-level: national ranking / percentile | | | | | |
-| A-level: 3-year trend | | | | | |
-
-- For private schools that do not publish national curriculum data, note any available benchmarks (ISEB, scholarship outcomes, ISI academic commentary, published league table positions).
-- State clearly where data is unavailable.
-
----
-
-### 6. Extracurricular Activities
-
-Search each shortlisted school's website for its current list of clubs, societies, and extracurricular provision. Summarise per school:
-- Sports
-- Arts, music, and drama
-- Academic clubs and enrichment
-- Other notable activities
-- Approximate number of clubs if stated
-
-A tabular or brief per-school summary format is preferred. Note gaps where a school does not publish a full list.
-
-**Child fit note** (only if a child description was provided): one sentence on which school's extracurricular offer best matches the described child's interests.
-
----
-
-### 7. Fees
-
-Include for all fee-paying schools in the shortlist. Use the most recent published figures.
-
-For each fee-paying school, provide a breakdown by stage:
-
-| Stage | Day (per term) | Day (annual) | Boarding (per term) | Boarding (annual) |
-|---|---|---|---|---|
-| Reception / Pre-Prep | | | | |
-| Junior / Prep | | | | |
-| Senior | | | | |
-| Sixth Form | | | | |
-
-- Notable extras: include only if reliably sourced.
-- Bursaries and scholarships: note availability and approximate value if published.
-- For state schools: fees not applicable.
-
----
-
-### 8. Destinations
-
-Include for shortlisted schools only where source-backed. Do not speculate.
-
-**Primary or prep schools**
-- Top destination secondary schools for each school (list with ranking context)
-- For each destination school: published GCSE and A-level results (or equivalent) if available
-- Ranking of destination schools locally and nationally where sourced
-- For each destination secondary that is a senior school: check Oxford and Cambridge admissions data:
-  - Oxford: check local file /sources/Oxford/oxford_admissions_merged.csv
-  - Cambridge: check https://www.undergraduate.study.cam.ac.uk/apply/before/application-statistics and local file /sources/Cambridge/cambridge_admissions_merged.csv
-
-**Secondary schools**
-- University destinations:
-  - Parse UCAS data for each school
-  - Oxford: check local file /sources/Oxford/oxford_admissions_merged.csv
-  - Cambridge: check https://www.undergraduate.study.cam.ac.uk/apply/before/application-statistics and local file /sources/Cambridge/cambridge_admissions_merged.csv
-  - Other top-university destinations: check official university admissions pages
-- State clearly where destinations data is not available for a school
-
----
-
-### 9. Area View And Census
+- overall area strength
+- backup depth
+- moving-for-schools verdict
 
 Cover the area-level picture and census data. Do not repeat school-level detail already covered above.
 
@@ -341,19 +195,9 @@ You MUST perform web searches for this section. Do not skip or summarise without
 
 If a source is inaccessible or returns no data, say so explicitly — do not silently omit the field.
 
----
 
-### 10. Admissions And Assessment
 
-Include only if catchment, selectivity, or entry rules are a key factor in the area decision. Do not repeat information already in the Quick Comparison Table.
-
-For each relevant school:
-- Entry points and criteria
-- Key caveats (catchment strength, oversubscription, sibling priority, faith criteria)
-
----
-
-### 11. Tradeoffs And Risks
+### 5. Tradeoffs And Risks
 
 New points only — do not restate facts already covered. Call out the main practical cautions for this area:
 - Strong headline schools but catchment-sensitive
@@ -366,7 +210,7 @@ New points only — do not restate facts already covered. Call out the main prac
 
 ---
 
-### 12. Best Next Moves
+### 6. Best Next Moves
 
 Practical next actions:
 - Narrow to a smaller radius if the shortlist is broad
@@ -377,7 +221,7 @@ Practical next actions:
 
 ---
 
-### 13. Sources
+### 7. Sources
 
 Short source list. Do not link to any locally stored prompt or resource files.
 
