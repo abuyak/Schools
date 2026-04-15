@@ -103,6 +103,7 @@ Cover:
 
 Provide a numbered shortlist of 3 to 5 relevant schools. Use continuing numbers (1, 2, 3… not restarting at 1 each time).
 
+
 Format:
 
 1. School Name (type, e.g. girls selective grammar)
@@ -116,6 +117,8 @@ Format:
    - Main caution: one sentence
 
 Use indented bullet points (- ) for the three sub-items. Do not add blank lines between sub-items. Add a blank line between schools.
+Provide a numbered shortlist of 3 to 5 relevant schools. Use continuing numbers (1, 2, 3… not restarting at 1 each time).
+
 
 ---
 
@@ -124,21 +127,50 @@ Use indented bullet points (- ) for the three sub-items. Do not add blank lines 
 Side-by-side table covering the most decision-relevant dimensions for the shortlisted schools.
 You MUST actively fetch each school's full inspection report PDF before filling this table. Do not mark any cell as "not available" or "not verified" without searching first.
 
-For each school:
-- State schools: search `[school name] site:reports.ofsted.gov.uk` — on the school's provider page, find the PDF link for the most recent inspection (at files.ofsted.gov.uk). Fetch that PDF directly. Fallback: search `[school name] Ofsted report [year]`
-- Independent schools: search `[school name] site:isi.net` — fetch the most recent ISI report PDF
+For the **Average class size** row:
 
-Note: for schools inspected under the old pre-Nov 2025 Ofsted framework, replace the 7 area rows with: Overall grade, Quality of Education, Behaviour and Attitudes, Personal Development, Leadership and Management, Sixth Form (if applicable).
+You MUST perform a multi-step search and extraction process. Do NOT stop after 1–2 failed searches.
 
-						   
-For the **Average class size** row: you MUST search before marking as not available. For each school search: 
-`[school name] class size site:goodschoolsguide.co.uk`, then `[school name] class size site:schoolsmith.co.uk`, then `[school name] class size site:independentschoolparent.com`, then check the school's own website. 
-Only write "not available" if all searches return nothing.	
+Step 1 — Direct sources (exact values):
+Search in order:
+- `[school name] class size site:goodschoolsguide.co.uk`
+- `[school name] class size site:schoolsmith.co.uk`
+- `[school name] class size site:independentschoolparent.com`
+- `[school name] class size`
 
-For the **Fees** row: Use the most recent published figures per term on the school's own website. For each fee-paying school, provide a breakdown by stage.				 
-**What it's like to be a pupil** row — per school, 2–3 sentences summarising the inspector's pupil experience description: culture, daily atmosphere, what kind of child thrives here.
+Step 2 — School website deep search:
+If not found, search:
+- `[school name] admissions class size`
+- `[school name] teaching approach class size`
+- `[school name] pupil teacher ratio`
 
-State "not available" rather than leaving other cells blank. Include only columns for the schools in the shortlist.
+Check admissions pages, FAQs, and prospectus PDFs.
+
+Step 3 — Inspection report inference (REQUIRED if no direct value):
+From the Ofsted/ISI PDF, extract:
+- total pupil roll
+- number of forms or classes per year (if stated)
+- pupil–teacher ratio (if available)
+
+Then:
+- Estimate average class size where possible
+- If estimating, clearly label as: "approx. X (estimated from report data)"
+
+Step 4 — Accept qualitative indicators (only if no numeric data):
+If numbers are unavailable, extract phrasing such as:
+- "small class sizes"
+- "typically 20–22 pupils"
+- "low pupil–teacher ratio"
+
+Convert to a reasonable range if possible (e.g. "small (~15–20)")
+
+Final rule:
+Only write "not available" if:
+- no numeric value
+- no estimate possible
+- no qualitative indication
+
+This should be extremely rare.
 
 | Dimension | School 1 | School 2 | School 3 | School 4 | School 5 |
 |---|---|---|---|---|---|
