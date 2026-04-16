@@ -117,14 +117,59 @@ Format:
    - Main caution: one sentence
 
 Use indented bullet points (- ) for the three sub-items. Do not add blank lines between sub-items. Add a blank line between schools.
-Provide a numbered shortlist of 3 to 5 relevant schools. Use continuing numbers (1, 2, 3… not restarting at 1 each time).
+
+Once all responses are received, make sure the schools are listed using continuing numbers (1, 2, 3… not restarting at 1 each time).
 
 
 ---
 
 ### 3. Quick Comparison Table
 
-Side-by-side table covering the most decision-relevant dimensions for the shortlisted schools.
+
+Create a side-by-side comparison table covering the most decision-relevant dimensions for the shortlisted schools.
+
+Dimensions are:
+
+| School type |
+| Phase / age range |
+| Co-ed or single-sex |
+| Average class size |
+| Selective? |
+| Academic profile |
+| Admissions realism |
+| Fees per term |
+| Destination strength |
+| Best for |
+| What it's like to be a pupil |
+
+The number of school columns MUST exactly match the number of schools in the shortlist.  
+Do NOT include extra empty columns.
+
+Step 1:
+Count the number of schools in the shortlist.
+
+Step 2:
+Generate the table header dynamically:
+- First column = "Dimension"
+- Then one column per school, using the actual school names (not "School 1", "School 2", etc.)
+
+Example:
+If there are 4 schools:
+| Dimension | School A | School B | School C | School D |
+
+If there are 3 schools:
+| Dimension | School A | School B | School C |
+
+Step 3:
+Populate all rows for each school.
+
+Final rules:
+- Do not create placeholder columns
+- Do not include empty columns
+- Do not truncate the shortlist
+- Column count must always match shortlist count exactly
+
+
 You MUST actively fetch each school's full inspection report PDF before filling this table. Do not mark any cell as "not available" or "not verified" without searching first.
 
 For the **Average class size** row:
@@ -172,19 +217,6 @@ Only write "not available" if:
 
 This should be extremely rare.
 
-| Dimension | School 1 | School 2 | School 3 | School 4 | School 5 |
-|---|---|---|---|---|---|
-| School type | | | | | |
-| Phase / age range | | | | | |
-| Co-ed or single-sex | | | | | |
-| Average class size | | | | | |
-| Selective? | | | | | |
-| Academic profile | | | | | |
-| Admissions realism | | | | | |
-| Fees per term | | | | | |
-| Destination strength | | | | | |
-| Best for | | | | | |
-| What it's like to be a pupil | | | | | |
 
 **Child fit note** (only if a child description was provided): one or two sentences on which school's inspection findings, pupil context, and "What it's like to be a pupil" section best suit the described child.
 							
