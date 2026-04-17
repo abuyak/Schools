@@ -244,39 +244,26 @@ This should be extremely rare.
 
 ### 4. Area View
 
-Cover:
-- overall area strength
-- backup depth
-- moving-for-schools verdict
-
-Do not repeat school-level detail already covered above.
+You MUST complete "Area Census Data" FIRST before writing any narrative.
 
 ---
 
-### Area strengths and weaknesses
+### Area Census Data (MANDATORY)
 
-- Best nearby state options (summary)
-- Best nearby private options (summary)
-- Overall area strength
-- Backup depth — how strong are fallback options?
-- Moving-for-schools verdict
-
----
-
-### Area Census Data (COMPLETE THIS SECTION — DO NOT SKIP)
+Switch to data extraction mode. Do not write narrative text until this section is complete.
 
 **Source rules (override global rules):**
-Use only data sources suitable for area-level data:
+Use only:
 - ONS / census
-- Rightmove / Zoopla (property prices)
+- Rightmove / Zoopla
 - Local authority data
 
-Do NOT use school review sites (e.g. :contentReference[oaicite:0]{index=0}, :contentReference[oaicite:1]{index=1}).
+Do NOT use school review sites.
 
 ---
 
 **Search approach:**
-Use the area or borough if postcode-level data is unavailable.
+Use area or borough-level data if postcode data is unavailable.
 
 Search for:
 - `[area name] house prices Rightmove`
@@ -284,13 +271,9 @@ Search for:
 - `[borough name] ethnicity census`
 - `[borough name] free school meals percentage`
 
-Only use sources that contain actual numeric data. Ignore narrative sources.
-
 ---
 
-**Output format (MANDATORY):**
-
-### Area Census Data
+**Output format:**
 
 - **Average Household Income**:  
 - **Property Costs**:  
@@ -303,9 +286,22 @@ Only use sources that contain actual numeric data. Ignore narrative sources.
 **Rules:**
 - Every field must be filled
 - Include numeric values for income and property prices
-- Use borough-level data if postcode data is unavailable
-- If needed, provide a clearly labelled estimate
-- Do not skip this section
+- Use borough-level data if needed
+- You may estimate if required (label clearly)
+
+If this section is missing or incomplete, the response is invalid.
+
+---
+
+### Area strengths and weaknesses
+
+(Only complete this AFTER the data section)
+
+- Best nearby state options (summary)
+- Best nearby private options (summary)
+- Overall area strength
+- Backup depth
+- Moving-for-schools verdict
 
 ### Area Census Data
 
