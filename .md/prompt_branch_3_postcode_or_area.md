@@ -95,7 +95,22 @@ If a child description was provided, include a one-line fit verdict on which sch
 
 ### 2. Top Recommendations
 
+For each school, classify its primary and secondary "forte" based on:
+- Inspection report emphasis
+- Facilities and programmes
+- Outcomes (academic, sport, arts, etc.)
+
+Use only these categories:
+Academic Excellence, STEM, Creative & Performing Arts, Music & Choir, Sport, Pastoral & Wellbeing, Character & Leadership, All-Rounder
+
+Then, if a child profile is provided:
+- Map the child to 1–2 dominant traits
+- Recommend schools based on alignment between child traits and school forte
+- Explicitly explain WHY the match works (or doesn’t)
+
+
 Cover:
+- best nearby schools within each primary forte category
 - best nearby state options (if state schools were specified in the search)
 - best nearby private options (if private or independent schools were specified in the search)
 - both best nearby state AND private options (in any other case)
@@ -141,6 +156,8 @@ Dimensions are:
 | Destination strength |
 | Best for |
 | What it's like to be a pupil |
+| Primary forte |
+| Secondary forte |
 
 The number of school columns MUST exactly match the number of schools in the shortlist.  
 Do NOT include extra empty columns.
