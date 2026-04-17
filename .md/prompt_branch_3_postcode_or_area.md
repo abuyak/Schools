@@ -293,15 +293,6 @@ If this section is missing or incomplete, the response is invalid.
 
 ---
 
-### Area strengths and weaknesses
-
-(Only complete this AFTER the data section)
-
-- Best nearby state options (summary)
-- Best nearby private options (summary)
-- Overall area strength
-- Backup depth
-- Moving-for-schools verdict
 
 ### Area Census Data
 
@@ -320,6 +311,15 @@ Final rule:
 You are allowed to use borough-level or estimated data if postcode-level data is unavailable.
 Do NOT return "not reliably retrieved" unless ALL levels fail (this should be extremely rare).
 
+
+### Area strengths and weaknesses
+
+(Only complete this AFTER the data section)
+
+Write a short summary reflecting the following points
+- Overall area strength
+- Backup depth
+- Moving-for-schools verdict
 
 ### 5. Tradeoffs And Risks
 
