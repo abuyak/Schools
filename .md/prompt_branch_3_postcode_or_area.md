@@ -318,6 +318,25 @@ You MUST provide a value for each field using the best available data.
     - property prices
     - school selectivity
   - Do NOT skip this even if data is partial
+  
+ **Step 4 — Output format (MANDATORY)**
+
+You MUST output the Area census data using the exact structure below.
+
+Do NOT replace this with prose. Do NOT omit this section.
+
+### Area Census Data
+
+- **Average Household Income**:  
+- **Property Costs**:  
+- **Ethnicity**:  
+- **Free School Meal Eligibility**:  
+- **Parent Profile**:  
+
+Rules:
+- Every field MUST be filled
+- You MUST provide a value, estimate, or borough-level proxy
+- You MUST NOT skip this section even if data is partial
 
 Final rule:
 You are allowed to use borough-level or estimated data if postcode-level data is unavailable.
