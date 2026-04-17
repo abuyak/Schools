@@ -261,21 +261,67 @@ You MUST perform web searches for this section. Do not skip or summarise without
 
 **Step 1 — Find the area postcode** (use the postcode the user provided, or the postcode of the main school or area under search).
 
-**Step 2 — Run these searches now:**
-- Search: `site:postcodearea.co.uk [postcode]` — for income and demographic data
-- Search: `site:crystalroof.co.uk [postcode]` — for area profile
-- Search: `[postcode] average house prices site:rightmove.co.uk` — for property costs
-- Fallback if site searches fail: search `[postcode] average household income`, `[postcode] average house prices`, `[postcode] demographics`
 
-**Step 3 — Report what you found:**
-- **Average Household Income**: state the figure and source. If not found from primary sources, state clearly that data could not be retrieved and give best available estimate with caveat.
-- **Property Costs**: average and typical property prices in the area (from Rightmove or equivalent). Include average sold price if available.
-- **Ethnicity**: breakdown for each shortlisted school's pupil population (school census or government data) if applicable or population ethnicity in the area
-- **Free school meal eligibility** for state schools in the shortlist (% eligible; note whether above or below national average)
-- **Parent profile**: brief characterisation of the likely parent community for each school based on area income, property costs, school type, and available data
+**Step 2 — Run searches with fallback hierarchy (MANDATORY):**
 
-If a source is inaccessible or returns no data, say so explicitly — do not silently omit the field.
+You MUST attempt data retrieval in this order and continue until data is found:
 
+1. Postcode-specific sources:
+   - `site:postcodearea.co.uk [postcode]`
+   - `site:crystalroof.co.uk [postcode]`
+   - `[postcode] average house prices site:rightmove.co.uk`
+
+2. Borough / local authority level (if postcode fails):
+   - `[borough name] average household income`
+   - `[borough name] demographics ethnicity`
+   - `[borough name] average house prices`
+   - Use ONS, council, or census sources
+
+3. Property data (REQUIRED — must succeed):
+   - `[postcode] average house prices site:rightmove.co.uk`
+   - `[area name] house prices Rightmove`
+   - Fallback: Zoopla or ONS house price data
+
+4. School-level data:
+   - `[school name] free school meals percentage`
+   - `[school name] demographics ethnicity`
+
+You MUST NOT stop after postcode-level failure. Move to borough-level data if needed.
+
+
+**Step 3 — Reporting rules (STRICT):**
+
+You MUST provide a value for each field using the best available data.
+
+- **Average Household Income**
+  - Use postcode if available
+  - Otherwise use borough-level data
+  - If still unavailable, provide a UK-based estimate based on property prices and clearly label:
+    "estimated based on area property values"
+
+- **Property Costs (MANDATORY)**
+  - Always provide a figure (Rightmove / Zoopla / ONS)
+  - This field must NEVER be empty
+
+- **Ethnicity**
+  - Prefer school-level data
+  - Otherwise use borough-level census data
+
+- **Free School Meal Eligibility**
+  - Provide % for each state school where possible
+  - If unavailable, state:
+    "not found for this school, but borough average is X%"
+
+- **Parent Profile (REQUIRED — MUST INFER)**
+  - You MUST synthesise this using:
+    - income
+    - property prices
+    - school selectivity
+  - Do NOT skip this even if data is partial
+
+Final rule:
+You are allowed to use borough-level or estimated data if postcode-level data is unavailable.
+Do NOT return "not reliably retrieved" unless ALL levels fail (this should be extremely rare).
 
 
 ### 5. Tradeoffs And Risks
