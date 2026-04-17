@@ -277,7 +277,7 @@ Search for:
 
 - **Average Household Income**:  
 - **Property Costs**:  
-- **Ethnicity**:  
+- **Diversity**:  
 - **Free School Meal Eligibility**:  
 - **Parent Profile**:  
 
@@ -298,7 +298,7 @@ If this section is missing or incomplete, the response is invalid.
 
 - **Average Household Income**:  
 - **Property Costs**:  
-- **Ethnicity**:  
+- **Diversity**:  
 - **Free School Meal Eligibility**:  
 - **Parent Profile**:  
 
