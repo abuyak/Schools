@@ -18,9 +18,18 @@ import { join, dirname } from 'path';
 import { handler } from './functions/research/index.js';
 
 // ── Load env.json (ResearchFunction block) ────────────────────────────────────
+// Walk up from this file's directory to find env.json (handles worktrees)
 const __dir = dirname(fileURLToPath(import.meta.url));
-const envJsonPath = join(__dir, 'env.json');
-if (existsSync(envJsonPath)) {
+let envJsonPath = null;
+let searchDir = __dir;
+for (let i = 0; i < 6; i++) {
+  const candidate = join(searchDir, 'env.json');
+  if (existsSync(candidate)) { envJsonPath = candidate; break; }
+  const parent = dirname(searchDir);
+  if (parent === searchDir) break;
+  searchDir = parent;
+}
+if (envJsonPath) {
   const envJson = JSON.parse(readFileSync(envJsonPath, 'utf8'));
   const vars = envJson.ResearchFunction ?? Object.values(envJson)[0] ?? {};
   for (const [k, v] of Object.entries(vars)) {
