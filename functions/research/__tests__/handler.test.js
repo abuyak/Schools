@@ -6,6 +6,11 @@
 
 import { jest } from '@jest/globals';
 
+// Mock govuk.js so it never makes real fetch calls during unit tests
+await jest.unstable_mockModule('../govuk.js', () => ({
+  fetchGovDataForPrompt: jest.fn().mockResolvedValue(''),
+}));
+
 // Mock fetch globally before importing the handler
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
