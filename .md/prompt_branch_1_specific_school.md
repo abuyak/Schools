@@ -118,7 +118,7 @@ Cover only what is not already stated in the Direct Answer:
 - School type (state / independent / grammar / faith)
 - Co-ed or single-sex
 - Religious character (and how embedded — assemblies, compulsory worship, faith ethos)
-- Average class size — you MUST search for this before stating it is unavailable. Search: `[school name] class size site:goodschoolsguide.co.uk`, then `[school name] class size site:schoolsmith.co.uk`, then `[school name] class size site:independentschoolparent.com`, then check the school's own website (admissions or about pages often state it). State the figure and source; only say unavailable if all searches return nothing.
+- Average class size — search for this; check the school website, Good Schools Guide, or Schoolsmith. State the figure and source, or note unavailable if nothing found.
 - One or two sentences on the school's overall character and reputation
 
 ---
@@ -317,24 +317,16 @@ Include only if source-backed. Do not speculate.
 
 ### 10. Surrounding Area And Census
 
-You MUST perform web searches for this section. Do not skip or summarise without searching. Do not repeat school-level data already covered elsewhere.
+Search for the area around the school's postcode. Do not repeat school-level data already covered elsewhere.
 
-**Step 1 — Find the school's postcode** (from the school website if not already known).
+Report:
+- **Average Household Income**: figure and source, or note if unavailable
+- **Property Costs**: typical prices in the immediate area
+- **Ethnicity**: local ethnic breakdown from census or equivalent
+- **Free school meal eligibility** (state schools only): % eligible vs national average
+- **Parent profile**: brief characterisation based on the above
 
-**Step 2 — Run these searches now:**
-- Search: `site:postcodearea.co.uk [postcode]` — for income and demographic data
-- Search: `site:crystalroof.co.uk [postcode]` — for area profile
-- Search: `[postcode] average house prices site:rightmove.co.uk` — for property costs
-- Fallback if site searches fail: search `[postcode] average household income`, `[postcode] average house prices`, `[postcode] demographics`
-
-**Step 3 — Report what you found:**
-- **Average Household Income**: state the figure and source. If not found from primary sources, state clearly that data could not be retrieved and give best available estimate with caveat.
-- **Property Costs**: average and typical property prices in the immediate area (from Rightmove or equivalent). Include average sold price if available.
-- **Ethnicity**: ethnic breakdown of the general population in the area (from census or government data)
-- **Free school meal eligibility** (state schools only): percentage of pupils eligible; note whether this is above or below national average
-- **Parent profile**: brief characterisation of the likely parent community based on area income, property costs, school type, and available data
-
-If a source is inaccessible or returns no data, say so explicitly — do not silently omit the field.
+State clearly if a data point could not be found.
 
 ---
 
