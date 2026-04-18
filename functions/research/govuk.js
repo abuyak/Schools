@@ -80,8 +80,12 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
   let fullText;
   try {
     const { PDFParse } = await import('pdf-parse');
+    // pdf-parse's internal fetch has no timeout — race it against a 12 s deadline
     const parser = new PDFParse({ url: reportUrl });
-    await parser.load();
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('PDF fetch timeout')), 12000)
+    );
+    await Promise.race([parser.load(), timeoutPromise]);
     const result = await parser.getText();
     fullText = result?.pages?.map(p => p.text).join('\n') ?? null;
   } catch (err) {
@@ -392,19 +396,16 @@ export async function getOfstedData(urn) {
     return null;
   }
 
-  // ── PDF extraction (server-side, so the model never needs to fetch it) ──────
-  const pdfSections = finalReport ? await fetchAndParseOfstedPdf(finalReport) : null;
-
   const result = {
     overall: finalOverall, date: finalDate,
     qualityOfEducation, behaviour, personalDevelopment, leadership, sixthForm,
     achievement, attendance, curriculum, inclusion, leadershipGov, wellbeing, post16,
     safeguarding, reportUrl: finalReport,
-    pupilExperience: pdfSections?.pupilExperience ?? null,
-    nextSteps:       pdfSections?.nextSteps       ?? null,
+    pupilExperience: null,
+    nextSteps:       null,
   };
 
-  glog('govuk_ofsted_ok', { urn, overall: finalOverall, date: finalDate, pdfParsed: !!pdfSections });
+  glog('govuk_ofsted_ok', { urn, overall: finalOverall, date: finalDate });
   return result;
 }
 
@@ -795,11 +796,23 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
         return { input: name, identity: null, ofsted: null, performance: null, financial: null };
       }
 
-      const [ofsted, performance, financial] = await Promise.all([
-        identity.isIndependent ? Promise.resolve(null) : getOfstedData(urn),
+      // Phase 1: Ofsted HTML scrape (fast — just parses the page, no PDF)
+      const ofstedBase = identity.isIndependent ? null : await getOfstedData(urn);
+
+      // Phase 2: PDF extraction + performance + financial all in parallel.
+      // PDF is only fetched for branch_1 (detailed view) where the sections
+      // are actually shown. Skipping it for comparison branches saves ~10-15 s.
+      const [pdfSections, performance, financial] = await Promise.all([
+        detailed && ofstedBase?.reportUrl
+          ? fetchAndParseOfstedPdf(ofstedBase.reportUrl)
+          : Promise.resolve(null),
         getPerformanceData(urn),
         getFinancialData(urn),
       ]);
+
+      const ofsted = ofstedBase
+        ? { ...ofstedBase, pupilExperience: pdfSections?.pupilExperience ?? null, nextSteps: pdfSections?.nextSteps ?? null }
+        : null;
 
       return { input: name, identity, ofsted, performance, financial };
     })
