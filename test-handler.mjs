@@ -4,11 +4,7 @@
  * End-to-end test for the research handler — calls the full pipeline:
  *   gov.uk pre-fetch → prompt injection → OpenAI Responses API → structured JSON
  *
- * Setup (one time):
- *   Create a file called .env.local in this directory with:
- *     OPENAI_API_KEY=sk-...
- *     OPENAI_MODEL=o4-mini          # optional, default: o4-mini
- *     ADMIN_KEY=any-secret-string   # optional, enables _model override in requests
+ * Uses env.json (same config as SAM local / deployed Lambda) — no extra setup needed.
  *
  * Usage:
  *   node test-handler.mjs "Tell me about Redriff Primary School"
@@ -17,17 +13,21 @@
  */
 
 import { readFileSync, existsSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { join, dirname } from 'path';
 import { handler } from './functions/research/index.js';
 
-// ── Load .env.local ────────────────────────────────────────────────────────────
-const envFile = new URL('.env.local', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
-if (existsSync(envFile)) {
-  for (const line of readFileSync(envFile, 'utf8').split('\n')) {
-    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.+?)\s*$/);
-    if (m) process.env[m[1]] = m[2];
+// ── Load env.json (ResearchFunction block) ────────────────────────────────────
+const __dir = dirname(fileURLToPath(import.meta.url));
+const envJsonPath = join(__dir, 'env.json');
+if (existsSync(envJsonPath)) {
+  const envJson = JSON.parse(readFileSync(envJsonPath, 'utf8'));
+  const vars = envJson.ResearchFunction ?? Object.values(envJson)[0] ?? {};
+  for (const [k, v] of Object.entries(vars)) {
+    if (!process.env[k]) process.env[k] = String(v);
   }
 } else {
-  console.warn('⚠  No .env.local found. Set OPENAI_API_KEY in the environment or create .env.local\n');
+  console.warn('⚠  No env.json found.\n');
 }
 
 // ── Parse args ─────────────────────────────────────────────────────────────────
