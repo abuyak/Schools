@@ -17,26 +17,39 @@ import { fileURLToPath } from 'url';
 import { join, dirname } from 'path';
 import { handler } from './functions/research/index.js';
 
-// ── Load env.json (ResearchFunction block) ────────────────────────────────────
-// Walk up from this file's directory to find env.json (handles worktrees)
+// ── Find project root (walk up to locate template.yaml and env.json) ──────────
 const __dir = dirname(fileURLToPath(import.meta.url));
-let envJsonPath = null;
+let projectRoot = null;
 let searchDir = __dir;
 for (let i = 0; i < 6; i++) {
-  const candidate = join(searchDir, 'env.json');
-  if (existsSync(candidate)) { envJsonPath = candidate; break; }
+  if (existsSync(join(searchDir, 'template.yaml'))) { projectRoot = searchDir; break; }
   const parent = dirname(searchDir);
   if (parent === searchDir) break;
   searchDir = parent;
 }
-if (envJsonPath) {
+if (!projectRoot) console.warn('⚠  Could not find project root (template.yaml).\n');
+
+// ── Load static env vars from template.yaml (single source of truth) ──────────
+// Reads non-!Ref values from the global Environment.Variables block.
+if (projectRoot) {
+  const yaml = readFileSync(join(projectRoot, 'template.yaml'), 'utf8');
+  const inVars = /^\s{4}Variables:\s*$/m;
+  const varBlock = yaml.slice(yaml.search(inVars));
+  for (const m of varBlock.matchAll(/^\s{6}(\w+):\s*'?([^'\n!][^'\n]*?)'?\s*$/gm)) {
+    if (!process.env[m[1]]) process.env[m[1]] = m[2].trim();
+  }
+}
+
+// ── Load secrets from env.json (API key, model, admin key) ────────────────────
+const envJsonPath = projectRoot ? join(projectRoot, 'env.json') : null;
+if (envJsonPath && existsSync(envJsonPath)) {
   const envJson = JSON.parse(readFileSync(envJsonPath, 'utf8'));
   const vars = envJson.ResearchFunction ?? Object.values(envJson)[0] ?? {};
   for (const [k, v] of Object.entries(vars)) {
     if (!process.env[k]) process.env[k] = String(v);
   }
 } else {
-  console.warn('⚠  No env.json found.\n');
+  console.warn('⚠  No env.json found — OPENAI_API_KEY must be set in the environment.\n');
 }
 
 // ── Parse args ─────────────────────────────────────────────────────────────────
