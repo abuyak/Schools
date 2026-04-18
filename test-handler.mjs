@@ -17,41 +17,29 @@ import { fileURLToPath } from 'url';
 import { join, dirname } from 'path';
 import { handler } from './functions/research/index.js';
 
-// ── Find project root (walk up to locate template.yaml and env.json) ──────────
+// ── Find project root via env.json (gitignored, only exists in real root) ─────
 const __dir = dirname(fileURLToPath(import.meta.url));
 let projectRoot = null;
 let searchDir = __dir;
-for (let i = 0; i < 6; i++) {
-  if (existsSync(join(searchDir, 'template.yaml'))) { projectRoot = searchDir; break; }
+for (let i = 0; i < 8; i++) {
+  if (existsSync(join(searchDir, 'env.json'))) { projectRoot = searchDir; break; }
   const parent = dirname(searchDir);
   if (parent === searchDir) break;
   searchDir = parent;
 }
-if (!projectRoot) console.warn('⚠  Could not find project root (template.yaml).\n');
 
 // ── Load static env vars from template.yaml (single source of truth) ──────────
-// Reads non-!Ref values from the global Environment.Variables block.
-if (projectRoot) {
+if (projectRoot && existsSync(join(projectRoot, 'template.yaml'))) {
   const yaml = readFileSync(join(projectRoot, 'template.yaml'), 'utf8');
-  const inVars = /^\s{4}Variables:\s*$/m;
-  const varBlock = yaml.slice(yaml.search(inVars));
+  const varBlock = yaml.slice(yaml.search(/^\s{4}Variables:\s*$/m));
   for (const m of varBlock.matchAll(/^\s{6}(\w+):\s*'?([^'\n!][^'\n]*?)'?\s*$/gm)) {
     if (!process.env[m[1]]) process.env[m[1]] = m[2].trim();
   }
 }
 
-// ── Load secrets from env.json (walk up separately — may be in parent of worktree) ──
-let envJsonPath = null;
-searchDir = __dir;
-for (let i = 0; i < 8; i++) {
-  const candidate = join(searchDir, 'env.json');
-  if (existsSync(candidate)) { envJsonPath = candidate; break; }
-  const parent = dirname(searchDir);
-  if (parent === searchDir) break;
-  searchDir = parent;
-}
-if (envJsonPath) {
-  const envJson = JSON.parse(readFileSync(envJsonPath, 'utf8'));
+// ── Load secrets from env.json ─────────────────────────────────────────────────
+if (projectRoot) {
+  const envJson = JSON.parse(readFileSync(join(projectRoot, 'env.json'), 'utf8'));
   const vars = envJson.ResearchFunction ?? Object.values(envJson)[0] ?? {};
   for (const [k, v] of Object.entries(vars)) {
     if (!process.env[k]) process.env[k] = String(v);
