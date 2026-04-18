@@ -525,18 +525,35 @@ function fmtOfsted(ofsted, isIndependent) {
 }
 
 /**
- * Renders all raw DfE performance data grouped by namespace.
- * The AI model reads the namespace names (KS2_25, KS4_25, KS5_25, ABS_24,
- * CENSUS_25 etc.) and the variable descriptions to understand what each
- * figure means — no hardcoded field mapping needed.
+ * Renders DfE performance data grouped by namespace, filtered to phase-relevant
+ * namespaces only. Descriptions are omitted — variable names + namespace names
+ * are sufficient for the model to interpret values.
+ *
+ * Phase filtering:
+ *   Primary / Middle-primary → KS2, ABS, CENSUS, L
+ *   Secondary / All-through  → KS4, KS5, ABS, CENSUS, L
+ *   16 plus                  → KS5, ABS, CENSUS, L
+ *   Nursery / unknown        → ABS, CENSUS, L
  */
-function fmtAcademicResults(perf) {
+function fmtAcademicResults(perf, phase) {
   if (!perf) return '_Not retrieved — search compare-school-performance.service.gov.uk by URN._';
+
+  const ph = (phase ?? '').toLowerCase();
+  let allowed;
+  if (/primary|middle.*primary/i.test(ph)) {
+    allowed = ns => /^(KS2|ABS|CENSUS|L)/.test(ns);
+  } else if (/secondary|all.through|middle.*secondary/i.test(ph)) {
+    allowed = ns => /^(KS4|KS5|ABS|CENSUS|L)/.test(ns);
+  } else if (/16.plus/i.test(ph)) {
+    allowed = ns => /^(KS5|ABS|CENSUS|L)/.test(ns);
+  } else {
+    allowed = () => true; // unknown phase — pass everything through
+  }
+
   const blocks = [];
   for (const [namespace, rows] of Object.entries(perf)) {
-    const lines = rows.map(({ variable, value, description }) =>
-      description ? `- ${variable}: ${value} _(${description})_` : `- ${variable}: ${value}`
-    );
+    if (!allowed(namespace)) continue;
+    const lines = rows.map(({ variable, value }) => `- ${variable}: ${value}`);
     blocks.push(`**${namespace}**\n${lines.join('\n')}`);
   }
   return blocks.length ? blocks.join('\n\n') : '_No performance data available._';
@@ -595,7 +612,7 @@ function buildDetailedBlock(school) {
 ${identityBlock}
 
 ### 1. Academic Results
-${fmtAcademicResults(performance)}
+${fmtAcademicResults(performance, identity?.phase)}
 
 **Financial benchmarking** (financial-benchmarking-and-insights-tool.education.gov.uk)
 ${fmtFinancial(financial)}
