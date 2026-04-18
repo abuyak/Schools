@@ -40,9 +40,17 @@ if (projectRoot) {
   }
 }
 
-// ── Load secrets from env.json (API key, model, admin key) ────────────────────
-const envJsonPath = projectRoot ? join(projectRoot, 'env.json') : null;
-if (envJsonPath && existsSync(envJsonPath)) {
+// ── Load secrets from env.json (walk up separately — may be in parent of worktree) ──
+let envJsonPath = null;
+searchDir = __dir;
+for (let i = 0; i < 8; i++) {
+  const candidate = join(searchDir, 'env.json');
+  if (existsSync(candidate)) { envJsonPath = candidate; break; }
+  const parent = dirname(searchDir);
+  if (parent === searchDir) break;
+  searchDir = parent;
+}
+if (envJsonPath) {
   const envJson = JSON.parse(readFileSync(envJsonPath, 'utf8'));
   const vars = envJson.ResearchFunction ?? Object.values(envJson)[0] ?? {};
   for (const [k, v] of Object.entries(vars)) {
