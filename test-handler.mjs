@@ -17,35 +17,27 @@ import { fileURLToPath } from 'url';
 import { join, dirname } from 'path';
 import { handler } from './functions/research/index.js';
 
-// ── Find project root via env.json (gitignored, only exists in real root) ─────
+// ── Load env.json from project root ───────────────────────────────────────────
+// env.json is gitignored so it only exists in the real root, not in worktrees.
+// Walk up until we find it.
 const __dir = dirname(fileURLToPath(import.meta.url));
-let projectRoot = null;
+let envJsonPath = null;
 let searchDir = __dir;
 for (let i = 0; i < 8; i++) {
-  if (existsSync(join(searchDir, 'env.json'))) { projectRoot = searchDir; break; }
+  const candidate = join(searchDir, 'env.json');
+  if (existsSync(candidate)) { envJsonPath = candidate; break; }
   const parent = dirname(searchDir);
   if (parent === searchDir) break;
   searchDir = parent;
 }
-
-// ── Load static env vars from template.yaml (single source of truth) ──────────
-if (projectRoot && existsSync(join(projectRoot, 'template.yaml'))) {
-  const yaml = readFileSync(join(projectRoot, 'template.yaml'), 'utf8');
-  const varBlock = yaml.slice(yaml.search(/^\s{4}Variables:\s*$/m));
-  for (const m of varBlock.matchAll(/^\s{6}(\w+):\s*'?([^'\n!][^'\n]*?)'?\s*$/gm)) {
-    if (!process.env[m[1]]) process.env[m[1]] = m[2].trim();
-  }
-}
-
-// ── Load secrets from env.json ─────────────────────────────────────────────────
-if (projectRoot) {
-  const envJson = JSON.parse(readFileSync(join(projectRoot, 'env.json'), 'utf8'));
-  const vars = envJson.ResearchFunction ?? Object.values(envJson)[0] ?? {};
-  for (const [k, v] of Object.entries(vars)) {
+if (envJsonPath) {
+  const vars = JSON.parse(readFileSync(envJsonPath, 'utf8'));
+  const block = vars.ResearchFunction ?? Object.values(vars)[0] ?? {};
+  for (const [k, v] of Object.entries(block)) {
     if (!process.env[k]) process.env[k] = String(v);
   }
 } else {
-  console.warn('⚠  No env.json found — OPENAI_API_KEY must be set in the environment.\n');
+  console.warn('⚠  No env.json found.\n');
 }
 
 // ── Parse args ─────────────────────────────────────────────────────────────────
