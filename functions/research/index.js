@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { fetchGovDataForPrompt } from './govuk.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -244,10 +245,28 @@ export const handler = async (event) => {
   const model     = (isAdmin && body._model)      ? body._model      : (process.env.OPENAI_MODEL ?? 'o4-mini');
   const promptFile= (isAdmin && body._promptFile) ? body._promptFile : null;
 
-  const instructions = getBranchInstructions(body.branch, promptFile);
+  const baseUrl = (process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1').replace(/\/$/, '');
+
+  let instructions = getBranchInstructions(body.branch, promptFile);
+
+  // Pre-fetch gov.uk data for branches 1 (detailed) and 2 (comparison summary)
+  if (body.branch === 'prompt_branch_1' || body.branch === 'prompt_branch_2') {
+    try {
+      const govBlock = await fetchGovDataForPrompt(
+        body.question,
+        body.branch,
+        apiKey,
+        baseUrl,
+        model,
+      );
+      if (govBlock) instructions += govBlock;
+    } catch (err) {
+      log('govuk_inject_error', { branch: body.branch, error: err.message });
+      // Non-fatal — continue with the unaugmented prompt
+    }
+  }
 
   // Call OpenAI
-  const baseUrl = (process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1').replace(/\/$/, '');
   const isReasoningModel = /^o\d/i.test(model);
 
   let apiResponse;
