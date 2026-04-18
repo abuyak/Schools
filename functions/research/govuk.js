@@ -65,6 +65,76 @@ async function safeFetchJson(url, extraHeaders = {}) {
   }
 }
 
+// ─── Ofsted PDF extraction ────────────────────────────────────────────────────
+
+/**
+ * Fetches the Ofsted report PDF and extracts key narrative sections:
+ *  - "What it's like to be a pupil / to attend this school"
+ *  - "Next steps" (inspector improvement flags)
+ *
+ * Returns { pupilExperience, nextSteps } or null on failure.
+ */
+export async function fetchAndParseOfstedPdf(reportUrl) {
+  if (!reportUrl) return null;
+
+  let fullText;
+  try {
+    const { PDFParse } = await import('pdf-parse');
+    const parser = new PDFParse({ url: reportUrl });
+    await parser.load();
+    const result = await parser.getText();
+    fullText = result?.pages?.map(p => p.text).join('\n') ?? null;
+  } catch (err) {
+    glog('govuk_pdf_parse_fail', { url: reportUrl, error: err.message });
+    return null;
+  }
+
+  if (!fullText) { glog('govuk_pdf_empty', { url: reportUrl }); return null; }
+
+  // Normalise whitespace
+  const text = fullText.replace(/\r\n/g, '\n').replace(/[ \t]+/g, ' ');
+
+  return {
+    pupilExperience: extractSection(text, [
+      /what\s+is\s+it\s+like\s+to\s+attend\s+this\s+school/i,
+      /what\s+it['']s\s+like\s+to\s+be\s+a\s+pupil/i,
+      /what\s+it\s+is\s+like\s+to\s+be\s+a\s+pupil/i,
+    ]),
+    // "Next steps" is an explicit section in the new Nov-2025 format.
+    // Older reports embed improvements in the narrative — nextSteps will be null for those.
+    nextSteps: extractSection(text, [
+      /^next\s+steps\s*$/im,
+      /^what\s+does\s+the\s+school\s+need\s+to\s+do\s+to\s+improve/im,
+      /^areas\s+for\s+improvement\s*$/im,
+    ]),
+  };
+}
+
+/**
+ * Finds a section in PDF text by matching one of several heading patterns,
+ * then returns the text up to the next heading (capitalised line) or 1 500 chars.
+ */
+function extractSection(text, patterns) {
+  for (const pattern of patterns) {
+    const match = text.search(pattern);
+    if (match === -1) continue;
+
+    // Start after the heading line
+    const afterHeading = text.indexOf('\n', match);
+    if (afterHeading === -1) continue;
+    const start = afterHeading + 1;
+
+    // End at next heading-like line (all-caps or title-case short line) or 1500 chars
+    const chunk = text.slice(start, start + 2000);
+    const nextHeading = chunk.search(/\n[A-Z][A-Za-z ,'\-]{5,60}\n/);
+    const end = nextHeading > 100 ? nextHeading : Math.min(chunk.length, 1500);
+
+    const section = chunk.slice(0, end).trim();
+    if (section.length > 50) return section;
+  }
+  return null;
+}
+
 // ─── School name extraction ───────────────────────────────────────────────────
 
 /**
@@ -322,14 +392,19 @@ export async function getOfstedData(urn) {
     return null;
   }
 
+  // ── PDF extraction (server-side, so the model never needs to fetch it) ──────
+  const pdfSections = finalReport ? await fetchAndParseOfstedPdf(finalReport) : null;
+
   const result = {
     overall: finalOverall, date: finalDate,
     qualityOfEducation, behaviour, personalDevelopment, leadership, sixthForm,
     achievement, attendance, curriculum, inclusion, leadershipGov, wellbeing, post16,
     safeguarding, reportUrl: finalReport,
+    pupilExperience: pdfSections?.pupilExperience ?? null,
+    nextSteps:       pdfSections?.nextSteps       ?? null,
   };
 
-  glog('govuk_ofsted_ok', { urn, overall: finalOverall, date: finalDate });
+  glog('govuk_ofsted_ok', { urn, overall: finalOverall, date: finalDate, pdfParsed: !!pdfSections });
   return result;
 }
 
@@ -493,9 +568,7 @@ function extractFinancialFromHtml(html) {
 
 function fmtOfsted(ofsted, isIndependent) {
   if (isIndependent) {
-    return [
-      '- Independent school: Ofsted does not inspect — **fetch ISI report from isi.net via web search**.',
-    ].join('\n');
+    return '- Independent school: Ofsted does not inspect — fetch ISI report from isi.net via web search.';
   }
   if (!ofsted?.overall) return '- _Not retrieved — search reports.ofsted.gov.uk by URN or school name._';
 
@@ -503,13 +576,13 @@ function fmtOfsted(ofsted, isIndependent) {
     `- Overall: **${ofsted.overall}**${ofsted.date ? ` (${ofsted.date})` : ''}`,
   ];
   // New Nov-2025 report card format
-  if (ofsted.achievement)  lines.push(`- Achievement: ${ofsted.achievement}`);
-  if (ofsted.attendance)   lines.push(`- Attendance and Behaviour: ${ofsted.attendance}`);
-  if (ofsted.curriculum)   lines.push(`- Curriculum and Teaching: ${ofsted.curriculum}`);
-  if (ofsted.inclusion)    lines.push(`- Inclusion: ${ofsted.inclusion}`);
-  if (ofsted.leadershipGov)lines.push(`- Leadership and Governance: ${ofsted.leadershipGov}`);
-  if (ofsted.wellbeing)    lines.push(`- Personal Development and Wellbeing: ${ofsted.wellbeing}`);
-  if (ofsted.post16)       lines.push(`- Post-16 Provision: ${ofsted.post16}`);
+  if (ofsted.achievement)   lines.push(`- Achievement: ${ofsted.achievement}`);
+  if (ofsted.attendance)    lines.push(`- Attendance and Behaviour: ${ofsted.attendance}`);
+  if (ofsted.curriculum)    lines.push(`- Curriculum and Teaching: ${ofsted.curriculum}`);
+  if (ofsted.inclusion)     lines.push(`- Inclusion: ${ofsted.inclusion}`);
+  if (ofsted.leadershipGov) lines.push(`- Leadership and Governance: ${ofsted.leadershipGov}`);
+  if (ofsted.wellbeing)     lines.push(`- Personal Development and Wellbeing: ${ofsted.wellbeing}`);
+  if (ofsted.post16)        lines.push(`- Post-16 Provision: ${ofsted.post16}`);
   // Old framework grades
   if (!ofsted.achievement) {
     if (ofsted.qualityOfEducation)  lines.push(`- Quality of Education: ${ofsted.qualityOfEducation}`);
@@ -519,7 +592,17 @@ function fmtOfsted(ofsted, isIndependent) {
   }
   if (ofsted.safeguarding) lines.push(`- Safeguarding: ${ofsted.safeguarding}`);
   if (ofsted.framework)    lines.push(`- Framework: ${ofsted.framework}`);
-  if (ofsted.reportUrl)    lines.push(`- Report PDF: ${ofsted.reportUrl}`);
+
+  // PDF content extracted server-side
+  if (ofsted.pupilExperience) {
+    lines.push(`\n**What it's like to be a pupil (from inspection report)**\n${ofsted.pupilExperience}`);
+  }
+  if (ofsted.nextSteps) {
+    lines.push(`\n**Next steps (from inspection report)**\n${ofsted.nextSteps}`);
+  }
+  if (!ofsted.pupilExperience && !ofsted.nextSteps && ofsted.reportUrl) {
+    lines.push(`- Report PDF: ${ofsted.reportUrl} _(content not extracted — fetch via web search if needed)_`);
+  }
 
   return lines.join('\n');
 }

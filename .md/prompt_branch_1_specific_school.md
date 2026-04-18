@@ -125,11 +125,9 @@ Cover only what is not already stated in the Direct Answer:
 
 ### 3. Inspection And Review Takeaways
 
-The inspection grade, sub-grades, date, and report PDF link are already in the **Pre-Fetched Government Data** block — use them directly.
+The inspection grade, sub-grades, date, and key report sections are already in the **Pre-Fetched Government Data** block — use them directly. Do not fetch the Ofsted PDF; the relevant content has been extracted for you.
 
-**Fetch the report PDF now** using the URL from the pre-fetched block. For independent schools, the pre-fetched block will say "ISI inspected" — search `[school name] site:isi.net` to find and fetch that report instead.
-
-Do not mark any field as "not available" without first attempting to fetch the PDF.
+For independent schools, the pre-fetched block will say "ISI inspected" — search `[school name] site:isi.net` to find and fetch that report.
 
 **Extract and present every section below:**
 
