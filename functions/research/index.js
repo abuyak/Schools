@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { fetchGovDataForPrompt } from './govuk.js';
+import { startTrace, flushTracing } from './tracing.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -247,10 +248,13 @@ export const handler = async (event) => {
 
   const baseUrl = (process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1').replace(/\/$/, '');
 
+  const trace = startTrace('research_request', { question: body.question, branch: body.branch }, { model });
+
   let instructions = getBranchInstructions(body.branch, promptFile);
 
   // Pre-fetch gov.uk data for branches 1 (detailed) and 2 (comparison summary)
   if (body.branch === 'prompt_branch_1' || body.branch === 'prompt_branch_2') {
+    const govSpan = trace?.span({ name: 'govuk_prefetch', input: { question: body.question, branch: body.branch } });
     try {
       const govBlock = await fetchGovDataForPrompt(
         body.question,
@@ -260,14 +264,17 @@ export const handler = async (event) => {
         model,
       );
       if (govBlock) instructions += govBlock;
+      govSpan?.end({ output: { injected: govBlock.length > 0, chars: govBlock.length } });
     } catch (err) {
       log('govuk_inject_error', { branch: body.branch, error: err.message });
+      govSpan?.end({ output: { error: err.message } });
       // Non-fatal — continue with the unaugmented prompt
     }
   }
 
   // Call OpenAI
   const isReasoningModel = /^o\d/i.test(model);
+  const generation = trace?.generation({ name: 'openai_responses', model, input: { instructions, question: body.question } });
 
   let apiResponse;
   try {
@@ -303,6 +310,9 @@ export const handler = async (event) => {
         res.status === 429 ? 'The research provider is rate-limiting requests. Try again shortly.' :
         'The research provider could not complete the request.';
       log('research_request', { status: 'upstream_error', httpStatus: res.status, branch: body.branch, model, ms: Date.now() - t0 });
+      generation?.end({ output: { error: `HTTP ${res.status}` }, level: 'ERROR' });
+      trace?.update({ output: { status: 'upstream_error', httpStatus: res.status } });
+      await flushTracing();
       return okResponse({ status: 'upstream_error', httpStatus: res.status, title: 'Research provider error', summary, scorecard: [], sections: [{ heading: 'What happened', body: text.slice(0, 400) }] });
     }
 
@@ -310,6 +320,9 @@ export const handler = async (event) => {
   } catch (err) {
     const timedOut = err.name === 'TimeoutError' || err.message?.includes('timed out');
     log('research_request', { status: timedOut ? 'timeout' : 'upstream_error', httpStatus: timedOut ? 504 : 502, branch: body.branch, model, ms: Date.now() - t0 });
+    generation?.end({ output: { error: err.message }, level: 'ERROR' });
+    trace?.update({ output: { status: timedOut ? 'timeout' : 'upstream_error' } });
+    await flushTracing();
     return okResponse({
       status: 'upstream_error',
       httpStatus: timedOut ? 504 : 502,
@@ -319,6 +332,24 @@ export const handler = async (event) => {
       sections: [{ heading: 'What happened', body: err.message ?? 'Unknown error' }],
     });
   }
+
+  // Log each web search the model performed
+  for (const item of (apiResponse.output ?? [])) {
+    if (item.type === 'web_search_call') {
+      trace?.event({
+        name: 'web_search',
+        input: { query: item.action?.query ?? null },
+        output: { sources: (item.action?.sources ?? []).map(s => s.url) },
+      });
+    }
+  }
+
+  // Close the generation with token usage
+  const usage = apiResponse.usage;
+  generation?.end({
+    output: apiResponse.output_text ?? null,
+    usage: usage ? { input: usage.input_tokens, output: usage.output_tokens, total: usage.total_tokens } : undefined,
+  });
 
   const result = parseOpenAIResponse(apiResponse);
   const ms = Date.now() - t0;
@@ -331,6 +362,9 @@ export const handler = async (event) => {
     question: body.question.slice(0, 200),
     ms,
   });
+
+  trace?.update({ output: { status: result.status, title: result.title, sections: result.sections.length } });
+  await flushTracing();
 
   return okResponse(result);
 };
