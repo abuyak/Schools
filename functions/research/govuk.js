@@ -385,12 +385,12 @@ export async function getAreaData(postcode) {
   if (!lsoa && !msoa) { glog('govuk_area_no_codes', { postcode }); return null; }
 
   // Step 2 — fetch area data in parallel (all non-fatal)
-  // Ethnicity: Nomis Census 2021 TS021 (needs 2-step NomisKey resolution, MSOA level)
-  // Income:    Nomis NM_2010_1 model-based income estimates (MSOA level)
+  // Ethnicity: Nomis Census 2021 TS021 (2-step NomisKey resolution, MSOA level)
   // HPI:       HM Land Registry UK House Price Index (district level)
-  const [ethnicityData, incomeData, hpiData] = await Promise.allSettled([
+  // Income:    Not available via API — ONS model-based income estimates (FYE 2018) are
+  //            a static XLS only; AI will search for this via web if needed.
+  const [ethnicityData, hpiData] = await Promise.allSettled([
     fetchNomisEthnicity(msoa),
-    fetchONSIncome(msoa),
     fetchHPI(district),
   ]);
 
@@ -401,7 +401,6 @@ export async function getAreaData(postcode) {
     lsoa,
     msoa,
     ethnicity:   ethnicityData.status === 'fulfilled' ? ethnicityData.value : null,
-    income:      incomeData.status    === 'fulfilled' ? incomeData.value    : null,
     housePrices: hpiData.status       === 'fulfilled' ? hpiData.value       : null,
   };
 
@@ -409,7 +408,6 @@ export async function getAreaData(postcode) {
     postcode,
     district,
     hasEthnicity:   !!result.ethnicity,
-    hasIncome:      !!result.income,
     hasHousePrices: !!result.housePrices,
   });
 
@@ -450,17 +448,9 @@ async function fetchNomisEthnicity(msoaCode) {
   return Object.keys(result).length ? result : null;
 }
 
-async function fetchONSIncome(msoaCode) {
-  if (!msoaCode) return null;
-  // ONS model-based income estimates via Nomis (NM_2010_1)
-  const url = `https://www.nomisweb.co.uk/api/v01/dataset/NM_2010_1.jsonstat.json?geography=${msoaCode}&time=latest&measures=20100&select=geography_name,obs_value`;
-  const data = await safeFetchJson(url);
-  if (!data?.value) return null;
-
-  const value = Array.isArray(data.value) ? data.value[0] : data.value;
-  if (!value) return null;
-  return { netEqualisedIncome: `£${Math.round(value).toLocaleString('en-GB')}`, source: 'ONS model-based estimates' };
-}
+// Note: ONS model-based income estimates for MSOAs (last published FYE 2018) are only
+// available as a static XLS download — no filterable API exists. Income data is therefore
+// not pre-fetched; the AI prompt will search for it via web search if needed.
 
 /**
  * Fetches house price index data from the HM Land Registry UKHPI endpoint.
@@ -889,12 +879,6 @@ function fmtAreaData(area) {
   if (!area) return '- _Not retrieved — postcode lookup unavailable._';
   const lines = [];
   lines.push(`- District: ${area.district ?? 'Unknown'}, Region: ${area.region ?? 'Unknown'}`);
-
-  if (area.income?.netEqualisedIncome) {
-    lines.push(`- Average net household income (MSOA): ${area.income.netEqualisedIncome} (${area.income.source})`);
-  } else {
-    lines.push(`- Average household income: _Not retrieved_`);
-  }
 
   if (area.housePrices) {
     const hp = area.housePrices;
