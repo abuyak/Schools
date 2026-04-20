@@ -926,21 +926,34 @@ export async function getFinancialData(urn) {
 
   // Derive total spend per pupil by summing all per-pupil categories.
   // Premises is expressed per sqm so is excluded from the sum.
+  // Also add derived percentage diff to each category and compute comparator total.
   let totalSpendPerPupil = null;
+  let comparatorTotalPerPupil = null;
   if (s?.categories) {
-    const perPupilValues = Object.entries(s.categories)
-      .filter(([, v]) => v.school?.endsWith('/pupil'))
-      .map(([, v]) => parseInt(v.school.replace(/[£,]/g, ''), 10))
-      .filter(n => !isNaN(n));
-    if (perPupilValues.length) {
-      totalSpendPerPupil = '£' + perPupilValues.reduce((a, b) => a + b, 0).toLocaleString('en-GB') + '/pupil';
+    const parse = (str) => str ? parseInt(str.replace(/[£,\/a-z ]/gi, ''), 10) : NaN;
+    let schoolSum = 0, avgSum = 0, schoolCount = 0, avgCount = 0;
+
+    for (const [, v] of Object.entries(s.categories)) {
+      if (!v.school?.endsWith('/pupil')) continue;
+      const sVal = parse(v.school);
+      const aVal = parse(v.average);
+      if (!isNaN(sVal)) { schoolSum += sVal; schoolCount++; }
+      if (!isNaN(aVal)) { avgSum    += aVal; avgCount++; }
+      // Add percentage diff to the category object
+      if (!isNaN(sVal) && !isNaN(aVal) && aVal > 0) {
+        v.pctDiff = Math.round((sVal - aVal) / aVal * 100) + '%';
+      }
     }
+
+    if (schoolCount) totalSpendPerPupil     = '£' + schoolSum.toLocaleString('en-GB') + '/pupil';
+    if (avgCount)    comparatorTotalPerPupil = '£' + avgSum.toLocaleString('en-GB')   + '/pupil';
   }
 
   const result = {
     inYearBalance:         s?.balance                    ?? null,
     revenueReserve:        s?.reserve                    ?? null,
     totalSpendPerPupil,
+    comparatorTotalPerPupil,
     spendingCategories:    s?.categories                 ?? null,
     workforceFTE:          c?.workforceFTE               ?? null,
     teachersFTE:           c?.teachersFTE                ?? null,
@@ -1040,7 +1053,10 @@ function fmtFinancial(fin) {
   // Headline balance figures
   if (fin.inYearBalance)     lines.push(`- In-year balance: ${fin.inYearBalance}`);
   if (fin.revenueReserve)    lines.push(`- Revenue reserve: ${fin.revenueReserve}`);
-  if (fin.totalSpendPerPupil) lines.push(`- Total spend per pupil (excl. premises): ${fin.totalSpendPerPupil}`);
+  if (fin.totalSpendPerPupil) {
+    const comparatorNote = fin.comparatorTotalPerPupil ? ` (comparator avg: ${fin.comparatorTotalPerPupil})` : '';
+    lines.push(`- Total spend per pupil (excl. premises): ${fin.totalSpendPerPupil}${comparatorNote}`);
+  }
 
   // Workforce / staffing
   if (fin.pupilTeacherRatio)    lines.push(`- Pupil:teacher ratio: ${fin.pupilTeacherRatio}:1`);
@@ -1050,7 +1066,7 @@ function fmtFinancial(fin) {
   if (fin.teachingAssistantFTE) lines.push(`- Teaching assistants FTE: ${fin.teachingAssistantFTE}`);
   if (fin.qualifiedTeachersPct) {
     const comparatorNote = fin.comparatorQtsAvgPct ? ` (comparator set avg: ${fin.comparatorQtsAvgPct})` : '';
-    lines.push(`- % teachers with QTS: ${fin.qualifiedTeachersPct}${comparatorNote}`);
+    lines.push(`- % teachers with Qualified Teacher Status (QTS): ${fin.qualifiedTeachersPct}${comparatorNote}`);
   }
 
   // Per-category spending vs comparator average
@@ -1061,6 +1077,7 @@ function fmtFinancial(fin) {
       const parts = [data.school ?? '?'];
       if (data.average) parts.push(`avg ${data.average}`);
       if (data.diff)    parts.push(data.diff);
+      if (data.pctDiff) parts.push(data.pctDiff);
       lines.push(`- ${cat}: ${parts.join(' | ')}`);
     }
   }
