@@ -130,10 +130,10 @@ function extractSection(text, patterns) {
     if (afterHeading === -1) continue;
     const start = afterHeading + 1;
 
-    // End at next heading-like line (all-caps or title-case short line) or 1500 chars
-    const chunk = text.slice(start, start + 2000);
+    // End at next heading-like line (all-caps or title-case short line) or 3000 chars
+    const chunk = text.slice(start, start + 4000);
     const nextHeading = chunk.search(/\n[A-Z][A-Za-z ,'\-]{5,60}\n/);
-    const end = nextHeading > 100 ? nextHeading : Math.min(chunk.length, 1500);
+    const end = nextHeading > 100 ? nextHeading : Math.min(chunk.length, 3000);
 
     const section = chunk.slice(0, end).trim();
     if (section.length > 50) return section;
@@ -262,7 +262,10 @@ export async function lookupSchoolURN(name) {
     const status      = statusMatch ? statusMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
     const isOpen      = !status || /^open$/i.test(status);
 
-    tiles.push({ urn, officialName: tileName, type, phase, la: null, isIndependent, isOpen });
+    const laMatch = tile.match(/Local\s+authority[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
+    const la      = laMatch ? laMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
+
+    tiles.push({ urn, officialName: tileName, type, phase, la, isIndependent, isOpen });
   }
 
   if (!tiles.length) { glog('govuk_gias_no_result', { name }); return null; }
@@ -289,7 +292,7 @@ export async function lookupSchoolURN(name) {
   }
 
   const best = tiles.reduce((a, b) => score(a) >= score(b) ? a : b);
-  glog('govuk_gias_found', { name, urn: best.urn, officialName: best.officialName, type: best.type, isIndependent: best.isIndependent });
+  glog('govuk_gias_found', { name, urn: best.urn, officialName: best.officialName, type: best.type, la: best.la, isIndependent: best.isIndependent });
   return best;
 }
 
@@ -387,11 +390,11 @@ export async function getAreaData(postcode) {
   // Step 2 — fetch area data in parallel (all non-fatal)
   // Ethnicity: Nomis Census 2021 TS021 (2-step NomisKey resolution, MSOA level)
   // HPI:       HM Land Registry UK House Price Index (district level)
-  // Income:    Not available via API — ONS model-based income estimates (FYE 2018) are
-  //            a static XLS only; AI will search for this via web if needed.
-  const [ethnicityData, hpiData] = await Promise.allSettled([
+  // Income:    ONS Small Area Income Estimates FYE 2018 CSV (~680 KB, parsed in-process)
+  const [ethnicityData, hpiData, incomeData] = await Promise.allSettled([
     fetchNomisEthnicity(msoa),
     fetchHPI(district),
+    fetchONSIncome(msoa),
   ]);
 
   const result = {
@@ -402,6 +405,7 @@ export async function getAreaData(postcode) {
     msoa,
     ethnicity:   ethnicityData.status === 'fulfilled' ? ethnicityData.value : null,
     housePrices: hpiData.status       === 'fulfilled' ? hpiData.value       : null,
+    income:      incomeData.status    === 'fulfilled' ? incomeData.value    : null,
   };
 
   glog('govuk_area_ok', {
@@ -409,6 +413,7 @@ export async function getAreaData(postcode) {
     district,
     hasEthnicity:   !!result.ethnicity,
     hasHousePrices: !!result.housePrices,
+    hasIncome:      !!result.income,
   });
 
   return result;
@@ -448,9 +453,63 @@ async function fetchNomisEthnicity(msoaCode) {
   return Object.keys(result).length ? result : null;
 }
 
-// Note: ONS model-based income estimates for MSOAs (last published FYE 2018) are only
-// available as a static XLS download — no filterable API exists. Income data is therefore
-// not pre-fetched; the AI prompt will search for it via web search if needed.
+/**
+ * Fetches ONS model-based household income estimates for an MSOA.
+ *
+ * Source: "Small Area Income Estimates for Middle Layer Super Output Areas, England
+ * and Wales" — Financial Year Ending 2018 (most recent MSOA-level release).
+ * Published as a ~680 KB CSV; we stream the full file and find the matching row.
+ *
+ * Columns (after 6 identifier fields):
+ *   6 — Net annual household income (£)
+ *   7 — Total annual household income (£) [before housing costs]
+ *   8 — Net annual household income after housing costs (£)
+ *   9 — Net annual equivalised household income (£)
+ *
+ * Data is FYE 2018 — cite the year; do not present as current.
+ */
+async function fetchONSIncome(msoaCode) {
+  if (!msoaCode) return null;
+
+  const url =
+    'https://www.ons.gov.uk/file?uri=/employmentandlabourmarket/peopleinwork/' +
+    'earningsandworkinghours/datasets/smallareaincomeestimatesformiddlelayer' +
+    'superoutputareasenglandandwales/financialyearending2018/netannualincome20181.csv';
+
+  const text = await safeFetchText(url, { Accept: 'text/csv,*/*' });
+  if (!text) return null;
+
+  // Minimal quoted-CSV row splitter
+  function splitCSV(line) {
+    const fields = [];
+    let cur = '', inQ = false;
+    for (const ch of line) {
+      if (ch === '"')                    { inQ = !inQ; continue; }
+      if (ch === ',' && !inQ)            { fields.push(cur.trim()); cur = ''; continue; }
+      cur += ch;
+    }
+    fields.push(cur.trim());
+    return fields;
+  }
+
+  for (const line of text.split('\n')) {
+    if (!line.trim() || !line.startsWith(msoaCode)) continue;
+    const row = splitCSV(line);
+    if (row[0] !== msoaCode) continue;
+
+    const fmt = (v) => v ? `£${parseInt(v.replace(/,/g, ''), 10).toLocaleString('en-GB')}` : null;
+    return {
+      msoaName:                    row[1] ?? null,
+      netAnnualHouseholdIncome:    fmt(row[6]),
+      totalAnnualHouseholdIncome:  fmt(row[7]),
+      afterHousingCostsIncome:     fmt(row[8]),
+      netEquivalisedIncome:        fmt(row[9]),
+      year: 'FYE 2018',
+      source: 'ONS Small Area Income Estimates',
+    };
+  }
+  return null;
+}
 
 /**
  * Fetches house price index data from the HM Land Registry UKHPI endpoint.
@@ -880,6 +939,17 @@ function fmtAreaData(area) {
   const lines = [];
   lines.push(`- District: ${area.district ?? 'Unknown'}, Region: ${area.region ?? 'Unknown'}`);
 
+  if (area.income) {
+    const inc = area.income;
+    const parts = [];
+    if (inc.netAnnualHouseholdIncome)   parts.push(`Net: ${inc.netAnnualHouseholdIncome}/yr`);
+    if (inc.afterHousingCostsIncome)    parts.push(`After housing costs: ${inc.afterHousingCostsIncome}/yr`);
+    if (inc.netEquivalisedIncome)       parts.push(`Per capita (equiv.): ${inc.netEquivalisedIncome}/yr`);
+    lines.push(`- Household income (MSOA, ${inc.year}): ${parts.join(' | ')} (${inc.source})`);
+  } else {
+    lines.push(`- Household income: _Not retrieved_`);
+  }
+
   if (area.housePrices) {
     const hp = area.housePrices;
     const parts = [`All: ${hp.averagePrice}`];
@@ -1119,3 +1189,6 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
     ? schools.map(buildDetailedBlock).join('\n\n')
     : buildComparisonBlock(schools));
 }
+
+// Debug helper — exported so debug-govuk.mjs can print the formatted block
+export { buildDetailedBlock };
