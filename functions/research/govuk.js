@@ -758,74 +758,176 @@ function parsePerformanceCsv(csv) {
 // ─── Financial benchmarking data ──────────────────────────────────────────────
 
 /**
- * Tries known API patterns for the DfE financial benchmarking tool.
- * Falls back to HTML scraping (works only if the page is server-rendered).
- * Returns null when neither approach yields data.
+ * Fetches a URL and returns the response body as a Buffer.
+ * Used for binary downloads (ZIP files).
  */
-export async function getFinancialData(urn) {
-  // Probe common REST-style endpoints the tool might expose internally
-  const apiCandidates = [
-    `${FIN_BENCH}/api/school/${urn}`,
-    `${FIN_BENCH}/api/establishment/${urn}`,
-    `${FIN_BENCH}/api/schools/${urn}/summary`,
-  ];
+async function safeFetchBuffer(url, extraHeaders = {}) {
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: { 'User-Agent': BROWSER_UA, ...extraHeaders },
+    });
+    if (!res.ok) return null;
+    const ab = await res.arrayBuffer();
+    return Buffer.from(ab);
+  } catch {
+    return null;
+  }
+}
 
-  for (const url of apiCandidates) {
-    const data = await safeFetchJson(url);
-    if (data) {
-      glog('govuk_fin_api_ok', { urn, url });
-      return extractFinancialFromJson(data);
-    }
+/**
+ * Decompresses the first file from a single-file ZIP buffer.
+ * Uses Node's built-in zlib (inflateRaw) — no npm dependency needed.
+ * Returns the content as a UTF-8 string, or null on failure.
+ */
+async function unzipFirst(buf) {
+  if (!buf || buf.length < 30) return null;
+  try {
+    const { inflateRawSync } = await import('node:zlib');
+    // Locate PK\x03\x04 local file header
+    const i = buf.indexOf(Buffer.from([0x50, 0x4b, 0x03, 0x04]));
+    if (i === -1) return null;
+    const compression  = buf.readUInt16LE(i + 8);   // 0 = stored, 8 = deflate
+    const compressedSz = buf.readUInt32LE(i + 18);
+    const filenameLen  = buf.readUInt16LE(i + 26);
+    const extraLen     = buf.readUInt16LE(i + 28);
+    const dataStart    = i + 30 + filenameLen + extraLen;
+    const data         = buf.subarray(dataStart, dataStart + compressedSz);
+    if (compression === 0) return data.toString('utf8');           // stored
+    if (compression === 8) return inflateRawSync(data).toString('utf8'); // deflate
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Scrapes headline figures and per-category spending from FBIT.
+ *
+ * Balance/reserve live on the main school page (lighter, 31KB).
+ * Per-category detail lives on spending-and-costs (131KB, all 8 categories).
+ * Both fetches run in parallel.
+ */
+async function fetchFBITSpending(urn) {
+  const [mainHtml, costsHtml] = await Promise.all([
+    safeFetchText(`${FIN_BENCH}/school/${urn}`),
+    safeFetchText(`${FIN_BENCH}/school/${urn}/spending-and-costs`),
+  ]);
+  if (!mainHtml && !costsHtml) return null;
+
+  const decode = (s) => (s ?? '').replace(/&#xA3;/g, '£').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ');
+  const main   = decode(mainHtml);
+  const d      = decode(costsHtml);
+
+  // Headline figures — label paragraph immediately followed by value paragraph
+  const headlineRe = (src, label) => {
+    const re = new RegExp(label + '[\\s\\S]{0,300}?(-?£[\\d,]+)', 'i');
+    const m  = src.match(re);
+    return m ? m[1] : null;
+  };
+  const balance = headlineRe(main, 'In year balance');
+  const reserve = headlineRe(main, 'Revenue reserve');
+
+  // Per-category spending: split HTML on spending-priorities section IDs
+  const categories = {};
+  const blocks = d.split(/<section id="spending-priorities-/);
+  for (const block of blocks.slice(1)) {
+    const heading = (block.match(/<h3[^>]*>([\s\S]*?)<\/h3>/) || [])[1]
+      ?.replace(/<[^>]+>/g, '').trim();
+    if (!heading) continue;
+    const spans = Array.from(block.matchAll(/<span>(£[\d,]+)<\/span>/g)).map(x => x[1]);
+    if (!spans.length) continue;
+    const unit     = block.includes('per sq metre') ? '/sqm' : '/pupil';
+    const moreLess = block.includes('>more<') ? 'more' : block.includes('>less<') ? 'less' : null;
+    categories[heading] = {
+      school:  spans[0] ? spans[0] + unit : null,
+      average: spans[1] ? spans[1] + unit : null,
+      diff:    (spans[2] && moreLess) ? `${spans[2]} ${moreLess} than avg` : null,
+    };
   }
 
-  // Fallback: scrape the school detail page (may be a React SPA — often empty)
-  const html = await safeFetchText(`${FIN_BENCH}/school/${urn}`);
-  if (!html) { glog('govuk_fin_fail', { urn }); return null; }
-
-  const result = extractFinancialFromHtml(html);
-  if (result) glog('govuk_fin_html_ok', { urn });
-  else glog('govuk_fin_no_data', { urn });
-  return result;
+  if (!balance && !reserve && !Object.keys(categories).length) return null;
+  return { balance, reserve, categories };
 }
 
-function extractFinancialFromJson(data) {
-  const pick = (obj, ...keys) => {
-    if (!obj || typeof obj !== 'object') return null;
-    for (const k of keys) {
-      if (obj[k] !== undefined && obj[k] !== null && String(obj[k]).trim() !== '') return obj[k];
-    }
-    return null;
+/**
+ * Downloads the FBIT census ZIP export and parses the row for this school.
+ * The ZIP contains a single CSV with workforce and pupil metrics for the
+ * school and its comparator set.
+ */
+async function fetchFBITCensus(urn) {
+  const buf = await safeFetchBuffer(`${FIN_BENCH}/school/${urn}/census/download`);
+  const csv = await unzipFirst(buf);
+  if (!csv) return null;
+
+  const lines = csv.split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length < 2) return null;
+
+  // Strip BOM, split headers
+  const headers = lines[0].replace(/^\uFEFF/, '').split(',').map(h => h.trim());
+  const urnIdx  = headers.findIndex(h => /^URN$/i.test(h));
+  if (urnIdx === -1) return null;
+
+  // Find the row for this school
+  const row = lines.slice(1).find(l => l.split(',')[urnIdx]?.trim() === String(urn));
+  if (!row) return null;
+
+  const cells = row.split(',');
+  const get   = (col) => {
+    const idx = headers.findIndex(h => h === col);
+    return idx !== -1 ? (cells[idx]?.trim() || null) : null;
   };
+
+  const pupils       = parseFloat(get('TotalPupils'))                      || null;
+  const teachersFTE  = parseFloat(get('Teachers'))                         || null;
+  const workforceFTE = parseFloat(get('Workforce'))                        || null;
+  const seniorFTE    = parseFloat(get('SeniorLeadership'))                 || null;
+  const taFTE        = parseFloat(get('TeachingAssistant'))                || null;
+  const qualPct      = parseFloat(get('PercentTeacherWithQualifiedStatus'))|| null;
+  const ptRatio      = (pupils && teachersFTE) ? Math.round(pupils / teachersFTE * 10) / 10 : null;
+
   return {
-    incomePerPupil:      pick(data, 'incomePerPupil', 'income_per_pupil', 'TotalIncomePerPupil'),
-    expenditurePerPupil: pick(data, 'expenditurePerPupil', 'expenditure_per_pupil', 'TotalExpenditurePerPupil'),
-    staffCostsPct:       pick(data, 'staffCostsAsPct', 'staff_costs_pct', 'StaffCostsPercentage'),
-    revenueBalance:      pick(data, 'revenueBalancePerPupil', 'revenue_balance_per_pupil', 'RevenueBalancePerPupil'),
-    totalIncome:         pick(data, 'totalIncome', 'total_income', 'TotalIncome'),
-    pupilsPerTeacher:    pick(data, 'pupilsPerTeacher', 'pupils_per_teacher', 'PupilsPerTeacher', 'averagePupilsPerTeacher'),
+    workforceFTE,
+    teachersFTE,
+    seniorLeadershipFTE:  seniorFTE,
+    teachingAssistantFTE: taFTE,
+    qualifiedTeachersPct: qualPct != null ? qualPct + '%' : null,
+    pupilTeacherRatio:    ptRatio,
   };
 }
 
-function extractFinancialFromHtml(html) {
-  const out = {};
-  const grab = (pattern) => { const m = html.match(pattern); return m ? m[1].trim() : null; };
+/**
+ * Fetches financial benchmarking data from FBIT:
+ *   - spending-and-costs page (HTML) → balance, reserve, 8 spending categories
+ *   - census/download (ZIP→CSV)      → workforce FTE, pupil:teacher ratio, QTS %
+ *
+ * Both fetches run in parallel. Either can succeed independently.
+ */
+export async function getFinancialData(urn) {
+  const [spendRes, censusRes] = await Promise.allSettled([
+    fetchFBITSpending(urn),
+    fetchFBITCensus(urn),
+  ]);
 
-  const inc = grab(/income\s+per\s+pupil[^£\d]*[£]?([\d,]+)/i);
-  if (inc) out.incomePerPupil = '£' + inc;
+  const s = spendRes.status  === 'fulfilled' ? spendRes.value  : null;
+  const c = censusRes.status === 'fulfilled' ? censusRes.value : null;
 
-  const staff = grab(/staff\s+costs?[^%\d]*(\d+\.?\d*)%/i);
-  if (staff) out.staffCostsPct = staff + '%';
+  if (!s && !c) { glog('govuk_fin_no_data', { urn }); return null; }
 
-  const bal = grab(/revenue\s+balance[^£\d]*[£]?([\d,]+)/i);
-  if (bal) out.revenueBalance = '£' + bal;
+  const result = {
+    inYearBalance:        s?.balance              ?? null,
+    revenueReserve:       s?.reserve              ?? null,
+    spendingCategories:   s?.categories           ?? null,
+    workforceFTE:         c?.workforceFTE         ?? null,
+    teachersFTE:          c?.teachersFTE          ?? null,
+    seniorLeadershipFTE:  c?.seniorLeadershipFTE  ?? null,
+    teachingAssistantFTE: c?.teachingAssistantFTE ?? null,
+    qualifiedTeachersPct: c?.qualifiedTeachersPct ?? null,
+    pupilTeacherRatio:    c?.pupilTeacherRatio    ?? null,
+  };
 
-  const exp = grab(/expenditure\s+per\s+pupil[^£\d]*[£]?([\d,]+)/i);
-  if (exp) out.expenditurePerPupil = '£' + exp;
-
-  const ppt = grab(/([\d.]+)\s+pupils?\s+per\s+teacher/i) ?? grab(/pupils?\s+per\s+teacher[^:\d]*([\d.]+)/i);
-  if (ppt) out.pupilsPerTeacher = ppt;
-
-  return Object.keys(out).length ? out : null;
+  glog('govuk_fin_ok', { urn, hasSpending: !!s, hasCensus: !!c });
+  return result;
 }
 
 // ─── Prompt block formatters ──────────────────────────────────────────────────
@@ -907,14 +1009,33 @@ function fmtAcademicResults(perf, phase) {
 }
 
 function fmtFinancial(fin) {
-  if (!fin) return '- _Not retrieved — financial benchmarking tool may require JavaScript rendering._';
+  if (!fin) return '- _Not retrieved_';
   const lines = [];
-  if (fin.incomePerPupil)      lines.push(`- Income per pupil: ${fin.incomePerPupil}`);
-  if (fin.expenditurePerPupil) lines.push(`- Expenditure per pupil: ${fin.expenditurePerPupil}`);
-  if (fin.staffCostsPct)       lines.push(`- Staff costs as % of expenditure: ${fin.staffCostsPct}`);
-  if (fin.revenueBalance)      lines.push(`- Revenue balance per pupil: ${fin.revenueBalance}`);
-  if (fin.totalIncome)         lines.push(`- Total income: ${fin.totalIncome}`);
-  if (fin.pupilsPerTeacher)    lines.push(`- Pupils per teacher (class size proxy): ${fin.pupilsPerTeacher}`);
+
+  // Headline balance figures
+  if (fin.inYearBalance)  lines.push(`- In-year balance: ${fin.inYearBalance}`);
+  if (fin.revenueReserve) lines.push(`- Revenue reserve: ${fin.revenueReserve}`);
+
+  // Workforce / staffing
+  if (fin.pupilTeacherRatio)    lines.push(`- Pupil:teacher ratio: ${fin.pupilTeacherRatio}:1`);
+  if (fin.workforceFTE)         lines.push(`- Total workforce FTE: ${fin.workforceFTE}`);
+  if (fin.teachersFTE)          lines.push(`- Teachers FTE: ${fin.teachersFTE}`);
+  if (fin.seniorLeadershipFTE)  lines.push(`- Senior leadership FTE: ${fin.seniorLeadershipFTE}`);
+  if (fin.teachingAssistantFTE) lines.push(`- Teaching assistants FTE: ${fin.teachingAssistantFTE}`);
+  if (fin.qualifiedTeachersPct) lines.push(`- % teachers with QTS: ${fin.qualifiedTeachersPct}`);
+
+  // Per-category spending vs comparator average
+  if (fin.spendingCategories && Object.keys(fin.spendingCategories).length) {
+    lines.push('');
+    lines.push('**Spending per pupil vs similar schools (FBIT)**');
+    for (const [cat, data] of Object.entries(fin.spendingCategories)) {
+      const parts = [data.school ?? '?'];
+      if (data.average) parts.push(`avg ${data.average}`);
+      if (data.diff)    parts.push(data.diff);
+      lines.push(`- ${cat}: ${parts.join(' | ')}`);
+    }
+  }
+
   return lines.length ? lines.join('\n') : '- _No financial figures parsed._';
 }
 
