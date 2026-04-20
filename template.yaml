@@ -13,11 +13,11 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /schoolscanner/admin_key
   LangfuseSecretKey:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: /schoolscanner/langfuse_secret_key
+    Type: String
+    Default: ''
   LangfusePublicKey:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: /schoolscanner/langfuse_public_key
+    Type: String
+    Default: ''
 
 Globals:
   Function:
