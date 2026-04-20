@@ -385,11 +385,13 @@ export async function getAreaData(postcode) {
   if (!lsoa && !msoa) { glog('govuk_area_no_codes', { postcode }); return null; }
 
   // Step 2 — fetch area data in parallel (all non-fatal)
-  const [ethnicityData, deprivationData, incomeData, hpiData] = await Promise.allSettled([
-    fetchONSCensus(lsoa ?? lsoa11, 'TS021'),   // Ethnic group by LSOA
-    fetchONSCensus(lsoa ?? lsoa11, 'TS011'),   // Household deprivation
-    fetchONSIncome(msoa),                       // Average household income
-    fetchLandRegistry(clean),                   // Average house prices
+  // Ethnicity: Nomis Census 2021 TS021 (needs 2-step NomisKey resolution, MSOA level)
+  // Income:    Nomis NM_2010_1 model-based income estimates (MSOA level)
+  // HPI:       HM Land Registry UK House Price Index (district level)
+  const [ethnicityData, incomeData, hpiData] = await Promise.allSettled([
+    fetchNomisEthnicity(msoa),
+    fetchONSIncome(msoa),
+    fetchHPI(district),
   ]);
 
   const result = {
@@ -398,17 +400,15 @@ export async function getAreaData(postcode) {
     region,
     lsoa,
     msoa,
-    ethnicity:   ethnicityData.status   === 'fulfilled' ? ethnicityData.value   : null,
-    deprivation: deprivationData.status === 'fulfilled' ? deprivationData.value : null,
-    income:      incomeData.status      === 'fulfilled' ? incomeData.value      : null,
-    housePrices: hpiData.status         === 'fulfilled' ? hpiData.value         : null,
+    ethnicity:   ethnicityData.status === 'fulfilled' ? ethnicityData.value : null,
+    income:      incomeData.status    === 'fulfilled' ? incomeData.value    : null,
+    housePrices: hpiData.status       === 'fulfilled' ? hpiData.value       : null,
   };
 
   glog('govuk_area_ok', {
     postcode,
     district,
     hasEthnicity:   !!result.ethnicity,
-    hasDeprivation: !!result.deprivation,
     hasIncome:      !!result.income,
     hasHousePrices: !!result.housePrices,
   });
@@ -416,28 +416,43 @@ export async function getAreaData(postcode) {
   return result;
 }
 
-async function fetchONSCensus(areaCode, datasetId) {
-  if (!areaCode) return null;
-  // ONS Census 2021 API via Nomis
-  const url = `https://api.beta.ons.gov.uk/v1/datasets/${datasetId}/editions/2021/versions/1/json?area-type=lsoa21,${areaCode}&limit=100`;
-  const data = await safeFetchJson(url);
-  if (!data?.observations) return null;
+/**
+ * Fetches Census 2021 ethnic group percentages for an MSOA from Nomis (TS021).
+ *
+ * Nomis requires an internal NomisKey (not the ONS geography code) for MSOA-level
+ * queries. We resolve it in one pre-flight request, then fetch the data.
+ */
+async function fetchNomisEthnicity(msoaCode) {
+  if (!msoaCode) return null;
 
-  // Summarise into key/value pairs
-  const summary = {};
-  for (const obs of data.observations) {
-    const category = obs.dimensions?.find(d => d.id !== 'lsoa21')?.label;
-    const value    = obs.observation;
-    if (category && value !== undefined) summary[category] = value;
+  // Step 1 — resolve ONS MSOA code to a Nomis internal geography key
+  const defUrl = `https://www.nomisweb.co.uk/api/v01/dataset/NM_2041_1/geography/${msoaCode}.def.sdmx.json`;
+  const defData = await safeFetchJson(defUrl);
+  const codes = defData?.structure?.codelists?.codelist?.[0]?.code;
+  if (!Array.isArray(codes)) return null;
+
+  const entry = codes.find(c => c.value === msoaCode);
+  const nomisKey = entry?.annotations?.annotation?.find(a => a.annotationtitle === 'NomisKey')?.annotationtext;
+  if (!nomisKey) return null;
+
+  // Step 2 — query ethnicity percentages (20 categories, skip total=0)
+  const cats = Array.from({ length: 19 }, (_, i) => i + 1).join(',');
+  const dataUrl = `https://www.nomisweb.co.uk/api/v01/dataset/NM_2041_1.data.json?geography=${nomisKey}&c2021_eth_20=${cats}&measures=20301&select=c2021_eth_20_name,obs_value`;
+  const data = await safeFetchJson(dataUrl);
+  if (!Array.isArray(data?.obs)) return null;
+
+  const result = {};
+  for (const obs of data.obs) {
+    const label = obs.c2021_eth_20?.description;
+    const val   = parseFloat(obs.obs_value?.value);
+    if (label && !isNaN(val) && val > 0) result[label] = val;
   }
-  return Object.keys(summary).length ? summary : null;
+  return Object.keys(result).length ? result : null;
 }
 
 async function fetchONSIncome(msoaCode) {
   if (!msoaCode) return null;
-  // ONS model-based income estimates — data.gov.uk hosted CSV
-  // The dataset URL is a bulk download; we scrape the ONS page for the MSOA instead
-  // by querying the Nomis API which mirrors this dataset.
+  // ONS model-based income estimates via Nomis (NM_2010_1)
   const url = `https://www.nomisweb.co.uk/api/v01/dataset/NM_2010_1.jsonstat.json?geography=${msoaCode}&time=latest&measures=20100&select=geography_name,obs_value`;
   const data = await safeFetchJson(url);
   if (!data?.value) return null;
@@ -447,29 +462,44 @@ async function fetchONSIncome(msoaCode) {
   return { netEqualisedIncome: `£${Math.round(value).toLocaleString('en-GB')}`, source: 'ONS model-based estimates' };
 }
 
-async function fetchLandRegistry(postcode) {
-  if (!postcode) return null;
-  // Land Registry Price Paid — query by postcode sector (first 5 chars)
-  const sector = postcode.slice(0, -2).trim(); // e.g. "SW1A 1AA" → "SW1A 1"
-  const url = `https://landregistry.data.gov.uk/data/ppi/transaction-record.json?propertyAddress.postcode_startswith=${encodeURIComponent(sector)}&_pageSize=50&_page=0`;
-  const data = await safeFetchJson(url);
-  if (!data?.result?.items?.length) return null;
+/**
+ * Fetches house price index data from the HM Land Registry UKHPI endpoint.
+ *
+ * Uses the local authority (district) slug derived from the postcodes.io
+ * admin_district field. Tries the last 4 months in reverse order since
+ * HPI data is published ~3 months behind the reference date.
+ */
+async function fetchHPI(districtName) {
+  if (!districtName) return null;
 
-  const prices = data.result.items
-    .map(item => item.pricePaid)
-    .filter(p => typeof p === 'number' && p > 0);
-  if (!prices.length) return null;
+  const slug = districtName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-  const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
-  const sorted = [...prices].sort((a, b) => a - b);
-  const median = sorted[Math.floor(sorted.length / 2)];
+  // Try the last 4 months (HPI data is ~3 months behind)
+  const now = new Date();
+  const months = [];
+  for (let i = 3; i <= 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
 
-  return {
-    averagePricePaid: `£${avg.toLocaleString('en-GB')}`,
-    medianPricePaid:  `£${median.toLocaleString('en-GB')}`,
-    transactionCount: prices.length,
-    source: 'HM Land Registry Price Paid Data',
-  };
+  for (const month of months) {
+    const url = `https://landregistry.data.gov.uk/data/ukhpi/region/${slug}/month/${month}.json`;
+    const data = await safeFetchJson(url);
+    const pt = data?.result?.primaryTopic;
+    if (!pt?.averagePrice) continue;
+
+    return {
+      district:                districtName,
+      refMonth:                pt.refMonth ?? month,
+      averagePrice:            `£${Math.round(pt.averagePrice).toLocaleString('en-GB')}`,
+      averagePriceFlat:        pt.averagePriceFlatMaisonette ? `£${Math.round(pt.averagePriceFlatMaisonette).toLocaleString('en-GB')}` : null,
+      averagePriceTerraced:    pt.averagePriceTerraced       ? `£${Math.round(pt.averagePriceTerraced).toLocaleString('en-GB')}` : null,
+      averagePriceFirstTimeBuyer: pt.averagePriceFirstTimeBuyer ? `£${Math.round(pt.averagePriceFirstTimeBuyer).toLocaleString('en-GB')}` : null,
+      annualChangePercent:     pt.percentageAnnualChange ?? null,
+      source: 'HM Land Registry UK House Price Index',
+    };
+  }
+  return null;
 }
 
 // ─── Ofsted data (state schools) ─────────────────────────────────────────────
@@ -645,18 +675,17 @@ function parsePerformanceCsv(csv) {
   // Sentinel values DfE uses when data is unavailable or suppressed
   const SUPPRESS = new Set(['NA', 'NE', 'SUPP', 'NP', '', 'LOW', 'LOWCOV']);
 
-  // Pure admin/identifier fields — already captured in the GIAS identity block
+  // Pure admin/identifier fields — not useful in the prompt block
   const SKIP_VARS = new Set([
     'URN', 'LA', 'LEA', 'ESTAB', 'LAESTAB', 'URN_AC',
     'RECTYPE', 'ALPHAIND', 'EDITION', 'YEAR',
-    'ADDRESS1', 'ADDRESS2', 'ADDRESS3', 'TOWN', 'PCODE', 'TELNUM',
+    'ADDRESS1', 'ADDRESS2', 'ADDRESS3', 'TOWN', 'TELNUM',
     'PCON_CODE', 'PCON_NAME', 'ICLOSE', 'TAB15', 'TAB1618',
     'SCHNAME', 'LANAME',
   ]);
 
-  // Skip the L namespace — it's school identity, handled by GIAS.
-  // Keep a handful of useful L fields that GIAS doesn't give us.
-  const L_KEEP = new Set(['GENDER', 'ADMPOL', 'RELCHAR', 'AGELOW', 'AGEHIGH', 'ISPRIMARY', 'ISSECONDARY', 'ISPOST16']);
+  // Keep useful L-namespace identity fields (PCODE needed for area lookups)
+  const L_KEEP = new Set(['PCODE', 'GENDER', 'ADMPOL', 'RELCHAR', 'AGELOW', 'AGEHIGH', 'ISPRIMARY', 'ISSECONDARY', 'ISPOST16']);
 
   const byNamespace = {};
 
@@ -864,32 +893,45 @@ function fmtAreaData(area) {
   if (area.income?.netEqualisedIncome) {
     lines.push(`- Average net household income (MSOA): ${area.income.netEqualisedIncome} (${area.income.source})`);
   } else {
-    lines.push(`- Average household income: _Not retrieved — search site:postcodearea.co.uk or ONS small area income estimates_`);
+    lines.push(`- Average household income: _Not retrieved_`);
   }
 
   if (area.housePrices) {
     const hp = area.housePrices;
-    lines.push(`- Average sold price (postcode sector, last 50 transactions): ${hp.averagePricePaid} | Median: ${hp.medianPricePaid} (${hp.source})`);
+    const parts = [`All: ${hp.averagePrice}`];
+    if (hp.averagePriceFlat)           parts.push(`Flat: ${hp.averagePriceFlat}`);
+    if (hp.averagePriceTerraced)       parts.push(`Terraced: ${hp.averagePriceTerraced}`);
+    if (hp.averagePriceFirstTimeBuyer) parts.push(`FTB: ${hp.averagePriceFirstTimeBuyer}`);
+    if (hp.annualChangePercent != null) parts.push(`+${hp.annualChangePercent}% YoY`);
+    lines.push(`- Average house price (${hp.district}, ${hp.refMonth}): ${parts.join(' | ')} (${hp.source})`);
   } else {
-    lines.push(`- House prices: _Not retrieved — search "[postcode] average house prices site:rightmove.co.uk"_`);
+    lines.push(`- House prices: _Not retrieved_`);
   }
 
   if (area.ethnicity && Object.keys(area.ethnicity).length) {
-    const top = Object.entries(area.ethnicity)
+    // Aggregate into high-level groups, then show top 5 detail items
+    const groups = {};
+    for (const [label, pct] of Object.entries(area.ethnicity)) {
+      const broad = label.startsWith('White:') ? 'White'
+        : label.startsWith('Asian') ? 'Asian'
+        : label.startsWith('Black') ? 'Black'
+        : label.startsWith('Mixed') ? 'Mixed'
+        : 'Other';
+      groups[broad] = (groups[broad] ?? 0) + pct;
+    }
+    const broadSummary = Object.entries(groups)
+      .sort(([,a],[,b]) => b - a)
+      .map(([k, v]) => `${k}: ${Math.round(v)}%`)
+      .join(', ');
+    const topDetail = Object.entries(area.ethnicity)
       .sort(([,a],[,b]) => b - a)
       .slice(0, 5)
-      .map(([k, v]) => `${k}: ${v}`)
-      .join(', ');
-    lines.push(`- Ethnic profile (top 5 by LSOA, ONS Census 2021): ${top}`);
+      .map(([k, v]) => `${k}: ${v}%`)
+      .join('; ');
+    lines.push(`- Ethnic profile (MSOA, Census 2021): ${broadSummary}`);
+    lines.push(`  Top groups: ${topDetail}`);
   } else {
-    lines.push(`- Ethnicity: _Not retrieved — search ONS Census 2021 for this area_`);
-  }
-
-  if (area.deprivation && Object.keys(area.deprivation).length) {
-    const dep = Object.entries(area.deprivation)
-      .map(([k, v]) => `${k}: ${v}`)
-      .join(', ');
-    lines.push(`- Household deprivation (ONS Census 2021, LSOA): ${dep}`);
+    lines.push(`- Ethnicity: _Not retrieved_`);
   }
 
   return lines.join('\n');
@@ -907,24 +949,37 @@ function govLinks(urn) {
 // ─── Build Branch 1 block (detailed) ─────────────────────────────────────────
 
 function buildDetailedBlock(school) {
-  const { input, identity, details, ofsted, performance, financial, area } = school;
+  const { input, identity, ofsted, performance, financial, area } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
+
+  // Pull useful identity fields from DfE CSV.
+  // L-namespace fields (GENDER, ADMPOL etc.) live in the L namespace.
+  // PCODE lives in the phase-specific namespace (KS2_25, KS4_25 etc.) — search all namespaces.
+  const lField     = (v) => performance?.L?.find(r => r.variable === v)?.value ?? null;
+  const anyNsField = (v) => Object.values(performance ?? {}).flat().find(r => r.variable === v)?.value ?? null;
+  const postcode  = anyNsField('PCODE');
+  const gender    = lField('GENDER');
+  const admPol    = lField('ADMPOL');
+  const relChar   = lField('RELCHAR');
+  const ageLow    = lField('AGELOW');
+  const ageHigh   = lField('AGEHIGH');
 
   const identityLines = identity ? [
     `- Official name: ${identity.officialName}`,
     `- URN: ${urn}`,
-    `- Type: ${identity.type ?? details?.establishmentType ?? 'Unknown'}`,
-    `- Phase / age range: ${identity.phase ?? 'Unknown'}`,
-    `- Local authority: ${details?.la ?? identity.la ?? 'Unknown'}`,
-    `- Independent school: ${identity.isIndependent ? 'Yes' : 'No'}`,
+    `- Type: ${identity.type ?? 'Unknown'}`,
+    `- Phase: ${identity.phase ?? 'Unknown'}${ageLow && ageHigh ? ` (ages ${ageLow}–${ageHigh})` : ''}`,
+    `- Local authority: ${identity.la ?? 'Unknown'}`,
+    `- Independent: ${identity.isIndependent ? 'Yes' : 'No'}`,
+    ...(postcode        ? [`- Postcode: ${postcode}`]              : []),
+    ...(gender          ? [`- Gender: ${gender}`]                  : []),
+    ...(relChar         ? [`- Religious character: ${relChar}`]    : []),
+    ...(admPol          ? [`- Admissions policy: ${admPol}`]       : []),
   ] : [
     `- Search term used: "${input}"`,
     `- URN: _Not found — check school name spelling and search GIAS manually._`,
   ];
-
-  const detailLines = fmtGIASDetails(details);
-  if (detailLines) identityLines.push(...detailLines.split('\n'));
 
   identityLines.push('', '  Government profile links:', ...govLinks(urn).map(u => `  - ${u}`));
 
@@ -1043,31 +1098,27 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
         return { input: name, identity: null, ofsted: null, performance: null, financial: null };
       }
 
-      // Phase 1: Ofsted HTML scrape + GIAS details (fast, no PDF)
-      const [ofstedBase, details] = await Promise.all([
-        identity.isIndependent ? Promise.resolve(null) : getOfstedData(urn),
-        detailed ? getGIASDetails(urn) : Promise.resolve(null),
-      ]);
+      // Phase 1: Ofsted HTML scrape (fast, no PDF)
+      const ofstedBase = identity.isIndependent ? null : await getOfstedData(urn);
 
-      // Phase 2: PDF + performance + financial + area data — all in parallel.
-      // PDF and area data only for branch 1 (detailed view).
-      const postcode = details?.postcode ?? null;
-      const [pdfSections, performance, financial, area] = await Promise.all([
+      // Phase 2: PDF + performance + financial — all in parallel
+      const [pdfSections, performance, financial] = await Promise.all([
         detailed && ofstedBase?.reportUrl
           ? fetchAndParseOfstedPdf(ofstedBase.reportUrl)
           : Promise.resolve(null),
         getPerformanceData(urn),
         getFinancialData(urn),
-        detailed && postcode
-          ? getAreaData(postcode)
-          : Promise.resolve(null),
       ]);
+
+      // Phase 3: area data — postcode comes from DfE CSV (PCODE in phase-specific namespace, e.g. KS2_25)
+      const postcode = Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value ?? null;
+      const area = detailed && postcode ? await getAreaData(postcode) : null;
 
       const ofsted = ofstedBase
         ? { ...ofstedBase, pupilExperience: pdfSections?.pupilExperience ?? null, nextSteps: pdfSections?.nextSteps ?? null }
         : null;
 
-      return { input: name, identity, details, ofsted, performance, financial, area };
+      return { input: name, identity, ofsted, performance, financial, area };
     })
   );
 
