@@ -250,7 +250,16 @@ export const handler = async (event) => {
   const baseUrl = (process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1').replace(/\/$/, '');
   const isReasoningModel = /^o\d/i.test(model);
 
+  // ── Gov.uk pre-fetch ─────────────────────────────────────────────────────────
+  // Placeholder — populated when govuk.js is integrated into this branch.
+  // When that happens: import fetchGovDataForPrompt from './govuk.js' at the top,
+  // then replace these three lines with the real call inside a timed wrapper.
+  const govukT0 = Date.now();
+  const govukBlock = '';
+  const govukMs = Date.now() - govukT0;
+
   let apiResponse;
+  let openaiMs = 0;
   try {
     const requestPayload = {
       model,
@@ -270,6 +279,7 @@ export const handler = async (event) => {
       requestPayload.reasoning = { effort: process.env.OPENAI_REASONING_EFFORT ?? 'low' };
     }
 
+    const openaiT0 = Date.now();
     const res = await fetch(`${baseUrl}/responses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
@@ -288,6 +298,7 @@ export const handler = async (event) => {
     }
 
     apiResponse = await res.json();
+    openaiMs = Date.now() - openaiT0;
   } catch (err) {
     const timedOut = err.name === 'TimeoutError' || err.message?.includes('timed out');
     log('research_request', { status: timedOut ? 'timeout' : 'upstream_error', httpStatus: timedOut ? 504 : 502, branch: body.branch, model, ms: Date.now() - t0 });
@@ -304,14 +315,41 @@ export const handler = async (event) => {
   const result = parseOpenAIResponse(apiResponse);
   const ms = Date.now() - t0;
 
+  // ── Build trace ───────────────────────────────────────────────────────────────
+  const webSearches = (apiResponse.output ?? [])
+    .filter(item => item.type === 'web_search_call')
+    .map(item => item.action?.query ?? null)
+    .filter(Boolean);
+
+  const usage = apiResponse.usage ?? {};
+
+  const trace = {
+    totalMs: ms,
+    govuk: { ms: govukMs, injected: govukBlock.length > 0, chars: govukBlock.length },
+    openai: {
+      ms: openaiMs,
+      inputTokens:  usage.input_tokens  ?? null,
+      outputTokens: usage.output_tokens ?? null,
+      webSearches,
+    },
+    output: {
+      status:   result.status,
+      title:    result.title ?? null,
+      sections: result.sections?.length ?? 0,
+    },
+  };
+
   log('research_request', {
-    status: result.status,
+    status:    result.status,
     httpStatus: result.httpStatus ?? 200,
-    branch: body.branch,
+    branch:    body.branch,
     model,
-    question: body.question.slice(0, 200),
+    question:  body.question.slice(0, 200),
     ms,
+    govuk:  { ms: trace.govuk.ms, injected: trace.govuk.injected, chars: trace.govuk.chars },
+    openai: { ms: trace.openai.ms, inputTokens: trace.openai.inputTokens, outputTokens: trace.openai.outputTokens, searches: webSearches.length },
+    output: trace.output,
   });
 
-  return okResponse(result);
+  return okResponse(isAdmin ? { ...result, _trace: trace } : result);
 };
