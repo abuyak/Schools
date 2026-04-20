@@ -878,21 +878,31 @@ async function fetchFBITCensus(urn) {
     return idx !== -1 ? (cells[idx]?.trim() || null) : null;
   };
 
-  const pupils       = parseFloat(get('TotalPupils'))                      || null;
-  const teachersFTE  = parseFloat(get('Teachers'))                         || null;
-  const workforceFTE = parseFloat(get('Workforce'))                        || null;
-  const seniorFTE    = parseFloat(get('SeniorLeadership'))                 || null;
-  const taFTE        = parseFloat(get('TeachingAssistant'))                || null;
-  const qualPct      = parseFloat(get('PercentTeacherWithQualifiedStatus'))|| null;
+  const pupils       = parseFloat(get('TotalPupils'))                       || null;
+  const teachersFTE  = parseFloat(get('Teachers'))                          || null;
+  const workforceFTE = parseFloat(get('Workforce'))                         || null;
+  const seniorFTE    = parseFloat(get('SeniorLeadership'))                  || null;
+  const taFTE        = parseFloat(get('TeachingAssistant'))                 || null;
+  const qualPct      = parseFloat(get('PercentTeacherWithQualifiedStatus')) || null;
   const ptRatio      = (pupils && teachersFTE) ? Math.round(pupils / teachersFTE * 10) / 10 : null;
+
+  // Compute comparator-set average QTS% from all rows in the CSV
+  const qtsIdx = headers.findIndex(h => h === 'PercentTeacherWithQualifiedStatus');
+  const comparatorQtsValues = lines.slice(1)
+    .map(l => parseFloat(l.split(',')[qtsIdx]))
+    .filter(v => !isNaN(v));
+  const comparatorQtsAvg = comparatorQtsValues.length
+    ? Math.round(comparatorQtsValues.reduce((s, v) => s + v, 0) / comparatorQtsValues.length * 10) / 10
+    : null;
 
   return {
     workforceFTE,
     teachersFTE,
-    seniorLeadershipFTE:  seniorFTE,
-    teachingAssistantFTE: taFTE,
-    qualifiedTeachersPct: qualPct != null ? qualPct + '%' : null,
-    pupilTeacherRatio:    ptRatio,
+    seniorLeadershipFTE:      seniorFTE,
+    teachingAssistantFTE:     taFTE,
+    qualifiedTeachersPct:     qualPct != null ? qualPct + '%' : null,
+    comparatorQtsAvgPct:      comparatorQtsAvg != null ? comparatorQtsAvg + '%' : null,
+    pupilTeacherRatio:        ptRatio,
   };
 }
 
@@ -914,16 +924,31 @@ export async function getFinancialData(urn) {
 
   if (!s && !c) { glog('govuk_fin_no_data', { urn }); return null; }
 
+  // Derive total spend per pupil by summing all per-pupil categories.
+  // Premises is expressed per sqm so is excluded from the sum.
+  let totalSpendPerPupil = null;
+  if (s?.categories) {
+    const perPupilValues = Object.entries(s.categories)
+      .filter(([, v]) => v.school?.endsWith('/pupil'))
+      .map(([, v]) => parseInt(v.school.replace(/[£,]/g, ''), 10))
+      .filter(n => !isNaN(n));
+    if (perPupilValues.length) {
+      totalSpendPerPupil = '£' + perPupilValues.reduce((a, b) => a + b, 0).toLocaleString('en-GB') + '/pupil';
+    }
+  }
+
   const result = {
-    inYearBalance:        s?.balance              ?? null,
-    revenueReserve:       s?.reserve              ?? null,
-    spendingCategories:   s?.categories           ?? null,
-    workforceFTE:         c?.workforceFTE         ?? null,
-    teachersFTE:          c?.teachersFTE          ?? null,
-    seniorLeadershipFTE:  c?.seniorLeadershipFTE  ?? null,
-    teachingAssistantFTE: c?.teachingAssistantFTE ?? null,
-    qualifiedTeachersPct: c?.qualifiedTeachersPct ?? null,
-    pupilTeacherRatio:    c?.pupilTeacherRatio    ?? null,
+    inYearBalance:         s?.balance                    ?? null,
+    revenueReserve:        s?.reserve                    ?? null,
+    totalSpendPerPupil,
+    spendingCategories:    s?.categories                 ?? null,
+    workforceFTE:          c?.workforceFTE               ?? null,
+    teachersFTE:           c?.teachersFTE                ?? null,
+    seniorLeadershipFTE:   c?.seniorLeadershipFTE        ?? null,
+    teachingAssistantFTE:  c?.teachingAssistantFTE       ?? null,
+    qualifiedTeachersPct:  c?.qualifiedTeachersPct       ?? null,
+    comparatorQtsAvgPct:   c?.comparatorQtsAvgPct        ?? null,
+    pupilTeacherRatio:     c?.pupilTeacherRatio          ?? null,
   };
 
   glog('govuk_fin_ok', { urn, hasSpending: !!s, hasCensus: !!c });
@@ -1013,8 +1038,9 @@ function fmtFinancial(fin) {
   const lines = [];
 
   // Headline balance figures
-  if (fin.inYearBalance)  lines.push(`- In-year balance: ${fin.inYearBalance}`);
-  if (fin.revenueReserve) lines.push(`- Revenue reserve: ${fin.revenueReserve}`);
+  if (fin.inYearBalance)     lines.push(`- In-year balance: ${fin.inYearBalance}`);
+  if (fin.revenueReserve)    lines.push(`- Revenue reserve: ${fin.revenueReserve}`);
+  if (fin.totalSpendPerPupil) lines.push(`- Total spend per pupil (excl. premises): ${fin.totalSpendPerPupil}`);
 
   // Workforce / staffing
   if (fin.pupilTeacherRatio)    lines.push(`- Pupil:teacher ratio: ${fin.pupilTeacherRatio}:1`);
@@ -1022,7 +1048,10 @@ function fmtFinancial(fin) {
   if (fin.teachersFTE)          lines.push(`- Teachers FTE: ${fin.teachersFTE}`);
   if (fin.seniorLeadershipFTE)  lines.push(`- Senior leadership FTE: ${fin.seniorLeadershipFTE}`);
   if (fin.teachingAssistantFTE) lines.push(`- Teaching assistants FTE: ${fin.teachingAssistantFTE}`);
-  if (fin.qualifiedTeachersPct) lines.push(`- % teachers with QTS: ${fin.qualifiedTeachersPct}`);
+  if (fin.qualifiedTeachersPct) {
+    const comparatorNote = fin.comparatorQtsAvgPct ? ` (comparator set avg: ${fin.comparatorQtsAvgPct})` : '';
+    lines.push(`- % teachers with QTS: ${fin.qualifiedTeachersPct}${comparatorNote}`);
+  }
 
   // Per-category spending vs comparator average
   if (fin.spendingCategories && Object.keys(fin.spendingCategories).length) {
