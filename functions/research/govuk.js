@@ -16,9 +16,11 @@
 
 const FETCH_TIMEOUT_MS = 8000;
 
-const GIAS_SEARCH  = 'https://www.get-information-schools.service.gov.uk/Establishments/Search';
-const COMPARE_PERF = 'https://www.compare-school-performance.service.gov.uk';
-const FIN_BENCH      = 'https://financial-benchmarking-and-insights-tool.education.gov.uk';
+const GIAS_SEARCH   = 'https://www.get-information-schools.service.gov.uk/Establishments/Search';
+const GIAS_DETAIL   = 'https://www.get-information-schools.service.gov.uk/Establishments/Establishment/Details';
+const COMPARE_PERF  = 'https://www.compare-school-performance.service.gov.uk';
+const FIN_BENCH     = 'https://financial-benchmarking-and-insights-tool.education.gov.uk';
+const POSTCODES_IO  = 'https://api.postcodes.io/postcodes';
 
 function glog(event, props = {}) {
   console.log(JSON.stringify({ event, ts: new Date().toISOString(), src: 'govuk', ...props }));
@@ -291,6 +293,185 @@ export async function lookupSchoolURN(name) {
   return best;
 }
 
+// ─── GIAS establishment detail ───────────────────────────────────────────────
+
+/**
+ * Fetches the GIAS establishment detail page and extracts fields not available
+ * from the search result tiles: postcode, capacity, pupil numbers, FSM %,
+ * SEN %, EHC plan %, gender, religious character, admissions policy.
+ *
+ * Returns a flat object of available fields; missing fields are omitted.
+ */
+export async function getGIASDetails(urn) {
+  const html = await safeFetchText(`${GIAS_DETAIL}/${urn}`);
+  if (!html) { glog('govuk_gias_detail_fail', { urn }); return null; }
+
+  // GIAS uses a definition-list pattern:
+  //   <dt ...>Label</dt><dd ...>Value</dd>
+  // We normalise label → camelCase key with a lookup table.
+  const LABEL_MAP = {
+    'postcode':                         'postcode',
+    'local authority':                  'la',
+    'school capacity':                  'capacity',
+    'number of pupils on roll':         'numberOnRoll',
+    'total pupils':                     'numberOnRoll',
+    'number of boys':                   'numberBoys',
+    'number of girls':                  'numberGirls',
+    'percentage of pupils eligible for free school meals': 'fsmPct',
+    'free school meals (%)':            'fsmPct',
+    'percentage of pupils with ehc plans': 'ehcPlanPct',
+    'pupils with special educational needs': 'senSupportPct',
+    'pupils with sen support':          'senSupportPct',
+    'gender':                           'gender',
+    'religious character':              'religiousCharacter',
+    'admissions policy':                'admissionsPolicy',
+    'ofsted rating':                    'ofstedRating',
+    'last changed / inspected':         'ofstedDate',
+    'type of establishment':            'establishmentType',
+  };
+
+  const result = {};
+
+  // Match every <dt>...</dt> <dd>...</dd> pair
+  for (const m of html.matchAll(/<dt[^>]*>([\s\S]*?)<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/gi)) {
+    const label = m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+    const value = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    if (!value || value === 'Not applicable' || value === 'Unknown') continue;
+    const key = LABEL_MAP[label];
+    if (key && !result[key]) result[key] = value;
+  }
+
+  // Also try <th> / <td> table pattern (alternative GIAS layout)
+  if (!result.postcode) {
+    for (const m of html.matchAll(/<th[^>]*>([\s\S]*?)<\/th>\s*<td[^>]*>([\s\S]*?)<\/td>/gi)) {
+      const label = m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+      const value = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      if (!value || value === 'Not applicable' || value === 'Unknown') continue;
+      const key = LABEL_MAP[label];
+      if (key && !result[key]) result[key] = value;
+    }
+  }
+
+  if (!Object.keys(result).length) { glog('govuk_gias_detail_empty', { urn }); return null; }
+  glog('govuk_gias_detail_ok', { urn, fields: Object.keys(result) });
+  return result;
+}
+
+// ─── Area data (postcodes.io → ONS / Land Registry) ──────────────────────────
+
+/**
+ * Resolves a postcode to LSOA/MSOA codes and fetches area-level data:
+ *  - ONS Census 2021: ethnicity breakdown, household deprivation
+ *  - ONS household income estimates (MSOA level)
+ *  - HM Land Registry: average house prices
+ *
+ * All sub-fetches are non-fatal. Returns whatever data is available.
+ */
+export async function getAreaData(postcode) {
+  if (!postcode) return null;
+  const clean = postcode.replace(/\s+/g, '').toUpperCase();
+
+  // Step 1 — resolve postcode to area codes
+  const geo = await safeFetchJson(`${POSTCODES_IO}/${encodeURIComponent(clean)}`);
+  if (!geo?.result) { glog('govuk_area_postcode_fail', { postcode }); return null; }
+
+  const r = geo.result;
+  const lsoa  = r.codes?.lsoa  ?? r.lsoa  ?? null;
+  const msoa  = r.codes?.msoa  ?? r.msoa  ?? null;
+  const lsoa11 = r.codes?.lsoa11 ?? r.lsoa11 ?? null;
+  const district = r.admin_district ?? null;
+  const region   = r.region ?? null;
+
+  if (!lsoa && !msoa) { glog('govuk_area_no_codes', { postcode }); return null; }
+
+  // Step 2 — fetch area data in parallel (all non-fatal)
+  const [ethnicityData, deprivationData, incomeData, hpiData] = await Promise.allSettled([
+    fetchONSCensus(lsoa ?? lsoa11, 'TS021'),   // Ethnic group by LSOA
+    fetchONSCensus(lsoa ?? lsoa11, 'TS011'),   // Household deprivation
+    fetchONSIncome(msoa),                       // Average household income
+    fetchLandRegistry(clean),                   // Average house prices
+  ]);
+
+  const result = {
+    postcode: r.postcode,
+    district,
+    region,
+    lsoa,
+    msoa,
+    ethnicity:   ethnicityData.status   === 'fulfilled' ? ethnicityData.value   : null,
+    deprivation: deprivationData.status === 'fulfilled' ? deprivationData.value : null,
+    income:      incomeData.status      === 'fulfilled' ? incomeData.value      : null,
+    housePrices: hpiData.status         === 'fulfilled' ? hpiData.value         : null,
+  };
+
+  glog('govuk_area_ok', {
+    postcode,
+    district,
+    hasEthnicity:   !!result.ethnicity,
+    hasDeprivation: !!result.deprivation,
+    hasIncome:      !!result.income,
+    hasHousePrices: !!result.housePrices,
+  });
+
+  return result;
+}
+
+async function fetchONSCensus(areaCode, datasetId) {
+  if (!areaCode) return null;
+  // ONS Census 2021 API via Nomis
+  const url = `https://api.beta.ons.gov.uk/v1/datasets/${datasetId}/editions/2021/versions/1/json?area-type=lsoa21,${areaCode}&limit=100`;
+  const data = await safeFetchJson(url);
+  if (!data?.observations) return null;
+
+  // Summarise into key/value pairs
+  const summary = {};
+  for (const obs of data.observations) {
+    const category = obs.dimensions?.find(d => d.id !== 'lsoa21')?.label;
+    const value    = obs.observation;
+    if (category && value !== undefined) summary[category] = value;
+  }
+  return Object.keys(summary).length ? summary : null;
+}
+
+async function fetchONSIncome(msoaCode) {
+  if (!msoaCode) return null;
+  // ONS model-based income estimates — data.gov.uk hosted CSV
+  // The dataset URL is a bulk download; we scrape the ONS page for the MSOA instead
+  // by querying the Nomis API which mirrors this dataset.
+  const url = `https://www.nomisweb.co.uk/api/v01/dataset/NM_2010_1.jsonstat.json?geography=${msoaCode}&time=latest&measures=20100&select=geography_name,obs_value`;
+  const data = await safeFetchJson(url);
+  if (!data?.value) return null;
+
+  const value = Array.isArray(data.value) ? data.value[0] : data.value;
+  if (!value) return null;
+  return { netEqualisedIncome: `£${Math.round(value).toLocaleString('en-GB')}`, source: 'ONS model-based estimates' };
+}
+
+async function fetchLandRegistry(postcode) {
+  if (!postcode) return null;
+  // Land Registry Price Paid — query by postcode sector (first 5 chars)
+  const sector = postcode.slice(0, -2).trim(); // e.g. "SW1A 1AA" → "SW1A 1"
+  const url = `https://landregistry.data.gov.uk/data/ppi/transaction-record.json?propertyAddress.postcode_startswith=${encodeURIComponent(sector)}&_pageSize=50&_page=0`;
+  const data = await safeFetchJson(url);
+  if (!data?.result?.items?.length) return null;
+
+  const prices = data.result.items
+    .map(item => item.pricePaid)
+    .filter(p => typeof p === 'number' && p > 0);
+  if (!prices.length) return null;
+
+  const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
+  const sorted = [...prices].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+
+  return {
+    averagePricePaid: `£${avg.toLocaleString('en-GB')}`,
+    medianPricePaid:  `£${median.toLocaleString('en-GB')}`,
+    transactionCount: prices.length,
+    source: 'HM Land Registry Price Paid Data',
+  };
+}
+
 // ─── Ofsted data (state schools) ─────────────────────────────────────────────
 
 /**
@@ -543,6 +724,7 @@ function extractFinancialFromJson(data) {
     staffCostsPct:       pick(data, 'staffCostsAsPct', 'staff_costs_pct', 'StaffCostsPercentage'),
     revenueBalance:      pick(data, 'revenueBalancePerPupil', 'revenue_balance_per_pupil', 'RevenueBalancePerPupil'),
     totalIncome:         pick(data, 'totalIncome', 'total_income', 'TotalIncome'),
+    pupilsPerTeacher:    pick(data, 'pupilsPerTeacher', 'pupils_per_teacher', 'PupilsPerTeacher', 'averagePupilsPerTeacher'),
   };
 }
 
@@ -561,6 +743,9 @@ function extractFinancialFromHtml(html) {
 
   const exp = grab(/expenditure\s+per\s+pupil[^£\d]*[£]?([\d,]+)/i);
   if (exp) out.expenditurePerPupil = '£' + exp;
+
+  const ppt = grab(/([\d.]+)\s+pupils?\s+per\s+teacher/i) ?? grab(/pupils?\s+per\s+teacher[^:\d]*([\d.]+)/i);
+  if (ppt) out.pupilsPerTeacher = ppt;
 
   return Object.keys(out).length ? out : null;
 }
@@ -651,7 +836,63 @@ function fmtFinancial(fin) {
   if (fin.staffCostsPct)       lines.push(`- Staff costs as % of expenditure: ${fin.staffCostsPct}`);
   if (fin.revenueBalance)      lines.push(`- Revenue balance per pupil: ${fin.revenueBalance}`);
   if (fin.totalIncome)         lines.push(`- Total income: ${fin.totalIncome}`);
+  if (fin.pupilsPerTeacher)    lines.push(`- Pupils per teacher (class size proxy): ${fin.pupilsPerTeacher}`);
   return lines.length ? lines.join('\n') : '- _No financial figures parsed._';
+}
+
+function fmtGIASDetails(details) {
+  if (!details) return null;
+  const lines = [];
+  if (details.postcode)           lines.push(`- Postcode: ${details.postcode}`);
+  if (details.la)                 lines.push(`- Local authority: ${details.la}`);
+  if (details.numberOnRoll)       lines.push(`- Pupils on roll: ${details.numberOnRoll}`);
+  if (details.capacity)           lines.push(`- Capacity: ${details.capacity}`);
+  if (details.fsmPct)             lines.push(`- FSM eligible (%): ${details.fsmPct}`);
+  if (details.ehcPlanPct)         lines.push(`- Pupils with EHC plan (%): ${details.ehcPlanPct}`);
+  if (details.senSupportPct)      lines.push(`- Pupils with SEN support (%): ${details.senSupportPct}`);
+  if (details.gender)             lines.push(`- Gender: ${details.gender}`);
+  if (details.religiousCharacter) lines.push(`- Religious character: ${details.religiousCharacter}`);
+  if (details.admissionsPolicy)   lines.push(`- Admissions policy: ${details.admissionsPolicy}`);
+  return lines.length ? lines.join('\n') : null;
+}
+
+function fmtAreaData(area) {
+  if (!area) return '- _Not retrieved — postcode lookup unavailable._';
+  const lines = [];
+  lines.push(`- District: ${area.district ?? 'Unknown'}, Region: ${area.region ?? 'Unknown'}`);
+
+  if (area.income?.netEqualisedIncome) {
+    lines.push(`- Average net household income (MSOA): ${area.income.netEqualisedIncome} (${area.income.source})`);
+  } else {
+    lines.push(`- Average household income: _Not retrieved — search site:postcodearea.co.uk or ONS small area income estimates_`);
+  }
+
+  if (area.housePrices) {
+    const hp = area.housePrices;
+    lines.push(`- Average sold price (postcode sector, last 50 transactions): ${hp.averagePricePaid} | Median: ${hp.medianPricePaid} (${hp.source})`);
+  } else {
+    lines.push(`- House prices: _Not retrieved — search "[postcode] average house prices site:rightmove.co.uk"_`);
+  }
+
+  if (area.ethnicity && Object.keys(area.ethnicity).length) {
+    const top = Object.entries(area.ethnicity)
+      .sort(([,a],[,b]) => b - a)
+      .slice(0, 5)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ');
+    lines.push(`- Ethnic profile (top 5 by LSOA, ONS Census 2021): ${top}`);
+  } else {
+    lines.push(`- Ethnicity: _Not retrieved — search ONS Census 2021 for this area_`);
+  }
+
+  if (area.deprivation && Object.keys(area.deprivation).length) {
+    const dep = Object.entries(area.deprivation)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ');
+    lines.push(`- Household deprivation (ONS Census 2021, LSOA): ${dep}`);
+  }
+
+  return lines.join('\n');
 }
 
 function govLinks(urn) {
@@ -666,43 +907,49 @@ function govLinks(urn) {
 // ─── Build Branch 1 block (detailed) ─────────────────────────────────────────
 
 function buildDetailedBlock(school) {
-  const { input, identity, ofsted, performance, financial } = school;
+  const { input, identity, details, ofsted, performance, financial, area } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
 
-  const identityBlock = identity
-    ? [
-        `- Official name: ${identity.officialName}`,
-        `- URN: ${urn}`,
-        `- Type: ${identity.type ?? 'Unknown'}`,
-        `- Phase / age range: ${identity.phase ?? 'Unknown'}`,
-        `- Local authority: ${identity.la ?? performance?.laName ?? 'Unknown'}`,
-        `- Independent school: ${identity.isIndependent ? 'Yes' : 'No'}`,
-        '',
-        '  Government profile links:',
-        ...govLinks(urn).map(u => `  - ${u}`),
-      ].join('\n')
-    : `- Search term used: "${input}"\n- URN: _Not found — check the school name spelling and search GIAS manually._`;
+  const identityLines = identity ? [
+    `- Official name: ${identity.officialName}`,
+    `- URN: ${urn}`,
+    `- Type: ${identity.type ?? details?.establishmentType ?? 'Unknown'}`,
+    `- Phase / age range: ${identity.phase ?? 'Unknown'}`,
+    `- Local authority: ${details?.la ?? identity.la ?? 'Unknown'}`,
+    `- Independent school: ${identity.isIndependent ? 'Yes' : 'No'}`,
+  ] : [
+    `- Search term used: "${input}"`,
+    `- URN: _Not found — check school name spelling and search GIAS manually._`,
+  ];
+
+  const detailLines = fmtGIASDetails(details);
+  if (detailLines) identityLines.push(...detailLines.split('\n'));
+
+  identityLines.push('', '  Government profile links:', ...govLinks(urn).map(u => `  - ${u}`));
 
   return `
 ---
 ## Pre-Fetched Government Data — ${name}
 
-> These fields were retrieved automatically from UK government sources before this research call.
-> **Use the figures below directly.** Do not re-search sources where data is already populated.
-> Where a field shows "_Not retrieved_", include that source in your web search steps.
+> Retrieved automatically from UK government sources.
+> **Use figures below directly — do not re-search populated fields.**
+> Fields marked "_Not retrieved_" should be sourced via web search.
 
 ### School Identity (GIAS)
-${identityBlock}
+${identityLines.join('\n')}
 
-### 1. Academic Results
+### Academic Results (DfE)
 ${fmtAcademicResults(performance, identity?.phase)}
 
-**Financial benchmarking** (financial-benchmarking-and-insights-tool.education.gov.uk)
+### Financial Benchmarking (FBIT)
 ${fmtFinancial(financial)}
 
-### 2. Latest Inspection Outcomes
+### Inspection Outcomes (Ofsted)
 ${fmtOfsted(ofsted, identity?.isIndependent ?? false)}
+
+### Surrounding Area (postcodes.io / ONS / Land Registry)
+${fmtAreaData(area)}
 ---`.trim();
 }
 
@@ -796,25 +1043,31 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
         return { input: name, identity: null, ofsted: null, performance: null, financial: null };
       }
 
-      // Phase 1: Ofsted HTML scrape (fast — just parses the page, no PDF)
-      const ofstedBase = identity.isIndependent ? null : await getOfstedData(urn);
+      // Phase 1: Ofsted HTML scrape + GIAS details (fast, no PDF)
+      const [ofstedBase, details] = await Promise.all([
+        identity.isIndependent ? Promise.resolve(null) : getOfstedData(urn),
+        detailed ? getGIASDetails(urn) : Promise.resolve(null),
+      ]);
 
-      // Phase 2: PDF extraction + performance + financial all in parallel.
-      // PDF is only fetched for branch_1 (detailed view) where the sections
-      // are actually shown. Skipping it for comparison branches saves ~10-15 s.
-      const [pdfSections, performance, financial] = await Promise.all([
+      // Phase 2: PDF + performance + financial + area data — all in parallel.
+      // PDF and area data only for branch 1 (detailed view).
+      const postcode = details?.postcode ?? null;
+      const [pdfSections, performance, financial, area] = await Promise.all([
         detailed && ofstedBase?.reportUrl
           ? fetchAndParseOfstedPdf(ofstedBase.reportUrl)
           : Promise.resolve(null),
         getPerformanceData(urn),
         getFinancialData(urn),
+        detailed && postcode
+          ? getAreaData(postcode)
+          : Promise.resolve(null),
       ]);
 
       const ofsted = ofstedBase
         ? { ...ofstedBase, pupilExperience: pdfSections?.pupilExperience ?? null, nextSteps: pdfSections?.nextSteps ?? null }
         : null;
 
-      return { input: name, identity, ofsted, performance, financial };
+      return { input: name, identity, details, ofsted, performance, financial, area };
     })
   );
 

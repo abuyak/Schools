@@ -250,16 +250,20 @@ export const handler = async (event) => {
   let instructions = getBranchInstructions(body.branch, promptFile);
 
   // Pre-fetch gov.uk data for branches 1 (detailed) and 2 (comparison summary)
+  let govukBlock = '';
+  let govukMs    = 0;
   if (body.branch === 'prompt_branch_1' || body.branch === 'prompt_branch_2') {
     try {
-      const govBlock = await fetchGovDataForPrompt(
+      const govukT0 = Date.now();
+      govukBlock = await fetchGovDataForPrompt(
         body.question,
         body.branch,
         apiKey,
         baseUrl,
         model,
-      );
-      if (govBlock) instructions += govBlock;
+      ) ?? '';
+      govukMs = Date.now() - govukT0;
+      if (govukBlock) instructions += govukBlock;
     } catch (err) {
       log('govuk_inject_error', { branch: body.branch, error: err.message });
       // Non-fatal — continue with the unaugmented prompt
@@ -270,7 +274,9 @@ export const handler = async (event) => {
   const isReasoningModel = /^o\d/i.test(model);
 
   let apiResponse;
+  let openaiMs = 0;
   try {
+    const openaiT0 = Date.now();
     const requestPayload = {
       model,
       tools: [{
@@ -307,6 +313,7 @@ export const handler = async (event) => {
     }
 
     apiResponse = await res.json();
+    openaiMs = Date.now() - openaiT0;
   } catch (err) {
     const timedOut = err.name === 'TimeoutError' || err.message?.includes('timed out');
     log('research_request', { status: timedOut ? 'timeout' : 'upstream_error', httpStatus: timedOut ? 504 : 502, branch: body.branch, model, ms: Date.now() - t0 });
@@ -323,14 +330,46 @@ export const handler = async (event) => {
   const result = parseOpenAIResponse(apiResponse);
   const ms = Date.now() - t0;
 
+  // ── Build trace ───────────────────────────────────────────────────────────────
+  const webSearches = (apiResponse.output ?? [])
+    .filter(item => item.type === 'web_search_call')
+    .map(item => item.action?.query ?? null)
+    .filter(Boolean);
+
+  const usage = apiResponse.usage ?? {};
+
+  const trace = {
+    totalMs: ms,
+    govuk: {
+      ms:              govukMs,
+      injected:        govukBlock.length > 0,
+      chars:           govukBlock.length,
+      estimatedTokens: Math.ceil(govukBlock.length / 4),
+    },
+    openai: {
+      ms:           openaiMs,
+      inputTokens:  usage.input_tokens  ?? null,
+      outputTokens: usage.output_tokens ?? null,
+      webSearches,
+    },
+    output: {
+      status:   result.status,
+      title:    result.title ?? null,
+      sections: result.sections?.length ?? 0,
+    },
+  };
+
   log('research_request', {
-    status: result.status,
+    status:    result.status,
     httpStatus: result.httpStatus ?? 200,
-    branch: body.branch,
+    branch:    body.branch,
     model,
-    question: body.question.slice(0, 200),
+    question:  body.question.slice(0, 200),
     ms,
+    govuk:  { ms: trace.govuk.ms, injected: trace.govuk.injected, chars: trace.govuk.chars, estimatedTokens: trace.govuk.estimatedTokens },
+    openai: { ms: trace.openai.ms, inputTokens: trace.openai.inputTokens, outputTokens: trace.openai.outputTokens, searches: webSearches.length },
+    output: trace.output,
   });
 
-  return okResponse(result);
+  return okResponse(isAdmin ? { ...result, _trace: trace } : result);
 };
