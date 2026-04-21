@@ -556,47 +556,59 @@ async function fetchHPI(districtName) {
 }
 
 /**
- * Fetches Index of Multiple Deprivation (IMD) 2019 data for an LSOA.
- * Source: MHCLG / DLUHC — published via ArcGIS FeatureServer.
+ * Fetches Index of Multiple Deprivation data for an LSOA.
+ * Source: findthatpostcode.uk — aggregates MHCLG IMD releases (2019, 2025)
+ * and makes them available as JSON without authentication.
  *
  * IMD Decile:  1 = most deprived 10% of LSOAs in England
  *              10 = least deprived 10%
- * IMD Rank:    1 = most deprived, 32,844 = least deprived
  *
- * Field names vary across service versions so we try several capitalisation
- * conventions before giving up.
+ * We use the most recent year available (2025 > 2019) and also extract
+ * sub-domain deciles (income, employment, education, health, crime, housing,
+ * living environment) to give a richer neighbourhood picture.
  */
 async function fetchIMD(lsoaCode) {
   if (!lsoaCode) return null;
 
-  const where = encodeURIComponent(`lsoa11cd='${lsoaCode}'`);
-  const url   =
-    'https://services3.arcgis.com/ivmBBrHfQfDnDf8Q/arcgis/rest/services/' +
-    'Indices_of_Multiple_Deprivation_(IMD)_2019/FeatureServer/0/query' +
-    `?where=${where}&outFields=*&f=json`;
+  const url  = `https://findthatpostcode.uk/areas/${encodeURIComponent(lsoaCode)}.json`;
+  const data = await safeFetchJson(url);
+  const stats = data?.data?.attributes?.stats;
+  if (!stats) return null;
 
-  const data  = await safeFetchJson(url);
-  const attrs = data?.features?.[0]?.attributes;
-  if (!attrs) return null;
+  // Prefer most recent year
+  const imd  = stats.imd2025 ?? stats.imd2019 ?? null;
+  const year = stats.imd2025 ? '2025' : stats.imd2019 ? '2019' : null;
+  if (!imd || !year) return null;
 
-  // Accept several field name conventions
-  const pick = (...keys) => { for (const k of keys) { if (attrs[k] != null) return attrs[k]; } return null; };
-  const score  = pick('IMDScore',  'imd_score',  'IMD_Score');
-  const rank   = pick('IMDRank',   'imd_rank',   'IMD_Rank');
-  const decile = pick('IMDDecile', 'imd_decile', 'IMD_Decile');
-  const name   = pick('lsoa11nm',  'LSOA11NM');
+  // Sub-domain deprivation deciles (1 = most deprived, 10 = least deprived)
+  const SD_MAP = {
+    imd_income_decile:      'Income',
+    imd_employment_decile:  'Employment',
+    imd_education_decile:   'Education, Skills & Training',
+    imd_health_decile:      'Health & Disability',
+    imd_crime_decile:       'Crime',
+    imd_housing_decile:     'Barriers to Housing & Services',
+    imd_environment_decile: 'Living Environment',
+  };
+  const subDomains = {};
+  for (const [key, label] of Object.entries(SD_MAP)) {
+    if (imd[key] != null) subDomains[label] = parseInt(imd[key]);
+  }
 
-  if (score == null && rank == null && decile == null) return null;
+  // Population (most recent available year)
+  const pop = stats.population2022 ?? stats.population2015 ?? null;
+  const popYear = stats.population2022 ? '2022' : stats.population2015 ? '2015' : null;
 
   return {
     lsoaCode,
-    lsoaName:   name,
-    imdScore:   score  != null ? Math.round(score * 10) / 10 : null,
-    imdRank:    rank   != null ? parseInt(rank)              : null,
-    imdDecile:  decile != null ? parseInt(decile)            : null,
-    totalLSOAs: 32844,
-    year: '2019',
-    source: 'MHCLG Indices of Multiple Deprivation 2019',
+    year,
+    imdScore:   imd.imd_score  != null ? Math.round(imd.imd_score  * 100) / 100 : null,
+    imdRank:    imd.imd_rank   != null ? parseInt(imd.imd_rank)               : null,
+    imdDecile:  imd.imd_decile != null ? parseInt(imd.imd_decile)             : null,
+    subDomains: Object.keys(subDomains).length ? subDomains : null,
+    population: pop?.population_total ?? null,
+    populationYear: popYear,
+    source: `MHCLG Indices of Multiple Deprivation ${year} via findthatpostcode.uk`,
   };
 }
 
@@ -1183,14 +1195,21 @@ function fmtAreaData(area) {
   // ── Deprivation (LSOA — tightest geographic grain available) ────────────
   if (area.imd) {
     const imd = area.imd;
-    const nameNote = imd.lsoaName ? ` (${imd.lsoaName})` : '';
+    const popNote = imd.population ? ` · pop. ~${imd.population.toLocaleString('en-GB')} (${imd.populationYear})` : '';
     lines.push('');
-    lines.push(`**Deprivation — IMD ${imd.year}, LSOA${nameNote}**`);
-    lines.push('| Measure | Value |');
-    lines.push('|---|---|');
-    if (imd.imdScore  != null) lines.push(`| IMD Score (higher = more deprived) | ${imd.imdScore} |`);
-    if (imd.imdRank   != null) lines.push(`| IMD Rank (1 = most deprived) | ${imd.imdRank.toLocaleString('en-GB')} / ${imd.totalLSOAs.toLocaleString('en-GB')} |`);
-    if (imd.imdDecile != null) lines.push(`| IMD Decile (1 = most deprived 10%) | ${imd.imdDecile} / 10 |`);
+    lines.push(`**Deprivation — IMD ${imd.year}, LSOA: ${imd.lsoaCode}${popNote}**`);
+    lines.push('| Measure | Value | Interpretation |');
+    lines.push('|---|---|---|');
+    if (imd.imdScore  != null) lines.push(`| Overall IMD Score | ${imd.imdScore} | Higher = more deprived |`);
+    if (imd.imdRank   != null) lines.push(`| Overall IMD Rank | ${imd.imdRank.toLocaleString('en-GB')} | (1 = most deprived in England) |`);
+    if (imd.imdDecile != null) lines.push(`| Overall IMD Decile | ${imd.imdDecile} / 10 | (1 = most deprived 10%) |`);
+    if (imd.subDomains && Object.keys(imd.subDomains).length) {
+      lines.push('| | | |');
+      lines.push('| **Sub-domain deciles** | **Decile** | **1 = most deprived** |');
+      for (const [domain, dec] of Object.entries(imd.subDomains)) {
+        lines.push(`| ${domain} | ${dec} / 10 | |`);
+      }
+    }
     lines.push(`_Source: ${imd.source}_`);
   } else {
     lines.push('');
