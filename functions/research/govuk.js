@@ -1532,7 +1532,305 @@ function govLinks(urn) {
   ];
 }
 
-// ─── Build Branch 1 block (detailed) ─────────────────────────────────────────
+// ─── Slim formatters (used for prompt injection — targets ~1,800 tokens) ─────
+//
+// The detailed formatters above are kept for the debug script / human report.
+// These slim versions strip sub-breakdowns and use compact prose/minimal tables
+// so the AI model gets high-signal data without 50% of the token budget being
+// consumed by 136 rows of DfE variable codes it barely needs.
+
+/**
+ * Picks ~15 high-signal variables by code rather than dumping all rows.
+ * Covers KS2 (primary), KS4 (secondary), plus pupil census and absence for all.
+ */
+function fmtAcademicResultsSlim(perf, phase) {
+  if (!perf) return '_Not retrieved_';
+
+  // Fast lookup across all namespaces by variable code
+  const allRows = Object.values(perf).flat();
+  const v = (code) => allRows.find(r => r.variable === code)?.value ?? null;
+
+  const ph  = (phase ?? '').toLowerCase();
+  const lines = [];
+
+  // ── KS2 (primary) ─────────────────────────────────────────────────────────
+  if (/primary|middle.*primary/i.test(ph) || v('PTRWM_EXP')) {
+    const rwm   = v('PTRWM_EXP');
+    const rwmH  = v('PTRWM_HIGH');
+    const rwm24 = v('PTRWM_EXP_24');
+    const rwm23 = v('PTRWM_EXP_23');
+    const read  = v('PTREAD_EXP');  const readSc = v('READ_AVERAGE');
+    const mat   = v('PTMAT_EXP');   const matSc  = v('MAT_AVERAGE');
+    const writ  = v('PTWRITTA_EXP');
+    const gps   = v('PTGPS_EXP');
+    const sci   = v('PTSCITA_EXP');
+
+    if (rwm || read || mat) {
+      const trend = [rwm23, rwm24, rwm].filter(Boolean);
+      lines.push('**Key Stage 2 (2024/25)**');
+      lines.push('| Metric | Value |');
+      lines.push('|---|---|');
+      if (rwm)  lines.push(`| RWM expected standard | ${rwm}${trend.length > 1 ? ` _(3-yr: ${trend.join(' → ')})_` : ''} |`);
+      if (rwmH) lines.push(`| RWM high standard | ${rwmH} |`);
+      if (read) lines.push(`| Reading expected | ${read}${readSc ? ` (avg score: ${readSc})` : ''} |`);
+      if (mat)  lines.push(`| Maths expected | ${mat}${matSc ? ` (avg score: ${matSc})` : ''} |`);
+      if (writ) lines.push(`| Writing expected | ${writ} |`);
+      if (gps)  lines.push(`| GPS expected | ${gps} |`);
+      if (sci)  lines.push(`| Science expected | ${sci} |`);
+
+      // Disadvantaged gap
+      const cohortDisadv  = v('PTFSM6CLA1A');
+      const rwmDisadv     = v('PTRWM_EXP_FSM6CLA1A');
+      const rwmNonDisadv  = v('PTRWM_EXP_NOTFSM6CLA1A');
+      const gapNat        = v('DIFFN_RWM_EXP');
+      if (cohortDisadv || rwmDisadv) {
+        lines.push(`| Disadvantaged share of KS2 cohort | ${cohortDisadv ?? '—'} |`);
+        if (rwmDisadv)    lines.push(`| RWM expected — disadvantaged | ${rwmDisadv} |`);
+        if (rwmNonDisadv) lines.push(`| RWM expected — non-disadvantaged | ${rwmNonDisadv} |`);
+        if (gapNat)       lines.push(`| Gap vs national non-disadvantaged | ${gapNat}pp |`);
+      }
+
+      // Progress (most recent published year)
+      const rProg = v('READPROG_23');
+      const wProg = v('WRITPROG_23');
+      const mProg = v('MATPROG_23');
+      if (rProg || wProg || mProg) {
+        lines.push(`| Progress: reading (2022/23) | ${rProg ?? '—'} |`);
+        lines.push(`| Progress: writing (2022/23) | ${wProg ?? '—'} |`);
+        lines.push(`| Progress: maths (2022/23) | ${mProg ?? '—'} |`);
+      }
+    }
+  }
+
+  // ── KS4 (secondary) ───────────────────────────────────────────────────────
+  if (/secondary|all.through/i.test(ph) || v('P8MEA')) {
+    const p8    = v('P8MEA');
+    const p8lo  = v('P8LOWER');
+    const p8hi  = v('P8UPPER');
+    const att8  = v('ATT8SCR');
+    const g5em  = v('PTL2BASICS_95');
+    const ebacc = v('PTEBACC_E_PTQ_EE');
+    const p8dis = v('P8MEA_FSM6CLA1A');
+    const cohortDisadv = v('PTFSM6CLA1A');
+
+    if (p8 || att8 || g5em) {
+      lines.push('');
+      lines.push('**Key Stage 4 (2024/25)**');
+      lines.push('| Metric | Value |');
+      lines.push('|---|---|');
+      if (p8)    lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} |`);
+      if (att8)  lines.push(`| Attainment 8 | ${att8} |`);
+      if (g5em)  lines.push(`| Grade 5+ English & Maths | ${g5em} |`);
+      if (ebacc) lines.push(`| EBacc entry | ${ebacc} |`);
+      if (cohortDisadv) lines.push(`| Disadvantaged share of KS4 cohort | ${cohortDisadv} |`);
+      if (p8dis) lines.push(`| Progress 8 — disadvantaged | ${p8dis} |`);
+    }
+  }
+
+  // ── Pupil census ──────────────────────────────────────────────────────────
+  const nor = v('NOR');
+  const eal = v('PNUMEAL');
+  const fsm = v('PNUMFSMEVER');
+  const sen = v('PSENELK');
+  const ehc = v('PSENELSE');
+
+  if (nor || eal || fsm) {
+    lines.push('');
+    lines.push('**Pupil Profile (Census 2025)**');
+    lines.push('| Metric | Value |');
+    lines.push('|---|---|');
+    if (nor) lines.push(`| On roll | ${nor} |`);
+    if (fsm) lines.push(`| FSM-eligible (last 6 years) | ${fsm} |`);
+    if (eal) lines.push(`| EAL pupils | ${eal} |`);
+    if (sen) lines.push(`| SEN support | ${sen} |`);
+    if (ehc) lines.push(`| EHC plans | ${ehc} |`);
+  }
+
+  // ── Absence ───────────────────────────────────────────────────────────────
+  const abs  = v('PERCTOT');
+  const pers = v('PPERSABS10');
+  if (abs || pers) {
+    const parts = [];
+    if (abs)  parts.push(`overall ${abs}%`);
+    if (pers) parts.push(`persistent absentees ${pers}%`);
+    lines.push('');
+    lines.push(`**Absence (2023/24):** ${parts.join(' · ')}`);
+  }
+
+  return lines.length ? lines.join('\n') : '_No performance data available._';
+}
+
+/**
+ * Slim Ofsted: grades on one line each, narrative capped at 1,500 chars.
+ * The AI model can fetch the full PDF from reportUrl if it needs more.
+ */
+function fmtOfstedSlim(ofsted, isIndependent) {
+  if (isIndependent) return '- Independent school — fetch ISI report from isi.net via web search.';
+  if (!ofsted?.overall) return '- _Not retrieved — search reports.ofsted.gov.uk_';
+
+  const lines = [`- Overall: **${ofsted.overall}**${ofsted.date ? ` (${ofsted.date})` : ''}`];
+
+  // Sub-grades (whichever framework was used)
+  const addGrade = (label, val) => { if (val) lines.push(`- ${label}: ${val}`); };
+  addGrade('Quality of Education',          ofsted.qualityOfEducation);
+  addGrade('Behaviour and Attitudes',       ofsted.behaviour);
+  addGrade('Personal Development',          ofsted.personalDevelopment);
+  addGrade('Leadership and Management',     ofsted.leadership);
+  addGrade('Achievement',                   ofsted.achievement);
+  addGrade('Attendance and Behaviour',      ofsted.attendance);
+  addGrade('Curriculum and Teaching',       ofsted.curriculum);
+  addGrade('Inclusion',                     ofsted.inclusion);
+  addGrade('Leadership and Governance',     ofsted.leadershipGov);
+  addGrade('Personal Development/Wellbeing',ofsted.wellbeing);
+  if (ofsted.safeguarding) lines.push(`- Safeguarding: ${ofsted.safeguarding}`);
+
+  // Narrative — cap at 1,500 chars; the AI can web-search for more if needed
+  const NARRATIVE_CAP = 1500;
+  const addNarrative = (heading, text) => {
+    if (!text) return;
+    const snippet = text.length > NARRATIVE_CAP
+      ? text.slice(0, NARRATIVE_CAP).replace(/\s+\S*$/, '') + ' …_(truncated — full PDF: ' + (ofsted.reportUrl ?? 'see Ofsted site') + ')_'
+      : text;
+    lines.push(`\n**${heading}**\n${snippet}`);
+  };
+  addNarrative("What it's like to be a pupil", ofsted.pupilExperience);
+  addNarrative('Quality of Education (detail)', ofsted.qualityOfEducation  && ofsted.qualityOfEducation.length  > 100 ? ofsted.qualityOfEducation  : null);
+  addNarrative('Behaviour and Attitudes (detail)', ofsted.behaviourAndAttitudes && ofsted.behaviourAndAttitudes.length > 100 ? ofsted.behaviourAndAttitudes : null);
+  addNarrative('Personal Development (detail)', ofsted.personalDevelopment  && ofsted.personalDevelopment.length  > 100 ? ofsted.personalDevelopment  : null);
+  addNarrative('Leadership and Management (detail)', ofsted.leadershipAndManagement && ofsted.leadershipAndManagement.length > 100 ? ofsted.leadershipAndManagement : null);
+  addNarrative('Achievement (detail)', ofsted.achievement  && typeof ofsted.achievement  === 'string' && ofsted.achievement.length  > 100 ? ofsted.achievement  : null);
+  addNarrative('Inclusion (detail)', ofsted.inclusion && typeof ofsted.inclusion === 'string' && ofsted.inclusion.length > 100 ? ofsted.inclusion : null);
+  addNarrative('What the school needs to improve', ofsted.nextSteps);
+
+  if (!ofsted.pupilExperience && !ofsted.nextSteps && ofsted.reportUrl) {
+    lines.push(`- Full report: ${ofsted.reportUrl}`);
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Slim area: compact bullet-list format — no big tables.
+ * Key numbers only; AI can web-search for granular breakdowns.
+ */
+function fmtAreaDataSlim(area) {
+  if (!area) return '_Not retrieved_';
+  const lines = [];
+
+  // Geography
+  lines.push(`- Location: ${area.postcode ?? '?'} · ${area.district ?? '?'} · ${area.region ?? '?'}`);
+  lines.push(`- Geography codes: LSOA ${area.lsoa ?? '?'} · MSOA ${area.msoa ?? '?'}`);
+
+  // IMD — headline decile + flag any sub-domain below 8
+  if (area.imd) {
+    const imd = area.imd;
+    const weakDomains = imd.subDomains
+      ? Object.entries(imd.subDomains).filter(([, d]) => d <= 6).map(([k, d]) => `${k} ${d}/10`).join(', ')
+      : null;
+    lines.push(`- Deprivation (IMD ${imd.year}): decile **${imd.imdDecile}/10**${weakDomains ? ` · weaker sub-domains: ${weakDomains}` : ' (all sub-domains ≥ 7)'}`);
+  }
+
+  // Income
+  const crInc = area.crystalRoof?.income;
+  const onsInc = area.income;
+  if (crInc || onsInc) {
+    const parts = [];
+    if (crInc)                        parts.push(`mean gross ${crInc.meanAnnualHouseholdIncome} (Census 2021 era)`);
+    if (onsInc?.netAnnualHouseholdIncome) parts.push(`net ${onsInc.netAnnualHouseholdIncome} (ONS 2018)`);
+    if (onsInc?.afterHousingCostsIncome)  parts.push(`after housing ${onsInc.afterHousingCostsIncome}`);
+    lines.push(`- Household income (MSOA): ${parts.join(' · ')}`);
+  }
+
+  // House prices
+  if (area.pricePaid) {
+    const pp = area.pricePaid;
+    const byType = pp.byType
+      ? Object.entries(pp.byType).map(([t, p]) => `${t} ${p}`).join(', ')
+      : null;
+    lines.push(`- House prices (~800m, ${pp.totalTransactions} sales, 5yr): median ${pp.medianAllTypes}${byType ? ` · by type: ${byType}` : ''}`);
+  }
+
+  // Ethnicity — broad groups only
+  if (area.ethnicity && Object.keys(area.ethnicity).length) {
+    const groups = {};
+    for (const [label, pct] of Object.entries(area.ethnicity)) {
+      const broad = label.startsWith('White:') ? 'White'
+        : label.startsWith('Asian')            ? 'Asian'
+        : label.startsWith('Black')            ? 'Black'
+        : label.startsWith('Mixed')            ? 'Mixed'
+        : 'Other';
+      groups[broad] = (groups[broad] ?? 0) + pct;
+    }
+    const summary = Object.entries(groups).sort(([,a],[,b]) => b-a)
+      .map(([k, v]) => `${k} ${Math.round(v)}%`).join(' · ');
+    lines.push(`- Ethnicity (LSOA, Census 2021): ${summary}`);
+  }
+
+  // Qualifications — just the headline numbers
+  const q = area.crystalRoof?.qualifications;
+  if (q) {
+    lines.push(`- Qualifications (OA, Census 2021): level 4+ ${q.level4AndAbove ?? '?'}% · no qualifications ${q.noQualifications ?? '?'}%`);
+  }
+
+  // Occupation — just the headline numbers
+  const o = area.crystalRoof?.occupation;
+  if (o) {
+    lines.push(`- Occupation (OA, Census 2021): professional/managerial ${o.managerialProfessional ?? '?'}% · routine/manual ${o.routineAndManual ?? '?'}%`);
+  }
+
+  return lines.join('\n');
+}
+
+// ─── Build Branch 1 block (slim — used for prompt injection) ─────────────────
+//
+// Targets ~1,800 tokens vs ~5,700 for the detailed block (-68%).
+// The detailed block is still produced by the debug script for human review.
+
+function buildSlimBlock(school) {
+  const { input, identity, ofsted, performance, financial, area } = school;
+  const name = identity?.officialName ?? input;
+  const urn  = identity?.urn;
+
+  const anyNsField = (v) => Object.values(performance ?? {}).flat().find(r => r.variable === v)?.value ?? null;
+  const lField     = (v) => performance?.L?.find(r => r.variable === v)?.value ?? null;
+  const postcode   = anyNsField('PCODE');
+  const ageLow     = lField('AGELOW');
+  const ageHigh    = lField('AGEHIGH');
+  const gender     = lField('GENDER');
+  const relChar    = lField('RELCHAR');
+  const admPol     = lField('ADMPOL');
+
+  const idLine = identity
+    ? `${identity.officialName} · URN ${urn} · ${identity.type ?? '?'} · ${identity.phase ?? '?'}${ageLow && ageHigh ? ` (ages ${ageLow}–${ageHigh})` : ''} · LA: ${identity.la ?? '?'}${postcode ? ` · ${postcode}` : ''}${gender ? ` · ${gender}` : ''}${relChar && relChar !== 'Does not apply' ? ` · ${relChar}` : ''}${admPol && admPol !== 'Not applicable' ? ` · admissions: ${admPol}` : ''}`
+    : `"${input}" — URN not found`;
+
+  const links = govLinks(urn).join(' · ');
+
+  return `
+---
+## Pre-Fetched Government Data — ${name}
+
+> **Use figures below directly. Do not re-search populated fields.**
+> Fields marked "_Not retrieved_" → source via web search.
+
+**School:** ${idLine}
+**Links:** ${links}
+
+### Academic Results (DfE)
+${fmtAcademicResultsSlim(performance, identity?.phase)}
+
+### Financial Benchmarking (FBIT)
+${fmtFinancial(financial)}
+
+### Inspection Outcomes (Ofsted)
+${fmtOfstedSlim(ofsted, identity?.isIndependent ?? false)}
+
+### Surrounding Area
+${fmtAreaDataSlim(area)}
+---`.trim();
+}
+
+// ─── Build Branch 1 block (detailed — debug script / human report only) ──────
 
 function buildDetailedBlock(school) {
   const { input, identity, ofsted, performance, financial, area } = school;
@@ -1726,9 +2024,9 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
   if (!schools.length) return '';
 
   return '\n\n' + (detailed
-    ? schools.map(buildDetailedBlock).join('\n\n')
+    ? schools.map(buildSlimBlock).join('\n\n')   // slim block for prompt injection
     : buildComparisonBlock(schools));
 }
 
-// Debug helper — exported so debug-govuk.mjs can print the formatted block
-export { buildDetailedBlock };
+// Debug helpers — exported so debug-govuk.mjs can print both blocks
+export { buildDetailedBlock, buildSlimBlock };
