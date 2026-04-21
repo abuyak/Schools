@@ -423,15 +423,18 @@ export async function getAreaData(postcode) {
   if (!lsoa && !msoa) { glog('govuk_area_no_codes', { postcode }); return null; }
 
   // Step 2 — fetch area data in parallel (all non-fatal)
-  // Ethnicity:  Nomis Census 2021 TS021 — LSOA level (~0.5 mile, ~400-1,200 households)
-  // PricePaid:  Land Registry Price Paid — all postcodes within 800 m, last 5 years
-  // Income:     ONS Small Area Income Estimates FYE 2018 — MSOA (finest ONS grain)
-  // IMD:        MHCLG Indices of Multiple Deprivation 2025 — LSOA level
-  const [ethnicityData, pricePaidData, incomeData, imdData] = await Promise.allSettled([
+  // Ethnicity:    Nomis Census 2021 TS021 — LSOA level (~0.5 mile, ~400-1,200 households)
+  // PricePaid:    Land Registry Price Paid — all postcodes within 800 m, last 5 years
+  // ONS Income:   ONS Small Area Income Estimates FYE 2018 — MSOA (oldest but detailed)
+  // IMD:          MHCLG Indices of Multiple Deprivation 2025 — LSOA level
+  // CrystalRoof:  ⚠️ TEMP — qualifications + occupation (Census 2021 OA) + newer income
+  //               Replace with direct Nomis calls. See fetchCrystalRoof() for details.
+  const [ethnicityData, pricePaidData, incomeData, imdData, crystalRoofData] = await Promise.allSettled([
     fetchNomisEthnicity(lsoa),
     fetchPricePaid(lat, lon),
     fetchONSIncome(msoa),
     fetchIMD(lsoa),
+    fetchCrystalRoof(postcode),  // ⚠️ TEMP — see fetchCrystalRoof() comment
   ]);
 
   const result = {
@@ -440,20 +443,22 @@ export async function getAreaData(postcode) {
     region,
     lsoa,
     msoa,
-    ethnicity:  ethnicityData.status === 'fulfilled' ? ethnicityData.value  : null,
-    pricePaid:  pricePaidData.status === 'fulfilled' ? pricePaidData.value  : null,
-    income:     incomeData.status    === 'fulfilled' ? incomeData.value     : null,
-    imd:        imdData.status       === 'fulfilled' ? imdData.value        : null,
+    ethnicity:   ethnicityData.status    === 'fulfilled' ? ethnicityData.value    : null,
+    pricePaid:   pricePaidData.status    === 'fulfilled' ? pricePaidData.value    : null,
+    income:      incomeData.status       === 'fulfilled' ? incomeData.value       : null,
+    imd:         imdData.status          === 'fulfilled' ? imdData.value          : null,
+    crystalRoof: crystalRoofData.status  === 'fulfilled' ? crystalRoofData.value  : null,
   };
 
   glog('govuk_area_ok', {
     postcode,
     district,
-    hasEthnicity:  !!result.ethnicity,
-    hasPricePaid:  !!result.pricePaid,
-    transactions:  result.pricePaid?.totalTransactions ?? 0,
-    hasIncome:     !!result.income,
-    hasIMD:        !!result.imd,
+    hasEthnicity:    !!result.ethnicity,
+    hasPricePaid:    !!result.pricePaid,
+    transactions:    result.pricePaid?.totalTransactions ?? 0,
+    hasIncome:       !!result.income,
+    hasIMD:          !!result.imd,
+    hasCrystalRoof:  !!result.crystalRoof,  // ⚠️ TEMP
   });
 
   return result;
@@ -687,6 +692,99 @@ async function fetchIMD(lsoaCode) {
     populationYear: popYear,
     source: `MHCLG Indices of Multiple Deprivation ${year} via findthatpostcode.uk`,
   };
+}
+
+// ─── Crystal Roof — qualifications, occupation & income (TEMP) ───────────────
+//
+// ⚠️  TEMPORARY DATA SOURCE — DO NOT TREAT AS STABLE
+//
+// Crystal Roof (crystalroof.co.uk) is a commercial property-data product.
+// Their data-api/affluence endpoint is currently unauthenticated — note that
+// the *website* requires login but the underlying JSON API has NO server-side
+// auth check. This means:
+//   1. They can add auth (or a rate-limit/block) at any point without notice.
+//   2. We have no SLA, no ToS permission for API access, no contact if it breaks.
+//
+// PRODUCTION REPLACEMENT — implement direct Nomis Census 2021 calls:
+//   • Qualifications: dataset NM_2082_1 (TS067 — Highest level of qualification)
+//     at Output Area level — same 2-step NomisKey resolution as fetchNomisEthnicity()
+//   • Occupation/NS-SeC: dataset NM_2066_1 at Output Area level
+//   • Income: find the most recent ONS MSOA income estimates CSV URL
+//     (currently using FYE 2018; Crystal Roof shows FYE ~2021 figures)
+//
+// INTEGRATION TEST — add to CI (runs on every push to master):
+//   node functions/research/test-crystal-roof-api.mjs
+// This exits 0 if the API still responds with the expected shape, 1 if broken.
+// See that file for details.
+
+/**
+ * Fetches Census 2021 qualifications, occupation, and household income from
+ * the Crystal Roof affluence API.
+ *
+ * ⚠️  TEMP — see block comment above. Replace with Nomis when time allows.
+ *
+ * @param {string} postcode - School postcode (spaces stripped internally)
+ */
+async function fetchCrystalRoof(postcode) {
+  if (!postcode) return null;
+  const clean = postcode.replace(/\s+/g, '').toUpperCase();
+  const url   = `https://crystalroof.co.uk/data-api/affluence/postcode/v2/${clean}`;
+
+  const raw = await safeFetchJson(url);
+  if (!raw?.data) return null;
+  const d = raw.data;
+
+  // ── Qualifications (Output Area level, Census 2021) ───────────────────────
+  let qualifications = null;
+  const qOa = d.qualificationOa;
+  if (qOa?.total > 0) {
+    const tot = qOa.total;
+    const pct = (n) => (n != null ? Math.round(n / tot * 100) : null);
+    qualifications = {
+      noQualifications: pct(qOa.noQualifications),
+      level1AndEntry:   pct(qOa.level1andEntryLevel),
+      level2:           pct(qOa.level2),
+      apprenticeship:   pct(qOa.apprenticeship),
+      level3:           pct(qOa.level3),
+      level4AndAbove:   pct(qOa.level4andAbove),
+      other:            pct(qOa.other),
+      totalResidents:   tot,
+    };
+  }
+
+  // ── Occupation / NS-SeC (Output Area level, Census 2021) ──────────────────
+  let occupation = null;
+  const oOa = d.occupationOa;
+  if (oOa?.total > 0) {
+    const tot = oOa.total;
+    const pct = (n) => (n != null ? Math.round(n / tot * 100) : null);
+    occupation = {
+      managerialProfessional:        pct(oOa.managerialAdministrativeAndProfessional),
+      intermediate:                  pct(oOa.intermediate),
+      routineAndManual:              pct(oOa.routineAndManual),
+      neverWorkedLongTermUnemployed: pct(oOa.neverWorkedAndLongTermUnemployed),
+      fullTimeStudents:              pct(oOa.fullTimeStudents),
+      totalResidents:                tot,
+    };
+  }
+
+  // ── Household income (MSOA level — more recent than ONS FYE 2018 CSV) ─────
+  // Crystal Roof labels this "totalAnnualIncome" but their map tile layer is
+  // named "household_income_england_wales_mean", so this is the MEAN (gross).
+  // This is distinct from the ONS net/equivalised figures — label clearly.
+  let income = null;
+  const iMsoa = d.householdIncomeMsoa;
+  if (iMsoa?.totalAnnualIncome != null) {
+    income = {
+      meanAnnualHouseholdIncome: `£${Math.round(iMsoa.totalAnnualIncome).toLocaleString('en-GB')}`,
+      grain: 'MSOA',
+      measure: 'mean gross annual household income',
+    };
+  }
+
+  if (!qualifications && !occupation && !income) return null;
+
+  return { qualifications, occupation, income };
 }
 
 // ─── Ofsted data (state schools) ─────────────────────────────────────────────
@@ -1309,21 +1407,27 @@ function fmtAreaData(area) {
     lines.push('**Deprivation (IMD):** _Not retrieved_');
   }
 
-  // ── Household income (MSOA — finest ONS grain published) ─────────────────
-  if (area.income) {
-    const inc = area.income;
+  // ── Household income ─────────────────────────────────────────────────────
+  // Crystal Roof (TEMP): more recent mean gross figure at MSOA level
+  // ONS FYE 2018: older but gives net / after-housing-costs breakdown
+  {
+    const cr  = area.crystalRoof?.income ?? null;
+    const ons = area.income ?? null;
+    const hasAny = cr || ons;
     lines.push('');
-    lines.push(`**Household Income — ${inc.year}, MSOA${inc.msoaName ? ` (${inc.msoaName})` : ''}**`);
-    lines.push('| Measure | Annual |');
-    lines.push('|---|---|');
-    if (inc.netAnnualHouseholdIncome)  lines.push(`| Net household income | ${inc.netAnnualHouseholdIncome} |`);
-    if (inc.totalAnnualHouseholdIncome) lines.push(`| Total household income (before housing costs) | ${inc.totalAnnualHouseholdIncome} |`);
-    if (inc.afterHousingCostsIncome)   lines.push(`| Net income after housing costs | ${inc.afterHousingCostsIncome} |`);
-    if (inc.netEquivalisedIncome)      lines.push(`| Net equivalised income (per capita) | ${inc.netEquivalisedIncome} |`);
-    lines.push(`_Source: ${inc.source}_`);
-  } else {
-    lines.push('');
-    lines.push('**Household Income:** _Not retrieved_');
+    lines.push('**Household Income — MSOA level**');
+    if (hasAny) {
+      lines.push('| Measure | Annual | Notes |');
+      lines.push('|---|---|---|');
+      if (cr)  lines.push(`| Mean gross household income | ${cr.meanAnnualHouseholdIncome} | Census 2021 era (Crystal Roof ⚠️ TEMP) |`);
+      if (ons?.netAnnualHouseholdIncome)    lines.push(`| Net household income | ${ons.netAnnualHouseholdIncome} | ONS FYE 2018 |`);
+      if (ons?.totalAnnualHouseholdIncome)  lines.push(`| Total income (before housing costs) | ${ons.totalAnnualHouseholdIncome} | ONS FYE 2018 |`);
+      if (ons?.afterHousingCostsIncome)     lines.push(`| Net income after housing costs | ${ons.afterHousingCostsIncome} | ONS FYE 2018 |`);
+      if (ons?.netEquivalisedIncome)        lines.push(`| Net equivalised income (per capita) | ${ons.netEquivalisedIncome} | ONS FYE 2018 |`);
+      if (ons?.msoaName)                    lines.push(`_MSOA: ${ons.msoaName}_`);
+    } else {
+      lines.push('_Not retrieved_');
+    }
   }
 
   // ── House prices — actual sales within 800m, last 5 years ────────────────
@@ -1377,6 +1481,43 @@ function fmtAreaData(area) {
   } else {
     lines.push('');
     lines.push('**Ethnicity:** _Not retrieved_');
+  }
+
+  // ── Qualifications (Output Area, Census 2021) — from Crystal Roof ⚠️ TEMP ──
+  const cr = area.crystalRoof ?? null;
+  if (cr?.qualifications) {
+    const q = cr.qualifications;
+    lines.push('');
+    lines.push(`**Qualifications — immediate area around school (Output Area, Census 2021, n≈${q.totalResidents})** _(⚠️ TEMP: Crystal Roof — replace with Nomis NM_2082_1)_`);
+    lines.push('| Highest qualification | % of residents |');
+    lines.push('|---|---|');
+    if (q.level4AndAbove   != null) lines.push(`| Level 4+ (degree and above) | ${q.level4AndAbove}% |`);
+    if (q.level3           != null) lines.push(`| Level 3 (A-level equivalent) | ${q.level3}% |`);
+    if (q.level2           != null) lines.push(`| Level 2 (GCSE equivalent) | ${q.level2}% |`);
+    if (q.apprenticeship   != null) lines.push(`| Apprenticeship | ${q.apprenticeship}% |`);
+    if (q.level1AndEntry   != null) lines.push(`| Level 1 and entry level | ${q.level1AndEntry}% |`);
+    if (q.noQualifications != null) lines.push(`| No qualifications | ${q.noQualifications}% |`);
+    if (q.other            != null) lines.push(`| Other / not classified | ${q.other}% |`);
+  } else {
+    lines.push('');
+    lines.push('**Qualifications:** _Not retrieved_');
+  }
+
+  // ── Occupation / NS-SeC (Output Area, Census 2021) — from Crystal Roof ⚠️ TEMP
+  if (cr?.occupation) {
+    const o = cr.occupation;
+    lines.push('');
+    lines.push(`**Occupation (NS-SeC) — immediate area around school (Output Area, Census 2021, n≈${o.totalResidents})** _(⚠️ TEMP: Crystal Roof — replace with Nomis NM_2066_1)_`);
+    lines.push('| Category | % of residents |');
+    lines.push('|---|---|');
+    if (o.managerialProfessional        != null) lines.push(`| Managerial, administrative & professional | ${o.managerialProfessional}% |`);
+    if (o.intermediate                  != null) lines.push(`| Intermediate occupations | ${o.intermediate}% |`);
+    if (o.routineAndManual              != null) lines.push(`| Routine and manual | ${o.routineAndManual}% |`);
+    if (o.neverWorkedLongTermUnemployed != null) lines.push(`| Never worked / long-term unemployed | ${o.neverWorkedLongTermUnemployed}% |`);
+    if (o.fullTimeStudents              != null) lines.push(`| Full-time students | ${o.fullTimeStudents}% |`);
+  } else {
+    lines.push('');
+    lines.push('**Occupation:** _Not retrieved_');
   }
 
   return lines.join('\n');
