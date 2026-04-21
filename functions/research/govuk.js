@@ -101,11 +101,40 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
   const text = fullText.replace(/\r\n/g, '\n').replace(/[ \t]+/g, ' ');
 
   return {
+    // ── Present in all report types ───────────────────────────────────────
+    // "What it's like to be a pupil / attend this school" — the introductory
+    // narrative paragraph(s). For monitoring visits this often flows straight
+    // into the "What does the school do well" content without a sub-heading.
     pupilExperience: extractSection(text, [
       /what\s+is\s+it\s+like\s+to\s+attend\s+this\s+school/i,
       /what\s+it['']s\s+like\s+to\s+be\s+a\s+pupil/i,
       /what\s+it\s+is\s+like\s+to\s+be\s+a\s+pupil/i,
+    ], 5000),   // larger window: monitoring visits have no sub-headings so the
+                // whole narrative sits in this one section
+
+    // ── Old framework (pre-Nov 2025) graded inspection sub-sections ───────
+    qualityOfEducation: extractSection(text, [
+      /^quality\s+of\s+education\s*$/im,
+      /^curriculum\s+and\s+teaching\s*$/im,   // new format alias
     ]),
+    behaviourAndAttitudes: extractSection(text, [
+      /^behaviour\s+and\s+attitudes?\s*$/im,
+      /^attendance\s+and\s+behaviour\s*$/im,  // new format alias
+    ]),
+    personalDevelopment: extractSection(text, [
+      /^personal\s+development\s*$/im,
+      /^personal\s+development\s+and\s+wellbeing\s*$/im,
+    ]),
+    leadershipAndManagement: extractSection(text, [
+      /^leadership\s+and\s+management\s*$/im,
+      /^leadership\s+and\s+governance\s*$/im,
+    ]),
+
+    // ── New Nov-2025 format sections (not present in older reports) ────────
+    achievement: extractSection(text, [/^achievement\s*$/im]),
+    inclusion:   extractSection(text, [/^inclusion\s*$/im]),
+
+    // ── Improvement flags ─────────────────────────────────────────────────
     // "Next steps" is an explicit section in the new Nov-2025 format.
     // Older reports embed improvements in the narrative — nextSteps will be null for those.
     nextSteps: extractSection(text, [
@@ -118,9 +147,13 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
 
 /**
  * Finds a section in PDF text by matching one of several heading patterns,
- * then returns the text up to the next heading (capitalised line) or 1 500 chars.
+ * then returns the text up to the next heading (capitalised line) or maxChars.
+ *
+ * @param {string}   text      - Full normalised PDF text
+ * @param {RegExp[]} patterns  - Ordered list of heading patterns to try
+ * @param {number}   [maxChars=3000] - Maximum characters to return
  */
-function extractSection(text, patterns) {
+function extractSection(text, patterns, maxChars = 3000) {
   for (const pattern of patterns) {
     const match = text.search(pattern);
     if (match === -1) continue;
@@ -130,10 +163,11 @@ function extractSection(text, patterns) {
     if (afterHeading === -1) continue;
     const start = afterHeading + 1;
 
-    // End at next heading-like line (all-caps or title-case short line) or 3000 chars
-    const chunk = text.slice(start, start + 4000);
+    // End at next heading-like line (capitalised short line) or maxChars
+    const window = maxChars + 1000;   // lookahead buffer
+    const chunk = text.slice(start, start + window);
     const nextHeading = chunk.search(/\n[A-Z][A-Za-z ,'\-]{5,60}\n/);
-    const end = nextHeading > 100 ? nextHeading : Math.min(chunk.length, 3000);
+    const end = nextHeading > 100 ? nextHeading : Math.min(chunk.length, maxChars);
 
     const section = chunk.slice(0, end).trim();
     if (section.length > 50) return section;
@@ -379,23 +413,24 @@ export async function getAreaData(postcode) {
   if (!geo?.result) { glog('govuk_area_postcode_fail', { postcode }); return null; }
 
   const r = geo.result;
-  const lsoa  = r.codes?.lsoa  ?? r.lsoa  ?? null;
-  const msoa  = r.codes?.msoa  ?? r.msoa  ?? null;
-  const lsoa11 = r.codes?.lsoa11 ?? r.lsoa11 ?? null;
+  const lsoa     = r.codes?.lsoa  ?? r.lsoa  ?? null;
+  const msoa     = r.codes?.msoa  ?? r.msoa  ?? null;
   const district = r.admin_district ?? null;
   const region   = r.region ?? null;
+  const lat      = r.latitude  ?? null;
+  const lon      = r.longitude ?? null;
 
   if (!lsoa && !msoa) { glog('govuk_area_no_codes', { postcode }); return null; }
 
   // Step 2 — fetch area data in parallel (all non-fatal)
-  // Ethnicity: Nomis Census 2021 TS021 — now at LSOA level (~0.5 mile radius, ~400-1,200 households)
-  // IMD:       MHCLG Indices of Multiple Deprivation 2019 — LSOA level
-  // HPI:       HM Land Registry UK House Price Index — district level (finest grain available)
-  // Income:    ONS Small Area Income Estimates FYE 2018 — MSOA level (finest ONS grain available)
-  const [ethnicityData, hpiData, incomeData, imdData] = await Promise.allSettled([
-    fetchNomisEthnicity(lsoa),   // LSOA for tight local focus
-    fetchHPI(district),
-    fetchONSIncome(msoa),        // income only published at MSOA level
+  // Ethnicity:  Nomis Census 2021 TS021 — LSOA level (~0.5 mile, ~400-1,200 households)
+  // PricePaid:  Land Registry Price Paid — all postcodes within 800 m, last 5 years
+  // Income:     ONS Small Area Income Estimates FYE 2018 — MSOA (finest ONS grain)
+  // IMD:        MHCLG Indices of Multiple Deprivation 2025 — LSOA level
+  const [ethnicityData, pricePaidData, incomeData, imdData] = await Promise.allSettled([
+    fetchNomisEthnicity(lsoa),
+    fetchPricePaid(lat, lon),
+    fetchONSIncome(msoa),
     fetchIMD(lsoa),
   ]);
 
@@ -405,19 +440,20 @@ export async function getAreaData(postcode) {
     region,
     lsoa,
     msoa,
-    ethnicity:   ethnicityData.status === 'fulfilled' ? ethnicityData.value : null,
-    housePrices: hpiData.status       === 'fulfilled' ? hpiData.value       : null,
-    income:      incomeData.status    === 'fulfilled' ? incomeData.value    : null,
-    imd:         imdData.status       === 'fulfilled' ? imdData.value       : null,
+    ethnicity:  ethnicityData.status === 'fulfilled' ? ethnicityData.value  : null,
+    pricePaid:  pricePaidData.status === 'fulfilled' ? pricePaidData.value  : null,
+    income:     incomeData.status    === 'fulfilled' ? incomeData.value     : null,
+    imd:        imdData.status       === 'fulfilled' ? imdData.value        : null,
   };
 
   glog('govuk_area_ok', {
     postcode,
     district,
-    hasEthnicity:   !!result.ethnicity,
-    hasHousePrices: !!result.housePrices,
-    hasIncome:      !!result.income,
-    hasIMD:         !!result.imd,
+    hasEthnicity:  !!result.ethnicity,
+    hasPricePaid:  !!result.pricePaid,
+    transactions:  result.pricePaid?.totalTransactions ?? 0,
+    hasIncome:     !!result.income,
+    hasIMD:        !!result.imd,
   });
 
   return result;
@@ -516,43 +552,84 @@ async function fetchONSIncome(msoaCode) {
 }
 
 /**
- * Fetches house price index data from the HM Land Registry UKHPI endpoint.
+ * Fetches actual sale prices from the HM Land Registry Price Paid dataset
+ * for all postcodes within ~800 m of the school (≈ 0.5 mile catchment area).
  *
- * Uses the local authority (district) slug derived from the postcodes.io
- * admin_district field. Tries the last 4 months in reverse order since
- * HPI data is published ~3 months behind the reference date.
+ * Strategy:
+ *   1. postcodes.io nearby-postcodes endpoint → up to 100 postcodes within 800 m
+ *   2. Land Registry Price Paid JSON API for each postcode (all parallel, last 5 yr)
+ *   3. Aggregate medians by property type
+ *
+ * Parallel requests to Land Registry complete in ~1 s in practice (tested).
+ * Falls back gracefully when transactions are too few (<5) to be meaningful.
  */
-async function fetchHPI(districtName) {
-  if (!districtName) return null;
+async function fetchPricePaid(lat, lon) {
+  if (lat == null || lon == null) return null;
 
-  const slug = districtName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  // Step 1 — nearby postcodes within 800 m
+  const nearbyUrl = `${POSTCODES_IO}?lon=${lon}&lat=${lat}&radius=800&limit=100`;
+  const nearbyData = await safeFetchJson(nearbyUrl);
+  const postcodes = (nearbyData?.result ?? []).map(p => p.postcode).filter(Boolean);
+  if (!postcodes.length) return null;
 
-  // Try the last 4 months (HPI data is ~3 months behind)
-  const now = new Date();
-  const months = [];
-  for (let i = 3; i <= 6; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  // Step 2 — Price Paid API, last 5 years, all postcodes in parallel
+  const cutoff = new Date();
+  cutoff.setFullYear(cutoff.getFullYear() - 5);
+  const dateStr = cutoff.toISOString().slice(0, 10);
+
+  const results = await Promise.all(postcodes.map(pc =>
+    safeFetchJson(
+      `https://landregistry.data.gov.uk/data/ppi/transaction-record.json` +
+      `?propertyAddress.postcode=${encodeURIComponent(pc)}` +
+      `&min-transactionDate=${dateStr}&_pageSize=100`
+    )
+  ));
+
+  // Step 3 — aggregate
+  const TYPE_MAP = {
+    'detached':        'Detached',
+    'semi-detached':   'Semi-detached',
+    'terraced':        'Terraced',
+    'flat-maisonette': 'Flat / Maisonette',
+    'flat':            'Flat / Maisonette',
+  };
+
+  const byType   = {};
+  const allPrices = [];
+
+  for (const d of results) {
+    for (const t of d?.result?.items ?? []) {
+      const price = t.pricePaid;
+      if (!price) continue;
+      allPrices.push(price);
+      const typeRaw = (t.propertyType?.prefLabel?.[0]?._value ?? '').toLowerCase();
+      const type    = TYPE_MAP[typeRaw];
+      if (type) { if (!byType[type]) byType[type] = []; byType[type].push(price); }
+    }
   }
 
-  for (const month of months) {
-    const url = `https://landregistry.data.gov.uk/data/ukhpi/region/${slug}/month/${month}.json`;
-    const data = await safeFetchJson(url);
-    const pt = data?.result?.primaryTopic;
-    if (!pt?.averagePrice) continue;
+  if (allPrices.length < 5) return null;  // not enough data to be meaningful
 
-    return {
-      district:                districtName,
-      refMonth:                pt.refMonth ?? month,
-      averagePrice:            `£${Math.round(pt.averagePrice).toLocaleString('en-GB')}`,
-      averagePriceFlat:        pt.averagePriceFlatMaisonette ? `£${Math.round(pt.averagePriceFlatMaisonette).toLocaleString('en-GB')}` : null,
-      averagePriceTerraced:    pt.averagePriceTerraced       ? `£${Math.round(pt.averagePriceTerraced).toLocaleString('en-GB')}` : null,
-      averagePriceFirstTimeBuyer: pt.averagePriceFirstTimeBuyer ? `£${Math.round(pt.averagePriceFirstTimeBuyer).toLocaleString('en-GB')}` : null,
-      annualChangePercent:     pt.percentageAnnualChange ?? null,
-      source: 'HM Land Registry UK House Price Index',
-    };
+  const median = (arr) => {
+    const s = [...arr].sort((a, b) => a - b);
+    return s[Math.floor(s.length / 2)];
+  };
+  const fmt = (n) => `£${Math.round(n).toLocaleString('en-GB')}`;
+
+  const byTypeMedians = {};
+  for (const [type, prices] of Object.entries(byType)) {
+    if (prices.length >= 3) byTypeMedians[type] = fmt(median(prices));
   }
-  return null;
+
+  return {
+    radiusM:           800,
+    yearsBack:         5,
+    totalTransactions: allPrices.length,
+    postcodesQueried:  postcodes.length,
+    medianAllTypes:    fmt(median(allPrices)),
+    byType:            Object.keys(byTypeMedians).length ? byTypeMedians : null,
+    source:            'HM Land Registry Price Paid Data',
+  };
 }
 
 /**
@@ -1058,14 +1135,30 @@ function fmtOfsted(ofsted, isIndependent) {
   if (ofsted.safeguarding) lines.push(`- Safeguarding: ${ofsted.safeguarding}`);
   if (ofsted.framework)    lines.push(`- Framework: ${ofsted.framework}`);
 
-  // PDF content extracted server-side
-  if (ofsted.pupilExperience) {
-    lines.push(`\n**What it's like to be a pupil (from inspection report)**\n${ofsted.pupilExperience}`);
-  }
-  if (ofsted.nextSteps) {
-    lines.push(`\n**Next steps (from inspection report)**\n${ofsted.nextSteps}`);
-  }
-  if (!ofsted.pupilExperience && !ofsted.nextSteps && ofsted.reportUrl) {
+  // PDF narrative sections extracted server-side
+  // Helper: add a section only if it has content
+  const addSection = (heading, content) => {
+    if (content) lines.push(`\n**${heading}**\n${content}`);
+  };
+
+  addSection("What it's like to be a pupil", ofsted.pupilExperience);
+  // Old framework graded inspection sub-sections
+  addSection('Quality of Education',       ofsted.qualityOfEducation);
+  addSection('Behaviour and Attitudes',    ofsted.behaviourAndAttitudes);
+  addSection('Personal Development',       ofsted.personalDevelopment);
+  addSection('Leadership and Management',  ofsted.leadershipAndManagement);
+  // New Nov-2025 format sections (won't appear for older reports)
+  addSection('Achievement',                ofsted.achievement);
+  addSection('Inclusion',                  ofsted.inclusion);
+  // Improvement flags
+  addSection('What the school needs to do to improve', ofsted.nextSteps);
+
+  const anyPdfContent = ofsted.pupilExperience || ofsted.qualityOfEducation
+    || ofsted.behaviourAndAttitudes || ofsted.personalDevelopment
+    || ofsted.leadershipAndManagement || ofsted.achievement || ofsted.inclusion
+    || ofsted.nextSteps;
+
+  if (!anyPdfContent && ofsted.reportUrl) {
     lines.push(`- Report PDF: ${ofsted.reportUrl} _(content not extracted — fetch via web search if needed)_`);
   }
 
@@ -1233,22 +1326,24 @@ function fmtAreaData(area) {
     lines.push('**Household Income:** _Not retrieved_');
   }
 
-  // ── House prices (district — finest Land Registry HPI grain) ─────────────
-  if (area.housePrices) {
-    const hp = area.housePrices;
+  // ── House prices — actual sales within 800m, last 5 years ────────────────
+  if (area.pricePaid) {
+    const pp = area.pricePaid;
     lines.push('');
-    lines.push(`**House Prices — ${hp.district}, ${hp.refMonth}**`);
-    lines.push('| Property type | Average price |');
+    lines.push(`**Actual Sale Prices — within ~800m of school, last 5 years (${pp.totalTransactions} sales)**`);
+    lines.push('| Property type | Median sale price |');
     lines.push('|---|---|');
-    lines.push(`| All properties | ${hp.averagePrice} |`);
-    if (hp.averagePriceTerraced)       lines.push(`| Terraced | ${hp.averagePriceTerraced} |`);
-    if (hp.averagePriceFlat)           lines.push(`| Flat / maisonette | ${hp.averagePriceFlat} |`);
-    if (hp.averagePriceFirstTimeBuyer) lines.push(`| First-time buyer | ${hp.averagePriceFirstTimeBuyer} |`);
-    if (hp.annualChangePercent != null) lines.push(`| Annual change (YoY) | ${hp.annualChangePercent > 0 ? '+' : ''}${hp.annualChangePercent}% |`);
-    lines.push(`_Source: ${hp.source}_`);
+    lines.push(`| All types combined | ${pp.medianAllTypes} |`);
+    if (pp.byType) {
+      // Consistent order
+      for (const type of ['Detached', 'Semi-detached', 'Terraced', 'Flat / Maisonette']) {
+        if (pp.byType[type]) lines.push(`| ${type} | ${pp.byType[type]} |`);
+      }
+    }
+    lines.push(`_Source: ${pp.source} · ${pp.postcodesQueried} postcodes queried_`);
   } else {
     lines.push('');
-    lines.push('**House Prices:** _Not retrieved_');
+    lines.push('**Actual Sale Prices:** _Not retrieved_');
   }
 
   // ── Ethnic profile (LSOA — tightest grain available) ─────────────────────
@@ -1271,7 +1366,9 @@ function fmtAreaData(area) {
       .join(' | ');
 
     lines.push('');
-    lines.push(`**Ethnic Profile — LSOA, Census 2021** (${broadSummary})`);
+    const lsoaNote = area.lsoa ? `LSOA ${area.lsoa}` : 'local area';
+    const popNote  = area.imd?.population ? `, ~${area.imd.population.toLocaleString('en-GB')} residents` : '';
+    lines.push(`**Ethnic Profile — immediate area around school (${lsoaNote}${popNote}), Census 2021** (${broadSummary})`);
     lines.push('| Group | % |');
     lines.push('|---|---|');
     for (const [label, pct] of sorted) {
@@ -1462,9 +1559,17 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       const postcode = Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value ?? null;
       const area = detailed && postcode ? await getAreaData(postcode) : null;
 
-      const ofsted = ofstedBase
-        ? { ...ofstedBase, pupilExperience: pdfSections?.pupilExperience ?? null, nextSteps: pdfSections?.nextSteps ?? null }
-        : null;
+      const ofsted = ofstedBase ? {
+        ...ofstedBase,
+        pupilExperience:         pdfSections?.pupilExperience         ?? null,
+        qualityOfEducation:      pdfSections?.qualityOfEducation      ?? null,
+        behaviourAndAttitudes:   pdfSections?.behaviourAndAttitudes   ?? null,
+        personalDevelopment:     pdfSections?.personalDevelopment     ?? null,
+        leadershipAndManagement: pdfSections?.leadershipAndManagement ?? null,
+        achievement:             pdfSections?.achievement             ?? null,
+        inclusion:               pdfSections?.inclusion               ?? null,
+        nextSteps:               pdfSections?.nextSteps               ?? null,
+      } : null;
 
       return { input: name, identity, ofsted, performance, financial, area };
     })
