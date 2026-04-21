@@ -388,13 +388,15 @@ export async function getAreaData(postcode) {
   if (!lsoa && !msoa) { glog('govuk_area_no_codes', { postcode }); return null; }
 
   // Step 2 — fetch area data in parallel (all non-fatal)
-  // Ethnicity: Nomis Census 2021 TS021 (2-step NomisKey resolution, MSOA level)
-  // HPI:       HM Land Registry UK House Price Index (district level)
-  // Income:    ONS Small Area Income Estimates FYE 2018 CSV (~680 KB, parsed in-process)
-  const [ethnicityData, hpiData, incomeData] = await Promise.allSettled([
-    fetchNomisEthnicity(msoa),
+  // Ethnicity: Nomis Census 2021 TS021 — now at LSOA level (~0.5 mile radius, ~400-1,200 households)
+  // IMD:       MHCLG Indices of Multiple Deprivation 2019 — LSOA level
+  // HPI:       HM Land Registry UK House Price Index — district level (finest grain available)
+  // Income:    ONS Small Area Income Estimates FYE 2018 — MSOA level (finest ONS grain available)
+  const [ethnicityData, hpiData, incomeData, imdData] = await Promise.allSettled([
+    fetchNomisEthnicity(lsoa),   // LSOA for tight local focus
     fetchHPI(district),
-    fetchONSIncome(msoa),
+    fetchONSIncome(msoa),        // income only published at MSOA level
+    fetchIMD(lsoa),
   ]);
 
   const result = {
@@ -406,6 +408,7 @@ export async function getAreaData(postcode) {
     ethnicity:   ethnicityData.status === 'fulfilled' ? ethnicityData.value : null,
     housePrices: hpiData.status       === 'fulfilled' ? hpiData.value       : null,
     income:      incomeData.status    === 'fulfilled' ? incomeData.value    : null,
+    imd:         imdData.status       === 'fulfilled' ? imdData.value       : null,
   };
 
   glog('govuk_area_ok', {
@@ -414,6 +417,7 @@ export async function getAreaData(postcode) {
     hasEthnicity:   !!result.ethnicity,
     hasHousePrices: !!result.housePrices,
     hasIncome:      !!result.income,
+    hasIMD:         !!result.imd,
   });
 
   return result;
@@ -549,6 +553,51 @@ async function fetchHPI(districtName) {
     };
   }
   return null;
+}
+
+/**
+ * Fetches Index of Multiple Deprivation (IMD) 2019 data for an LSOA.
+ * Source: MHCLG / DLUHC — published via ArcGIS FeatureServer.
+ *
+ * IMD Decile:  1 = most deprived 10% of LSOAs in England
+ *              10 = least deprived 10%
+ * IMD Rank:    1 = most deprived, 32,844 = least deprived
+ *
+ * Field names vary across service versions so we try several capitalisation
+ * conventions before giving up.
+ */
+async function fetchIMD(lsoaCode) {
+  if (!lsoaCode) return null;
+
+  const where = encodeURIComponent(`lsoa11cd='${lsoaCode}'`);
+  const url   =
+    'https://services3.arcgis.com/ivmBBrHfQfDnDf8Q/arcgis/rest/services/' +
+    'Indices_of_Multiple_Deprivation_(IMD)_2019/FeatureServer/0/query' +
+    `?where=${where}&outFields=*&f=json`;
+
+  const data  = await safeFetchJson(url);
+  const attrs = data?.features?.[0]?.attributes;
+  if (!attrs) return null;
+
+  // Accept several field name conventions
+  const pick = (...keys) => { for (const k of keys) { if (attrs[k] != null) return attrs[k]; } return null; };
+  const score  = pick('IMDScore',  'imd_score',  'IMD_Score');
+  const rank   = pick('IMDRank',   'imd_rank',   'IMD_Rank');
+  const decile = pick('IMDDecile', 'imd_decile', 'IMD_Decile');
+  const name   = pick('lsoa11nm',  'LSOA11NM');
+
+  if (score == null && rank == null && decile == null) return null;
+
+  return {
+    lsoaCode,
+    lsoaName:   name,
+    imdScore:   score  != null ? Math.round(score * 10) / 10 : null,
+    imdRank:    rank   != null ? parseInt(rank)              : null,
+    imdDecile:  decile != null ? parseInt(decile)            : null,
+    totalLSOAs: 32844,
+    year: '2019',
+    source: 'MHCLG Indices of Multiple Deprivation 2019',
+  };
 }
 
 // ─── Ofsted data (state schools) ─────────────────────────────────────────────
@@ -1013,8 +1062,8 @@ function fmtOfsted(ofsted, isIndependent) {
 
 /**
  * Renders DfE performance data grouped by namespace, filtered to phase-relevant
- * namespaces only. Descriptions are omitted — variable names + namespace names
- * are sufficient for the model to interpret values.
+ * namespaces only. Displays as markdown tables using the CSV description field
+ * as the human-readable row label.
  *
  * Phase filtering:
  *   Primary / Middle-primary → KS2, ABS, CENSUS, L
@@ -1037,11 +1086,32 @@ function fmtAcademicResults(perf, phase) {
     allowed = () => true; // unknown phase — pass everything through
   }
 
+  // Friendly section headings
+  const NS_LABELS = {
+    KS2_25:    'Key Stage 2 (2024/25)',
+    KS4_25:    'Key Stage 4 (2024/25)',
+    KS5_25:    'Key Stage 5 (2024/25)',
+    ABS_24:    'Absence (2023/24)',
+    CENSUS_25: 'Pupil Census (2025)',
+    L:         'School Identity (DfE)',
+  };
+
   const blocks = [];
   for (const [namespace, rows] of Object.entries(perf)) {
     if (!allowed(namespace)) continue;
-    const lines = rows.map(({ variable, value }) => `- ${variable}: ${value}`);
-    blocks.push(`**${namespace}**\n${lines.join('\n')}`);
+    const label = NS_LABELS[namespace] ?? namespace;
+
+    // Build a markdown table; use description as the metric label, fall back to variable code
+    const tableRows = rows.map(({ variable, value, description }) => {
+      // Truncate very long descriptions to keep the table legible
+      let metric = (description || variable).trim();
+      if (metric.length > 90) metric = metric.slice(0, 87) + '…';
+      return `| ${metric} | ${value} |`;
+    });
+
+    if (tableRows.length) {
+      blocks.push(`**${label}**\n| Metric | Value |\n|---|---|\n${tableRows.join('\n')}`);
+    }
   }
   return blocks.length ? blocks.join('\n\n') : '_No performance data available._';
 }
@@ -1104,55 +1174,93 @@ function fmtGIASDetails(details) {
 function fmtAreaData(area) {
   if (!area) return '- _Not retrieved — postcode lookup unavailable._';
   const lines = [];
-  lines.push(`- District: ${area.district ?? 'Unknown'}, Region: ${area.region ?? 'Unknown'}`);
 
+  // ── Header: geography context ────────────────────────────────────────────
+  lines.push(`- Postcode: ${area.postcode ?? '?'}`);
+  lines.push(`- LSOA: ${area.lsoa ?? '?'} | MSOA: ${area.msoa ?? '?'}`);
+  lines.push(`- District: ${area.district ?? 'Unknown'} | Region: ${area.region ?? 'Unknown'}`);
+
+  // ── Deprivation (LSOA — tightest geographic grain available) ────────────
+  if (area.imd) {
+    const imd = area.imd;
+    const nameNote = imd.lsoaName ? ` (${imd.lsoaName})` : '';
+    lines.push('');
+    lines.push(`**Deprivation — IMD ${imd.year}, LSOA${nameNote}**`);
+    lines.push('| Measure | Value |');
+    lines.push('|---|---|');
+    if (imd.imdScore  != null) lines.push(`| IMD Score (higher = more deprived) | ${imd.imdScore} |`);
+    if (imd.imdRank   != null) lines.push(`| IMD Rank (1 = most deprived) | ${imd.imdRank.toLocaleString('en-GB')} / ${imd.totalLSOAs.toLocaleString('en-GB')} |`);
+    if (imd.imdDecile != null) lines.push(`| IMD Decile (1 = most deprived 10%) | ${imd.imdDecile} / 10 |`);
+    lines.push(`_Source: ${imd.source}_`);
+  } else {
+    lines.push('');
+    lines.push('**Deprivation (IMD):** _Not retrieved_');
+  }
+
+  // ── Household income (MSOA — finest ONS grain published) ─────────────────
   if (area.income) {
     const inc = area.income;
-    const parts = [];
-    if (inc.netAnnualHouseholdIncome)   parts.push(`Net: ${inc.netAnnualHouseholdIncome}/yr`);
-    if (inc.afterHousingCostsIncome)    parts.push(`After housing costs: ${inc.afterHousingCostsIncome}/yr`);
-    if (inc.netEquivalisedIncome)       parts.push(`Per capita (equiv.): ${inc.netEquivalisedIncome}/yr`);
-    lines.push(`- Household income (MSOA, ${inc.year}): ${parts.join(' | ')} (${inc.source})`);
+    lines.push('');
+    lines.push(`**Household Income — ${inc.year}, MSOA${inc.msoaName ? ` (${inc.msoaName})` : ''}**`);
+    lines.push('| Measure | Annual |');
+    lines.push('|---|---|');
+    if (inc.netAnnualHouseholdIncome)  lines.push(`| Net household income | ${inc.netAnnualHouseholdIncome} |`);
+    if (inc.totalAnnualHouseholdIncome) lines.push(`| Total household income (before housing costs) | ${inc.totalAnnualHouseholdIncome} |`);
+    if (inc.afterHousingCostsIncome)   lines.push(`| Net income after housing costs | ${inc.afterHousingCostsIncome} |`);
+    if (inc.netEquivalisedIncome)      lines.push(`| Net equivalised income (per capita) | ${inc.netEquivalisedIncome} |`);
+    lines.push(`_Source: ${inc.source}_`);
   } else {
-    lines.push(`- Household income: _Not retrieved_`);
+    lines.push('');
+    lines.push('**Household Income:** _Not retrieved_');
   }
 
+  // ── House prices (district — finest Land Registry HPI grain) ─────────────
   if (area.housePrices) {
     const hp = area.housePrices;
-    const parts = [`All: ${hp.averagePrice}`];
-    if (hp.averagePriceFlat)           parts.push(`Flat: ${hp.averagePriceFlat}`);
-    if (hp.averagePriceTerraced)       parts.push(`Terraced: ${hp.averagePriceTerraced}`);
-    if (hp.averagePriceFirstTimeBuyer) parts.push(`FTB: ${hp.averagePriceFirstTimeBuyer}`);
-    if (hp.annualChangePercent != null) parts.push(`+${hp.annualChangePercent}% YoY`);
-    lines.push(`- Average house price (${hp.district}, ${hp.refMonth}): ${parts.join(' | ')} (${hp.source})`);
+    lines.push('');
+    lines.push(`**House Prices — ${hp.district}, ${hp.refMonth}**`);
+    lines.push('| Property type | Average price |');
+    lines.push('|---|---|');
+    lines.push(`| All properties | ${hp.averagePrice} |`);
+    if (hp.averagePriceTerraced)       lines.push(`| Terraced | ${hp.averagePriceTerraced} |`);
+    if (hp.averagePriceFlat)           lines.push(`| Flat / maisonette | ${hp.averagePriceFlat} |`);
+    if (hp.averagePriceFirstTimeBuyer) lines.push(`| First-time buyer | ${hp.averagePriceFirstTimeBuyer} |`);
+    if (hp.annualChangePercent != null) lines.push(`| Annual change (YoY) | ${hp.annualChangePercent > 0 ? '+' : ''}${hp.annualChangePercent}% |`);
+    lines.push(`_Source: ${hp.source}_`);
   } else {
-    lines.push(`- House prices: _Not retrieved_`);
+    lines.push('');
+    lines.push('**House Prices:** _Not retrieved_');
   }
 
+  // ── Ethnic profile (LSOA — tightest grain available) ─────────────────────
   if (area.ethnicity && Object.keys(area.ethnicity).length) {
-    // Aggregate into high-level groups, then show top 5 detail items
+    const sorted = Object.entries(area.ethnicity).sort(([,a],[,b]) => b - a);
+
+    // Broad group summary
     const groups = {};
-    for (const [label, pct] of Object.entries(area.ethnicity)) {
+    for (const [label, pct] of sorted) {
       const broad = label.startsWith('White:') ? 'White'
-        : label.startsWith('Asian') ? 'Asian'
-        : label.startsWith('Black') ? 'Black'
-        : label.startsWith('Mixed') ? 'Mixed'
+        : label.startsWith('Asian')            ? 'Asian'
+        : label.startsWith('Black')            ? 'Black'
+        : label.startsWith('Mixed')            ? 'Mixed'
         : 'Other';
       groups[broad] = (groups[broad] ?? 0) + pct;
     }
     const broadSummary = Object.entries(groups)
       .sort(([,a],[,b]) => b - a)
-      .map(([k, v]) => `${k}: ${Math.round(v)}%`)
-      .join(', ');
-    const topDetail = Object.entries(area.ethnicity)
-      .sort(([,a],[,b]) => b - a)
-      .slice(0, 5)
-      .map(([k, v]) => `${k}: ${v}%`)
-      .join('; ');
-    lines.push(`- Ethnic profile (MSOA, Census 2021): ${broadSummary}`);
-    lines.push(`  Top groups: ${topDetail}`);
+      .map(([k, v]) => `${k} ${Math.round(v)}%`)
+      .join(' | ');
+
+    lines.push('');
+    lines.push(`**Ethnic Profile — LSOA, Census 2021** (${broadSummary})`);
+    lines.push('| Group | % |');
+    lines.push('|---|---|');
+    for (const [label, pct] of sorted) {
+      lines.push(`| ${label} | ${pct}% |`);
+    }
   } else {
-    lines.push(`- Ethnicity: _Not retrieved_`);
+    lines.push('');
+    lines.push('**Ethnicity:** _Not retrieved_');
   }
 
   return lines.join('\n');
