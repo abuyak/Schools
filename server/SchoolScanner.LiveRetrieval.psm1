@@ -153,8 +153,8 @@ function Get-BranchInstructions {
         [string]$Branch
     )
 
-    # Map branch ID to its .md file (one level up from server/, inside .md/)
-    $mdRoot = Join-Path (Split-Path $PSScriptRoot -Parent) ".md"
+    # Map branch ID to its .md file — co-located with the Lambda function code
+    $mdRoot = Join-Path (Split-Path $PSScriptRoot -Parent) "functions\research\.md"
     $branchFile = switch ($Branch) {
         "prompt_branch_1" { Join-Path $mdRoot "prompt_branch_1_specific_school.md" }
         "prompt_branch_2" { Join-Path $mdRoot "prompt_branch_2_compare_schools.md" }
