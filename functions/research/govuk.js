@@ -14,7 +14,8 @@
  * the AI knows to fetch it via web search rather than silently omitting it.
  */
 
-const FETCH_TIMEOUT_MS = 8000;
+const FETCH_TIMEOUT_MS      =  8000;  // standard HTML / JSON fetches
+const FETCH_TIMEOUT_LONG_MS = 20000;  // binary / ZIP downloads (FBIT census, DfE performance)
 
 const GIAS_SEARCH   = 'https://www.get-information-schools.service.gov.uk/Establishments/Search';
 const GIAS_DETAIL   = 'https://www.get-information-schools.service.gov.uk/Establishments/Establishment/Details';
@@ -26,45 +27,101 @@ function glog(event, props = {}) {
   console.log(JSON.stringify({ event, ts: new Date().toISOString(), src: 'govuk', ...props }));
 }
 
+// ─── National averages (DfE published statistics) ────────────────────────────
+// Updated once per year when DfE publishes provisional attainment data (typically Nov).
+// Sources:
+//   KS2:     https://explore-education-statistics.service.gov.uk/find-statistics/key-stage-2-attainment
+//   KS4:     https://explore-education-statistics.service.gov.uk/find-statistics/key-stage-4-attainment
+//   Absence: https://explore-education-statistics.service.gov.uk/find-statistics/pupil-absence-in-schools-in-england
+// ⚠️  Verify and update these figures each November when DfE publishes new provisional data.
+const NATIONAL_AVG = {
+  // KS2 attainment 2024/25 (provisional, published Nov 2025)
+  KS2: {
+    PTRWM_EXP:              61,   // % meeting expected standard in reading, writing and maths
+    PTRWM_HIGH:              9,   // % achieving higher standard in RWM
+    PTREAD_EXP:             74,   // % meeting expected in reading
+    PTMAT_EXP:              73,   // % meeting expected in maths
+    PTWRITTA_EXP:           72,   // % meeting expected in writing (teacher assessment)
+    PTGPS_EXP:              75,   // % meeting expected in grammar, punctuation and spelling
+    PTRWM_EXP_FSM6CLA1A:   46,   // % disadvantaged meeting expected in RWM
+    PTREAD_EXP_FSM6CLA1A:  57,   // % disadvantaged meeting expected in reading
+    PTMAT_EXP_FSM6CLA1A:   56,   // % disadvantaged meeting expected in maths
+    READPROG:               0.0,  // progress score national average = 0 by definition
+    WRITPROG:               0.0,
+    MATPROG:                0.0,
+  },
+  // KS4 attainment 2024/25 (provisional, published Oct 2025)
+  KS4: {
+    P8MEA:              0.00,  // Progress 8 — national average = 0 by definition
+    ATT8SCR:           46.4,   // Attainment 8 score
+    PTL2BASICS_95:     45.9,   // % achieving grade 5+ in English and maths
+    PTEBACC_E_PTQ_EE:  24.7,  // % entering EBacc
+    P8MEA_FSM6CLA1A:  -0.58,  // Progress 8 for disadvantaged pupils
+  },
+  // Absence 2023/24 (most recent final data, published Jul 2024)
+  ABSENCE: {
+    PERCTOT:    6.6,   // overall absence %
+    PPERSABS10: 21.3,  // persistent absence %
+  },
+};
+
 // ─── HTTP helpers ─────────────────────────────────────────────────────────────
 
 // Government sites block non-browser User-Agents; use a realistic one.
 const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-async function safeFetchText(url, extraHeaders = {}) {
-  try {
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: {
-        'User-Agent': BROWSER_UA,
-        Accept: 'text/html,application/xhtml+xml,*/*;q=0.9',
-        'Accept-Language': 'en-GB,en;q=0.9',
-        ...extraHeaders,
-      },
-    });
-    if (!res.ok) return null;
-    return await res.text();
-  } catch {
-    return null;
+// Retry wrapper — only retries on timeout/network errors, not HTTP 4xx/5xx
+async function withRetry(fn, retries = 2, baseDelayMs = 800) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const result = await fn();
+    if (result !== null) return result;
+    if (attempt < retries) {
+      await new Promise(r => setTimeout(r, baseDelayMs * Math.pow(2, attempt)));
+    }
   }
+  return null;
+}
+
+async function safeFetchText(url, extraHeaders = {}) {
+  const attempt = async () => {
+    try {
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        headers: {
+          'User-Agent': BROWSER_UA,
+          Accept: 'text/html,application/xhtml+xml,*/*;q=0.9',
+          'Accept-Language': 'en-GB,en;q=0.9',
+          ...extraHeaders,
+        },
+      });
+      if (!res.ok) return null;
+      return await res.text();
+    } catch {
+      return null;
+    }
+  };
+  return withRetry(attempt);
 }
 
 async function safeFetchJson(url, extraHeaders = {}) {
-  try {
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: {
-        'User-Agent': BROWSER_UA,
-        Accept: 'application/json,*/*;q=0.8',
-        'Accept-Language': 'en-GB,en;q=0.9',
-        ...extraHeaders,
-      },
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
+  const attempt = async () => {
+    try {
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        headers: {
+          'User-Agent': BROWSER_UA,
+          Accept: 'application/json,*/*;q=0.8',
+          'Accept-Language': 'en-GB,en;q=0.9',
+          ...extraHeaders,
+        },
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  };
+  return withRetry(attempt);
 }
 
 // ─── Ofsted PDF extraction ────────────────────────────────────────────────────
@@ -855,6 +912,14 @@ export async function getOfstedData(urn) {
   // Links are like: href="https://files.ofsted.gov.uk/v1/file/50196369"
   const reportUrl = html.match(/href="(https:\/\/files\.ofsted\.gov\.uk\/v1\/file\/\d+)"/i)?.[1] ?? null;
 
+  // ── Parent View URL ───────────────────────────────────────────────────────
+  // The Ofsted page links to Parent View results via /parent-view-results/urn/{URN}.
+  // The actual % data is JS-rendered so we can't fetch it here; we pass the URL
+  // to the AI so it can fetch it via web search if needed.
+  const parentViewUrl = html.match(/href="(\/parent-view-results\/urn\/\d+)"/)
+    ? `https://parentview.ofsted.gov.uk/parent-view-results/urn/${urn}`
+    : `https://parentview.ofsted.gov.uk/parent-view-results/urn/${urn}`; // include always — page exists for all state schools
+
   // ── Timeline fallback (older / closed school pages) ──────────────────────
   // Ofsted timelines list events as <li class="timeline__day"> — the first
   // item is often a status change (e.g. "Closed"), so scan all and pick the
@@ -897,12 +962,53 @@ export async function getOfstedData(urn) {
     qualityOfEducation, behaviour, personalDevelopment, leadership, sixthForm,
     achievement, attendance, curriculum, inclusion, leadershipGov, wellbeing, post16,
     safeguarding, reportUrl: finalReport,
+    parentViewUrl,
     pupilExperience: null,
     nextSteps:       null,
   };
 
   glog('govuk_ofsted_ok', { urn, overall: finalOverall, date: finalDate });
   return result;
+}
+
+// ─── Ofsted Parent View ───────────────────────────────────────────────────────
+
+/**
+ * Fetches aggregated Parent View survey results for a school.
+ *
+ * Parent View (parentview.ofsted.gov.uk) publishes the % of parents who agree
+ * with each survey question. The API is public and unauthenticated.
+ *
+ * Returns null for independent schools (not covered by Ofsted Parent View)
+ * or when no responses have been submitted.
+ */
+async function fetchParentView(urn) {
+  if (!urn) return null;
+  const raw = await safeFetchJson(`https://parentview.ofsted.gov.uk/api/search/result?urn=${urn}`);
+  if (!raw) return null;
+
+  const total = raw.totalResponses ?? raw.total_responses ?? 0;
+  if (!total) return null;
+
+  // Map survey questions to friendly keys by matching question text substrings.
+  // Question wording varies slightly between survey versions.
+  const questions = raw.questions ?? [];
+  const findPct = (...substrings) => {
+    const q = questions.find(q =>
+      substrings.some(s => q.text?.toLowerCase().includes(s.toLowerCase()))
+    );
+    return q?.percentageAgree ?? q?.percentage_agree ?? null;
+  };
+
+  return {
+    totalResponses:  total,
+    wouldRecommend:  findPct('recommend'),
+    childHappy:      findPct('happy at this school', 'happy here'),
+    childSafe:       findPct('feels safe', 'feel safe', 'child is safe'),
+    wellBehaved:     findPct('well behaved', 'good behaviour'),
+    wellLed:         findPct('well led', 'well-led', 'leadership'),
+    concernsHandled: findPct('concerns', 'worries are dealt'),
+  };
 }
 
 // ─── School performance data ──────────────────────────────────────────────────
@@ -998,17 +1104,20 @@ function parsePerformanceCsv(csv) {
  * Used for binary downloads (ZIP files).
  */
 async function safeFetchBuffer(url, extraHeaders = {}) {
-  try {
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: { 'User-Agent': BROWSER_UA, ...extraHeaders },
-    });
-    if (!res.ok) return null;
-    const ab = await res.arrayBuffer();
-    return Buffer.from(ab);
-  } catch {
-    return null;
-  }
+  const attempt = async () => {
+    try {
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_LONG_MS),
+        headers: { 'User-Agent': BROWSER_UA, ...extraHeaders },
+      });
+      if (!res.ok) return null;
+      const ab = await res.arrayBuffer();
+      return Buffer.from(ab);
+    } catch {
+      return null;
+    }
+  };
+  return withRetry(attempt);
 }
 
 /**
@@ -1087,9 +1196,36 @@ async function fetchFBITSpending(urn) {
 }
 
 /**
+ * Parses a single CSV row, respecting double-quoted fields that may contain commas.
+ * Handles the RFC 4180 convention used by FBIT census exports.
+ */
+function parseCSVRow(line) {
+  const fields = [];
+  let current  = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; } // escaped quote
+      else inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      fields.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  fields.push(current.trim());
+  return fields;
+}
+
+/**
  * Downloads the FBIT census ZIP export and parses the row for this school.
  * The ZIP contains a single CSV with workforce and pupil metrics for the
  * school and its comparator set.
+ *
+ * NOTE: School names can contain commas (e.g. "Redriff Primary, City of London
+ * Academy"), so all row parsing uses parseCSVRow() rather than a bare split(',').
  */
 async function fetchFBITCensus(urn) {
   const buf = await safeFetchBuffer(`${FIN_BENCH}/school/${urn}/census/download`);
@@ -1099,16 +1235,17 @@ async function fetchFBITCensus(urn) {
   const lines = csv.split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length < 2) return null;
 
-  // Strip BOM, split headers
+  // Strip BOM, split headers (header row has no quoted commas, safe to split naively)
   const headers = lines[0].replace(/^\uFEFF/, '').split(',').map(h => h.trim());
   const urnIdx  = headers.findIndex(h => /^URN$/i.test(h));
   if (urnIdx === -1) return null;
 
-  // Find the row for this school
-  const row = lines.slice(1).find(l => l.split(',')[urnIdx]?.trim() === String(urn));
+  // Find the row for this school — must use proper CSV parse so quoted school
+  // names with commas don't shift field indices
+  const row = lines.slice(1).find(l => parseCSVRow(l)[urnIdx]?.trim() === String(urn));
   if (!row) return null;
 
-  const cells = row.split(',');
+  const cells = parseCSVRow(row);
   const get   = (col) => {
     const idx = headers.findIndex(h => h === col);
     return idx !== -1 ? (cells[idx]?.trim() || null) : null;
@@ -1123,9 +1260,10 @@ async function fetchFBITCensus(urn) {
   const ptRatio      = (pupils && teachersFTE) ? Math.round(pupils / teachersFTE * 10) / 10 : null;
 
   // Compute comparator-set average QTS% from all rows in the CSV
+  // (comparator rows also need proper CSV parsing for the same reason)
   const qtsIdx = headers.findIndex(h => h === 'PercentTeacherWithQualifiedStatus');
   const comparatorQtsValues = lines.slice(1)
-    .map(l => parseFloat(l.split(',')[qtsIdx]))
+    .map(l => parseFloat(parseCSVRow(l)[qtsIdx]))
     .filter(v => !isNaN(v));
   const comparatorQtsAvg = comparatorQtsValues.length
     ? Math.round(comparatorQtsValues.reduce((s, v) => s + v, 0) / comparatorQtsValues.length * 10) / 10
@@ -1567,15 +1705,17 @@ function fmtAcademicResultsSlim(perf, phase) {
 
     if (rwm || read || mat) {
       const trend = [rwm23, rwm24, rwm].filter(Boolean);
+      const nat = NATIONAL_AVG.KS2;
+      const n = (val, key) => val != null && nat[key] != null ? ` _(nat: ${nat[key]}%)_` : '';
       lines.push('**Key Stage 2 (2024/25)**');
       lines.push('| Metric | Value |');
       lines.push('|---|---|');
-      if (rwm)  lines.push(`| RWM expected standard | ${rwm}${trend.length > 1 ? ` _(3-yr: ${trend.join(' → ')})_` : ''} |`);
-      if (rwmH) lines.push(`| RWM high standard | ${rwmH} |`);
-      if (read) lines.push(`| Reading expected | ${read}${readSc ? ` (avg score: ${readSc})` : ''} |`);
-      if (mat)  lines.push(`| Maths expected | ${mat}${matSc ? ` (avg score: ${matSc})` : ''} |`);
-      if (writ) lines.push(`| Writing expected | ${writ} |`);
-      if (gps)  lines.push(`| GPS expected | ${gps} |`);
+      if (rwm)  lines.push(`| RWM expected standard | ${rwm}${n(rwm,'PTRWM_EXP')}${trend.length > 1 ? ` _(3-yr: ${trend.join(' → ')})_` : ''} |`);
+      if (rwmH) lines.push(`| RWM high standard | ${rwmH}${n(rwmH,'PTRWM_HIGH')} |`);
+      if (read) lines.push(`| Reading expected | ${read}${n(read,'PTREAD_EXP')}${readSc ? ` (avg score: ${readSc})` : ''} |`);
+      if (mat)  lines.push(`| Maths expected | ${mat}${n(mat,'PTMAT_EXP')}${matSc ? ` (avg score: ${matSc})` : ''} |`);
+      if (writ) lines.push(`| Writing expected | ${writ}${n(writ,'PTWRITTA_EXP')} |`);
+      if (gps)  lines.push(`| GPS expected | ${gps}${n(gps,'PTGPS_EXP')} |`);
       if (sci)  lines.push(`| Science expected | ${sci} |`);
 
       // Disadvantaged gap
@@ -1583,21 +1723,56 @@ function fmtAcademicResultsSlim(perf, phase) {
       const rwmDisadv     = v('PTRWM_EXP_FSM6CLA1A');
       const rwmNonDisadv  = v('PTRWM_EXP_NOTFSM6CLA1A');
       const gapNat        = v('DIFFN_RWM_EXP');
+      const readDisadv    = v('PTREAD_EXP_FSM6CLA1A');  // per-subject FSM breakdown
+      const matDisadv     = v('PTMAT_EXP_FSM6CLA1A');   // per-subject FSM breakdown
       if (cohortDisadv || rwmDisadv) {
         lines.push(`| Disadvantaged share of KS2 cohort | ${cohortDisadv ?? '—'} |`);
-        if (rwmDisadv)    lines.push(`| RWM expected — disadvantaged | ${rwmDisadv} |`);
+        if (rwmDisadv)    lines.push(`| RWM expected — disadvantaged | ${rwmDisadv}${nat.PTRWM_EXP_FSM6CLA1A ? ` _(nat: ${nat.PTRWM_EXP_FSM6CLA1A}%)_` : ''} |`);
         if (rwmNonDisadv) lines.push(`| RWM expected — non-disadvantaged | ${rwmNonDisadv} |`);
         if (gapNat)       lines.push(`| Gap vs national non-disadvantaged | ${gapNat}pp |`);
+        if (readDisadv)   lines.push(`| Reading expected — disadvantaged | ${readDisadv}${nat.PTREAD_EXP_FSM6CLA1A ? ` _(nat: ${nat.PTREAD_EXP_FSM6CLA1A}%)_` : ''} |`);
+        if (matDisadv)    lines.push(`| Maths expected — disadvantaged | ${matDisadv}${nat.PTMAT_EXP_FSM6CLA1A ? ` _(nat: ${nat.PTMAT_EXP_FSM6CLA1A}%)_` : ''} |`);
       }
 
-      // Progress (most recent published year)
-      const rProg = v('READPROG_23');
-      const wProg = v('WRITPROG_23');
-      const mProg = v('MATPROG_23');
+      // Group 4: Gender gap at high standard — can diverge sharply from overall high figure
+      const rwmHighB = v('PTRWM_HIGH_B');
+      const rwmHighG = v('PTRWM_HIGH_G');
+      if (rwmHighB != null || rwmHighG != null) {
+        if (rwmHighB != null) lines.push(`| RWM high standard — boys | ${rwmHighB} |`);
+        if (rwmHighG != null) lines.push(`| RWM high standard — girls | ${rwmHighG} |`);
+      }
+
+      // Group 7: Cohort size — governs statistical significance of every percentage above
+      const cohort = v('TELIG');
+      if (cohort) lines.push(`| KS2 eligible cohort | ${cohort} pupils |`);
+
+      // Group 3: Absent from tests — headline % only includes pupils who sat; absence inflates results
+      const readAt = v('PTREAD_AT');
+      const matAt  = v('PTMAT_AT');
+      const gpsAt  = v('PTGPS_AT');
+      if (readAt || matAt || gpsAt) {
+        const absentParts = [];
+        if (readAt) absentParts.push(`reading ${readAt}`);
+        if (matAt)  absentParts.push(`maths ${matAt}`);
+        if (gpsAt)  absentParts.push(`GPS ${gpsAt}`);
+        lines.push(`| Absent from KS2 tests | ${absentParts.join(' · ')} |`);
+      }
+
+      // Group 6: Progress scores with CIs + DfE descriptor — CIs are critical for small cohorts
+      const PROG_DESCR = { '1': 'well above', '2': 'above', '3': 'average', '4': 'below', '5': 'well below' };
+      const fmtProg = (val, lo, hi, d) => {
+        let s = val ?? '—';
+        if (lo && hi) s += ` (CI: ${lo} to ${hi})`;
+        if (d)        s += ` — ${PROG_DESCR[String(d)] ?? d}`;
+        return s;
+      };
+      const rProg = v('READPROG_23'); const rLo = v('READPROG_LOWER_23'); const rHi = v('READPROG_UPPER_23'); const rD = v('READPROG_DESCR_23');
+      const wProg = v('WRITPROG_23'); const wLo = v('WRITPROG_LOWER_23'); const wHi = v('WRITPROG_UPPER_23'); const wD = v('WRITPROG_DESCR_23');
+      const mProg = v('MATPROG_23');  const mLo = v('MATPROG_LOWER_23');  const mHi = v('MATPROG_UPPER_23');  const mD = v('MATPROG_DESCR_23');
       if (rProg || wProg || mProg) {
-        lines.push(`| Progress: reading (2022/23) | ${rProg ?? '—'} |`);
-        lines.push(`| Progress: writing (2022/23) | ${wProg ?? '—'} |`);
-        lines.push(`| Progress: maths (2022/23) | ${mProg ?? '—'} |`);
+        lines.push(`| Progress: reading (2022/23) | ${fmtProg(rProg, rLo, rHi, rD)} |`);
+        lines.push(`| Progress: writing (2022/23) | ${fmtProg(wProg, wLo, wHi, wD)} |`);
+        lines.push(`| Progress: maths (2022/23) | ${fmtProg(mProg, mLo, mHi, mD)} |`);
       }
     }
   }
@@ -1614,16 +1789,17 @@ function fmtAcademicResultsSlim(perf, phase) {
     const cohortDisadv = v('PTFSM6CLA1A');
 
     if (p8 || att8 || g5em) {
+      const nat4 = NATIONAL_AVG.KS4;
       lines.push('');
       lines.push('**Key Stage 4 (2024/25)**');
       lines.push('| Metric | Value |');
       lines.push('|---|---|');
-      if (p8)    lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} |`);
-      if (att8)  lines.push(`| Attainment 8 | ${att8} |`);
-      if (g5em)  lines.push(`| Grade 5+ English & Maths | ${g5em} |`);
-      if (ebacc) lines.push(`| EBacc entry | ${ebacc} |`);
+      if (p8)    lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} _(nat: ${nat4.P8MEA})_ |`);
+      if (att8)  lines.push(`| Attainment 8 | ${att8} _(nat: ${nat4.ATT8SCR})_ |`);
+      if (g5em)  lines.push(`| Grade 5+ English & Maths | ${g5em} _(nat: ${nat4.PTL2BASICS_95}%)_ |`);
+      if (ebacc) lines.push(`| EBacc entry | ${ebacc} _(nat: ${nat4.PTEBACC_E_PTQ_EE}%)_ |`);
       if (cohortDisadv) lines.push(`| Disadvantaged share of KS4 cohort | ${cohortDisadv} |`);
-      if (p8dis) lines.push(`| Progress 8 — disadvantaged | ${p8dis} |`);
+      if (p8dis) lines.push(`| Progress 8 — disadvantaged | ${p8dis} _(nat: ${nat4.P8MEA_FSM6CLA1A})_ |`);
     }
   }
 
@@ -1650,9 +1826,10 @@ function fmtAcademicResultsSlim(perf, phase) {
   const abs  = v('PERCTOT');
   const pers = v('PPERSABS10');
   if (abs || pers) {
+    const natA = NATIONAL_AVG.ABSENCE;
     const parts = [];
-    if (abs)  parts.push(`overall ${abs}%`);
-    if (pers) parts.push(`persistent absentees ${pers}%`);
+    if (abs)  parts.push(`overall ${abs}% _(nat: ${natA.PERCTOT}%)_`);
+    if (pers) parts.push(`persistent absentees ${pers}% _(nat: ${natA.PPERSABS10}%)_`);
     lines.push('');
     lines.push(`**Absence (2023/24):** ${parts.join(' · ')}`);
   }
@@ -1684,8 +1861,15 @@ function fmtOfstedSlim(ofsted, isIndependent) {
   addGrade('Personal Development/Wellbeing',ofsted.wellbeing);
   if (ofsted.safeguarding) lines.push(`- Safeguarding: ${ofsted.safeguarding}`);
 
-  // Narrative — cap at 1,500 chars; the AI can web-search for more if needed
-  const NARRATIVE_CAP = 1500;
+  // Parent View — data is JS-rendered so we pass the URL for the AI to fetch
+  if (ofsted.parentViewUrl) {
+    lines.push(`- Parent View survey results: ${ofsted.parentViewUrl}`);
+  }
+
+  // Narrative — cap at 3,000 chars (raised from 1,500 to avoid cutting SEN/SEND commentary).
+  // Each section is capped independently so a long quality-of-education section
+  // doesn't crowd out safeguarding or SEND observations lower in the report.
+  const NARRATIVE_CAP = 3000;
   const addNarrative = (heading, text) => {
     if (!text) return;
     const snippet = text.length > NARRATIVE_CAP
@@ -1694,12 +1878,12 @@ function fmtOfstedSlim(ofsted, isIndependent) {
     lines.push(`\n**${heading}**\n${snippet}`);
   };
   addNarrative("What it's like to be a pupil", ofsted.pupilExperience);
-  addNarrative('Quality of Education (detail)', ofsted.qualityOfEducation  && ofsted.qualityOfEducation.length  > 100 ? ofsted.qualityOfEducation  : null);
-  addNarrative('Behaviour and Attitudes (detail)', ofsted.behaviourAndAttitudes && ofsted.behaviourAndAttitudes.length > 100 ? ofsted.behaviourAndAttitudes : null);
-  addNarrative('Personal Development (detail)', ofsted.personalDevelopment  && ofsted.personalDevelopment.length  > 100 ? ofsted.personalDevelopment  : null);
-  addNarrative('Leadership and Management (detail)', ofsted.leadershipAndManagement && ofsted.leadershipAndManagement.length > 100 ? ofsted.leadershipAndManagement : null);
-  addNarrative('Achievement (detail)', ofsted.achievement  && typeof ofsted.achievement  === 'string' && ofsted.achievement.length  > 100 ? ofsted.achievement  : null);
-  addNarrative('Inclusion (detail)', ofsted.inclusion && typeof ofsted.inclusion === 'string' && ofsted.inclusion.length > 100 ? ofsted.inclusion : null);
+  addNarrative('Quality of Education (detail)', ofsted.qualityOfEducationDetail?.length      > 100 ? ofsted.qualityOfEducationDetail      : null);
+  addNarrative('Behaviour and Attitudes (detail)', ofsted.behaviourAndAttitudesDetail?.length > 100 ? ofsted.behaviourAndAttitudesDetail   : null);
+  addNarrative('Personal Development (detail)', ofsted.personalDevelopmentDetail?.length     > 100 ? ofsted.personalDevelopmentDetail     : null);
+  addNarrative('Leadership and Management (detail)', ofsted.leadershipAndManagementDetail?.length > 100 ? ofsted.leadershipAndManagementDetail : null);
+  addNarrative('Achievement (detail)', ofsted.achievementDetail?.length                      > 100 ? ofsted.achievementDetail             : null);
+  addNarrative('Inclusion (detail)', ofsted.inclusionDetail?.length                          > 100 ? ofsted.inclusionDetail               : null);
   addNarrative('What the school needs to improve', ofsted.nextSteps);
 
   if (!ofsted.pupilExperience && !ofsted.nextSteps && ofsted.reportUrl) {
@@ -1998,16 +2182,18 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       const postcode = Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value ?? null;
       const area = detailed && postcode ? await getAreaData(postcode) : null;
 
+      // IMPORTANT: PDF narrative fields are stored under *Detail keys to avoid
+      // clobbering the grade strings of the same name on ofstedBase.
       const ofsted = ofstedBase ? {
         ...ofstedBase,
-        pupilExperience:         pdfSections?.pupilExperience         ?? null,
-        qualityOfEducation:      pdfSections?.qualityOfEducation      ?? null,
-        behaviourAndAttitudes:   pdfSections?.behaviourAndAttitudes   ?? null,
-        personalDevelopment:     pdfSections?.personalDevelopment     ?? null,
-        leadershipAndManagement: pdfSections?.leadershipAndManagement ?? null,
-        achievement:             pdfSections?.achievement             ?? null,
-        inclusion:               pdfSections?.inclusion               ?? null,
-        nextSteps:               pdfSections?.nextSteps               ?? null,
+        pupilExperience:               pdfSections?.pupilExperience         ?? null,
+        qualityOfEducationDetail:      pdfSections?.qualityOfEducation      ?? null,
+        behaviourAndAttitudesDetail:   pdfSections?.behaviourAndAttitudes   ?? null,
+        personalDevelopmentDetail:     pdfSections?.personalDevelopment     ?? null,
+        leadershipAndManagementDetail: pdfSections?.leadershipAndManagement ?? null,
+        achievementDetail:             pdfSections?.achievement             ?? null,
+        inclusionDetail:               pdfSections?.inclusion               ?? null,
+        nextSteps:                     pdfSections?.nextSteps               ?? null,
       } : null;
 
       return { input: name, identity, ofsted, performance, financial, area };
