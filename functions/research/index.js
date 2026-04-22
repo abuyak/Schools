@@ -5,8 +5,8 @@ import { fetchGovDataForPrompt } from './govuk.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Resolve the .md prompt directory — two levels up from functions/research/
-const MD_ROOT = join(__dirname, '..', '..', '.md');
+// Resolve the .md prompt directory — co-located with the function code
+const MD_ROOT = join(__dirname, '.md');
 
 const ALLOWED_BRANCHES = [
   'prompt_branch_1',
