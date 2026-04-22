@@ -26,6 +26,8 @@ Before this prompt was sent, the system automatically retrieved verified data fr
 - FTE = Full-Time Equivalent
 - CI = Confidence Interval (the range within which the true value is likely to fall)
 
+**Missing data rule:** If a value is absent from the pre-fetched block, write `—` in the table cell. Never write "not verified", "not confirmed", "unknown", or any other placeholder phrase. Do not estimate or invent values.
+
 **Use the pre-fetched block as ground truth for Part A — do not re-search these sources:**
 - School identity, URN, type, phase, local authority (GIAS)
 - Ofsted inspection grade, sub-grades, inspection date, report PDF link
