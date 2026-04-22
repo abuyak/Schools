@@ -66,7 +66,8 @@ Resources:
   ResearchFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: functions/research/index.handler
+      CodeUri: functions/research/
+      Handler: index.handler
       Description: Handles POST /api/research requests
       FunctionUrlConfig:
         AuthType: NONE
@@ -84,7 +85,8 @@ Resources:
   HealthFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: functions/health/index.handler
+      CodeUri: functions/health/
+      Handler: index.handler
       Description: Handles GET /api/health
       Events:
         HealthApi:
