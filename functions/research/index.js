@@ -16,7 +16,7 @@ const ALLOWED_BRANCHES = [
 ];
 
 const BRANCH_FILES = {
-  prompt_branch_1: 'prompt_branch_1_specific_school.md',
+  prompt_branch_1: 'prompt_branch_1_specific_school_v2.md',
   prompt_branch_2: 'prompt_branch_2_compare_schools.md',
   prompt_branch_3: 'prompt_branch_3_postcode_or_area.md',
   prompt_branch_4: 'prompt_branch_4_admissions_strategy.md',
@@ -284,7 +284,10 @@ export const handler = async (event) => {
         user_location: { type: 'approximate', country: 'GB', city: 'London', region: 'London', timezone: 'Europe/London' },
         external_web_access: true,
       }],
-      tool_choice: 'auto',
+      // branch 1 (specific school) always needs web searches for Part B;
+      // branch 3/4 benefit from search too — only skip for branch 2 (comparison)
+      // which has its own gov.uk block and rarely needs supplemental search.
+      tool_choice: body.branch === 'prompt_branch_2' ? 'auto' : 'required',
       include: ['web_search_call.action.sources'],
       instructions,
       input: body.question,

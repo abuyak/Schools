@@ -45,12 +45,16 @@ const args = process.argv.slice(2);
 let branch = 'prompt_branch_1';
 let modelOverride = null;
 
+let promptFile = null;
+
 const filtered = [];
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--branch' && args[i + 1]) {
     branch = `prompt_branch_${args[++i]}`;
   } else if (args[i] === '--model' && args[i + 1]) {
     modelOverride = args[++i];
+  } else if (args[i] === '--file' && args[i + 1]) {
+    promptFile = args[++i];   // e.g. prompt_branch_1_specific_school_v2.md
   } else {
     filtered.push(args[i]);
   }
@@ -64,15 +68,15 @@ const DIVIDER = '─'.repeat(70);
 console.log(DIVIDER);
 console.log(`Branch:   ${branch}`);
 console.log(`Question: ${question}`);
+if (promptFile)    console.log(`Prompt:   ${promptFile}`);
 if (modelOverride) console.log(`Model:    ${modelOverride} (override)`);
 console.log(DIVIDER + '\n');
 
 // ── Build request body ─────────────────────────────────────────────────────────
 const body = { branch, question };
-if (adminKey && modelOverride) {
-  body._adminKey = adminKey;
-  body._model    = modelOverride;
-}
+if (adminKey) body._adminKey = adminKey;                        // always send key — unlocks _trace + admin overrides
+if (adminKey && modelOverride) body._model    = modelOverride;
+if (adminKey && promptFile)    body._promptFile = promptFile;   // load alternate prompt file
 
 // ── Call handler ───────────────────────────────────────────────────────────────
 const t0 = Date.now();
@@ -111,6 +115,21 @@ for (const s of result.sections ?? []) {
   console.log(`\n${'─'.repeat(50)}`);
   console.log(`## ${s.heading}`);
   console.log(s.body);
+}
+
+// ── Token consumption ──────────────────────────────────────────────────────────
+if (result._trace) {
+  const t = result._trace;
+  console.log(`\n${DIVIDER}`);
+  console.log('TOKEN CONSUMPTION');
+  console.log(DIVIDER);
+  console.log(`  Gov.uk data injected : ${t.govuk?.injected ? 'yes' : 'no'}  (${t.govuk?.chars ?? '?'} chars · ~${t.govuk?.estimatedTokens ?? '?'} tokens)`);
+  console.log(`  Input tokens         : ${t.openai?.inputTokens ?? '?'}`);
+  console.log(`  Output tokens        : ${t.openai?.outputTokens ?? '?'}`);
+  console.log(`  Total tokens         : ${(t.openai?.inputTokens ?? 0) + (t.openai?.outputTokens ?? 0)}`);
+  console.log(`  Web searches         : ${t.openai?.webSearches?.length ?? 0}${t.openai?.webSearches?.length ? ' — ' + t.openai.webSearches.join(', ') : ''}`);
+  console.log(`  OpenAI latency       : ${t.openai?.ms ?? '?'}ms`);
+  console.log(`  Gov.uk latency       : ${t.govuk?.ms ?? '?'}ms`);
 }
 
 console.log(`\n${DIVIDER}`);
