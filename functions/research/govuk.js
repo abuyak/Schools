@@ -150,15 +150,21 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
 
   let fullText;
   try {
-    const { PDFParse } = await import('pdf-parse');
-    // pdf-parse's internal fetch has no timeout — race it against a 12 s deadline
-    const parser = new PDFParse({ url: reportUrl });
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('PDF fetch timeout')), 12000)
-    );
-    await Promise.race([parser.load(), timeoutPromise]);
-    const result = await parser.getText();
-    fullText = result?.pages?.map(p => p.text).join('\n') ?? null;
+    // Fetch the PDF binary with a timeout
+    const res = await fetch(reportUrl, {
+      signal: AbortSignal.timeout(15000),
+      headers: { 'User-Agent': BROWSER_UA },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const arrayBuf = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuf);
+
+    // pdf-parse v1.1.1 — import from lib directly to bypass the self-test that
+    // tries to open './test/data/05-versions-space.pdf' on module load (fails in Lambda).
+    const mod = await import('pdf-parse/lib/pdf-parse.js');
+    const pdfParse = mod.default ?? mod;
+    const parsed = await pdfParse(buffer);
+    fullText = parsed?.text ?? null;
   } catch (err) {
     glog('govuk_pdf_parse_fail', { url: reportUrl, error: err.message });
     return null;

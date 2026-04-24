@@ -63,6 +63,8 @@ const OUTPUT_CONSTRAINTS = `
 
 **"none"** — everything else. Neutral data, mixed signals, or insufficient data to judge.
 
+**Always "none" regardless of content:** C1, C2, C3, C4. These verdict sections synthesise everything — colour-coding them would be redundant and confusing.
+
 ## C2 Linkage Rule
 The C2 (Pros and Cons) section MUST reference every section flagged "red" as a concern and every section flagged "green" as a strength. Do not introduce new concerns or strengths in C2 that were not flagged in A1–B5.
 `;
