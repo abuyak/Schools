@@ -38,8 +38,11 @@
     .sc-note { color: #666; font-size: 0.8rem; flex: 2; }
 
     /* Sections */
-    .section { margin-bottom: 1.5rem; }
-    .section h3 { font-size: 1rem; margin-bottom: 0.4rem; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; }
+    .section { margin-bottom: 1.5rem; padding-left: 0.5rem; border-left: 3px solid transparent; }
+    .section--red   { border-left-color: #d93025; }
+    .section--green { border-left-color: #1e8c45; }
+    .section-hrow { display: flex; align-items: center; gap: 0.4rem; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; margin-bottom: 0.4rem; }
+    .section-hrow h3 { font-size: 1rem; margin: 0; flex: 1; }
     .section-body { font-size: 0.9rem; line-height: 1.65; color: #333; }
     .section-body a { color: #2563eb; }
     .section-body p { margin-bottom: 0.4rem; }
@@ -202,11 +205,19 @@
     const el = document.getElementById('r-sections');
     el.replaceChildren();
     (sections||[]).forEach(s => {
-      const art = document.createElement('div'); art.className = 'section';
+      const flag = s.flag || 'none';
+      const art = document.createElement('div');
+      art.className = 'section' + (flag !== 'none' ? ' section--' + flag : '');
+
+      const hrow = document.createElement('div'); hrow.className = 'section-hrow';
       const h3 = document.createElement('h3'); h3.textContent = s.heading||'';
+      hrow.appendChild(h3);
+      if (flag === 'red')   { const b = document.createElement('span'); b.textContent = '🔴'; b.title = 'Red flag'; hrow.appendChild(b); }
+      if (flag === 'green') { const b = document.createElement('span'); b.textContent = '🟢'; b.title = 'Green flag'; hrow.appendChild(b); }
+
       const body = document.createElement('div'); body.className = 'section-body';
       renderBody(body, s.body||'');
-      art.appendChild(h3); art.appendChild(body); el.appendChild(art);
+      art.appendChild(hrow); art.appendChild(body); el.appendChild(art);
     });
   }
 

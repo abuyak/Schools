@@ -339,17 +339,38 @@
   function renderSections(sections) {
     answerSections.replaceChildren();
     (sections || []).forEach(function (section) {
+      const flag = section.flag || "none";
+
       const article = document.createElement("article");
-      article.className = "answer-section";
+      article.className = "answer-section" + (flag !== "none" ? " answer-section--" + flag : "");
+
+      const headingRow = document.createElement("div");
+      headingRow.className = "answer-section-heading-row";
 
       const heading = document.createElement("h4");
       heading.textContent = section.heading || "";
+
+      headingRow.appendChild(heading);
+
+      if (flag === "red") {
+        const badge = document.createElement("span");
+        badge.className = "section-flag section-flag--red";
+        badge.title = "Concern — review carefully";
+        badge.textContent = "🔴";
+        headingRow.appendChild(badge);
+      } else if (flag === "green") {
+        const badge = document.createElement("span");
+        badge.className = "section-flag section-flag--green";
+        badge.title = "Positive result";
+        badge.textContent = "🟢";
+        headingRow.appendChild(badge);
+      }
 
       const body = document.createElement("div");
       body.className = "answer-section-body";
       renderBodyText(body, section.body || "");
 
-      article.appendChild(heading);
+      article.appendChild(headingRow);
       article.appendChild(body);
       answerSections.appendChild(article);
     });
