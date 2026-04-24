@@ -226,6 +226,8 @@ Table:
 
 **Observations:** one short paragraph — income, housing, community mix, deprivation context, and what this means for the school's intake.
 
+**Flag rule:** Set red if IMD decile is 1–3 or mean household income is below £35,000 — these signal a genuinely deprived catchment and must be called out in C2 Cons even if the school performs well above average for its context.
+
 ---
 
 ## Part B — Independent Research
@@ -348,11 +350,13 @@ Then write 2–3 sentences on which types of child are most likely to thrive, an
 
 Write two clear lists — honest, direct, no hedging.
 
+**Every section flagged 🟢 green must appear as a bullet under "Reasons to choose". Every section flagged 🔴 red must appear as a bullet under "Reasons to think twice". Do not skip any flagged section.**
+
 **Reasons to choose this school:**
-- (bullet each genuine strength — academic, cultural, pastoral, practical)
+- (bullet each genuine strength — draw from green-flagged sections first, then add other notable positives)
 
 **Reasons to think twice:**
-- (bullet each genuine concern — academic gaps, financial risk, admissions difficulty, Parent View flags, missing data)
+- (bullet each genuine concern — draw from red-flagged sections first; include area deprivation, Parent View ⚠️ metrics, financial risks, improvement requirements, and any attainment gaps)
 
 If a child description was provided, add one sentence at the end on overall fit.
 

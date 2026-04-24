@@ -37,7 +37,36 @@ const OUTPUT_CONSTRAINTS = `
 - For sections that list options (e.g. "Main Routes Or Fallback Options"): use a bold-only bullet (- **Option name**) for each option header; follow it with regular bullets for the sub-points (Why realistic / Upside / Downside). Do NOT create a numbered list for options.
 - When a topic has a colon label (e.g. "11+ mechanics:", "Timing:", "Upside:"), write the label as a plain text line (no leading -) and put the details as bullet sub-points on the following lines. Never merge a label and its content into a single bullet.
 - For any comparison table section, write the body as a markdown table using | col | col | syntax with a separator row of |---|---|.
+- Every section object MUST include a "flag" field set to exactly one of: "red", "green", or "none". Apply the traffic-light rules below. When in doubt, use "none".
+
+## Traffic Light Rules (apply to every section A1–C4)
+
+**"red"** — set when the section contains a genuine concern a cautious parent should notice:
+- A2: Ofsted overall Requires Improvement or Inadequate; any sub-grade Inadequate; safeguarding not met; or improvement sub-grades weaker than overall
+- A4: Any improvement requirements are present (the section has content = red by definition, because outstanding schools have no bullets)
+- A5: EHC plan % above 6%; FSM above 35% (primary) or 30% (secondary) without strong support evidence; SEN % significantly above average
+- A6: Any progress score DfE descriptor "below" or "well below" national; any attainment metric more than 10pp below national average
+- A7: Overall absence above 8.6% (>2pp above 6.6% national); persistent absence above 23.3% (>2pp above 21.3% national)
+- A8: Negative in-year balance; revenue reserves below one month's spend; QTS% below comparator average; spend per pupil significantly above comparators without explanation
+- A9: IMD decile 1–3 (high deprivation); mean household income below £35,000; these signal a challenging intake context even if the school performs well
+- B1: Any Parent View metric breached threshold (⚠️ already flagged in the pre-fetched table)
+- B4: Safeguarding concerns; sudden leadership changes; supply teacher reliance; significant negative events
+
+**"green"** — set when the section contains a standout positive result:
+- A2: Overall grade Outstanding or Exceptional (new framework); clean sweep of top sub-grades
+- A4: Section is empty because the school received Outstanding — no improvement requirements
+- A6: Any progress score "well above" national; attainment more than 10pp above national average across core subjects
+- A7: Overall absence well below national (below 5%); persistent absence well below national (below 15%)
+- A8: Healthy reserves (more than 3 months spend); QTS% above comparator average; spend per pupil in line with comparators
+- B1: All Parent View metrics clearly above thresholds; high response count (>100)
+- B3: Exceptionally broad extracurricular programme
+
+**"none"** — everything else. Neutral data, mixed signals, or insufficient data to judge.
+
+## C2 Linkage Rule
+The C2 (Pros and Cons) section MUST reference every section flagged "red" as a concern and every section flagged "green" as a strength. Do not introduce new concerns or strengths in C2 that were not flagged in A1–B5.
 `;
+
 
 const RESPONSE_SCHEMA = {
   type: 'json_schema',
@@ -70,8 +99,9 @@ const RESPONSE_SCHEMA = {
           properties: {
             heading: { type: 'string' },
             body: { type: 'string' },
+            flag: { type: 'string', enum: ['red', 'green', 'none'] },
           },
-          required: ['heading', 'body'],
+          required: ['heading', 'body', 'flag'],
         },
       },
     },
@@ -150,7 +180,7 @@ function parseOpenAIResponse(apiResponse) {
   try {
     parsed = JSON.parse(clean);
   } catch {
-    return { status: 'upstream_invalid_format', httpStatus: 502, title: 'Unexpected upstream response', summary: 'The research provider returned a response that did not match the expected JSON format.', scorecard: [], sections: [{ heading: 'Raw output (first 400 chars)', body: outputText.slice(0, 400) }] };
+    return { status: 'upstream_invalid_format', httpStatus: 502, title: 'Unexpected upstream response', summary: 'The research provider returned a response that did not match the expected JSON format.', scorecard: [], sections: [{ heading: 'Raw output (first 400 chars)', body: outputText.slice(0, 400), flag: 'none' }] };
   }
 
   // Collect web search sources
@@ -180,7 +210,7 @@ function parseOpenAIResponse(apiResponse) {
       .filter(s => !primarySourcesBody || !primarySourcesBody.includes(s.body))
       .map(s => `[${s.heading}](${s.body})`);
     if (secondary.length) {
-      sections.push({ heading: 'Secondary Sources', body: secondary.join('\n') });
+      sections.push({ heading: 'Secondary Sources', body: secondary.join('\n'), flag: 'none' });
     }
   }
 
@@ -312,7 +342,7 @@ export const handler = async (event) => {
         res.status === 429 ? 'The research provider is rate-limiting requests. Try again shortly.' :
         'The research provider could not complete the request.';
       log('research_request', { status: 'upstream_error', httpStatus: res.status, branch: body.branch, model, ms: Date.now() - t0 });
-      return okResponse({ status: 'upstream_error', httpStatus: res.status, title: 'Research provider error', summary, scorecard: [], sections: [{ heading: 'What happened', body: text.slice(0, 400) }] });
+      return okResponse({ status: 'upstream_error', httpStatus: res.status, title: 'Research provider error', summary, scorecard: [], sections: [{ heading: 'What happened', body: text.slice(0, 400), flag: 'none' }] });
     }
 
     apiResponse = await res.json();
@@ -326,7 +356,7 @@ export const handler = async (event) => {
       title: 'Research provider error',
       summary: timedOut ? 'The research provider timed out. Try again.' : 'The research provider could not complete the request.',
       scorecard: [],
-      sections: [{ heading: 'What happened', body: err.message ?? 'Unknown error' }],
+      sections: [{ heading: 'What happened', body: err.message ?? 'Unknown error', flag: 'none' }],
     });
   }
 
