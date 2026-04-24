@@ -984,41 +984,96 @@ export async function getOfstedData(urn) {
 // ─── Ofsted Parent View ───────────────────────────────────────────────────────
 
 /**
- * Fetches aggregated Parent View survey results for a school.
+ * Fetches aggregated Parent View survey results for a school by scraping the
+ * print-friendly results page (no JavaScript required, no auth required).
  *
- * Parent View (parentview.ofsted.gov.uk) publishes the % of parents who agree
- * with each survey question. The API is public and unauthenticated.
+ * Flow:
+ *   1. GET /parent-view-results/urn/{urn}  → 302 → extract Parent View ID
+ *   2. GET /result/{pvId}/current          → 302 → extract year code
+ *   3. GET /result-print/{pvId}/{yearCode} → parse HTML for question % data
  *
- * Returns null for independent schools (not covered by Ofsted Parent View)
- * or when no responses have been submitted.
+ * The print page embeds percentages inside image-charts.com chart URLs
+ * as a `chd=t:SA,A,D,SD,DK` parameter — no JS rendering needed.
+ *
+ * Returns null if the school has no Parent View data or the fetch fails.
  */
 async function fetchParentView(urn) {
   if (!urn) return null;
-  const raw = await safeFetchJson(`https://parentview.ofsted.gov.uk/api/search/result?urn=${urn}`);
-  if (!raw) return null;
 
-  const total = raw.totalResponses ?? raw.total_responses ?? 0;
-  if (!total) return null;
-
-  // Map survey questions to friendly keys by matching question text substrings.
-  // Question wording varies slightly between survey versions.
-  const questions = raw.questions ?? [];
-  const findPct = (...substrings) => {
-    const q = questions.find(q =>
-      substrings.some(s => q.text?.toLowerCase().includes(s.toLowerCase()))
+  try {
+    // ── Step 1: URN → Parent View ID (via redirect, don't follow) ──────────
+    const urnRes = await fetch(
+      `https://parentview.ofsted.gov.uk/parent-view-results/urn/${urn}`,
+      { redirect: 'manual', headers: { 'User-Agent': BROWSER_UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
     );
-    return q?.percentageAgree ?? q?.percentage_agree ?? null;
-  };
+    if (urnRes.status < 300 || urnRes.status >= 400) return null; // no redirect = no PV record
+    const loc1 = urnRes.headers.get('location') ?? '';
+    const pvIdMatch = loc1.match(/\/result\/(\d+)\/current/);
+    if (!pvIdMatch) return null;
+    const pvId = pvIdMatch[1];
 
-  return {
-    totalResponses:  total,
-    wouldRecommend:  findPct('recommend'),
-    childHappy:      findPct('happy at this school', 'happy here'),
-    childSafe:       findPct('feels safe', 'feel safe', 'child is safe'),
-    wellBehaved:     findPct('well behaved', 'good behaviour'),
-    wellLed:         findPct('well led', 'well-led', 'leadership'),
-    concernsHandled: findPct('concerns', 'worries are dealt'),
-  };
+    // ── Step 2: PV ID → year code (via /current redirect) ──────────────────
+    const currentRes = await fetch(
+      `https://parentview.ofsted.gov.uk/parent-view-results/survey/result/${pvId}/current`,
+      { redirect: 'manual', headers: { 'User-Agent': BROWSER_UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
+    );
+    const loc2 = currentRes.headers.get('location') ?? '';
+    const yearMatch = loc2.match(/\/result\/\d+\/(\d+)$/);
+    if (!yearMatch) return null;
+    const yearCode = yearMatch[1];
+
+    // ── Step 3: Fetch print page (no auth needed) ───────────────────────────
+    const html = await safeFetchText(
+      `https://parentview.ofsted.gov.uk/parent-view-results/survey/result-print/${pvId}/${yearCode}`,
+    );
+    if (!html || !html.includes('question-result')) return null;
+
+    // ── Step 4: Parse metadata ──────────────────────────────────────────────
+    const totalMatch   = html.match(/Responses for this school[\s\S]*?<div class="field__item">(\d+)<\/div>/);
+    const yearStrMatch = html.match(/Responses for year[\s\S]*?<div class="field__item">([^<]+)<\/div>/);
+    const total        = totalMatch ? parseInt(totalMatch[1], 10) : 0;
+    const academicYear = yearStrMatch?.[1]?.trim() ?? null;
+
+    // ── Step 5: Parse question results from chart image URLs ────────────────
+    // Pattern: <a ...class="...question-result...">QUESTION TEXT</a>
+    //   …followed shortly by… <img src="https://image-charts.com/...chd=t%3ASA%2CA%2CD%2CSD%2CDK...">
+    // chd values are URL-encoded: %3A = ':', %2C = ','
+    // First two values are Strongly Agree% and Agree% (order: SA, A, D, SD, DK, N/A)
+    const questionBlocks = html.matchAll(
+      /<a[^>]+class="[^"]*question-result[^"]*"[^>]*>([^<]+)<\/a>[\s\S]{0,1200}?chd=t(%3A|:)([\d%2C,]+)/g,
+    );
+
+    const findPct = (text, ...keywords) =>
+      keywords.some(kw => text.toLowerCase().includes(kw.toLowerCase()));
+
+    const questions = {};
+    for (const m of questionBlocks) {
+      const qText  = m[1].replace(/^\d+\.\s*/, '').trim();
+      const chdRaw = decodeURIComponent(m[3]);               // e.g. "76,20,1,2,0,0"
+      const vals   = chdRaw.split(',').map(v => parseInt(v, 10) || 0);
+      const agreeAndAbove = (vals[0] ?? 0) + (vals[1] ?? 0); // SA + A
+
+      if      (findPct(qText, 'happy'))                             questions.childHappy      = agreeAndAbove;
+      else if (findPct(qText, 'feels safe', 'feel safe'))           questions.childSafe       = agreeAndAbove;
+      else if (findPct(qText, 'well behaved'))                      questions.wellBehaved     = agreeAndAbove;
+      else if (findPct(qText, 'bullied'))                           questions.bullyingHandled = agreeAndAbove;
+      else if (findPct(qText, 'communicates', 'aware of what'))     questions.communication   = agreeAndAbove;
+      else if (findPct(qText, 'concerns', 'worries'))               questions.concernsHandled = agreeAndAbove;
+      else if (findPct(qText, 'recommend'))                         questions.wouldRecommend  = vals[0] ?? agreeAndAbove; // Q10 is Yes/No; first value = Yes%
+      else if (findPct(qText, 'best interests'))                    questions.bestInterests   = agreeAndAbove;
+      else if (findPct(qText, 'support', 'learn well'))             questions.rightSupport    = agreeAndAbove;
+      else if (findPct(qText, 'special educational'))               questions.sendSupport     = agreeAndAbove;
+    }
+
+    if (!total && !Object.keys(questions).length) return null;
+
+    glog('govuk_parentview_ok', { urn, pvId, yearCode, academicYear, total });
+    return { totalResponses: total, academicYear, ...questions };
+
+  } catch (err) {
+    glog('govuk_parentview_fail', { urn, error: err.message });
+    return null;
+  }
 }
 
 // ─── School performance data ──────────────────────────────────────────────────
@@ -1871,9 +1926,30 @@ function fmtOfstedSlim(ofsted, isIndependent) {
   addGrade('Personal Development/Wellbeing',ofsted.wellbeing);
   if (ofsted.safeguarding) lines.push(`- Safeguarding: ${ofsted.safeguarding}`);
 
-  // Parent View — data is JS-rendered so we pass the URL for the AI to fetch
-  if (ofsted.parentViewUrl) {
-    lines.push(`- Parent View survey results: ${ofsted.parentViewUrl}`);
+  // Parent View — fetched from print page (no auth, no JS needed)
+  const pv = ofsted.parentView;
+  if (pv) {
+    const yr = pv.academicYear ? ` (${pv.academicYear})` : '';
+    lines.push(`\n**Ofsted Parent View${yr} — ${pv.totalResponses} responses**`);
+    lines.push('| Question | % agree or strongly agree |');
+    lines.push('|---|---:|');
+    const pvRow = (label, val, threshold) => {
+      if (val == null) return;
+      const flag = threshold && val < threshold ? ' ⚠️' : '';
+      lines.push(`| ${label} | ${val}%${flag} |`);
+    };
+    pvRow('Would recommend this school',       pv.wouldRecommend,  80);
+    pvRow('My child is happy here',            pv.childHappy,      null);
+    pvRow('My child feels safe',               pv.childSafe,       88);
+    pvRow('Pupils are well behaved',           pv.wellBehaved,     null);
+    pvRow('Bullying dealt with well',          pv.bullyingHandled, 70);
+    pvRow('School communicates well',          pv.communication,   null);
+    pvRow('Concerns dealt with properly',      pv.concernsHandled, 75);
+    pvRow('Acts in child\'s best interests',   pv.bestInterests,   null);
+    pvRow('Right support to learn',            pv.rightSupport,    null);
+    pvRow('SEND support',                      pv.sendSupport,     null);
+  } else if (ofsted.parentViewUrl) {
+    lines.push(`- Parent View: ${ofsted.parentViewUrl} _(data not retrieved)_`);
   }
 
   // Narrative — cap at 3,000 chars (raised from 1,500 to avoid cutting SEN/SEND commentary).
@@ -2199,13 +2275,14 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Phase 1: Ofsted HTML scrape (fast, no PDF)
       const ofstedBase = identity.isIndependent ? null : await getOfstedData(urn);
 
-      // Phase 2: PDF + performance + financial — all in parallel
-      const [pdfSections, performance, financial] = await Promise.all([
+      // Phase 2: PDF + performance + financial + Parent View — all in parallel
+      const [pdfSections, performance, financial, parentView] = await Promise.all([
         detailed && ofstedBase?.reportUrl
           ? fetchAndParseOfstedPdf(ofstedBase.reportUrl)
           : Promise.resolve(null),
         getPerformanceData(urn),
         getFinancialData(urn),
+        identity.isIndependent ? Promise.resolve(null) : fetchParentView(urn),
       ]);
 
       // Phase 3: area data — postcode comes from DfE CSV (PCODE in phase-specific namespace, e.g. KS2_25)
@@ -2224,6 +2301,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
         achievementDetail:             pdfSections?.achievement             ?? null,
         inclusionDetail:               pdfSections?.inclusion               ?? null,
         nextSteps:                     pdfSections?.nextSteps               ?? null,
+        parentView:                    parentView                           ?? null,
       } : null;
 
       // Bundled local data (zero-latency — no HTTP)

@@ -235,12 +235,11 @@ Table:
 **Run all of the following searches before writing any B section.** Do not write B1–B5 until you have results from each search. Substitute the actual school name and URN from the pre-fetched block — do not use placeholders.
 
 Required searches (run all of them now):
-1. `[school name] ofsted parent view [URN]`
-2. `[school name] admissions [local authority]`
-3. `[school name] open day`
-4. `[school name] clubs activities extracurricular`
-5. `"[school name]" mumsnet OR "school review" [school name]`
-6. `[school name] site:reddit.com`
+1. `[school name] admissions [local authority]`
+2. `[school name] open day`
+3. `[school name] clubs activities extracurricular`
+4. `"[school name]" mumsnet OR "school review" [school name]`
+5. `[school name] site:reddit.com`
 
 Once you have results from all six searches, write each section below.
 
@@ -248,19 +247,21 @@ Once you have results from all six searches, write each section below.
 
 ### B1. Parent View
 
-Using results from search 1: summarise in plain English — 2–3 sentences covering overall parent confidence, safety, bullying response, and communication concerns.
+**Parent View data is pre-fetched — it appears in the Ofsted section of the pre-fetched block under "Ofsted Parent View".** Use it directly. Do not search for it.
 
-Apply these thresholds silently and flag any breach:
-- Bullying handled well: flag if below 70%
-- School responds to concerns: flag if below 75%
-- Would recommend: flag if below 80%
-- Child feels safe: flag if below 88%
+Summarise in 2–3 sentences covering overall parent confidence, safety, bullying response, and communication. Any metric already flagged with ⚠️ in the pre-fetched table is below the threshold — call it out explicitly.
+
+Thresholds (already applied in the pre-fetched table — flag any ⚠️ rows):
+- Would recommend: below 80%
+- Child feels safe: below 88%
+- Bullying dealt with well: below 70%
+- Concerns dealt with properly: below 75%
 
 Note the total number of responses — fewer than 20 means too thin to rely on.
 
-If percentages are not extractable (the site is JavaScript-rendered), say so and give the response count if visible.
+If the pre-fetched block shows no Parent View data, note this and move on — do not search for it.
 
-*"My child is happy" and "My child is taught well" are high at almost all schools — do not cite these as meaningful signals.*
+*"My child is happy" is high at almost all schools — do not cite it as a meaningful signal.*
 
 ---
 
