@@ -149,26 +149,32 @@ async function safeFetchJson(url, extraHeaders = {}) {
 export async function fetchAndParseOfstedPdf(reportUrl) {
   if (!reportUrl) return null;
 
-  let fullText;
-  try {
-    // Fetch the PDF binary with a timeout
-    const res = await fetch(reportUrl, {
-      signal: AbortSignal.timeout(15000),
-      headers: { 'User-Agent': BROWSER_UA },
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const arrayBuf = await res.arrayBuffer();
-    const buffer = Buffer.from(arrayBuf);
+  // pdf-parse v1.1.1 — import from lib directly to bypass the self-test that
+  // tries to open './test/data/05-versions-space.pdf' on module load (fails in Lambda).
+  // Import once outside the retry loop so it isn't re-evaluated on each attempt.
+  const mod = await import('pdf-parse/lib/pdf-parse.js');
+  const pdfParse = mod.default ?? mod;
 
-    // pdf-parse v1.1.1 — import from lib directly to bypass the self-test that
-    // tries to open './test/data/05-versions-space.pdf' on module load (fails in Lambda).
-    const mod = await import('pdf-parse/lib/pdf-parse.js');
-    const pdfParse = mod.default ?? mod;
-    const parsed = await pdfParse(buffer);
-    fullText = parsed?.text ?? null;
-  } catch (err) {
-    glog('govuk_pdf_parse_fail', { url: reportUrl, error: err.message });
-    return null;
+  let fullText;
+  // Retry once: Ofsted CDN is occasionally slow and a single 20-second window
+  // causes ~75% failure rate under light load. Two attempts covers the tail.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(reportUrl, {
+        signal: AbortSignal.timeout(20000),
+        headers: { 'User-Agent': BROWSER_UA },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const arrayBuf = await res.arrayBuffer();
+      const buffer = Buffer.from(arrayBuf);
+      const parsed = await pdfParse(buffer);
+      fullText = parsed?.text ?? null;
+      if (fullText) break; // success — don't retry
+    } catch (err) {
+      glog('govuk_pdf_attempt_fail', { url: reportUrl, attempt, error: err.message });
+      if (attempt === 2) return null; // both attempts failed
+      await new Promise(r => setTimeout(r, 500)); // brief pause before retry
+    }
   }
 
   if (!fullText) { glog('govuk_pdf_empty', { url: reportUrl }); return null; }
