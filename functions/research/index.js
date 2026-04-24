@@ -382,27 +382,6 @@ export const handler = async (event) => {
     }
   }
 
-  // Inject Part A / B / C divider headers automatically so the model doesn't
-  // have to produce them and they're always present and correctly placed.
-  if (result.sections?.length) {
-    const PART_HEADERS = {
-      A: 'Part A — Official Record',
-      B: 'Part B — Independent Research',
-      C: 'Part C — Verdict & Synthesis',
-    };
-    const divider = (label) => ({ heading: label, body: '', flag: 'none', _isDivider: true });
-    const out = [];
-    let lastPart = null;
-    for (const s of result.sections) {
-      const partLetter = /^([ABC])\d/.exec(s.heading)?.[1] ?? null;
-      if (partLetter && partLetter !== lastPart) {
-        out.push(divider(PART_HEADERS[partLetter]));
-        lastPart = partLetter;
-      }
-      out.push(s);
-    }
-    result.sections = out;
-  }
 
   const ms = Date.now() - t0;
 
