@@ -339,6 +339,13 @@
   function renderSections(sections) {
     answerSections.replaceChildren();
     (sections || []).forEach(function (section) {
+      if (section._isDivider) {
+        const div = document.createElement("div");
+        div.className = "part-divider";
+        div.textContent = section.heading || "";
+        answerSections.appendChild(div);
+        return;
+      }
       const flag = section.flag || "none";
 
       const article = document.createElement("article");

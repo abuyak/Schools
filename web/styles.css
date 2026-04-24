@@ -319,6 +319,18 @@ input[type="email"]:focus,
   overflow: hidden;
 }
 
+/* ── Part dividers (Part A / B / C headers) ────────────────────────── */
+.part-divider {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888;
+  margin: 2rem 0 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
 /* ── Flag variants ─────────────────────────────────────────────────── */
 .answer-section--red {
   border-left: 4px solid #d93025;
