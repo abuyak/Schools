@@ -227,6 +227,11 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
       // bullets (table/image layout in some PDFs).
       return raw
         .replace(/^\s*\(Information for the school[^)]*\)\s*/i, '')
+        // Replace PDF Private Use Area bullet glyphs (e.g. \uf06e from Wingdings/Symbol)
+        // with a plain hyphen-space so output is readable.
+        .replace(/[\uE000-\uF8FF]/g, '- ')
+        // Clean up any doubled bullet markers that result
+        .replace(/^- - /gm, '- ')
         .trim() || null;
     })(),
   };
