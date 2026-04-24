@@ -9,10 +9,13 @@
  *   - Ofsted / infotap — inspection ratings (state schools)
  *   - compare-school-performance — key performance metrics
  *   - financial-benchmarking-and-insights-tool — income / expenditure data
+ *   - local-data.js — bundled DfE data (ethnicity index, zero-latency)
  *
  * All failures are non-fatal. Missing data is noted in the output block so
  * the AI knows to fetch it via web search rather than silently omitting it.
  */
+
+import { getSchoolEthnicity } from './local-data.js';
 
 const FETCH_TIMEOUT_MS      =  8000;  // standard HTML / JSON fetches
 const FETCH_TIMEOUT_LONG_MS = 20000;  // binary / ZIP downloads (FBIT census, DfE performance)
@@ -1970,8 +1973,22 @@ function fmtAreaDataSlim(area) {
 // Targets ~1,800 tokens vs ~5,700 for the detailed block (-68%).
 // The detailed block is still produced by the debug script for human review.
 
+function fmtSchoolEthnicitySlim(e) {
+  if (!e) return '- _Not in DfE index_';
+  const parts = [
+    `White ${e.w}%`,
+    `Mixed ${e.m}%`,
+    `Asian ${e.a}%`,
+    `Black ${e.b}%`,
+    e.c ? `Chinese ${e.c}%` : null,
+    e.o ? `Other ${e.o}%` : null,
+    e.ns ? `Not stated ${e.ns}%` : null,
+  ].filter(Boolean);
+  return `- Pupil ethnicity (DfE ${e.yr}): ${parts.join(' · ')}`;
+}
+
 function buildSlimBlock(school) {
-  const { input, identity, ofsted, performance, financial, area } = school;
+  const { input, identity, ofsted, performance, financial, area, schoolEthnicity } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
 
@@ -2009,6 +2026,9 @@ ${fmtFinancial(financial)}
 ### Inspection Outcomes (Ofsted)
 ${fmtOfstedSlim(ofsted, identity?.isIndependent ?? false)}
 
+### School Pupil Ethnicity (DfE Census)
+${fmtSchoolEthnicitySlim(schoolEthnicity)}
+
 ### Surrounding Area
 ${fmtAreaDataSlim(area)}
 ---`.trim();
@@ -2017,7 +2037,7 @@ ${fmtAreaDataSlim(area)}
 // ─── Build Branch 1 block (detailed — debug script / human report only) ──────
 
 function buildDetailedBlock(school) {
-  const { input, identity, ofsted, performance, financial, area } = school;
+  const { input, identity, ofsted, performance, financial, area, schoolEthnicity } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
 
@@ -2070,6 +2090,9 @@ ${fmtFinancial(financial)}
 
 ### Inspection Outcomes (Ofsted)
 ${fmtOfsted(ofsted, identity?.isIndependent ?? false)}
+
+### School Pupil Ethnicity (DfE Census)
+${fmtSchoolEthnicitySlim(schoolEthnicity)}
 
 ### Surrounding Area (postcodes.io / ONS / Land Registry)
 ${fmtAreaData(area)}
@@ -2196,7 +2219,10 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
         nextSteps:                     pdfSections?.nextSteps               ?? null,
       } : null;
 
-      return { input: name, identity, ofsted, performance, financial, area };
+      // Bundled local data (zero-latency — no HTTP)
+      const schoolEthnicity = urn ? getSchoolEthnicity(urn) : null;
+
+      return { input: name, identity, ofsted, performance, financial, area, schoolEthnicity };
     })
   );
 

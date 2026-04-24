@@ -1,0 +1,89 @@
+# refresh-data-reminder.yml
+#
+# Annual reminder to update bundled DfE datasets.
+#
+# DfE publishes "Schools, pupils and their characteristics" each June for the
+# preceding January census. This workflow fires on 1 June each year, opens a
+# GitHub Issue, and assigns it so someone acts on it before the summer break.
+#
+# To update a dataset manually:
+#   node scripts/build-ethnicity-index.mjs
+#   git add functions/research/sources/dfe-school-ethnicity.json
+#   git commit -m "chore: update DfE school ethnicity index <year>"
+#
+# ── What needs updating ───────────────────────────────────────────────────────
+# Dataset                        | Build script                          | Frequency
+# -------------------------------|---------------------------------------|----------
+# DfE school ethnicity index     | scripts/build-ethnicity-index.mjs    | Annual (June)
+# NATIONAL_AVG in govuk.js       | Manual edit in govuk.js              | Annual (Nov — KS2/KS4 provisional)
+
+name: Annual data refresh reminder
+
+on:
+  schedule:
+    # 09:00 UTC on 1 June each year
+    - cron: '0 9 1 6 *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run — log only, do not open issue'
+        required: false
+        default: 'false'
+
+jobs:
+  open-reminder-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Open reminder issue
+        if: github.event.inputs.dry_run != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const year    = new Date().getFullYear();
+            const prevAY  = `${year - 1}/${String(year).slice(-2)}`;   // e.g. 2025/26
+            const nextAY  = `${year}/${String(year + 1).slice(-2)}`;   // e.g. 2026/27
+
+            await github.rest.issues.create({
+              owner:  context.repo.owner,
+              repo:   context.repo.repo,
+              title:  `chore: update bundled DfE datasets for ${nextAY}`,
+              labels: ['data-refresh', 'chore'],
+              body: [
+                `## Annual DfE data refresh`,
+                ``,
+                `DfE has likely published new data for the **${nextAY}** academic year. Update the bundled datasets before they fall a year out of date.`,
+                ``,
+                `### Checklist`,
+                ``,
+                `- [ ] **School ethnicity index** — check for new release at:`,
+                `  https://explore-education-statistics.service.gov.uk/find-statistics/school-pupils-and-their-characteristics`,
+                `  If a new release is available, update \`SOURCE_URL\` and \`ACADEMIC_YEAR\` in \`scripts/build-ethnicity-index.mjs\`, then run:`,
+                `  \`\`\``,
+                `  node scripts/build-ethnicity-index.mjs`,
+                `  \`\`\``,
+                `  Commit: \`git add functions/research/sources/dfe-school-ethnicity.json\``,
+                ``,
+                `- [ ] **KS2 national averages** — published ~November by DfE (provisional):`,
+                `  https://explore-education-statistics.service.gov.uk/find-statistics/key-stage-2-attainment`,
+                `  Update \`NATIONAL_AVG.KS2\` in \`functions/research/govuk.js\``,
+                ``,
+                `- [ ] **KS4 national averages** — published ~October by DfE (provisional):`,
+                `  https://explore-education-statistics.service.gov.uk/find-statistics/key-stage-4-attainment`,
+                `  Update \`NATIONAL_AVG.KS4\` in \`functions/research/govuk.js\``,
+                ``,
+                `- [ ] **Absence national averages** — published ~July (final for prior year):`,
+                `  https://explore-education-statistics.service.gov.uk/find-statistics/pupil-absence-in-schools-in-england`,
+                `  Update \`NATIONAL_AVG.ABSENCE\` in \`functions/research/govuk.js\``,
+                ``,
+                `### After updating`,
+                `Deploy: \`sam deploy --no-confirm-changeset\``,
+              ].join('\n'),
+            });
+
+      - name: Dry run log
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "Dry run — would have opened a data refresh issue. No issue created."

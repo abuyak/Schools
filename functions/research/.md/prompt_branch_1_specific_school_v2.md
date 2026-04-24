@@ -150,7 +150,19 @@ Table with full names, not abbreviations:
 | Special Educational Needs (SEN) support | | ~13% |
 | Education, Health and Care (EHC) plans | | ~4.5% |
 
-**Observations:** flag anything notably above or below average. Note whether a resourced provision or SEND unit is confirmed.
+**Pupil ethnicity** (from the pre-fetched "School Pupil Ethnicity" block — DfE annual census):
+
+| Ethnic group | % of pupils |
+|---|---:|
+| White | |
+| Mixed | |
+| Asian | |
+| Black | |
+| Chinese | |
+| Other | |
+| Not stated | |
+
+**Observations:** flag anything notably above or below average. Note whether a resourced provision or SEND unit is confirmed. Note any significant difference between pupil ethnicity and the surrounding area ethnicity (A9).
 
 *Primary average roll ~280, secondary ~1,000.*
 
