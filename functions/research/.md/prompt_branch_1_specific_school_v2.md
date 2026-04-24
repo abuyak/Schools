@@ -71,7 +71,7 @@ If you cannot verify a point from reliable evidence, say so directly. Do not smo
 
 ---
 
-### Quick Take
+### **Quick Take**
 
 One paragraph. State whether this school looks strong, for whom, and the single most important watchout. Include a one-line fit verdict if a child description was provided.
 
@@ -83,7 +83,7 @@ One paragraph. State whether this school looks strong, for whom, and the single 
 
 ---
 
-### A1. School Identity
+### **A1. School Identity**
 
 Show as a table:
 
@@ -101,7 +101,7 @@ One sentence confirming the right school, or flagging ambiguity.
 
 ---
 
-### A2. Ofsted Inspection Grades
+### **A2. Ofsted Inspection Grades**
 
 State: inspection date, framework used, safeguarding status (Met / Not Met).
 
@@ -113,7 +113,7 @@ State: inspection date, framework used, safeguarding status (Met / Not Met).
 
 ---
 
-### A3. What It's Like to Be a Pupil
+### **A3. What It's Like to Be a Pupil**
 
 **Do not quote verbatim.** Summarise the Ofsted inspector narrative from the pre-fetched block in 4–6 bullet points covering:
 - Overall atmosphere and culture
@@ -126,7 +126,7 @@ State: inspection date, framework used, safeguarding status (Met / Not Met).
 
 ---
 
-### A4. What the School Needs to Improve
+### **A4. What the School Needs to Improve**
 
 The pre-fetched block includes the inspectors' "What the school needs to do" or "Next steps" section, extracted directly from the Ofsted PDF. It appears under the heading **"What the school needs to improve"** in the pre-fetched block.
 
@@ -138,7 +138,7 @@ If the section is genuinely absent from the pre-fetched block (not merely format
 
 ---
 
-### A5. Pupil Census
+### **A5. Pupil Census**
 
 Table with full names, not abbreviations:
 
@@ -168,7 +168,7 @@ Table with full names, not abbreviations:
 
 ---
 
-### A6. Academic Performance
+### **A6. Academic Performance**
 
 Table with full metric names — no unexplained abbreviations:
 
@@ -184,7 +184,7 @@ Include every row: attainment by subject, higher standard, progress scores with 
 
 ---
 
-### A7. Absence
+### **A7. Absence**
 
 | Metric | School | National avg |
 |---|---:|---:|
@@ -195,7 +195,7 @@ Include every row: attainment by subject, higher standard, progress scores with 
 
 ---
 
-### A8. Financial Position and Staffing
+### **A8. Financial Position and Staffing**
 
 Table:
 
@@ -213,7 +213,7 @@ Table:
 
 ---
 
-### A9. Area Profile
+### **A9. Area Profile**
 
 | Metric | Value |
 |---|---|
@@ -245,7 +245,7 @@ Once you have results from all six searches, write each section below.
 
 ---
 
-### B1. Parent View
+### **B1. Parent View**
 
 **Parent View data is pre-fetched — it appears in the Ofsted section of the pre-fetched block under "Ofsted Parent View".** Use it directly. Do not search for it.
 
@@ -265,7 +265,7 @@ If the pre-fetched block shows no Parent View data, note this and move on — do
 
 ---
 
-### B2. Admissions
+### **B2. Admissions**
 
 Using results from searches 2 and 3:
 
@@ -283,7 +283,7 @@ For independent schools: add fees, bursaries, scholarship details.
 
 ---
 
-### B3. Extracurricular
+### **B3. Extracurricular**
 
 Using results from search 4:
 
@@ -298,7 +298,7 @@ Report:
 
 ---
 
-### B4. Community Sentiment
+### **B4. Community Sentiment**
 
 Using results from searches 5 and 6:
 
@@ -311,7 +311,7 @@ If no substantive school-specific discussion was found, say so clearly.
 
 ---
 
-### B5. Destinations
+### **B5. Destinations**
 
 **Primary schools:** search `[school name] Year 6 secondary destinations` and report the top secondary schools pupils move to.
 
@@ -325,7 +325,7 @@ Note clearly if no destinations data is published.
 
 ---
 
-### C1. School Character — Who Thrives Here
+### **C1. School Character — Who Thrives Here**
 
 Based on everything in Parts A and B, assess what kind of child and family this school suits. Score each dimension as **Strong**, **Present**, or **Not evident**:
 
@@ -344,7 +344,7 @@ Then write 2–3 sentences on which types of child are most likely to thrive, an
 
 ---
 
-### C2. Pros and Cons
+### **C2. Pros and Cons**
 
 Write two clear lists — honest, direct, no hedging.
 
@@ -358,7 +358,7 @@ If a child description was provided, add one sentence at the end on overall fit.
 
 ---
 
-### C3. Best Next Moves
+### **C3. Best Next Moves**
 
 - Visit: open day date or how to book
 - Check: admissions deadline and relevant criteria
@@ -366,7 +366,7 @@ If a child description was provided, add one sentence at the end on overall fit.
 
 ---
 
-### C4. Sources
+### **C4. Sources**
 
 Short source list. Do not link to local prompt or data files.
 
