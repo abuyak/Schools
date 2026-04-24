@@ -128,13 +128,13 @@ State: inspection date, framework used, safeguarding status (Met / Not Met).
 
 ### A4. What the School Needs to Improve
 
-The pre-fetched block includes the inspectors' "What the school needs to do" or "Next steps" section, extracted directly from the Ofsted PDF.
+The pre-fetched block includes the inspectors' "What the school needs to do" or "Next steps" section, extracted directly from the Ofsted PDF. It appears under the heading **"What the school needs to improve"** in the pre-fetched block.
 
-Quote every bullet **verbatim** — do not soften or paraphrase.
+**Reproduce every improvement requirement verbatim — exactly as written, whether formatted as bullet points, numbered items, or prose paragraphs.** Do not soften, paraphrase, or summarise. Do not omit any requirement.
 
-If the section is empty or absent, it means either: (a) the school received Outstanding and no formal improvement bullets were issued, or (b) the PDF extraction did not capture that section. In either case, say which applies and link to the full Ofsted report PDF so parents can check directly.
+If the section is genuinely absent from the pre-fetched block (not merely formatted differently), say so and link to the full Ofsted report PDF so parents can check directly.
 
-**Observations:** flag any bullet that signals a serious or systemic concern.
+**Observations:** flag any requirement that signals a serious or systemic concern.
 
 ---
 

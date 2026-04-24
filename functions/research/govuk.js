@@ -196,12 +196,19 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
 
     // ── Improvement flags ─────────────────────────────────────────────────
     // "Next steps" is an explicit section in the new Nov-2025 format.
-    // Older reports embed improvements in the narrative — nextSteps will be null for those.
-    nextSteps: extractSection(text, [
-      /^next\s+steps\s*$/im,
-      /^what\s+does\s+the\s+school\s+need\s+to\s+do\s+to\s+improve/im,
-      /^areas\s+for\s+improvement\s*$/im,
-    ]),
+    // Older reports use "What does the school need to do to improve?" or similar.
+    // Strip Ofsted boilerplate preamble that precedes the actual improvement points.
+    nextSteps: (() => {
+      const raw = extractSection(text, [
+        /^next\s+steps\s*$/im,
+        /^what\s+does\s+the\s+school\s+need\s+to\s+do\s+to\s+improve/im,
+        /^areas\s+for\s+improvement\s*$/im,
+      ]);
+      if (!raw) return null;
+      // Remove the "(Information for the school and appropriate authority)" preamble
+      // that Ofsted prepends to this section — it is boilerplate, not an improvement point.
+      return raw.replace(/^\s*\(Information for the school[^)]*\)\s*/i, '').trim() || null;
+    })(),
   };
 }
 
