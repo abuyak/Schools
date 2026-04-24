@@ -180,7 +180,9 @@ Extract national averages from _(nat: X%)_ inline tags → National avg column. 
 
 Include every row: attainment by subject, higher standard, progress scores with confidence intervals and DfE descriptor (well above / above / average / below / well below), disadvantaged attainment, gender gap, cohort size, absent-from-tests %.
 
-**Verdict:** 2–3 sentences on overall strength, trends, and reliability (flag if cohort below 30 pupils or absent-from-tests above 5%).
+If the pre-fetched block contains a **Key Stage 5 / 16–18** section (sixth form), include it as a separate sub-table under the KS4 table. Interpret A-level grades (A*, A, A-, B+, B, B-, etc.), AAB+ in facilitating subjects (competitive university benchmark), and progression to higher education. Do not omit this section for schools with sixth forms.
+
+**Verdict:** 2–3 sentences on overall strength, trends, and reliability (flag if cohort below 30 pupils or absent-from-tests above 5%). For schools with a sixth form, comment on sixth form performance separately.
 
 ---
 
@@ -243,7 +245,7 @@ Required searches (run all of them now):
 4. `"[school name]" mumsnet OR "school review" [school name]`
 5. `[school name] site:reddit.com`
 
-Once you have results from all six searches, write each section below.
+Once you have results from all five searches, write each section below.
 
 ---
 
@@ -251,9 +253,9 @@ Once you have results from all six searches, write each section below.
 
 **Parent View data is pre-fetched — it appears in the Ofsted section of the pre-fetched block under "Ofsted Parent View".** Use it directly. Do not search for it.
 
-Summarise in 2–3 sentences covering overall parent confidence, safety, bullying response, and communication. Any metric already flagged with ⚠️ in the pre-fetched table is below the threshold — call it out explicitly.
+**Reproduce the full Parent View table exactly as it appears in the pre-fetched block** (all rows, percentages, and any ⚠️ flags). Then add 2–3 sentences of commentary calling out any ⚠️ flagged rows explicitly — do not bury them.
 
-Thresholds (already applied in the pre-fetched table — flag any ⚠️ rows):
+Thresholds (already applied in the pre-fetched table — ⚠️ rows are already marked):
 - Would recommend: below 80%
 - Child feels safe: below 88%
 - Bullying dealt with well: below 70%

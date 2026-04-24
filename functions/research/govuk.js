@@ -61,6 +61,15 @@ const NATIONAL_AVG = {
     PTEBACC_E_PTQ_EE:  24.7,  // % entering EBacc
     P8MEA_FSM6CLA1A:  -0.58,  // Progress 8 for disadvantaged pupils
   },
+  // KS5 / 16–18 attainment 2024/25 — England state-funded schools/colleges
+  // Source: https://www.compare-school-performance.service.gov.uk/download-data (16 to 18 tab)
+  // avgGrade: national average A-level grade (England state-funded, 2024/25)
+  KS5: {
+    avgGrade:  'B- (35 pts)',   // England state-funded average A-level grade
+    retained:  92.5,            // % retained to end of course
+    advMaths:  30.0,            // % achieving advanced maths
+    aab2fac:   null,            // % AAB in 2 facilitating subjects — national not published inline
+  },
   // Absence 2023/24 (most recent final data, published Jul 2024)
   ABSENCE: {
     PERCTOT:    6.6,   // overall absence %
@@ -1083,14 +1092,25 @@ async function fetchParentView(urn) {
  * download endpoint. Falls back to scraping the school profile page.
  */
 export async function getPerformanceData(urn) {
-  const text = await safeFetchText(
-    `${COMPARE_PERF}/download-school-data?urn=${urn}`,
-    { Accept: 'text/csv,text/html,*/*' },
-  );
-  if (!text) { glog('govuk_perf_fail', { urn }); return null; }
+  // Fetch both the primary/secondary download AND the 16-18 download in parallel.
+  // The default URL returns KS2/KS4 for state schools; post-16 data is on a separate endpoint.
+  const [mainText, post16Text] = await Promise.all([
+    safeFetchText(`${COMPARE_PERF}/download-school-data?urn=${urn}`, { Accept: 'text/csv,text/html,*/*' }),
+    safeFetchText(`${COMPARE_PERF}/download-school-data?urn=${urn}&type=16to18`, { Accept: 'text/csv,text/html,*/*' }),
+  ]);
 
-  const result = parsePerformanceCsv(text);
-  if (result) { glog('govuk_perf_ok', { urn }); return result; }
+  if (!mainText && !post16Text) { glog('govuk_perf_fail', { urn }); return null; }
+
+  const main   = mainText   ? parsePerformanceCsv(mainText)   : null;
+  const post16 = post16Text ? parsePerformanceCsv(post16Text) : null;
+
+  // Merge: post-16 namespaces are added to the main result (KS5_25, KS5_STUDEST_25, etc.)
+  const merged = { ...(main ?? {}), ...(post16 ?? {}) };
+
+  if (Object.keys(merged).length) {
+    glog('govuk_perf_ok', { urn, namespaces: Object.keys(merged) });
+    return merged;
+  }
 
   glog('govuk_perf_no_data', { urn });
   return null;
@@ -1865,6 +1885,95 @@ function fmtAcademicResultsSlim(perf, phase) {
       if (ebacc) lines.push(`| EBacc entry | ${ebacc} _(nat: ${nat4.PTEBACC_E_PTQ_EE}%)_ |`);
       if (cohortDisadv) lines.push(`| Disadvantaged share of KS4 cohort | ${cohortDisadv} |`);
       if (p8dis) lines.push(`| Progress 8 — disadvantaged | ${p8dis} _(nat: ${nat4.P8MEA_FSM6CLA1A})_ |`);
+    }
+  }
+
+  // ── KS5 / 16–18 (sixth form) ──────────────────────────────────────────────
+  // Data is in KS5_25 namespace (attainment) and KS5_STUDEST_25 (destinations).
+  // Variable names verified from DfE CSV — do not rename without re-checking.
+  const isPost16    = v('ISPOST16');
+  const studTotal   = v('TALLPUP_1618');              // total 16-18 students (all quals)
+  const alevPup     = v('TALLPUP_ALEV_1618');         // A-level students
+  const avgGradeStr = v('TALLPPEGRD_ALEV_1618');      // e.g. "A-"
+  const avgGradePts = v('TALLPPE_ALEV_1618');         // e.g. "47.33"
+  const avgGradePts23= v('TALLPPE_ALEV_1618_23');     // prior year (2022/23)
+  const avgGradePts24= v('TALLPPE_ALEV_1618_24');     // prior year (2023/24)
+  const best3Grd    = v('TB3PTSE_GRD');               // average best-3 grade letter
+  const best3Pts    = v('TB3PTSE');                   // average best-3 points
+  const aab2fac     = v('PTAAB_2FAC');                // "63.2%" — % AAB in ≥2 facilitating subj.
+  const advMaths    = v('L3M_PER');                   // "83.5%" — % achieving adv. maths qual.
+  const retained    = v('PT_RETAINED_ALEV_RET');      // "99.1%" — % retained to end of course
+  // Progress (VA) score — DfE uses VA_INS_ALEV, confidence intervals LCI/UCI
+  const progScore   = v('VA_INS_ALEV');
+  const progLo      = v('LCI_INS_ALEV');
+  const progHi      = v('UCI_INS_ALEV');
+  const progBandNum = v('PROGRESS_BAND_ALEV');        // 1=well above … 5=well below
+  // Destinations (KS5_STUDEST_25)
+  const toHE        = v('TOT_HEPER');                 // "71%" — % to higher education
+  const allProgress = v('ALL_PROGRESSED');            // "96%" — % to any sustained dest.
+  // Disadvantaged
+  const disCount    = v('TALLPUP_ALEV_1618_DIS');
+  const avgGradeDisStr = v('TALLPPEGRD_ALEV_DIS');    // "B+"
+  const avgGradeDisPts = v('TALLPPE_ALEV_1618_DIS');  // "41.95"
+  const progScoreDis= v('VA_INS_ALEV_DIS');
+  const progLoDis   = v('LCI_INS_ALEV_DIS');
+  const progHiDis   = v('UCI_INS_ALEV_DIS');
+
+  if (isPost16 === '1' || alevPup || avgGradeStr || toHE) {
+    const nat5 = NATIONAL_AVG.KS5 ?? {};
+
+    // Progress band number → readable label (DfE 1–5 scale, same as KS2/KS4)
+    const PROG_BAND = { '1': 'well above average', '2': 'above average', '3': 'average', '4': 'below average', '5': 'well below average' };
+    const fmtProg5 = (score, lo, hi, bandNum) => {
+      if (!score) return null;
+      let s = score;
+      if (lo && hi) s += ` (CI: ${lo} to ${hi})`;
+      if (bandNum)  s += ` — ${PROG_BAND[String(bandNum)] ?? bandNum}`;
+      return s;
+    };
+
+    // 3-year trend in grade points
+    const pts23 = avgGradePts23, pts24 = avgGradePts24, pts25 = avgGradePts;
+    const trendPts = [pts23, pts24, pts25].filter(Boolean);
+    const trendStr = trendPts.length > 1 ? ` _(3-yr pts: ${trendPts.join(' → ')})_` : '';
+
+    lines.push('');
+    lines.push('**Key Stage 5 / 16–18 (2024/25)**');
+    lines.push('| Metric | School | National avg |');
+    lines.push('|---|---|---|');
+    if (studTotal)   lines.push(`| Total 16–18 students | ${studTotal} | — |`);
+    if (alevPup)     lines.push(`| A-level students | ${alevPup} | — |`);
+
+    // Grade — combine letter + points + 3-yr trend
+    if (avgGradeStr || avgGradePts) {
+      const gradeCell = [avgGradeStr, avgGradePts ? `(${avgGradePts} pts)` : null].filter(Boolean).join(' ') + trendStr;
+      lines.push(`| Average A-level grade | ${gradeCell} | ${nat5.avgGrade ?? '—'} |`);
+    }
+
+    const prog5 = fmtProg5(progScore, progLo, progHi, progBandNum);
+    if (prog5)       lines.push(`| A-level progress score (VA) | ${prog5} | 0 |`);
+    if (best3Grd || best3Pts) {
+      const b3 = [best3Grd, best3Pts ? `(${best3Pts} pts)` : null].filter(Boolean).join(' ');
+      lines.push(`| Average best 3 A-level grades | ${b3} | — |`);
+    }
+    if (aab2fac)     lines.push(`| AAB+ in ≥2 facilitating subjects | ${aab2fac} | ${nat5.aab2fac ?? '—'} |`);
+    if (advMaths)    lines.push(`| Achieving advanced level maths | ${advMaths} | ${nat5.advMaths != null ? `${nat5.advMaths}%` : '—'} |`);
+    if (retained)    lines.push(`| Students retained to end of course | ${retained} | ${nat5.retained != null ? `${nat5.retained}%` : '—'} |`);
+    if (toHE)        lines.push(`| Progressed to higher education | ${toHE} | — |`);
+    if (allProgress) lines.push(`| Sustained positive destination | ${allProgress} | — |`);
+
+    // Disadvantaged
+    const disGrade = [avgGradeDisStr, avgGradeDisPts ? `(${avgGradeDisPts} pts)` : null].filter(Boolean).join(' ');
+    const disProg5 = fmtProg5(progScoreDis, progLoDis, progHiDis, null);
+    if (disCount || disGrade || disProg5) {
+      lines.push('');
+      lines.push('**KS5 Disadvantaged students**');
+      lines.push('| Metric | Disadvantaged | Non-disadvantaged |');
+      lines.push('|---|---|---|');
+      const ndStr = v('TALLPPEGRD_ALEV_NOTDIS') ? `${v('TALLPPEGRD_ALEV_NOTDIS')} (${v('TALLPPE_ALEV_1618_NOTDIS') ?? '—'} pts)` : '—';
+      if (disCount)   lines.push(`| A-level students | ${disCount} | ${v('TALLPUP_ALEV_1618_NOTDIS') ?? '—'} |`);
+      if (disGrade)   lines.push(`| Average A-level grade | ${disGrade} | ${ndStr} |`);
+      if (disProg5)   lines.push(`| Progress score (VA) | ${disProg5} | — |`);
     }
   }
 
