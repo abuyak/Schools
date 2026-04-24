@@ -63,12 +63,13 @@ const NATIONAL_AVG = {
   },
   // KS5 / 16–18 attainment 2024/25 — England state-funded schools/colleges
   // Source: https://www.compare-school-performance.service.gov.uk/download-data (16 to 18 tab)
-  // avgGrade: national average A-level grade (England state-funded, 2024/25)
   KS5: {
-    avgGrade:  'B- (35 pts)',   // England state-funded average A-level grade
-    retained:  92.5,            // % retained to end of course
-    advMaths:  30.0,            // % achieving advanced maths
-    aab2fac:   null,            // % AAB in 2 facilitating subjects — national not published inline
+    avgGrade:      'B- (35 pts)',   // England state-funded average A-level grade (all students)
+    avgGradeDis:   'C+ (32 pts)',   // England state-funded average A-level grade (disadvantaged)
+    avgGradeNonDis:'B- (36 pts)',   // England state-funded average A-level grade (non-disadvantaged)
+    retained:      92.5,            // % retained to end of course
+    advMaths:      30.0,            // % achieving advanced maths
+    aab2fac:       null,            // % AAB in 2 facilitating subjects — national not published inline
   },
   // Absence 2023/24 (most recent final data, published Jul 2024)
   ABSENCE: {
@@ -220,12 +221,12 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
         /^areas\s+for\s+improvement\s*$/im,
       ]);
       if (!raw) return null;
-      // Strip Ofsted boilerplate preambles that precede the actual improvement points.
-      // These appear in older report formats and are not improvement requirements themselves.
+      // Strip only the Ofsted legal/admin preamble — not the content header.
+      // "The school needs to do the following:" is kept because it signals that
+      // improvement requirements exist, even when pdf-parse cannot extract the
+      // bullets (table/image layout in some PDFs).
       return raw
         .replace(/^\s*\(Information for the school[^)]*\)\s*/i, '')
-        .replace(/^\s*The school needs to do the following:\s*/i, '')
-        .replace(/^\s*The school must do the following:\s*/i, '')
         .trim() || null;
     })(),
   };
@@ -1921,7 +1922,7 @@ function fmtAcademicResultsSlim(perf, phase) {
   // Destinations (KS5_STUDEST_25)
   const toHE        = v('TOT_HEPER');                 // "71%" — % to higher education
   const allProgress = v('ALL_PROGRESSED');            // "96%" — % to any sustained dest.
-  // Disadvantaged
+  // Disadvantaged A-level attainment (variable names confirmed from DfE CSV)
   const disCount    = v('TALLPUP_ALEV_1618_DIS');
   const avgGradeDisStr = v('TALLPPEGRD_ALEV_DIS');    // "B+"
   const avgGradeDisPts = v('TALLPPE_ALEV_1618_DIS');  // "41.95"
@@ -1978,12 +1979,14 @@ function fmtAcademicResultsSlim(perf, phase) {
     if (disCount || disGrade || disProg5) {
       lines.push('');
       lines.push('**KS5 Disadvantaged students**');
-      lines.push('| Metric | Disadvantaged | Non-disadvantaged |');
-      lines.push('|---|---|---|');
-      const ndStr = v('TALLPPEGRD_ALEV_NOTDIS') ? `${v('TALLPPEGRD_ALEV_NOTDIS')} (${v('TALLPPE_ALEV_1618_NOTDIS') ?? '—'} pts)` : '—';
-      if (disCount)   lines.push(`| A-level students | ${disCount} | ${v('TALLPUP_ALEV_1618_NOTDIS') ?? '—'} |`);
-      if (disGrade)   lines.push(`| Average A-level grade | ${disGrade} | ${ndStr} |`);
-      if (disProg5)   lines.push(`| Progress score (VA) | ${disProg5} | — |`);
+      lines.push('| Metric | Disadvantaged | Non-disadvantaged | National avg (dis.) |');
+      lines.push('|---|---|---|---|');
+      const ndGradeStr = v('TALLPPEGRD_ALEV_NOTDIS');
+      const ndPtsStr   = v('TALLPPE_ALEV_1618_NOTDIS');
+      const ndStr = ndGradeStr ? `${ndGradeStr}${ndPtsStr ? ` (${ndPtsStr} pts)` : ''}` : '—';
+      if (disCount)  lines.push(`| A-level students | ${disCount} | ${v('TALLPUP_ALEV_1618_NOTDIS') ?? '—'} | — |`);
+      if (disGrade)  lines.push(`| Average A-level grade | ${disGrade} | ${ndStr} | ${nat5.avgGradeDis ?? '—'} |`);
+      if (disProg5)  lines.push(`| Progress score (VA) | ${disProg5} | — | 0 |`);
     }
   }
 
@@ -2458,13 +2461,38 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
     if (ofsted?.nextSteps)                                   flags['A4. What the School Needs to Improve'] = 'red';
     else if (/outstanding/i.test(overall))                   flags['A4. What the School Needs to Improve'] = 'green';
 
-    // A7 — absence (KS4 schools use PERCTOT in ABS namespace)
+    // A6 — academic performance (KS4 attainment vs national, or KS5 if no KS4 data)
     const allRows = Object.values(performance ?? {}).flat();
     const vv = (code) => allRows.find(r => r.variable === code)?.value ?? null;
+    const att8 = parseFloat(vv('ATT8SCR'));
+    const p8   = parseFloat(vv('P8MEA'));
+    const rwm  = parseFloat(vv('PTRWM_EXP'));
+    const nat4 = NATIONAL_AVG.KS4;
+    const nat2 = NATIONAL_AVG.KS2;
+    const att8Above = !isNaN(att8) && att8 > nat4.ATT8SCR + 10;
+    const att8Below = !isNaN(att8) && att8 < nat4.ATT8SCR - 10;
+    const p8Above   = !isNaN(p8) && p8 > 0.5;
+    const p8Below   = !isNaN(p8) && p8 < -0.5;
+    const rwmAbove  = !isNaN(rwm) && rwm > nat2.PTRWM_EXP + 10;
+    const rwmBelow  = !isNaN(rwm) && rwm < nat2.PTRWM_EXP - 10;
+    const hasKS4 = !isNaN(att8) || !isNaN(p8) || !isNaN(rwm);
+    if (att8Above || p8Above || rwmAbove) {
+      flags['A6. Academic Performance'] = 'green';
+    } else if (att8Below || p8Below || rwmBelow) {
+      flags['A6. Academic Performance'] = 'red';
+    } else if (!hasKS4) {
+      // No KS4 data (e.g. independent or sixth-form-only school) — use KS5 progress band
+      const ks5Band = parseInt(vv('PROGRESS_BAND_ALEV'), 10);
+      if (ks5Band === 1) flags['A6. Academic Performance'] = 'green';
+      else if (ks5Band >= 4) flags['A6. Academic Performance'] = 'red';
+      else flags['A6. Academic Performance'] = 'none'; // prevent model from guessing
+    }
+
+    // A7 — absence
     const abs  = parseFloat(vv('PERCTOT'));
     const pers = parseFloat(vv('PPERSABS10'));
     if (!isNaN(abs) && !isNaN(pers)) {
-      if (abs < 5 || pers < 15)       flags['A7. Absence'] = 'green';
+      if (abs < 5 || pers < 15)          flags['A7. Absence'] = 'green';
       else if (abs > 8.6 || pers > 23.3) flags['A7. Absence'] = 'red';
     }
   }

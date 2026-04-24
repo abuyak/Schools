@@ -132,7 +132,9 @@ The pre-fetched block includes the inspectors' "What the school needs to do" or 
 
 **Reproduce every improvement requirement verbatim — exactly as written, whether formatted as bullet points, numbered items, or prose paragraphs.** Do not soften, paraphrase, or summarise. Do not omit any requirement.
 
-If the section is genuinely absent from the pre-fetched block (not merely formatted differently), say so and link to the full Ofsted report PDF so parents can check directly.
+If the pre-fetched block shows only "The school needs to do the following:" without bullet points, it means the PDF was parsed but the bullets could not be extracted (they may be in a table or image layer). In this case: state that improvement requirements are present but could not be extracted, and link directly to the full Ofsted report PDF.
+
+If the section is genuinely absent from the pre-fetched block, say so and link to the full Ofsted report PDF so parents can check directly.
 
 **Observations:** flag any requirement that signals a serious or systemic concern.
 
