@@ -103,8 +103,8 @@ error rate > 5% over 1 hour.
 
 ---
 
-## TD-006 · Ofsted Parent View — pre-fetch aggregated survey %s
-**Severity:** Low — currently the AI is given the URL and must fetch it; the page is JS-rendered so the AI typically can't retrieve the data  
+## ~~TD-006~~ · ✅ RESOLVED — Ofsted Parent View pre-fetch (PR d039165, 2026-04-24)
+**Was:** Low — the AI was given the URL and must fetch it; the page is JS-rendered so the AI typically can't retrieve the data  
 **File:** `functions/research/govuk.js` — new function needed
 
 **Problem:**  
