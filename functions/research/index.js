@@ -39,31 +39,31 @@ const OUTPUT_CONSTRAINTS = `
 - For any comparison table section, write the body as a markdown table using | col | col | syntax with a separator row of |---|---|.
 - Every section object MUST include a "flag" field set to exactly one of: "red", "green", or "none". Apply the traffic-light rules below. When in doubt, use "none".
 
-## Traffic Light Rules (apply to every section A1–C4)
+## Traffic Light Rules
 
-**"red"** — set when the section contains a genuine concern a cautious parent should notice:
-- A2: Ofsted overall Requires Improvement or Inadequate; any sub-grade Inadequate; safeguarding not met; or improvement sub-grades weaker than overall
-- A4: Any improvement requirements are present (the section has content = red by definition, because outstanding schools have no bullets)
-- A5: EHC plan % above 6%; FSM above 35% (primary) or 30% (secondary) without strong support evidence; SEN % significantly above average
-- A6: Any progress score DfE descriptor "below" or "well below" national; any attainment metric more than 10pp below national average
-- A7: Overall absence above 8.6% (>2pp above 6.6% national); persistent absence above 23.3% (>2pp above 21.3% national)
-- A8: Negative in-year balance; revenue reserves below one month's spend; QTS% below comparator average; spend per pupil significantly above comparators without explanation
-- A9: IMD decile 1–3 (high deprivation); mean household income below £35,000; these signal a challenging intake context even if the school performs well
-- B1: Any Parent View metric breached threshold (⚠️ already flagged in the pre-fetched table)
-- B4: Safeguarding concerns; sudden leadership changes; supply teacher reliance; significant negative events
+Only sections A1–B5 receive red or green flags. Quick Take and all C sections (C1, C2, C3, C4) must always be "none".
 
-**"green"** — set when the section contains a standout positive result:
-- A2: Overall grade Outstanding or Exceptional (new framework); clean sweep of top sub-grades
-- A4: Section is empty because the school received Outstanding — no improvement requirements
-- A6: Any progress score "well above" national; attainment more than 10pp above national average across core subjects
-- A7: Overall absence well below national (below 5%); persistent absence well below national (below 15%)
-- A8: Healthy reserves (more than 3 months spend); QTS% above comparator average; spend per pupil in line with comparators
-- B1: All Parent View metrics clearly above thresholds; high response count (>100)
+**"red"** — set for the following A/B sections only when the trigger condition is met:
+- A2: Ofsted overall grade Requires Improvement or Inadequate; any sub-grade Inadequate; safeguarding not met
+- A4: Any improvement requirements are present in the pre-fetched block (content = red by definition)
+- A5: EHC plan % above 6%; FSM above 35% (primary) or 30% (secondary) without strong support evidence
+- A6: Any progress score descriptor "below" or "well below" national; attainment more than 10pp below national average
+- A7: Overall absence above 8.6%; persistent absence above 23.3%
+- A8: Negative in-year balance; revenue reserves below one month's spend; QTS% below comparator average
+- A9: IMD decile 1–3; mean household income below £35,000
+- B1: Any Parent View metric flagged ⚠️ in the pre-fetched table
+- B4: Safeguarding concerns; sudden leadership changes; supply teacher reliance
+
+**"green"** — set for the following A/B sections only when the trigger condition is met:
+- A2: Overall grade Outstanding or Exceptional; clean sweep of top sub-grades
+- A4: Section is empty — school received Outstanding with no improvement requirements
+- A6: Progress score "well above" national; attainment more than 10pp above national average across core subjects
+- A7: Overall absence below 5%; persistent absence below 15%
+- A8: Healthy reserves (more than 3 months spend); QTS% above comparator average
+- B1: All Parent View metrics above thresholds; more than 100 responses
 - B3: Exceptionally broad extracurricular programme
 
-**"none"** — everything else. Neutral data, mixed signals, or insufficient data to judge.
-
-**Always "none" regardless of content:** C1, C2, C3, C4. These verdict sections synthesise everything — colour-coding them would be redundant and confusing.
+**"none"** — everything else, including any section not listed above, and all of: Quick Take, C1, C2, C3, C4.
 
 ## C2 Linkage Rule
 The C2 (Pros and Cons) section MUST reference every section flagged "red" as a concern and every section flagged "green" as a strength. Do not introduce new concerns or strengths in C2 that were not flagged in A1–B5.
@@ -197,6 +197,7 @@ function parseOpenAIResponse(apiResponse) {
 
   // Rename model's "Sources" section to "Primary Sources"
   const sections = (parsed.sections ?? []).map(s => ({ ...s }));
+
   let primarySourcesBody = null;
   for (const s of sections) {
     if (/^sources?$/i.test(s.heading)) {
@@ -283,17 +284,26 @@ export const handler = async (event) => {
 
   // Pre-fetch gov.uk data for branches 1 (detailed) and 2 (comparison summary)
   let govukBlock = '';
+  let govukFlags = {};   // deterministic flag overrides keyed by section heading
   let govukMs    = 0;
   if (body.branch === 'prompt_branch_1' || body.branch === 'prompt_branch_2') {
     try {
       const govukT0 = Date.now();
-      govukBlock = await fetchGovDataForPrompt(
+      const govukResult = await fetchGovDataForPrompt(
         body.question,
         body.branch,
         apiKey,
         baseUrl,
         model,
-      ) ?? '';
+      );
+      // fetchGovDataForPrompt now returns { block, flags } — handle both shapes
+      // for safety in case a cached/old version returns a plain string.
+      if (typeof govukResult === 'string') {
+        govukBlock = govukResult ?? '';
+      } else {
+        govukBlock = govukResult?.block ?? '';
+        govukFlags = govukResult?.flags ?? {};
+      }
       govukMs = Date.now() - govukT0;
       if (govukBlock) instructions += govukBlock;
     } catch (err) {
@@ -363,6 +373,15 @@ export const handler = async (event) => {
   }
 
   const result = parseOpenAIResponse(apiResponse);
+
+  // Apply deterministic flag overrides — govukFlags are computed from structured
+  // data and are more reliable than the model's own judgment for data sections.
+  if (result.sections && Object.keys(govukFlags).length) {
+    for (const s of result.sections) {
+      if (govukFlags[s.heading] !== undefined) s.flag = govukFlags[s.heading];
+    }
+  }
+
   const ms = Date.now() - t0;
 
   // ── Build trace ───────────────────────────────────────────────────────────────

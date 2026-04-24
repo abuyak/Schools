@@ -220,9 +220,13 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
         /^areas\s+for\s+improvement\s*$/im,
       ]);
       if (!raw) return null;
-      // Remove the "(Information for the school and appropriate authority)" preamble
-      // that Ofsted prepends to this section — it is boilerplate, not an improvement point.
-      return raw.replace(/^\s*\(Information for the school[^)]*\)\s*/i, '').trim() || null;
+      // Strip Ofsted boilerplate preambles that precede the actual improvement points.
+      // These appear in older report formats and are not improvement requirements themselves.
+      return raw
+        .replace(/^\s*\(Information for the school[^)]*\)\s*/i, '')
+        .replace(/^\s*The school needs to do the following:\s*/i, '')
+        .replace(/^\s*The school must do the following:\s*/i, '')
+        .trim() || null;
     })(),
   };
 }
@@ -2433,11 +2437,39 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
     resolved: schools.filter(s => s.identity).length,
   });
 
-  if (!schools.length) return '';
+  if (!schools.length) return { block: '', flags: {} };
 
-  return '\n\n' + (detailed
-    ? schools.map(buildSlimBlock).join('\n\n')   // slim block for prompt injection
+  const block = '\n\n' + (detailed
+    ? schools.map(buildSlimBlock).join('\n\n')
     : buildComparisonBlock(schools));
+
+  // Compute deterministic section flags from structured data (Branch 1 only).
+  // These override whatever the model outputs — no model judgment needed.
+  const flags = {};
+  if (detailed && schools.length === 1) {
+    const { ofsted, performance } = schools[0];
+
+    // A2 — Ofsted overall grade
+    const overall = (ofsted?.overall ?? '').toLowerCase();
+    if (/outstanding|exceptional/i.test(overall))           flags['A2. Ofsted Inspection Grades'] = 'green';
+    else if (/requires improvement|inadequate/i.test(overall)) flags['A2. Ofsted Inspection Grades'] = 'red';
+
+    // A4 — improvement requirements: content present = red, empty + Outstanding = green
+    if (ofsted?.nextSteps)                                   flags['A4. What the School Needs to Improve'] = 'red';
+    else if (/outstanding/i.test(overall))                   flags['A4. What the School Needs to Improve'] = 'green';
+
+    // A7 — absence (KS4 schools use PERCTOT in ABS namespace)
+    const allRows = Object.values(performance ?? {}).flat();
+    const vv = (code) => allRows.find(r => r.variable === code)?.value ?? null;
+    const abs  = parseFloat(vv('PERCTOT'));
+    const pers = parseFloat(vv('PPERSABS10'));
+    if (!isNaN(abs) && !isNaN(pers)) {
+      if (abs < 5 || pers < 15)       flags['A7. Absence'] = 'green';
+      else if (abs > 8.6 || pers > 23.3) flags['A7. Absence'] = 'red';
+    }
+  }
+
+  return { block, flags };
 }
 
 // Debug helpers — exported so debug-govuk.mjs can print both blocks
