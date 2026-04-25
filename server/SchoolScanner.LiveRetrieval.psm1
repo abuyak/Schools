@@ -494,103 +494,141 @@ function Invoke-OpenAIResearch {
         }
     }
 
-    $requestBody = New-OpenAIResearchRequest -Payload $Payload | ConvertTo-Json -Depth 20
-    $headers = @{
-        "Content-Type" = "application/json"
+    $node = Get-Command node -ErrorAction SilentlyContinue
+    if ($null -eq $node) {
+        return @{
+            status = "configuration_required"
+            httpStatus = 503
+            title = "Node.js required"
+            summary = "The local server now routes research through the shared JavaScript handler, but Node.js was not found on PATH."
+            keyPoints = @(
+                "No answer was generated."
+                "The shared JS research handler could not be launched."
+            )
+            sections = @(
+                @{
+                    heading = "Next step"
+                    body = "Install Node.js or add it to PATH, then restart the local server."
+                }
+            )
+        }
     }
-    if (-not [string]::IsNullOrWhiteSpace($apiKey)) {
-        $headers["Authorization"] = "Bearer $apiKey"
-    }
-    $baseUrl = ([string]$settings.baseUrl).TrimEnd("/")
-    $responsesPath = [string]$settings.responsesPath
-    if ([string]::IsNullOrWhiteSpace($responsesPath)) {
-        $responsesPath = "/responses"
-    }
-    if (-not $responsesPath.StartsWith("/")) {
-        $responsesPath = "/$responsesPath"
-    }
-    $requestUri = "$baseUrl$responsesPath"
+
+    $bridgePath = Join-Path $PSScriptRoot "invoke-research-handler.mjs"
+    $inputPayload = @{
+        payload = $Payload
+        settings = @{
+            apiKey = $settings.apiKey
+            model = $settings.model
+            baseUrl = $settings.baseUrl
+            reasoningEffort = $settings.reasoningEffort
+            maxOutputTokens = $settings.maxOutputTokens
+        }
+    } | ConvertTo-Json -Depth 10 -Compress
+
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $node.Source
+    $psi.Arguments = "`"$bridgePath`""
+    $psi.WorkingDirectory = (Split-Path $PSScriptRoot -Parent)
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+    $psi.RedirectStandardInput = $true
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+
+    $proc = New-Object System.Diagnostics.Process
+    $proc.StartInfo = $psi
 
     try {
-        $response = Invoke-RestMethod -Uri $requestUri -Method Post -Headers $headers -Body $requestBody -TimeoutSec ([int]$settings.requestTimeoutSeconds)
-        if ($null -eq $response) {
+        [void]$proc.Start()
+        $proc.StandardInput.Write($inputPayload)
+        $proc.StandardInput.Close()
+
+        # The shared JS handler has its own upstream timeout (~110s). Give the local
+        # bridge extra headroom so it does not fail earlier than the handler.
+        $timeoutMs = [Math]::Max(180000, ([int]$settings.requestTimeoutSeconds * 1000) + 90000)
+        if (-not $proc.WaitForExit($timeoutMs)) {
+            try { $proc.Kill() } catch { }
             return @{
-                status = "upstream_empty_response"
-                httpStatus = 502
+                status = "upstream_error"
+                httpStatus = 504
                 title = "Research provider error"
-                summary = "The research provider returned an empty response."
+                summary = "The shared JavaScript research handler timed out."
                 keyPoints = @(
                     "No answer was generated."
-                    "The upstream service did not return a parseable body."
+                    "The local bridge to the JS handler did not finish in time."
                 )
                 sections = @(
                     @{
                         heading = "Suggested next step"
-                        body = "Retry once. If this repeats, reduce request complexity or inspect the upstream provider response body."
+                        body = "Retry once. If this repeats, narrow the query or lower the configured token budget."
                     }
                 )
             }
         }
-        $plain = ConvertTo-PlainHashtable -InputObject $response
-        return Convert-OpenAIResponseToResult -ApiResponse $plain
+
+        $stdout = $proc.StandardOutput.ReadToEnd()
+        $stderr = $proc.StandardError.ReadToEnd()
+        if ($proc.ExitCode -ne 0) {
+            return @{
+                status = "upstream_error"
+                httpStatus = 502
+                title = "Research provider error"
+                summary = "The shared JavaScript research handler failed."
+                keyPoints = @(
+                    "No answer was generated."
+                    "The local bridge process exited with an error."
+                )
+                sections = @(
+                    @{
+                        heading = "What happened"
+                        body = if ([string]::IsNullOrWhiteSpace($stderr)) { "Unknown bridge failure." } else { $stderr }
+                    }
+                )
+            }
+        }
+
+        if ([string]::IsNullOrWhiteSpace($stdout)) {
+            return @{
+                status = "upstream_empty_response"
+                httpStatus = 502
+                title = "Research provider error"
+                summary = "The shared JavaScript research handler returned an empty response."
+                keyPoints = @(
+                    "No answer was generated."
+                    "The local bridge returned no parseable body."
+                )
+                sections = @(
+                    @{
+                        heading = "Suggested next step"
+                        body = "Retry once. If this repeats, inspect the JS handler logs."
+                    }
+                )
+            }
+        }
+
+        return ConvertTo-PlainHashtable -InputObject (ConvertFrom-Json -InputObject $stdout)
     }
     catch {
-        $statusCode = $null
-        $detail = $_.Exception.Message
-        $responseBody = Get-ExceptionResponseBody -Exception $_.Exception
-
-        if ($_.Exception -is [System.Net.WebException] -and $_.Exception.Response) {
-            try {
-                $statusCode = [int]$_.Exception.Response.StatusCode
-            }
-            catch {
-                $statusCode = $null
-            }
-        }
-
-        if (-not $statusCode) {
-            $statusCode = 502
-        }
-
-        $safeStatus = if ($statusCode -in @(400,401,403,404,409,422,429,500,502,503,504)) { $statusCode } else { 502 }
-        $summary = if ($safeStatus -eq 401 -or $safeStatus -eq 403) {
-            "The research provider rejected the API key. Check OPENAI_API_KEY."
-        } elseif ($safeStatus -eq 429) {
-            "The research provider is rate-limiting requests. Try again shortly."
-        } elseif ($safeStatus -eq 504 -or $detail -match "timed out") {
-            "The research provider timed out while retrieving sources. Try again."
-        } else {
-            "The research provider could not complete the request. Try again."
-        }
-
-        if ($detail -match "timed out") {
-            $safeStatus = 504
-        }
-
         return @{
             status = "upstream_error"
-            httpStatus = $safeStatus
+            httpStatus = 502
             title = "Research provider error"
-            summary = $summary
+            summary = "The local server could not invoke the shared JavaScript research handler."
             keyPoints = @(
                 "No answer was generated."
-                "The browser is waiting for the server-side research workflow."
+                "The local bridge process failed before a response was produced."
             )
             sections = @(
                 @{
                     heading = "What happened"
-                    body = $detail
-                }
-                @{
-                    heading = "Upstream response body"
-                    body = if ([string]::IsNullOrWhiteSpace($responseBody)) { "No response body was returned by the provider." } else { $responseBody }
-                }
-                @{
-                    heading = "Suggested next step"
-                    body = "Retry once with a more specific school question, or lower the configured model and token budget if cost and latency are too high."
+                    body = $_.Exception.Message
                 }
             )
         }
+    }
+    finally {
+        $proc.Dispose()
     }
 }
 

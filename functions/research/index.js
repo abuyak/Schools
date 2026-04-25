@@ -175,6 +175,41 @@ function parseOpenAIResponse(apiResponse) {
     if (brace >= 0) clean = clean.slice(brace);
   }
 
+  // Recover the first balanced JSON object when the model appends trailing prose
+  // or otherwise wraps a valid object in extra text.
+  const firstBrace = clean.indexOf('{');
+  if (firstBrace >= 0) {
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    let end = -1;
+    for (let i = firstBrace; i < clean.length; i += 1) {
+      const ch = clean[i];
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (ch === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+      if (ch === '{') depth += 1;
+      else if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          end = i + 1;
+          break;
+        }
+      }
+    }
+    if (end > firstBrace) clean = clean.slice(firstBrace, end);
+  }
+
   let parsed;
   try {
     parsed = JSON.parse(clean);
@@ -222,6 +257,47 @@ function parseOpenAIResponse(apiResponse) {
     scorecard: parsed.scorecard ?? [],
     sections,
   };
+}
+
+function mergeStructuredPartASections(existingSections, structuredSections) {
+  if (!structuredSections?.length) return existingSections ?? [];
+
+  const allAHeadings = [
+    'A1. School Identity',
+    'A2. Ofsted Inspection Grades',
+    'A3. What It\'s Like to Be a Pupil',
+    'A4. What the School Needs to Improve',
+    'A5. Pupil Census',
+    'A6. Academic Performance',
+    'A7. Absence',
+    'A8. Financial Position and Staffing',
+    'A9. Area Profile',
+  ];
+
+  const sections = existingSections ?? [];
+  const structuredMap = new Map(structuredSections.map((section) => [section.heading, section]));
+  const existingAMap = new Map(sections.filter((section) => /^A\d+\./.test(section.heading ?? '')).map((section) => [section.heading, section]));
+
+  const firstAIndex = sections.findIndex((section) => /^A\d+\./.test(section.heading ?? ''));
+  if (firstAIndex === -1) {
+    return [...sections, ...structuredSections];
+  }
+
+  let lastAIndex = firstAIndex;
+  while (lastAIndex + 1 < sections.length && /^A\d+\./.test(sections[lastAIndex + 1].heading ?? '')) {
+    lastAIndex += 1;
+  }
+
+  const pre = sections.slice(0, firstAIndex);
+  const post = sections.slice(lastAIndex + 1);
+  const mergedA = [];
+
+  for (const heading of allAHeadings) {
+    if (structuredMap.has(heading)) mergedA.push(structuredMap.get(heading));
+    else if (existingAMap.has(heading)) mergedA.push(existingAMap.get(heading));
+  }
+
+  return [...pre, ...mergedA, ...post];
 }
 
 function errorResponse(statusCode, body) {
@@ -289,7 +365,8 @@ export const handler = async (event) => {
       );
       const block = typeof govukResult === 'string' ? govukResult : (govukResult?.block ?? '');
       const flags = typeof govukResult === 'string' ? {} : (govukResult?.flags ?? {});
-      return okResponse({ status: 'debug_govuk', block, flags });
+      const sections = typeof govukResult === 'string' ? [] : (govukResult?.sections ?? []);
+      return okResponse({ status: 'debug_govuk', block, flags, sections });
     } catch (err) {
       return okResponse({ status: 'debug_govuk_error', error: err.message });
     }
@@ -300,6 +377,7 @@ export const handler = async (event) => {
   // Pre-fetch gov.uk data for branches 1 (detailed) and 2 (comparison summary)
   let govukBlock = '';
   let govukFlags = {};   // deterministic flag overrides keyed by section heading
+  let govukSections = [];
   let govukMs    = 0;
   if (body.branch === 'prompt_branch_1' || body.branch === 'prompt_branch_2') {
     try {
@@ -318,6 +396,7 @@ export const handler = async (event) => {
       } else {
         govukBlock = govukResult?.block ?? '';
         govukFlags = govukResult?.flags ?? {};
+        govukSections = govukResult?.sections ?? [];
       }
       govukMs = Date.now() - govukT0;
       if (govukBlock) instructions += govukBlock;
@@ -395,6 +474,10 @@ export const handler = async (event) => {
     for (const s of result.sections) {
       if (govukFlags[s.heading] !== undefined) s.flag = govukFlags[s.heading];
     }
+  }
+
+  if (body.branch === 'prompt_branch_1' && govukSections.length) {
+    result.sections = mergeStructuredPartASections(result.sections, govukSections);
   }
 
   // Tag the first section of each part with its part label — the UI renders
