@@ -451,20 +451,13 @@ export async function getGIASDetails(urn) {
   //   <dt ...>Label</dt><dd ...>Value</dd>
   // We normalise label → camelCase key with a lookup table.
   const LABEL_MAP = {
-    'address':                          'address',
     'postcode':                         'postcode',
     'local authority':                  'la',
-    'headteacher / principal':          'headteacher',
     'school capacity':                  'capacity',
     'number of pupils on roll':         'numberOnRoll',
     'total pupils':                     'numberOnRoll',
     'number of boys':                   'numberBoys',
     'number of girls':                  'numberGirls',
-    'establishment status':             'status',
-    'official sixth form':              'officialSixthForm',
-    'boarders':                         'boarders',
-    'nursery provision':                'nurseryProvision',
-    'number of pupils eligible for free school meals': 'fsmEligibleCount',
     'percentage of pupils eligible for free school meals': 'fsmPct',
     'free school meals (%)':            'fsmPct',
     'percentage of pupils with ehc plans': 'ehcPlanPct',
@@ -499,19 +492,6 @@ export async function getGIASDetails(urn) {
       if (key && !result[key]) result[key] = value;
     }
   }
-
-  const pageText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-  const capture = (pattern) => pageText.match(pattern)?.[1]?.trim() ?? null;
-
-  if (!result.dfeNumber) result.dfeNumber = capture(/DfE number:\s*([0-9/]+)/i);
-  if (!result.ukprn) result.ukprn = capture(/UKPRN\s*(?:\(UK Provider Reference Number\))?:\s*([0-9]+)/i);
-  if (!result.region) result.region = capture(/Government office region \(GOR\)\s*([A-Za-z ]+)/i);
-  if (!result.district) result.district = capture(/District\s*([A-Za-z' -]+)/i);
-  if (!result.ward) result.ward = capture(/Ward\s*([A-Za-z' -]+)/i);
-  if (!result.constituency) result.constituency = capture(/Parliamentary constituency\s*([A-Za-z' -]+)/i);
-  if (!result.msoa) result.msoa = capture(/Middle super output area.*?\s([A-Za-z0-9 ]+)/i);
-  if (!result.lsoa) result.lsoa = capture(/Lower super output area.*?\s([A-Za-z0-9 ]+)/i);
-  if (!result.lastChangedConfirmed) result.lastChangedConfirmed = capture(/Date last changed \/ confirmed\s*([0-9]{1,2} [A-Za-z]+ [0-9]{4})/i);
 
   if (!Object.keys(result).length) { glog('govuk_gias_detail_empty', { urn }); return null; }
   glog('govuk_gias_detail_ok', { urn, fields: Object.keys(result) });
@@ -2310,323 +2290,6 @@ function fmtSchoolEthnicitySlim(e) {
   return `- Pupil ethnicity (DfE ${e.yr}): ${parts.join(' · ')}`;
 }
 
-function latestPerfRows(perf) {
-  return Object.entries(perf ?? {})
-    .sort(([a], [b]) => {
-      const ya = parseInt(a.match(/_(\d+)$/)?.[1] ?? '0', 10);
-      const yb = parseInt(b.match(/_(\d+)$/)?.[1] ?? '0', 10);
-      return yb - ya;
-    })
-    .flatMap(([, rows]) => rows);
-}
-
-function perfValue(perf, code) {
-  return latestPerfRows(perf).find((row) => row.variable === code)?.value ?? null;
-}
-
-function plain(value, fallback = '—') {
-  if (value == null || value === '') return fallback;
-  return String(value);
-}
-
-function pct(value, fallback = '—') {
-  if (value == null || value === '') return fallback;
-  const str = String(value).trim();
-  return /%$/.test(str) ? str : `${str}%`;
-}
-
-function markdownTable(headers, rows) {
-  const head = `| ${headers.join(' | ')} |`;
-  const sep = `|${headers.map(() => '---').join('|')}|`;
-  const body = rows.map((row) => `| ${row.map((cell) => plain(cell)).join(' | ')} |`);
-  return [head, sep, ...body].join('\n');
-}
-
-function buildA1Section(school) {
-  const { identity, performance } = school;
-  if (!identity) return null;
-
-  const rows = [
-    ['Official name', identity.officialName],
-    ['URN', identity.urn],
-    ['DfE number', identity.dfeNumber],
-    ['UKPRN', identity.ukprn],
-    ['Type', identity.type],
-    ['Phase', identity.phase],
-    ['Age range', identity.ageLow && identity.ageHigh ? `${identity.ageLow} to ${identity.ageHigh}` : '—'],
-    ['Gender of entry', identity.gender],
-    ['Admissions policy', identity.admissionsPolicy],
-    ['Religious character', identity.religiousCharacter],
-    ['Status', identity.status],
-    ['Official sixth form', identity.officialSixthForm],
-    ['Boarding', identity.boarders],
-    ['Nursery', identity.nurseryProvision],
-    ['Address', identity.address],
-    ['Postcode', identity.postcode ?? perfValue(performance, 'PCODE')],
-    ['Local authority', identity.la && identity.dfeNumber ? `${identity.la} (${String(identity.dfeNumber).split('/')[0]})` : identity.la],
-    ['Headteacher / Principal', identity.headteacher],
-    ['Capacity', identity.capacity],
-    ['Number of pupils', identity.numberOnRoll],
-    ['FSM pupils', identity.fsmEligibleCount],
-    ['FSM percentage', identity.fsmPct],
-    ['GOR / Region', identity.region],
-    ['District', identity.district],
-    ['Ward', identity.ward],
-    ['Constituency', identity.constituency],
-    ['MSOA', identity.msoa],
-    ['LSOA', identity.lsoa],
-    ['Date last changed / confirmed', identity.lastChangedConfirmed],
-  ];
-
-  const body = [
-    markdownTable(['Field', 'Value'], rows),
-    '',
-    `This matches the government record for ${plain(identity.officialName)} on GIAS.`,
-  ].join('\n');
-
-  return { heading: 'A1. School Identity', body, flag: 'none' };
-}
-
-function buildA2Section(school) {
-  const { identity, ofsted } = school;
-  if (!identity || identity.isIndependent || !ofsted) return null;
-
-  const isNewFramework = !!(ofsted.achievement || ofsted.attendance || ofsted.curriculum || ofsted.inclusion || ofsted.leadershipGov || ofsted.wellbeing || ofsted.post16);
-  const rows = [
-    ['Latest inspection outcome', ofsted.overall],
-    ['Inspection date', ofsted.date],
-    ['Framework', isNewFramework ? 'Ofsted report cards (Nov 2025 onwards)' : 'Ofsted graded inspection (pre-Nov 2025)'],
-    ['Safeguarding', ofsted.safeguarding ?? '—'],
-    ['Published PDF', ofsted.reportUrl ? `[Latest report PDF](${ofsted.reportUrl})` : '—'],
-  ];
-
-  if (isNewFramework) {
-    rows.push(
-      ['Achievement', ofsted.achievement],
-      ['Attendance and Behaviour', ofsted.attendance],
-      ['Curriculum and Teaching', ofsted.curriculum],
-      ['Inclusion', ofsted.inclusion],
-      ['Leadership and Governance', ofsted.leadershipGov],
-      ['Personal Development and Wellbeing', ofsted.wellbeing],
-      ['Post-16 Provision', ofsted.post16],
-    );
-  } else {
-    rows.push(
-      ['Quality of Education', ofsted.qualityOfEducation],
-      ['Behaviour and Attitudes', ofsted.behaviour],
-      ['Personal Development', ofsted.personalDevelopment],
-      ['Leadership and Management', ofsted.leadership],
-      ['Sixth form provision', ofsted.sixthForm],
-    );
-  }
-
-  const olderReports = [];
-  if (ofsted.date) olderReports.push(ofsted.date);
-
-  const body = [
-    markdownTable(['Field', 'Value'], rows),
-    '',
-    isNewFramework
-      ? 'This is a report-card style Ofsted record.'
-      : 'This is an older graded Ofsted inspection record with overall and sub-grade outcomes.',
-  ].join('\n');
-
-  return { heading: 'A2. Ofsted Inspection Grades', body, flag: 'none' };
-}
-
-function buildA4Section(school) {
-  const { identity, ofsted } = school;
-  if (!identity || identity.isIndependent) return null;
-
-  let body = '_No improvement requirements retrieved._';
-  if (ofsted?.nextSteps) {
-    body = ofsted.nextSteps;
-  } else if (ofsted?.reportUrl) {
-    body = `_No extracted improvement requirements. Check the full report PDF:_ [Ofsted report](${ofsted.reportUrl})`;
-  }
-
-  return { heading: 'A4. What the School Needs to Improve', body, flag: 'none' };
-}
-
-function buildA5Section(school) {
-  const { identity, performance, schoolEthnicity } = school;
-  if (!identity) return null;
-
-  const rows = [
-    ['Pupils on roll', identity.numberOnRoll ?? perfValue(performance, 'NOR'), '—'],
-    ['Free School Meals (FSM) eligible — last 6 years', pct(perfValue(performance, 'PNUMFSMEVER')), /secondary/i.test(identity.phase ?? '') ? '20%' : '25%'],
-    ['English as Additional Language (EAL) pupils', pct(perfValue(performance, 'PNUMEAL')), '—'],
-    ['Special Educational Needs (SEN) support', pct(perfValue(performance, 'PSENELK')), '13%'],
-    ['Education, Health and Care (EHC) plans', pct(perfValue(performance, 'PSENELSE')), '4.5%'],
-    ['Boys on roll', pct(perfValue(performance, 'PNUMBOYS')), '—'],
-    ['Girls on roll', pct(perfValue(performance, 'PNUMGIRLS')), '—'],
-  ];
-
-  const bodyParts = [markdownTable(['Metric', 'School', 'National avg'], rows)];
-
-  if (schoolEthnicity) {
-    bodyParts.push(
-      '',
-      markdownTable(
-        ['Ethnic group', '% of pupils'],
-        [
-          ['White', pct(schoolEthnicity.w)],
-          ['Mixed', pct(schoolEthnicity.m)],
-          ['Asian', pct(schoolEthnicity.a)],
-          ['Black', pct(schoolEthnicity.b)],
-          ['Chinese', pct(schoolEthnicity.c)],
-          ['Other', pct(schoolEthnicity.o)],
-          ['Not stated', pct(schoolEthnicity.ns)],
-        ],
-      ),
-      '',
-      `Pupil ethnicity source year: ${schoolEthnicity.yr}.`,
-    );
-  }
-
-  return { heading: 'A5. Pupil Census', body: bodyParts.join('\n'), flag: 'none' };
-}
-
-function buildKs4Table(performance) {
-  const nat = NATIONAL_AVG.KS4;
-  const row = (label, codes, national = '—') => [
-    label,
-    plain(perfValue(performance, codes.all)),
-    plain(perfValue(performance, codes.boys)),
-    plain(perfValue(performance, codes.girls)),
-    plain(perfValue(performance, codes.disadv)),
-    plain(perfValue(performance, codes.eal)),
-    '—',
-    plain(national),
-  ];
-
-  return markdownTable(
-    ['Metric', 'All pupils', 'Boys', 'Girls', 'Disadvantaged', 'EAL', 'Local avg', 'National'],
-    [
-      row('Cohort size', { all: 'TPUP', disadv: 'TFSM6CLA1A', eal: 'TPUPEAL' }),
-      row('Attainment 8', { all: 'ATT8SCR', boys: 'ATT8SCR_BOYS', girls: 'ATT8SCR_GIRLS', disadv: 'ATT8SCR_FSM6CLA1A', eal: 'ATT8SCR_EAL' }, nat.ATT8SCR),
-      row('Grade 5+ English & Maths', { all: 'PTL2BASICS_95', boys: 'PBL2BASICS_95', girls: 'PGL2BASICS_95', disadv: 'PTFSM6CLA1ABASICS_95', eal: 'PTEAL2BASICS_95' }, `${nat.PTL2BASICS_95}%`),
-      row('Grade 4+ English & Maths', { all: 'PTL2BASICS_94', boys: 'PBL2BASICS_94', girls: 'PGL2BASICS_94', disadv: 'PTFSM6CLA1ABASICS_94', eal: 'PTEAL2BASICS_94' }, `${nat.PTL2BASICS_94}%`),
-      row('EBacc grade 5+', { all: 'PTEBACC_95', boys: 'PBEBACC_95', girls: 'PGEBACC_95' }),
-      row('EBacc grade 4+', { all: 'PTEBACC_94', boys: 'PBEBACC_94', girls: 'PGEBACC_94', disadv: 'PTFSM6CLA1AEBACC_94' }, `${nat.PTEBACC_94}%`),
-      row('Entering EBacc', { all: 'PTEBACC_E_PTQ_EE', boys: 'PBEBACC_E_PTQ_EE', girls: 'PGEBACC_E_PTQ_EE', disadv: 'PTFSM6CLA1AEBACC_E_PTQ_EE', eal: 'PTEALEBACC_E_PTQ_EE' }, `${nat.PTEBACC_E_PTQ_EE}%`),
-      row('EBacc APS', { all: 'EBACCAPS', boys: 'EBACCAPS_BOYS', girls: 'EBACCAPS_GIRLS', disadv: 'EBACCAPS_FSM6CLA1A', eal: 'EBACCAPS_EAL' }),
-      row('Progress 8', { all: 'P8MEA', disadv: 'P8MEA_FSM6CLA1A' }, nat.P8MEA),
-    ],
-  );
-}
-
-function buildKs4SubjectAreaTable(performance) {
-  return markdownTable(
-    ['Metric', 'School', 'Local avg', 'England'],
-    [
-      ['Number of pupils', perfValue(performance, 'TPUP'), '—', '—'],
-      ['Attainment 8 score', perfValue(performance, 'ATT8SCR'), '—', '46.0'],
-      ['English Attainment 8 component', perfValue(performance, 'ATT8_ENG'), '—', '—'],
-      ['Maths Attainment 8 component', perfValue(performance, 'ATT8_MAT'), '—', '—'],
-      ['EBacc slots', perfValue(performance, 'ATT8_EBACC'), '—', '—'],
-      ['Open slots: any qualification', perfValue(performance, 'ATT8_OPEN'), '—', '—'],
-    ],
-  );
-}
-
-function buildKs5Table(performance) {
-  const nat = NATIONAL_AVG.KS5;
-  // Variable names verified against DfE KS5 CSV — aligned with fmtAcademicResultsSlim
-  const avgGrade  = perfValue(performance, 'TALLPPEGRD_ALEV_1618'); // e.g. "A-"
-  const avgPts    = perfValue(performance, 'TALLPPE_ALEV_1618');    // e.g. "47.28"
-  const best3Grd  = perfValue(performance, 'TB3PTSE_GRD');          // average best-3 grade letter
-  const best3Pts  = perfValue(performance, 'TB3PTSE');              // average best-3 points
-  const disGrade  = perfValue(performance, 'TALLPPEGRD_ALEV_DIS');  // e.g. "B+"
-  const disPts    = perfValue(performance, 'TALLPPE_ALEV_1618_DIS');
-  const progLo    = perfValue(performance, 'LCI_INS_ALEV');
-  const progHi    = perfValue(performance, 'UCI_INS_ALEV');
-  const disProg   = perfValue(performance, 'VA_INS_ALEV_DIS');
-  const disProgLo = perfValue(performance, 'LCI_INS_ALEV_DIS');
-  const disProgHi = perfValue(performance, 'UCI_INS_ALEV_DIS');
-
-  const progBand = (() => {
-    const num = parseInt(perfValue(performance, 'PROGRESS_BAND_ALEV') ?? '', 10);
-    const BAND = { 1: 'Well above average', 2: 'Above average', 3: 'Average', 4: 'Below average', 5: 'Well below average' };
-    return BAND[num] ?? '—';
-  })();
-
-  const fmtProg = (score, lo, hi) =>
-    score ? (lo && hi ? `${score} (CI: ${lo} to ${hi})` : score) : '—';
-
-  const rows = [
-    ['A-level students',                              perfValue(performance, 'TALLPUP_ALEV_1618'),  '—', '—'],
-    ['A-level progress banding',                      progBand,                                     '—', '—'],
-    ['Progress score (VA)',                           fmtProg(perfValue(performance, 'VA_INS_ALEV'), progLo, progHi), '—', '0'],
-    ['Average A-level result',                        avgGrade ? `${avgGrade}${avgPts ? ` (${avgPts} pts)` : ''}` : '—', '—', nat.avgGrade],
-    ['Best 3 A-levels',                               best3Grd ? `${best3Grd}${best3Pts ? ` (${best3Pts} pts)` : ''}` : '—', '—', '—'],
-    ['AAB+ incl. ≥2 facilitating subjects',          pct(perfValue(performance, 'PTAAB_2FAC')),     '—', '—'],
-    ['Students retained to end of course',            pct(perfValue(performance, 'PT_RETAINED_ALEV_RET')), '—', `${nat.retained}%`],
-    ['Progressed to higher education',                pct(perfValue(performance, 'TOT_HEPER')),      '—', '—'],
-    ['Sustained positive destination',                pct(perfValue(performance, 'ALL_PROGRESSED')), '—', '—'],
-    ['Disadvantaged students',                        perfValue(performance, 'TALLPUP_ALEV_1618_DIS') ?? '—', '—', '—'],
-    ['Disadvantaged progress score (VA)',             fmtProg(disProg, disProgLo, disProgHi),        '—', '0'],
-    ['Disadvantaged average A-level result',          disGrade ? `${disGrade}${disPts ? ` (${disPts} pts)` : ''}` : '—', '—', nat.avgGradeDis],
-  ].filter(row => row[1] !== '—' || row[2] !== '—' || row[3] !== '—'); // drop fully-empty rows
-
-  if (!rows.length) return null;
-  return markdownTable(['Metric', 'School', 'Local avg', 'National'], rows);
-}
-
-function buildA6Section(school) {
-  const { identity, performance } = school;
-  if (!identity || !performance) return null;
-
-  const bodyParts = [];
-  if (/secondary|all.through/i.test(identity.phase ?? '') || perfValue(performance, 'ATT8SCR')) {
-    bodyParts.push('**Key Stage 4 (2024/25)**', buildKs4Table(performance));
-
-    const subjectAreaTable = buildKs4SubjectAreaTable(performance);
-    if (subjectAreaTable) {
-      bodyParts.push('', '**Attainment 8 subject areas**', subjectAreaTable);
-    }
-
-    const sustainedDest = perfValue(performance, 'ALL_PROGRESSED');
-    if (sustainedDest) {
-      bodyParts.push('', `In education, apprenticeships or employment for 2 terms after KS4: ${sustainedDest}.`);
-    }
-  }
-
-  const ks5Table = buildKs5Table(performance);
-  if (ks5Table) {
-    bodyParts.push('', '**Key Stage 5 / 16–18**', ks5Table);
-  }
-
-  if (!bodyParts.length) return null;
-  return { heading: 'A6. Academic Performance', body: bodyParts.join('\n'), flag: 'none' };
-}
-
-function buildA7Section(school) {
-  const { performance } = school;
-  if (!performance) return null;
-
-  const body = markdownTable(
-    ['Metric', 'School', 'National avg'],
-    [
-      ['Overall absence', pct(perfValue(performance, 'PERCTOT')), `${NATIONAL_AVG.ABSENCE.PERCTOT}%`],
-      ['Persistent absence (missed 10%+ of sessions)', pct(perfValue(performance, 'PPERSABS10')), `${NATIONAL_AVG.ABSENCE.PPERSABS10}%`],
-    ],
-  );
-
-  return { heading: 'A7. Absence', body, flag: 'none' };
-}
-
-function buildStructuredSections(school) {
-  return [
-    buildA1Section(school),
-    buildA2Section(school),
-    buildA4Section(school),
-    buildA5Section(school),
-    buildA6Section(school),
-    buildA7Section(school),
-  ].filter(Boolean);
-}
-
 function buildSlimBlock(school) {
   const { input, identity, ofsted, performance, financial, area, schoolEthnicity } = school;
   const name = identity?.officialName ?? input;
@@ -2831,31 +2494,28 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
   // then Ofsted / performance / financial in parallel.
   const schools = await Promise.all(
     names.map(async (name) => {
-      const baseIdentity = await lookupSchoolURN(name);
-      const urn = baseIdentity?.urn ?? null;
+      const identity = await lookupSchoolURN(name);
+      const urn = identity?.urn ?? null;
 
       if (!urn) {
-        return { input: name, identity: null, ofsted: null, performance: null, financial: null, sections: [] };
+        return { input: name, identity: null, ofsted: null, performance: null, financial: null };
       }
 
       // Phase 1: Ofsted HTML scrape (fast, no PDF)
-      const ofstedBase = baseIdentity.isIndependent ? null : await getOfstedData(urn);
+      const ofstedBase = identity.isIndependent ? null : await getOfstedData(urn);
 
-      // Phase 2: GIAS detail + PDF + performance + financial + Parent View — all in parallel
-      const [giasDetails, pdfSections, performance, financial, parentView] = await Promise.all([
-        getGIASDetails(urn),
+      // Phase 2: PDF + performance + financial + Parent View — all in parallel
+      const [pdfSections, performance, financial, parentView] = await Promise.all([
         detailed && ofstedBase?.reportUrl
           ? fetchAndParseOfstedPdf(ofstedBase.reportUrl)
           : Promise.resolve(null),
         getPerformanceData(urn),
         getFinancialData(urn),
-        baseIdentity.isIndependent ? Promise.resolve(null) : fetchParentView(urn),
+        identity.isIndependent ? Promise.resolve(null) : fetchParentView(urn),
       ]);
 
-      const identity = { ...baseIdentity, ...(giasDetails ?? {}) };
-
       // Phase 3: area data — postcode comes from DfE CSV (PCODE in phase-specific namespace, e.g. KS2_25)
-      const postcode = identity.postcode ?? Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value ?? null;
+      const postcode = Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value ?? null;
       const area = detailed && postcode ? await getAreaData(postcode) : null;
 
       // IMPORTANT: PDF narrative fields are stored under *Detail keys to avoid
@@ -2876,8 +2536,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Bundled local data (zero-latency — no HTTP)
       const schoolEthnicity = urn ? getSchoolEthnicity(urn) : null;
 
-      const school = { input: name, identity, ofsted, performance, financial, area, schoolEthnicity };
-      return { ...school, sections: detailed ? buildStructuredSections(school) : [] };
+      return { input: name, identity, ofsted, performance, financial, area, schoolEthnicity };
     })
   );
 
@@ -2888,7 +2547,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
     resolved: schools.filter(s => s.identity).length,
   });
 
-  if (!schools.length) return { block: '', flags: {}, sections: [] };
+  if (!schools.length) return { block: '', flags: {} };
 
   const block = '\n\n' + (detailed
     ? schools.map(buildSlimBlock).join('\n\n')
@@ -2945,8 +2604,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
     }
   }
 
-  const sections = detailed && schools.length === 1 ? (schools[0].sections ?? []) : [];
-  return { block, flags, sections };
+  return { block, flags };
 }
 
 // Debug helpers — exported so debug-govuk.mjs can print both blocks
