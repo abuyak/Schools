@@ -54,11 +54,14 @@ const NATIONAL_AVG = {
     MATPROG:                0.0,
   },
   // KS4 attainment 2024/25 (provisional, published Oct 2025)
+  // Source: https://explore-education-statistics.service.gov.uk/find-statistics/key-stage-4-attainment
   KS4: {
     P8MEA:              0.00,  // Progress 8 — national average = 0 by definition
     ATT8SCR:           46.4,   // Attainment 8 score
     PTL2BASICS_95:     45.9,   // % achieving grade 5+ in English and maths
+    PTL2BASICS_94:     68.8,   // % achieving grade 4+ in English and maths
     PTEBACC_E_PTQ_EE:  24.7,  // % entering EBacc
+    PTEBACC_94:        28.6,   // % achieving EBacc at grade 4+
     P8MEA_FSM6CLA1A:  -0.58,  // Progress 8 for disadvantaged pupils
   },
   // KS5 / 16–18 attainment 2024/25 — England state-funded schools/colleges
@@ -233,6 +236,9 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
       // bullets (table/image layout in some PDFs).
       return raw
         .replace(/^\s*\(Information for the school[^)]*\)\s*/i, '')
+        // Strip Ofsted admin boilerplate that follows the actual requirements
+        .replace(/\n+\s*How can I feed back my views\?[\s\S]*/i, '')
+        .replace(/\n+\s*The Department for Education has further guidance[\s\S]*/i, '')
         // Replace PDF Private Use Area bullet glyphs (e.g. \uf06e from Wingdings/Symbol)
         // with a plain hyphen-space so output is readable.
         .replace(/[\uE000-\uF8FF]/g, '- ')
@@ -1927,33 +1933,41 @@ function fmtAcademicResultsSlim(perf, phase) {
     const cohortB   = v('NUMBOYS');
     const cohortDis = v('TFSM6CLA1A');
 
+    // EAL — only Att8 and EBacc APS confirmed; grade % vars unconfirmed so show — if absent
+    const att8eal   = v('ATT8SCR_EAL');
+    const g5eal     = v('PTEAL2BASICS_95');    // unconfirmed — shows — if wrong
+    const g4eal     = v('PTEAL2BASICS_94');    // unconfirmed — shows — if wrong
+    const ebApsEal  = v('EBACCAPS_EAL');
+    const cohortEal = v('TPUPEAL');             // unconfirmed — shows — if wrong
+
     if (p8 || att8 || g4all || g5all) {
       const nat4 = NATIONAL_AVG.KS4;
       const c = (val) => val ?? '—';
 
       lines.push('');
       lines.push('**Key Stage 4 (2024/25)**');
-      lines.push('| Metric | All pupils | Girls | Boys | Disadvantaged | England |');
-      lines.push('|---|---:|---:|---:|---:|---:|');
+      lines.push('| Metric | All pupils | Boys | Girls | Disadvantaged | EAL | Local avg | England |');
+      lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
 
+      // Cohort: All + Disadvantaged only — NUMGIRLS/NUMBOYS are school-wide totals, not KS4 cohort
       if (cohort || cohortDis)
-        lines.push(`| Cohort size | ${c(cohort)} | ${c(cohortG)} | ${c(cohortB)} | ${c(cohortDis)} | — |`);
-      if (att8 || att8g || att8b || att8dis)
-        lines.push(`| Attainment 8 | ${c(att8)} | ${c(att8g)} | ${c(att8b)} | ${c(att8dis)} | ${nat4.ATT8SCR} |`);
-      if (g5all || g5g || g5b || g5dis)
-        lines.push(`| Grade 5+ English & Maths | ${c(g5all)} | ${c(g5g)} | ${c(g5b)} | ${c(g5dis)} | ${nat4.PTL2BASICS_95}% |`);
-      if (g4all || g4g || g4b || g4dis)
-        lines.push(`| Grade 4+ English & Maths | ${c(g4all)} | ${c(g4g)} | ${c(g4b)} | ${c(g4dis)} | ${nat4.PTL2BASICS_94 ?? '—'} |`);
-      if (eb5all || eb5g || eb5b)
-        lines.push(`| EBacc 5+ | ${c(eb5all)} | ${c(eb5g)} | ${c(eb5b)} | — | — |`);
-      if (eb4all || eb4g || eb4b || eb4dis)
-        lines.push(`| EBacc 4+ | ${c(eb4all)} | ${c(eb4g)} | ${c(eb4b)} | ${c(eb4dis)} | ${nat4.PTEBACC_94 ?? '—'} |`);
+        lines.push(`| Cohort size | ${c(cohort)} | — | — | ${c(cohortDis)} | ${c(cohortEal)} | — | — |`);
+      if (att8 || att8b || att8g || att8dis || att8eal)
+        lines.push(`| Attainment 8 | ${c(att8)} | ${c(att8b)} | ${c(att8g)} | ${c(att8dis)} | ${c(att8eal)} | — | ${nat4.ATT8SCR} |`);
+      if (g5all || g5b || g5g || g5dis || g5eal)
+        lines.push(`| Grade 5+ English & Maths | ${c(g5all)} | ${c(g5b)} | ${c(g5g)} | ${c(g5dis)} | ${c(g5eal)} | — | ${nat4.PTL2BASICS_95}% |`);
+      if (g4all || g4b || g4g || g4dis || g4eal)
+        lines.push(`| Grade 4+ English & Maths | ${c(g4all)} | ${c(g4b)} | ${c(g4g)} | ${c(g4dis)} | ${c(g4eal)} | — | ${nat4.PTL2BASICS_94}% |`);
+      if (eb5all || eb5b || eb5g)
+        lines.push(`| EBacc 5+ | ${c(eb5all)} | ${c(eb5b)} | ${c(eb5g)} | — | — | — | — |`);
+      if (eb4all || eb4b || eb4g || eb4dis)
+        lines.push(`| EBacc 4+ | ${c(eb4all)} | ${c(eb4b)} | ${c(eb4g)} | ${c(eb4dis)} | — | — | ${nat4.PTEBACC_94}% |`);
       if (entering)
-        lines.push(`| Entering EBacc | ${entering} | — | — | — | ${nat4.PTEBACC_E_PTQ_EE}% |`);
-      if (ebApsAll || ebApsG || ebApsB)
-        lines.push(`| EBacc APS | ${c(ebApsAll)} | ${c(ebApsG)} | ${c(ebApsB)} | ${c(ebApsDis)} | — |`);
+        lines.push(`| Entering EBacc | ${entering} | — | — | — | — | — | ${nat4.PTEBACC_E_PTQ_EE}% |`);
+      if (ebApsAll || ebApsB || ebApsG || ebApsEal)
+        lines.push(`| EBacc APS | ${c(ebApsAll)} | ${c(ebApsB)} | ${c(ebApsG)} | ${c(ebApsDis)} | ${c(ebApsEal)} | — | — |`);
       if (p8)
-        lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} | — | — | ${c(p8dis)} | ${nat4.P8MEA} |`);
+        lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} | — | — | ${c(p8dis)} | — | — | ${nat4.P8MEA} |`);
     }
   }
 
@@ -2150,9 +2164,7 @@ function fmtOfstedSlim(ofsted, isIndependent) {
   addNarrative('Leadership and Management (detail)', ofsted.leadershipAndManagementDetail?.length > 100 ? ofsted.leadershipAndManagementDetail : null);
   addNarrative('Achievement (detail)', ofsted.achievementDetail?.length                      > 100 ? ofsted.achievementDetail             : null);
   addNarrative('Inclusion (detail)', ofsted.inclusionDetail?.length                          > 100 ? ofsted.inclusionDetail               : null);
-  addNarrative('What the school needs to improve', ofsted.nextSteps);
-
-  if (!ofsted.pupilExperience && !ofsted.nextSteps && ofsted.reportUrl) {
+  if (!ofsted.pupilExperience && ofsted.reportUrl) {
     lines.push(`- Full report: ${ofsted.reportUrl}`);
   }
 
@@ -2288,6 +2300,9 @@ ${fmtFinancial(financial)}
 
 ### Inspection Outcomes (Ofsted)
 ${fmtOfstedSlim(ofsted, identity?.isIndependent ?? false)}
+
+### A4 — What the School Needs to Improve (verbatim from Ofsted PDF — reproduce exactly in A4 section)
+${identity?.isIndependent ? '_Independent school — not applicable._' : ofsted?.nextSteps ? ofsted.nextSteps : ofsted?.overall ? `_No improvement requirements stated. Ofsted grade: ${ofsted.overall}._` : '_Not retrieved — link to full Ofsted PDF if available._'}
 
 ### School Pupil Ethnicity (DfE Census)
 ${fmtSchoolEthnicitySlim(schoolEthnicity)}
