@@ -1531,9 +1531,9 @@ function fmtAcademicResults(perf, phase) {
   const ph = (phase ?? '').toLowerCase();
   let allowed;
   if (/primary|middle.*primary/i.test(ph)) {
-    allowed = ns => /^(KS2|ABS|CENSUS|L)/.test(ns);
+    allowed = ns => /^(KS1|KS2|ABS|CENSUS|L)/.test(ns);
   } else if (/secondary|all.through|middle.*secondary/i.test(ph)) {
-    allowed = ns => /^(KS4|KS5|ABS|CENSUS|L)/.test(ns);
+    allowed = ns => /^(KS1|KS2|KS4|KS5|ABS|CENSUS|L)/.test(ns); // all-through may have KS1/KS2
   } else if (/16.plus/i.test(ph)) {
     allowed = ns => /^(KS5|ABS|CENSUS|L)/.test(ns);
   } else {
@@ -1542,6 +1542,7 @@ function fmtAcademicResults(perf, phase) {
 
   // Friendly section headings
   const NS_LABELS = {
+    KS1_25:    'Key Stage 1 (2024/25)',
     KS2_25:    'Key Stage 2 (2024/25)',
     KS4_25:    'Key Stage 4 (2024/25)',
     KS5_25:    'Key Stage 5 (2024/25)',
@@ -1794,15 +1795,42 @@ function govLinks(urn) {
  * Picks ~15 high-signal variables by code rather than dumping all rows.
  * Covers KS2 (primary), KS4 (secondary), plus pupil census and absence for all.
  */
-function fmtAcademicResultsSlim(perf, phase) {
+function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
   if (!perf) return '_Not retrieved_';
 
-  // Fast lookup across all namespaces by variable code
-  const allRows = Object.values(perf).flat();
+  // Fast lookup across all namespaces — prefer the most recent year.
+  // Sort by numeric year suffix descending (KS4_25 > KS4_24, CENSUS_25 > CENSUS_24, etc.)
+  // so that find() always returns the latest-year value when multiple years exist.
+  const allRows = Object.entries(perf)
+    .sort(([a], [b]) => {
+      const ya = parseInt(a.match(/_(\d+)$/)?.[1] ?? '0', 10);
+      const yb = parseInt(b.match(/_(\d+)$/)?.[1] ?? '0', 10);
+      return yb - ya; // descending: 25 before 24 before L (0)
+    })
+    .flatMap(([, rows]) => rows);
   const v = (code) => allRows.find(r => r.variable === code)?.value ?? null;
 
   const ph  = (phase ?? '').toLowerCase();
   const lines = [];
+
+  // ── KS1 (infant / primary / all-through with Year 2 data) ────────────────
+  // Variables in KS1_25 namespace — only shown if data is actually present
+  const ks1Read = v('PTREAD_EXP_KS1');  // % achieving expected in reading (Year 2 phonics)
+  const ks1Writ = v('PTWRITE_EXP_KS1'); // % achieving expected in writing
+  const ks1Mat  = v('PTMAT_EXP_KS1');   // % achieving expected in maths
+  const ks1Sci  = v('PTSCITA_EXP_KS1'); // % achieving expected in science
+  const ks1NOR  = v('NOR_KS1');         // KS1 cohort size
+
+  if (ks1Read || ks1Writ || ks1Mat) {
+    lines.push('**Key Stage 1 (2024/25)**');
+    lines.push('| Metric | Value |');
+    lines.push('|---|---|');
+    if (ks1NOR)  lines.push(`| KS1 cohort | ${ks1NOR} |`);
+    if (ks1Read) lines.push(`| Reading expected standard | ${ks1Read} |`);
+    if (ks1Writ) lines.push(`| Writing expected standard | ${ks1Writ} |`);
+    if (ks1Mat)  lines.push(`| Maths expected standard | ${ks1Mat} |`);
+    if (ks1Sci)  lines.push(`| Science expected standard | ${ks1Sci} |`);
+  }
 
   // ── KS2 (primary) ─────────────────────────────────────────────────────────
   if (/primary|middle.*primary/i.test(ph) || v('PTRWM_EXP')) {
@@ -2063,7 +2091,7 @@ function fmtAcademicResultsSlim(perf, phase) {
   }
 
   // ── Pupil census ──────────────────────────────────────────────────────────
-  const nor = v('NOR');
+  const nor = v('NOR') ?? (fallbackNor != null ? String(fallbackNor) : null);
   const eal = v('PNUMEAL');
   const fsm = v('PNUMFSMEVER');
   const sen = v('PSENELK');
@@ -2074,7 +2102,7 @@ function fmtAcademicResultsSlim(perf, phase) {
     lines.push('**Pupil Profile (Census 2025)**');
     lines.push('| Metric | Value |');
     lines.push('|---|---|');
-    if (nor) lines.push(`| On roll | ${nor} |`);
+    if (nor) lines.push(`| Pupils on roll | ${nor} |`);
     if (fsm) lines.push(`| FSM-eligible (last 6 years) | ${fsm} |`);
     if (eal) lines.push(`| EAL pupils | ${eal} |`);
     if (sen) lines.push(`| SEN support | ${sen} |`);
@@ -2267,7 +2295,13 @@ function buildSlimBlock(school) {
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
 
-  const anyNsField = (v) => Object.values(performance ?? {}).flat().find(r => r.variable === v)?.value ?? null;
+  // anyNsField: search all namespaces, preferring the most recent year suffix
+  const anyNsField = (variable) => {
+    const sorted = Object.entries(performance ?? {})
+      .sort(([a], [b]) => (parseInt(b.match(/_(\d+)$/)?.[1] ?? '0', 10) - parseInt(a.match(/_(\d+)$/)?.[1] ?? '0', 10)))
+      .flatMap(([, rows]) => rows);
+    return sorted.find(r => r.variable === variable)?.value ?? null;
+  };
   const lField     = (v) => performance?.L?.find(r => r.variable === v)?.value ?? null;
   const postcode   = anyNsField('PCODE');
   const ageLow     = lField('AGELOW');
@@ -2293,7 +2327,7 @@ function buildSlimBlock(school) {
 **Links:** ${links}
 
 ### Academic Results (DfE)
-${fmtAcademicResultsSlim(performance, identity?.phase)}
+${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null)}
 
 ### Financial Benchmarking (FBIT)
 ${fmtFinancial(financial)}
