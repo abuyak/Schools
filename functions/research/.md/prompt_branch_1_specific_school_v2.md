@@ -172,17 +172,9 @@ Table with full names, not abbreviations:
 
 ### **A6. Academic Performance**
 
-Table with full metric names — no unexplained abbreviations:
+**Reproduce the performance table(s) exactly as they appear in the pre-fetched block — do not reformat or reorder columns.** The pre-fetched block already contains a formatted markdown table with all relevant columns (e.g. All pupils, Boys, Girls, Disadvantaged, EAL, Local avg, England). Copy the full table verbatim, including the header row and separator row. Do not condense or summarise.
 
-| Metric | School | National avg |
-|---|---:|---:|
-| (reproduce every row from the pre-fetched block) | | |
-
-Extract national averages from _(nat: X%)_ inline tags → National avg column. Extract 3-year trends from _(3-yr: X → Y → Z)_ → include in School column alongside current value.
-
-Include every row: attainment by subject, higher standard, progress scores with confidence intervals and DfE descriptor (well above / above / average / below / well below), disadvantaged attainment, gender gap, cohort size, absent-from-tests %.
-
-If the pre-fetched block contains a **Key Stage 5 / 16–18** section (sixth form), include it as a separate sub-table under the KS4 table. Interpret A-level grades (A*, A, A-, B+, B, B-, etc.), AAB+ in facilitating subjects (competitive university benchmark), and progression to higher education. Do not omit this section for schools with sixth forms.
+If the pre-fetched block contains a **Key Stage 5 / 16–18** section (sixth form), reproduce it as a separate sub-table. Do not omit it.
 
 **Verdict:** 2–3 sentences on overall strength, trends, and reliability (flag if cohort below 30 pupils or absent-from-tests above 5%). For schools with a sixth form, comment on sixth form performance separately.
 

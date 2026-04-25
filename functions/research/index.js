@@ -25,13 +25,13 @@ const BRANCH_FILES = {
 const OUTPUT_CONSTRAINTS = `
 ---
 ## Output Constraints (do not override)
-- Never ask the user clarifying questions. The user has paid for this query. Instead, make the most reasonable assumptions given the question, state them briefly at the start of the Direct Answer section, and produce a complete answer based on those assumptions. If the question is genuinely unanswerable (e.g. no matching schools exist), say so clearly and redirect to the closest useful answer.
+- Never ask the user clarifying questions. The user has paid for this query. Instead, make the most reasonable assumptions given the question, state them briefly at the start of the first section, and produce a complete answer based on those assumptions. If the question is genuinely unanswerable (e.g. no matching schools exist), say so clearly and redirect to the closest useful answer.
 - Return valid JSON only. No markdown fences, no prose outside the JSON object.
 - Populate the scorecard array with 4-6 key dimensions. Each item: dimension (label), rating (strong|good|mixed|weak|unknown), note (one short sentence). Do not repeat scorecard content verbatim in the sections.
 - Cite each fact inline using markdown link format: [source name](url).
 - For fee-paying schools always search for current fees. If not found on first search, try "[school name] fees" as a dedicated search.
 - Within each section body, use \\n to separate paragraphs. Use \\n- item for bullet points and \\n1. item for numbered lists. Never write a section body as one long unbroken paragraph.
-- Use the exact section identifiers from the prompt as the heading field value. For Branch 1: "Quick Take", then "A1. School Identity", "A2. Ofsted Inspection Grades" … "B1. Parent View" … "C1. School Character" etc. Do NOT create separate section objects for the part headers "Part A — Official Record", "Part B — Independent Research", or "Part C — Verdict & Synthesis" — these are structural labels in the prompt only, not output sections. Do NOT add sequential numeric prefixes like "1.", "2.", "2.1" to any heading.
+- Use the exact section heading text from the prompt (the text after ### in the prompt) as the heading field value. Do NOT create separate section objects for structural part headers like "Part A — Official Record" or "Part B — Independent Research" — these are layout labels in the prompt only, not output sections. Do NOT add or remove numeric prefixes from headings unless the prompt already includes them.
 - CRITICAL: Never repeat the section heading text inside the body field. The heading is rendered separately by the UI. The body must begin with content, never with the heading repeated.
 - Numbered lists (1. 2. 3.) must only be used when ORDER genuinely matters, e.g. step-by-step instructions or a ranked priority list. Use bullets (-) for options, alternatives, and unordered items. Never number sub-points under a numbered item; use indented bullets instead.
 - For sections that list options (e.g. "Main Routes Or Fallback Options"): use a bold-only bullet (- **Option name**) for each option header; follow it with regular bullets for the sub-points (Why realistic / Upside / Downside). Do NOT create a numbered list for options.
@@ -41,32 +41,29 @@ const OUTPUT_CONSTRAINTS = `
 
 ## Traffic Light Rules
 
-Only sections A1–B5 receive red or green flags. Quick Take and all C sections (C1, C2, C3, C4) must always be "none".
+Apply these rules based on section content. Only inspection/performance/census/absence/finance/parentview sections receive red or green flags. Summary/verdict/sources/character/pros-cons/next-steps sections must always be "none".
 
-**"red"** — set for the following A/B sections only when the trigger condition is met:
-- A2: Ofsted overall grade Requires Improvement or Inadequate; any sub-grade Inadequate; safeguarding not met
-- A4: Any improvement requirements are present in the pre-fetched block (content = red by definition)
-- A5: EHC plan % above 6%; FSM above 35% (primary) or 30% (secondary) without strong support evidence
-- A6: Any progress score descriptor "below" or "well below" national; attainment more than 10pp below national average
-- A7: Overall absence above 8.6%; persistent absence above 23.3%
-- A8: Negative in-year balance; revenue reserves below one month's spend; QTS% below comparator average
-- A9: IMD decile 1–3; mean household income below £35,000
-- B1: Any Parent View metric flagged ⚠️ in the pre-fetched table
-- B4: Safeguarding concerns; sudden leadership changes; supply teacher reliance
+**"red"** — set when the section contains a genuine concern:
+- Ofsted grades section: overall grade Requires Improvement or Inadequate; any sub-grade Inadequate; safeguarding not met
+- Improvement requirements section: any requirements are present (content = red by definition)
+- Pupil census section: EHC plan % above 6%; FSM above 35% (primary) or 30% (secondary) without strong support evidence
+- Academic performance section: any progress score descriptor "below" or "well below" national; attainment more than 10pp below national average
+- Absence section: overall absence above 8.6%; persistent absence above 23.3%
+- Financial/staffing section: negative in-year balance; revenue reserves below one month's spend; QTS% below comparator average
+- Area profile section: IMD decile 1–3; mean household income below £35,000
+- Parent View section: any metric flagged ⚠️ in the pre-fetched table
+- Community/leadership section: safeguarding concerns; sudden leadership changes; supply teacher reliance
 
-**"green"** — set for the following A/B sections only when the trigger condition is met:
-- A2: Overall grade Outstanding or Exceptional; clean sweep of top sub-grades
-- A4: Section is empty — school received Outstanding with no improvement requirements
-- A6: Progress score "well above" national; attainment more than 10pp above national average across core subjects
-- A7: Overall absence below 5%; persistent absence below 15%
-- A8: Healthy reserves (more than 3 months spend); QTS% above comparator average
-- B1: All Parent View metrics above thresholds; more than 100 responses
-- B3: Exceptionally broad extracurricular programme
+**"green"** — set when the section contains a standout positive:
+- Ofsted grades section: overall grade Outstanding or Exceptional; clean sweep of top sub-grades
+- Improvement requirements section: section is empty — school received Outstanding with no improvement requirements
+- Academic performance section: progress score "well above" national; attainment more than 10pp above national average across core subjects
+- Absence section: overall absence below 5%; persistent absence below 15%
+- Financial/staffing section: healthy reserves (more than 3 months spend); QTS% above comparator average
+- Parent View section: all metrics above thresholds; more than 100 responses
+- Extracurricular section: exceptionally broad programme
 
-**"none"** — everything else, including any section not listed above, and all of: Quick Take, C1, C2, C3, C4.
-
-## C2 Linkage Rule
-The C2 (Pros and Cons) section MUST reference every section flagged "red" as a concern and every section flagged "green" as a strength. Do not introduce new concerns or strengths in C2 that were not flagged in A1–B5.
+**"none"** — everything else, including summary/verdict/character/sources sections.
 `;
 
 
