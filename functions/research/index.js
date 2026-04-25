@@ -344,10 +344,10 @@ export const handler = async (event) => {
         user_location: { type: 'approximate', country: 'GB', city: 'London', region: 'London', timezone: 'Europe/London' },
         external_web_access: true,
       }],
-      // branch 1 (specific school) always needs web searches for Part B;
-      // branch 3/4 benefit from search too — only skip for branch 2 (comparison)
-      // which has its own gov.uk block and rarely needs supplemental search.
-      tool_choice: body.branch === 'prompt_branch_2' ? 'auto' : 'required',
+      // web_search_preview only supports tool_choice: 'auto' — 'required' now
+      // causes a 400 from the Responses API. The model uses search anyway because
+      // the prompt explicitly requires it for Part B sections.
+      tool_choice: 'auto',
       include: ['web_search_call.action.sources'],
       instructions,
       input: body.question,
