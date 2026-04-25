@@ -339,17 +339,18 @@
   function renderSections(sections) {
     answerSections.replaceChildren();
     (sections || []).forEach(function (section) {
-      if (section._isDivider) {
-        const div = document.createElement("div");
-        div.className = "part-divider";
-        div.textContent = section.heading || "";
-        answerSections.appendChild(div);
-        return;
-      }
       const flag = section.flag || "none";
 
+      // Part label (A/B/C) — render glued immediately above this section
+      if (section._partLabel) {
+        const div = document.createElement("div");
+        div.className = "part-divider";
+        div.textContent = section._partLabel;
+        answerSections.appendChild(div);
+      }
+
       const article = document.createElement("article");
-      article.className = "answer-section" + (flag !== "none" ? " answer-section--" + flag : "");
+      article.className = "answer-section" + (flag !== "none" ? " answer-section--" + flag : "") + (section._partLabel ? " answer-section--has-part-label" : "");
 
       const headingRow = document.createElement("div");
       headingRow.className = "answer-section-heading-row";

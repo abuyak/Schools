@@ -280,6 +280,24 @@ export const handler = async (event) => {
 
   const baseUrl = (process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1').replace(/\/$/, '');
 
+  // ── Debug mode: return raw govuk block without AI call (admin only) ──────────
+  if (isAdmin && body._debugGovuk) {
+    try {
+      const govukResult = await fetchGovDataForPrompt(
+        body.question,
+        body.branch ?? 'prompt_branch_1',
+        apiKey,
+        baseUrl,
+        model,
+      );
+      const block = typeof govukResult === 'string' ? govukResult : (govukResult?.block ?? '');
+      const flags = typeof govukResult === 'string' ? {} : (govukResult?.flags ?? {});
+      return okResponse({ status: 'debug_govuk', block, flags });
+    } catch (err) {
+      return okResponse({ status: 'debug_govuk_error', error: err.message });
+    }
+  }
+
   let instructions = getBranchInstructions(body.branch, promptFile);
 
   // Pre-fetch gov.uk data for branches 1 (detailed) and 2 (comparison summary)
@@ -379,6 +397,21 @@ export const handler = async (event) => {
   if (result.sections && Object.keys(govukFlags).length) {
     for (const s of result.sections) {
       if (govukFlags[s.heading] !== undefined) s.flag = govukFlags[s.heading];
+    }
+  }
+
+  // Tag the first section of each part with its part label — the UI renders
+  // this as a divider glued directly above the section (no gap between them).
+  if (result.sections) {
+    const PART_LABELS = {
+      'A1.': 'Part A — Official Record',
+      'B1.': 'Part B — Independent Research',
+      'C1.': 'Part C — Verdict & Synthesis',
+    };
+    for (const s of result.sections) {
+      for (const [prefix, label] of Object.entries(PART_LABELS)) {
+        if (s.heading?.startsWith(prefix)) s._partLabel = label;
+      }
     }
   }
 

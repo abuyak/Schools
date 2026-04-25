@@ -37,8 +37,9 @@
     .rating-unknown { background: #9ca3af; }
     .sc-note { color: #666; font-size: 0.8rem; flex: 2; }
 
-    /* Part dividers */
-    .part-divider { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin: 2rem 0 0.75rem; padding-bottom: 0.35rem; border-bottom: 1px solid #e5e7eb; }
+    /* Part dividers — rendered glued above the first section of each part */
+    .part-divider { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin: 2rem 0 0; padding-bottom: 0.35rem; border-bottom: 2px solid #d1d5db; }
+    .section--has-part-label { margin-top: 0; }
 
     /* Sections */
     .section { margin-bottom: 1.5rem; padding-left: 0.5rem; border-left: 3px solid transparent; }
@@ -208,16 +209,18 @@
     const el = document.getElementById('r-sections');
     el.replaceChildren();
     (sections||[]).forEach(s => {
-      if (s._isDivider) {
-        const div = document.createElement('div');
-        div.className = 'part-divider';
-        div.textContent = s.heading || '';
-        el.appendChild(div);
-        return;
-      }
       const flag = s.flag || 'none';
+
+      // Part label (A/B/C) — render glued immediately above this section
+      if (s._partLabel) {
+        const divider = document.createElement('div');
+        divider.className = 'part-divider';
+        divider.textContent = s._partLabel;
+        el.appendChild(divider);
+      }
+
       const art = document.createElement('div');
-      art.className = 'section' + (flag !== 'none' ? ' section--' + flag : '');
+      art.className = 'section' + (flag !== 'none' ? ' section--' + flag : '') + (s._partLabel ? ' section--has-part-label' : '');
 
       const hrow = document.createElement('div'); hrow.className = 'section-hrow';
       const h3 = document.createElement('h3'); h3.textContent = s.heading||'';

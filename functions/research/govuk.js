@@ -1886,27 +1886,74 @@ function fmtAcademicResultsSlim(perf, phase) {
 
   // ── KS4 (secondary) ───────────────────────────────────────────────────────
   if (/secondary|all.through/i.test(ph) || v('P8MEA')) {
-    const p8    = v('P8MEA');
-    const p8lo  = v('P8LOWER');
-    const p8hi  = v('P8UPPER');
-    const att8  = v('ATT8SCR');
-    const g5em  = v('PTL2BASICS_95');
-    const ebacc = v('PTEBACC_E_PTQ_EE');
-    const p8dis = v('P8MEA_FSM6CLA1A');
-    const cohortDisadv = v('PTFSM6CLA1A');
+    // Attainment
+    const att8     = v('ATT8SCR');
+    const att8g    = v('ATT8SCR_GIRLS');
+    const att8b    = v('ATT8SCR_BOYS');
+    const att8dis  = v('ATT8SCR_FSM6CLA1A');
+    // Grade 5+ English & Maths
+    const g5all    = v('PTL2BASICS_95');
+    const g5g      = v('PGL2BASICS_95');
+    const g5b      = v('PBL2BASICS_95');
+    const g5dis    = v('PTFSM6CLA1ABASICS_95');
+    // Grade 4+ English & Maths
+    const g4all    = v('PTL2BASICS_94');
+    const g4g      = v('PGL2BASICS_94');
+    const g4b      = v('PBL2BASICS_94');
+    const g4dis    = v('PTFSM6CLA1ABASICS_94');
+    // EBacc (4+ and 5+)
+    const eb4all   = v('PTEBACC_94');
+    const eb4g     = v('PGEBACC_94');
+    const eb4b     = v('PBEBACC_94');
+    const eb4dis   = v('PTFSM6CLA1AEBACC_94');
+    const eb5all   = v('PTEBACC_95');
+    const eb5g     = v('PGEBACC_95');
+    const eb5b     = v('PBEBACC_95');
+    // EBacc APS
+    const ebApsAll = v('EBACCAPS');
+    const ebApsG   = v('EBACCAPS_GIRLS');
+    const ebApsB   = v('EBACCAPS_BOYS');
+    const ebApsDis = v('EBACCAPS_FSM6CLA1A');
+    // Entering EBacc
+    const entering = v('PTEBACC_E_PTQ_EE');
+    // Progress 8
+    const p8       = v('P8MEA');
+    const p8lo     = v('P8LOWER');
+    const p8hi     = v('P8UPPER');
+    const p8dis    = v('P8MEA_FSM6CLA1A');
+    // Cohort sizes
+    const cohort    = v('TPUP');
+    const cohortG   = v('NUMGIRLS');
+    const cohortB   = v('NUMBOYS');
+    const cohortDis = v('TFSM6CLA1A');
 
-    if (p8 || att8 || g5em) {
+    if (p8 || att8 || g4all || g5all) {
       const nat4 = NATIONAL_AVG.KS4;
+      const c = (val) => val ?? '—';
+
       lines.push('');
       lines.push('**Key Stage 4 (2024/25)**');
-      lines.push('| Metric | Value |');
-      lines.push('|---|---|');
-      if (p8)    lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} _(nat: ${nat4.P8MEA})_ |`);
-      if (att8)  lines.push(`| Attainment 8 | ${att8} _(nat: ${nat4.ATT8SCR})_ |`);
-      if (g5em)  lines.push(`| Grade 5+ English & Maths | ${g5em} _(nat: ${nat4.PTL2BASICS_95}%)_ |`);
-      if (ebacc) lines.push(`| EBacc entry | ${ebacc} _(nat: ${nat4.PTEBACC_E_PTQ_EE}%)_ |`);
-      if (cohortDisadv) lines.push(`| Disadvantaged share of KS4 cohort | ${cohortDisadv} |`);
-      if (p8dis) lines.push(`| Progress 8 — disadvantaged | ${p8dis} _(nat: ${nat4.P8MEA_FSM6CLA1A})_ |`);
+      lines.push('| Metric | All pupils | Girls | Boys | Disadvantaged | England |');
+      lines.push('|---|---:|---:|---:|---:|---:|');
+
+      if (cohort || cohortDis)
+        lines.push(`| Cohort size | ${c(cohort)} | ${c(cohortG)} | ${c(cohortB)} | ${c(cohortDis)} | — |`);
+      if (att8 || att8g || att8b || att8dis)
+        lines.push(`| Attainment 8 | ${c(att8)} | ${c(att8g)} | ${c(att8b)} | ${c(att8dis)} | ${nat4.ATT8SCR} |`);
+      if (g5all || g5g || g5b || g5dis)
+        lines.push(`| Grade 5+ English & Maths | ${c(g5all)} | ${c(g5g)} | ${c(g5b)} | ${c(g5dis)} | ${nat4.PTL2BASICS_95}% |`);
+      if (g4all || g4g || g4b || g4dis)
+        lines.push(`| Grade 4+ English & Maths | ${c(g4all)} | ${c(g4g)} | ${c(g4b)} | ${c(g4dis)} | ${nat4.PTL2BASICS_94 ?? '—'} |`);
+      if (eb5all || eb5g || eb5b)
+        lines.push(`| EBacc 5+ | ${c(eb5all)} | ${c(eb5g)} | ${c(eb5b)} | — | — |`);
+      if (eb4all || eb4g || eb4b || eb4dis)
+        lines.push(`| EBacc 4+ | ${c(eb4all)} | ${c(eb4g)} | ${c(eb4b)} | ${c(eb4dis)} | ${nat4.PTEBACC_94 ?? '—'} |`);
+      if (entering)
+        lines.push(`| Entering EBacc | ${entering} | — | — | — | ${nat4.PTEBACC_E_PTQ_EE}% |`);
+      if (ebApsAll || ebApsG || ebApsB)
+        lines.push(`| EBacc APS | ${c(ebApsAll)} | ${c(ebApsG)} | ${c(ebApsB)} | ${c(ebApsDis)} | — |`);
+      if (p8)
+        lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} | — | — | ${c(p8dis)} | ${nat4.P8MEA} |`);
     }
   }
 

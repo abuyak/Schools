@@ -319,16 +319,19 @@ input[type="email"]:focus,
   overflow: hidden;
 }
 
-/* ── Part dividers (Part A / B / C headers) ────────────────────────── */
+/* ── Part dividers — glued directly above the first section of each part */
 .part-divider {
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #888;
-  margin: 2rem 0 0.75rem;
+  margin: 2rem 0 0;
   padding-bottom: 0.35rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 2px solid #d1d5db;
+}
+.answer-section--has-part-label {
+  margin-top: 0;
 }
 
 /* ── Flag variants ─────────────────────────────────────────────────── */
