@@ -1054,7 +1054,7 @@ export async function getOfstedData(urn) {
  *
  * Returns null if the school has no Parent View data or the fetch fails.
  */
-export async function fetchParentView(urn) {
+async function fetchParentView(urn) {
   if (!urn) return null;
 
   try {
@@ -2346,27 +2346,6 @@ function buildA1Section(school) {
   const { identity, performance } = school;
   if (!identity) return null;
 
-  // Fall back to performance data for fields not scraped from GIAS detail page
-  const ageLow  = identity.ageLow  ?? perfValue(performance, 'AGELOW');
-  const ageHigh = identity.ageHigh ?? perfValue(performance, 'AGEHIGH');
-  const gender  = identity.gender  ?? perfValue(performance, 'GENDER');
-  const nor     = identity.numberOnRoll ?? perfValue(performance, 'NOR');
-  const norb    = perfValue(performance, 'NORB');
-  const norg    = perfValue(performance, 'NORG');
-  const pnorb   = perfValue(performance, 'PNORB');
-  const pnorg   = perfValue(performance, 'PNORG');
-  const fsmEver = perfValue(performance, 'PNUMFSMEVER');  // FSM ever 6yr %
-  // Postcode: identity field, then parse from address string, then performance CSV
-  const postcode = identity.postcode
-    ?? (identity.address ? (identity.address.match(/[A-Z]{1,2}\d[\dA-Z]?\s*\d[A-Z]{2}/i) ?? [])[0] : null)
-    ?? perfValue(performance, 'PCODE');
-
-  const norLabel = nor
-    ? (norb && norg
-        ? `${nor} (${norb} boys ${pnorb ? `(${pnorb})` : ''} / ${norg} girls ${pnorg ? `(${pnorg})` : ''})`
-        : String(nor))
-    : null;
-
   const rows = [
     ['Official name', identity.officialName],
     ['URN', identity.urn],
@@ -2374,8 +2353,8 @@ function buildA1Section(school) {
     ['UKPRN', identity.ukprn],
     ['Type', identity.type],
     ['Phase', identity.phase],
-    ['Age range', ageLow && ageHigh ? `${ageLow} to ${ageHigh}` : null],
-    ['Gender of entry', gender],
+    ['Age range', identity.ageLow && identity.ageHigh ? `${identity.ageLow} to ${identity.ageHigh}` : '—'],
+    ['Gender of entry', identity.gender],
     ['Admissions policy', identity.admissionsPolicy],
     ['Religious character', identity.religiousCharacter],
     ['Status', identity.status],
@@ -2383,20 +2362,26 @@ function buildA1Section(school) {
     ['Boarding', identity.boarders],
     ['Nursery', identity.nurseryProvision],
     ['Address', identity.address],
-    ['Postcode', postcode],
-    ['Local authority', identity.la && identity.dfeNumber
-      ? `${identity.la} (DfE: ${identity.dfeNumber})`
-      : identity.la],
+    ['Postcode', identity.postcode ?? perfValue(performance, 'PCODE')],
+    ['Local authority', identity.la && identity.dfeNumber ? `${identity.la} (${String(identity.dfeNumber).split('/')[0]})` : identity.la],
     ['Headteacher / Principal', identity.headteacher],
-    ['Pupils on roll', norLabel],
-    ['FSM eligible (ever, 6yr)', fsmEver],
+    ['Capacity', identity.capacity],
+    ['Number of pupils', identity.numberOnRoll],
+    ['FSM pupils', identity.fsmEligibleCount],
+    ['FSM percentage', identity.fsmPct],
+    ['GOR / Region', identity.region],
+    ['District', identity.district],
+    ['Ward', identity.ward],
+    ['Constituency', identity.constituency],
+    ['MSOA', identity.msoa],
+    ['LSOA', identity.lsoa],
     ['Date last changed / confirmed', identity.lastChangedConfirmed],
-  ].filter(row => row[1] != null && row[1] !== '');
+  ];
 
   const body = [
     markdownTable(['Field', 'Value'], rows),
     '',
-    `Source: [GIAS](https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/${identity.urn})`,
+    `This matches the government record for ${plain(identity.officialName)} on GIAS.`,
   ].join('\n');
 
   return { heading: 'A1. School Identity', body, flag: 'none' };
@@ -2631,49 +2616,6 @@ function buildA7Section(school) {
   return { heading: 'A7. Absence', body, flag: 'none' };
 }
 
-function buildA8Section(school) {
-  const { financial } = school;
-  if (!financial) return null;
-
-  const headlineRows = [
-    ['In-year balance', plain(financial.inYearBalance)],
-    ['Revenue reserve', plain(financial.revenueReserve)],
-    ['Total spend per pupil',
-      financial.totalSpendPerPupil
-        ? `${financial.totalSpendPerPupil}${financial.comparatorTotalPerPupil ? ` (comparator avg: ${financial.comparatorTotalPerPupil})` : ''}`
-        : null],
-    ['Pupil:teacher ratio', financial.pupilTeacherRatio ? `${financial.pupilTeacherRatio}:1` : null],
-    ['Total workforce FTE', plain(financial.workforceFTE)],
-    ['Teachers FTE', plain(financial.teachersFTE)],
-    ['Senior leadership FTE', plain(financial.seniorLeadershipFTE)],
-    ['Teaching assistants FTE', plain(financial.teachingAssistantFTE)],
-    ['% teachers with QTS',
-      financial.qualifiedTeachersPct
-        ? `${financial.qualifiedTeachersPct}${financial.comparatorQtsAvgPct ? ` (comparator avg: ${financial.comparatorQtsAvgPct})` : ''}`
-        : null],
-  ].filter(row => row[1] != null && row[1] !== '—');
-
-  const bodyParts = [];
-
-  if (headlineRows.length) {
-    bodyParts.push(markdownTable(['Metric', 'Value'], headlineRows));
-  }
-
-  if (financial.spendingCategories && Object.keys(financial.spendingCategories).length) {
-    const catRows = Object.entries(financial.spendingCategories).map(([cat, data]) => [
-      cat,
-      plain(data.school),
-      plain(data.average),
-      data.pctDiff ?? '—',
-    ]);
-    bodyParts.push('', '**Spending per pupil vs comparator schools (FBIT)**',
-      markdownTable(['Category', 'School', 'Avg', 'Diff'], catRows));
-  }
-
-  if (!bodyParts.length) return null;
-  return { heading: 'A8. Financial Position and Staffing', body: bodyParts.join('\n'), flag: 'none' };
-}
-
 function buildStructuredSections(school) {
   return [
     buildA1Section(school),
@@ -2682,7 +2624,6 @@ function buildStructuredSections(school) {
     buildA5Section(school),
     buildA6Section(school),
     buildA7Section(school),
-    buildA8Section(school),
   ].filter(Boolean);
 }
 
@@ -3009,4 +2950,4 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
 }
 
 // Debug helpers — exported so debug-govuk.mjs can print both blocks
-export { buildDetailedBlock, buildSlimBlock, buildStructuredSections };
+export { buildDetailedBlock, buildSlimBlock };
