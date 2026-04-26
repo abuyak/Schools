@@ -65,6 +65,8 @@ Resources:
 
   ResearchFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: nodejs22.x   # tells sam build to run npm install --production
     Properties:
       CodeUri: functions/research/
       Handler: index.handler

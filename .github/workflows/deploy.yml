@@ -70,6 +70,11 @@ jobs:
         with:
           node-version: '24'
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Set up SAM CLI
         uses: aws-actions/setup-sam@v2
 
@@ -78,6 +83,9 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build Lambda (installs npm dependencies into bundle)
+        run: sam build
 
       - name: Deploy Lambda
         run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset

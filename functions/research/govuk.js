@@ -159,8 +159,17 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
   // pdf-parse v1.1.1 — import from lib directly to bypass the self-test that
   // tries to open './test/data/05-versions-space.pdf' on module load (fails in Lambda).
   // Import once outside the retry loop so it isn't re-evaluated on each attempt.
-  const mod = await import('pdf-parse/lib/pdf-parse.js');
-  const pdfParse = mod.default ?? mod;
+  // Guard with try/catch: if pdf-parse is absent from the Lambda bundle the import
+  // throws "Cannot find package", which would otherwise poison the Promise.all in
+  // fetchGovDataForPrompt and discard ALL pre-fetched gov.uk data.
+  let pdfParse;
+  try {
+    const mod = await import('pdf-parse/lib/pdf-parse.js');
+    pdfParse = mod.default ?? mod;
+  } catch (err) {
+    glog('govuk_pdf_import_fail', { error: String(err.message ?? err).slice(0, 120) });
+    return null;
+  }
 
   let fullText;
   // Retry once: Ofsted CDN is occasionally slow and a single 20-second window
