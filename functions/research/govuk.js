@@ -1991,10 +1991,10 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
     const p8lo     = v('P8LOWER');
     const p8hi     = v('P8UPPER');
     const p8dis    = v('P8MEA_FSM6CLA1A');
-    // Cohort sizes
+    // Cohort sizes — BPUP/GPUP are KS4-specific; NUMBOYS/NUMGIRLS are school-wide totals
     const cohort    = v('TPUP');
-    const cohortG   = v('NUMGIRLS');
-    const cohortB   = v('NUMBOYS');
+    const cohortG   = v('GPUP');        // girls in KS4 cohort
+    const cohortB   = v('BPUP');        // boys in KS4 cohort
     const cohortDis = v('TFSM6CLA1A');
 
     // EAL — variable names verified from DfE CSV download for KS4_25 namespace
@@ -2012,30 +2012,29 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
 
       lines.push('');
       lines.push('**Key Stage 4 (2024/25)**');
-      // Note: "Local avg" column omitted — LA-level averages are not in the DfE school CSV download.
-      lines.push('| Metric | All pupils | Boys | Girls | Disadvantaged | EAL | England |');
-      lines.push('|---|---:|---:|---:|---:|---:|---:|');
+      // Note: "Local avg" column is LA-level data not included in the DfE school CSV download.
+      // It requires a separate LA-level fetch — shown as — until implemented.
+      lines.push('| Metric | All pupils | Boys | Girls | Disadvantaged | EAL | Local avg | England |');
+      lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
 
-      // Cohort: KS4-specific boys/girls counts are not published in the DfE school CSV
-      // (NUMBOYS/NUMGIRLS are school-wide totals). Show total + disadvantaged only.
       if (cohort || cohortDis)
-        lines.push(`| Cohort size | ${c(cohort)} | | | ${c(cohortDis)} | | — |`);
+        lines.push(`| Cohort size | ${c(cohort)} | ${c(cohortB)} | ${c(cohortG)} | ${c(cohortDis)} | — | — | — |`);
       if (att8 || att8b || att8g || att8dis || att8eal)
-        lines.push(`| Attainment 8 | ${c(att8)} | ${c(att8b)} | ${c(att8g)} | ${c(att8dis)} | ${c(att8eal)} | ${nat4.ATT8SCR} |`);
+        lines.push(`| Attainment 8 | ${c(att8)} | ${c(att8b)} | ${c(att8g)} | ${c(att8dis)} | ${c(att8eal)} | — | ${nat4.ATT8SCR} |`);
       if (g5all || g5b || g5g || g5dis || g5eal)
-        lines.push(`| Grade 5+ English & Maths | ${c(g5all)} | ${c(g5b)} | ${c(g5g)} | ${c(g5dis)} | ${c(g5eal)} | ${nat4.PTL2BASICS_95}% |`);
+        lines.push(`| Grade 5+ English & Maths | ${c(g5all)} | ${c(g5b)} | ${c(g5g)} | ${c(g5dis)} | ${c(g5eal)} | — | ${nat4.PTL2BASICS_95}% |`);
       if (g4all || g4b || g4g || g4dis || g4eal)
-        lines.push(`| Grade 4+ English & Maths | ${c(g4all)} | ${c(g4b)} | ${c(g4g)} | ${c(g4dis)} | ${c(g4eal)} | ${nat4.PTL2BASICS_94}% |`);
+        lines.push(`| Grade 4+ English & Maths | ${c(g4all)} | ${c(g4b)} | ${c(g4g)} | ${c(g4dis)} | ${c(g4eal)} | — | ${nat4.PTL2BASICS_94}% |`);
       if (eb5all || eb5b || eb5g || eb5eal)
-        lines.push(`| EBacc 5+ | ${c(eb5all)} | ${c(eb5b)} | ${c(eb5g)} | — | ${c(eb5eal)} | — |`);
+        lines.push(`| EBacc 5+ | ${c(eb5all)} | ${c(eb5b)} | ${c(eb5g)} | — | ${c(eb5eal)} | — | — |`);
       if (eb4all || eb4b || eb4g || eb4dis || eb4eal)
-        lines.push(`| EBacc 4+ | ${c(eb4all)} | ${c(eb4b)} | ${c(eb4g)} | ${c(eb4dis)} | ${c(eb4eal)} | ${nat4.PTEBACC_94}% |`);
+        lines.push(`| EBacc 4+ | ${c(eb4all)} | ${c(eb4b)} | ${c(eb4g)} | ${c(eb4dis)} | ${c(eb4eal)} | — | ${nat4.PTEBACC_94}% |`);
       if (entering)
-        lines.push(`| Entering EBacc | ${entering} | — | — | — | — | ${nat4.PTEBACC_E_PTQ_EE}% |`);
+        lines.push(`| Entering EBacc | ${entering} | — | — | — | — | — | ${nat4.PTEBACC_E_PTQ_EE}% |`);
       if (ebApsAll || ebApsB || ebApsG || ebApsEal)
-        lines.push(`| EBacc APS | ${c(ebApsAll)} | ${c(ebApsB)} | ${c(ebApsG)} | ${c(ebApsDis)} | ${c(ebApsEal)} | — |`);
+        lines.push(`| EBacc APS | ${c(ebApsAll)} | ${c(ebApsB)} | ${c(ebApsG)} | ${c(ebApsDis)} | ${c(ebApsEal)} | — | — |`);
       if (p8)
-        lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} | — | — | ${c(p8dis)} | — | ${nat4.P8MEA} |`);
+        lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} | — | — | ${c(p8dis)} | — | — | ${nat4.P8MEA} |`);
     }
   }
 
