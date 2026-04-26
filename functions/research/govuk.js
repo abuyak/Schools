@@ -300,6 +300,13 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
         // Strip Ofsted admin boilerplate that follows the actual requirements
         .replace(/\n+\s*How can I feed back my views\?[\s\S]*/i, '')
         .replace(/\n+\s*The Department for Education has further guidance[\s\S]*/i, '')
+        // Strip Ofsted PDF page footer that bleeds in when next-steps runs to
+        // the bottom of a page: "Inspection report: School Name\nDate\nPageNum\n***"
+        .replace(/\n+\s*Inspection report:[\s\S]*/i, '')
+        // Strip stray lone page numbers (a bare digit or two on its own line)
+        .replace(/\n\s*\d{1,3}\s*\n/g, '\n')
+        // Strip separator lines of asterisks
+        .replace(/\n\s*\*{3,}\s*\n?/g, '\n')
         // Replace PDF Private Use Area bullet glyphs (e.g. \uf06e from Wingdings/Symbol)
         // with a plain hyphen-space so output is readable.
         .replace(/[\uE000-\uF8FF]/g, '- ')
