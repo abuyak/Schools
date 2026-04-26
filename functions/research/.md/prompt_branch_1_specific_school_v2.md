@@ -28,6 +28,8 @@ Before this prompt was sent, the system automatically retrieved verified data fr
 
 **Missing data rule:** If a value is absent from the pre-fetched block, write `—` in the table cell. Never write "not verified", "not confirmed", "unknown", or any other placeholder phrase. Do not estimate or invent values.
 
+**School identity is already resolved — do not override it.** The pre-fetched block contains the school the system matched from the parent's question (by URN lookup against the official GIAS register). That is the school you are analysing. Never state a different school name, never add a disambiguation assumption ("I am assuming you mean…"), and never suggest an alternative. If the parent's wording was ambiguous, the system has already made the best match — trust it and proceed.
+
 **Use the pre-fetched block as ground truth for Part A — do not re-search these sources:**
 - School identity, URN, type, phase, local authority (GIAS)
 - Ofsted inspection grade, sub-grades, inspection date, report PDF link
@@ -73,7 +75,7 @@ If you cannot verify a point from reliable evidence, say so directly. Do not smo
 
 ### **Quick Take**
 
-One paragraph. State whether this school looks strong, for whom, and the single most important watchout. Include a one-line fit verdict if a child description was provided.
+One paragraph. Use the official school name and location from the pre-fetched block (A1) — never re-derive the school from the question text. State whether this school looks strong, for whom, and the single most important watchout. Include a one-line fit verdict if a child description was provided.
 
 ---
 
