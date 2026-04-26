@@ -17,12 +17,28 @@ import {
   getFinancialData,
   getAreaData,
   buildSlimBlock,
+  extractLocationHints,
 } from './govuk.js';
 import { getSchoolEthnicity } from './local-data.js';
 
-// ── Change this to test different schools ──────────────────────────────────
-const SCHOOL_NAME = 'Redriff Primary, City of London Academy';
+// ── Change this to test different schools ─────────────────────────────────
+// Write the question exactly as a parent would — including postcode, borough,
+// or area name. The debug tool mirrors the real pipeline: it extracts the
+// school name via regex, extracts location hints, then calls lookupSchoolURN
+// with both — so you'll catch wrong-school disambiguation bugs here.
+const QUESTION = 'Redriff Primary, City of London Academy';
 // ──────────────────────────────────────────────────────────────────────────
+
+// Replicate the name-extraction step that fetchGovDataForPrompt performs.
+// Regex pulls the school name; anything else (postcode, area) stays as location hints.
+const NAME_PATTERN =
+  /\b([A-Z][a-zA-Z'-]+(?:\s+(?:of|the|and|&|St\.?|Saint|de|la|les|upon|at)?\s*[A-Z][a-zA-Z'-]+){0,6}\s+(?:School|College|Academy|Grammar|Primary|Secondary|Prep|Preparatory|Infant|Junior|Senior|High|Upper|Lower|Middle|Foundation|Free\s+School|Sixth\s+Form|Nursery|Convent))\b/g;
+const extractedNames = [...new Set([...QUESTION.matchAll(NAME_PATTERN)].map(m => m[1].trim()))];
+const SCHOOL_NAME    = extractedNames[0] ?? QUESTION;   // fallback to full string if regex misses
+const locationHints  = extractLocationHints(QUESTION);
+
+console.log(`\nExtracted name : "${SCHOOL_NAME}"`);
+console.log(`Location hints : ${locationHints.length ? locationHints.join(', ') : '(none)'}`);
 
 const hr  = (ch = '─', n = 72) => ch.repeat(n);
 const ok  = (msg) => console.log(`  ✅  ${msg}`);
@@ -54,7 +70,7 @@ console.log(`${hr()}\n  1. API CALLS\n${hr()}\n`);
 
 // GIAS URN lookup
 console.log('GIAS URN lookup:');
-const identity = await lookupSchoolURN(SCHOOL_NAME);
+const identity = await lookupSchoolURN(SCHOOL_NAME, locationHints);
 if (identity) {
   ok(`"${identity.officialName}"  URN ${identity.urn}  ${identity.type ?? '?'}  ${identity.phase ?? '?'}  LA: ${identity.la ?? '?'}  independent: ${identity.isIndependent}`);
 } else {

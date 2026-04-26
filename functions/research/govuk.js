@@ -332,6 +332,66 @@ function extractSection(text, patterns, maxChars = 3000) {
   return null;
 }
 
+// ─── Location hint extraction ─────────────────────────────────────────────────
+
+/**
+ * Extracts location tokens from the question that can disambiguate schools
+ * when multiple GIAS results share the same name.
+ *
+ * Returns an array of lowercase strings (postcode outward codes, full
+ * postcodes, London borough names, major city names) found in the question.
+ * These are matched against each GIAS tile's postcode / LA / address text.
+ */
+export function extractLocationHints(question) {
+  const hints = new Set();
+  const q = question.toLowerCase();
+
+  // Full postcode: SE16 4PS → normalised to "se164ps"
+  for (const m of question.matchAll(/\b([A-Z]{1,2}\d{1,2}[A-Z]?)\s*(\d[A-Z]{2})\b/gi)) {
+    hints.add((m[1] + m[2]).toLowerCase());   // se164ps
+    hints.add(m[1].toLowerCase());             // se16  (outward code alone as backup)
+  }
+
+  // Outward code alone when no inward part given: SE16, SW1, EC2, W1A …
+  for (const m of question.matchAll(/\b([A-Z]{1,2}\d{1,2}[A-Z]?)\b/g)) {
+    hints.add(m[1].toLowerCase());
+  }
+
+  // London boroughs (covers informal names parents actually write)
+  const BOROUGHS = [
+    'southwark','bermondsey','lambeth','hackney','islington','camden',
+    'tower hamlets','greenwich','lewisham','wandsworth','hammersmith',
+    'fulham','kensington','chelsea','westminster','city of london',
+    'barking','dagenham','havering','redbridge','newham','waltham forest',
+    'haringey','enfield','barnet','harrow','brent','ealing','hounslow',
+    'richmond','kingston','merton','sutton','croydon','bromley','bexley',
+    'sidcup','rotherhithe','peckham','brixton','clapham','stockwell',
+    'elephant and castle','old street','shoreditch','bethnal green',
+    'whitechapel','bow','stratford','forest gate','ilford',
+  ];
+  for (const b of BOROUGHS) {
+    if (q.includes(b)) hints.add(b);
+  }
+
+  // Major cities / towns (fallback for non-London schools)
+  const CITIES = [
+    'birmingham','manchester','liverpool','leeds','sheffield','bristol',
+    'nottingham','leicester','coventry','bradford','cardiff','edinburgh',
+    'glasgow','belfast','newcastle','gateshead','sunderland','middlesbrough',
+    'reading','oxford','cambridge','brighton','hove','portsmouth','southampton',
+    'exeter','plymouth','derby','stoke','wolverhampton','hull','york','Norwich',
+    'ipswich','luton','milton keynes','slough','watford','gloucester','cheltenham',
+    'hereford','shrewsbury','worcester','bath','swindon','salisbury','winchester',
+    'maidstone','guildford','crawley','hastings','eastbourne','folkestone',
+    'gillingham','rochester','chatham','barking','hullbridge','wirral','wirral',
+  ];
+  for (const c of CITIES) {
+    if (q.includes(c.toLowerCase())) hints.add(c.toLowerCase());
+  }
+
+  return [...hints];
+}
+
 // ─── School name extraction ───────────────────────────────────────────────────
 
 /**
@@ -415,7 +475,7 @@ async function extractSchoolNames(question, branch, apiKey, baseUrl, model) {
  *     <dt class="result-urn-label">URN:</dt><dd class="result-urn-value">123456</dd>
  *   </dl>
  */
-export async function lookupSchoolURN(name) {
+export async function lookupSchoolURN(name, locationHints = []) {
   const url =
     `${GIAS_SEARCH}?TextSearchModel.Text=${encodeURIComponent(name)}&SelectedTab=Establishments`;
 
@@ -456,7 +516,20 @@ export async function lookupSchoolURN(name) {
     const laMatch = tile.match(/Local\s+authority[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
     const la      = laMatch ? laMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
 
-    tiles.push({ urn, officialName: tileName, type, phase, la, isIndependent, isOpen });
+    // Address and postcode — used for location-based tiebreaking when multiple
+    // schools share the same name. GIAS tiles show address inline; postcode is
+    // typically the last token.
+    const addrMatch = tile.match(/Address[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
+    const address   = addrMatch ? addrMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : null;
+
+    // Also try to pull a postcode-shaped token directly from the raw tile text.
+    // GIAS renders the postcode visibly on every card (e.g. "SE16 4PS").
+    const tileText    = tile.replace(/<[^>]+>/g, ' ');
+    const pcMatch     = tileText.match(/\b([A-Z]{1,2}\d{1,2}[A-Z]?)\s*(\d[A-Z]{2})\b/);
+    const postcode    = pcMatch ? `${pcMatch[1]}${pcMatch[2]}`.toLowerCase() : null;  // e.g. "se164ps"
+    const outward     = pcMatch ? pcMatch[1].toLowerCase() : null;                    // e.g. "se16"
+
+    tiles.push({ urn, officialName: tileName, type, phase, la, address, postcode, outward, isIndependent, isOpen });
   }
 
   if (!tiles.length) { glog('govuk_gias_no_result', { name }); return null; }
@@ -464,7 +537,15 @@ export async function lookupSchoolURN(name) {
   // Score tiles by name similarity — higher is better.
   // Open schools get a +200 bonus so a closed school is never preferred
   // over an open one with an equal or similar name match.
+  //
+  // Location bonus (+150): when the caller supplies location hints (postcodes,
+  // borough names, city names extracted from the question), tiles whose
+  // postcode / outward code / LA / address match any hint are boosted.
+  // This resolves ties between schools with identical names (e.g. 14 schools
+  // all called "Riverside Primary School").
   const nameLower = name.toLowerCase().trim();
+  const hintsLower = locationHints.map(h => h.toLowerCase());
+
   function score(tile) {
     const t = tile.officialName.toLowerCase();
     let s = 0;
@@ -479,11 +560,21 @@ export async function lookupSchoolURN(name) {
       s = qWords.filter(w => tWords.includes(w)).length * 10;
     }
     if (tile.isOpen) s += 200;
+
+    // Location tiebreaker — match hints against postcode, outward code, LA, address
+    if (hintsLower.length) {
+      const locationText = [tile.postcode, tile.outward, tile.la?.toLowerCase(), tile.address?.toLowerCase()]
+        .filter(Boolean).join(' ');
+      for (const hint of hintsLower) {
+        if (locationText.includes(hint)) { s += 150; break; }
+      }
+    }
+
     return s;
   }
 
   const best = tiles.reduce((a, b) => score(a) >= score(b) ? a : b);
-  glog('govuk_gias_found', { name, urn: best.urn, officialName: best.officialName, type: best.type, la: best.la, isIndependent: best.isIndependent });
+  glog('govuk_gias_found', { name, urn: best.urn, officialName: best.officialName, type: best.type, la: best.la, postcode: best.postcode, locationHints: hintsLower, isIndependent: best.isIndependent });
   return best;
 }
 
@@ -2586,13 +2677,18 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
     return '';
   }
 
-  glog('govuk_start', { branch, names });
+  // Extract location hints once from the question — passed to every URN lookup
+  // so that schools with identical names are disambiguated by location context
+  // (postcode area, borough name, city name).
+  const locationHints = extractLocationHints(question);
+
+  glog('govuk_start', { branch, names, locationHints });
 
   // Resolve all schools in parallel; within each school, URN lookup first,
   // then Ofsted / performance / financial in parallel.
   const schools = await Promise.all(
     names.map(async (name) => {
-      const identity = await lookupSchoolURN(name);
+      const identity = await lookupSchoolURN(name, locationHints);
       const urn = identity?.urn ?? null;
 
       if (!urn) {
