@@ -2017,36 +2017,55 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
 
   // ── KS2 (primary) ─────────────────────────────────────────────────────────
   if (/primary|middle.*primary/i.test(ph) || v('PTRWM_EXP')) {
-    // All-pupil attainment
-    const rwm    = v('PTRWM_EXP');
-    const rwmH   = v('PTRWM_HIGH');
-    const rwm24  = v('PTRWM_EXP_24');
-    const rwm23  = v('PTRWM_EXP_23');
-    const read   = v('PTREAD_EXP');   const readSc = v('READ_AVERAGE');
-    const mat    = v('PTMAT_EXP');    const matSc  = v('MAT_AVERAGE');
-    const writ   = v('PTWRITTA_EXP');
-    const gps    = v('PTGPS_EXP');
-    const sci    = v('PTSCITA_EXP');
-    // Gender breakdowns — DfE KS2 CSV uses _B / _G suffixes
-    const rwmB   = v('PTRWM_EXP_B');    const rwmG   = v('PTRWM_EXP_G');
-    const rwmHB  = v('PTRWM_HIGH_B');   const rwmHG  = v('PTRWM_HIGH_G');
-    const readB  = v('PTREAD_EXP_B');   const readG  = v('PTREAD_EXP_G');
-    const matB   = v('PTMAT_EXP_B');    const matG   = v('PTMAT_EXP_G');
-    const writB  = v('PTWRITTA_EXP_B'); const writG  = v('PTWRITTA_EXP_G');
-    const gpsB   = v('PTGPS_EXP_B');    const gpsG   = v('PTGPS_EXP_G');
-    const gpsH   = v('PTGPS_HIGH');
-    const gpsHB  = v('PTGPS_HIGH_B');   const gpsHG  = v('PTGPS_HIGH_G');
-    // Disadvantaged breakdowns
-    const rwmDis  = v('PTRWM_EXP_FSM6CLA1A');
-    const rwmHDis = v('PTRWM_HIGH_FSM6CLA1A');
-    const readDis = v('PTREAD_EXP_FSM6CLA1A');
-    const matDis  = v('PTMAT_EXP_FSM6CLA1A');
-    const writDis = v('PTWRITTA_EXP_FSM6CLA1A');
-    const gpsDis  = v('PTGPS_EXP_FSM6CLA1A');
-    const gpsHDis = v('PTGPS_HIGH_FSM6CLA1A');
-    // Cohort sizes
+    // ── Cohort sizes
     const cohort    = v('TELIG');
+    const cohortB   = v('BELIG');
+    const cohortG   = v('GELIG');
     const cohortDis = v('TFSM6CLA1A');
+
+    // ── RWM (combined)
+    const rwm        = v('PTRWM_EXP');          const rwmB   = v('PTRWM_EXP_B');    const rwmG   = v('PTRWM_EXP_G');
+    const rwmDis     = v('PTRWM_EXP_FSM6CLA1A');const rwmEAL = v('PTRWM_EXP_EAL');
+    const rwmH       = v('PTRWM_HIGH');          const rwmHB  = v('PTRWM_HIGH_B');   const rwmHG  = v('PTRWM_HIGH_G');
+    const rwmHDis    = v('PTRWM_HIGH_FSM6CLA1A');const rwmHEAL= v('PTRWM_HIGH_EAL');
+    const rwm24      = v('PTRWM_EXP_24');
+    const rwm23      = v('PTRWM_EXP_23');
+
+    // ── Reading
+    const read       = v('PTREAD_EXP');          const readB  = v('PTREAD_EXP_B');   const readG  = v('PTREAD_EXP_G');
+    const readDis    = v('PTREAD_EXP_FSM6CLA1A');
+    const readH      = v('PTREAD_HIGH');
+    const readHDis   = v('PTREAD_HIGH_FSM6CLA1A');
+    const readSc     = v('READ_AVERAGE');
+    const readScB    = v('READ_AVERAGE_B');      const readScG  = v('READ_AVERAGE_G');
+    const readScDis  = v('READ_AVERAGE_FSM6CLA1A'); const readScEAL = v('READ_AVERAGE_EAL');
+
+    // ── Maths
+    const mat        = v('PTMAT_EXP');           const matB   = v('PTMAT_EXP_B');    const matG   = v('PTMAT_EXP_G');
+    const matDis     = v('PTMAT_EXP_FSM6CLA1A');
+    const matH       = v('PTMAT_HIGH');
+    const matHDis    = v('PTMAT_HIGH_FSM6CLA1A');
+    const matSc      = v('MAT_AVERAGE');
+    const matScB     = v('MAT_AVERAGE_B');       const matScG  = v('MAT_AVERAGE_G');
+    const matScDis   = v('MAT_AVERAGE_FSM6CLA1A'); const matScEAL = v('MAT_AVERAGE_EAL');
+
+    // ── Writing
+    const writ       = v('PTWRITTA_EXP');        const writB  = v('PTWRITTA_EXP_B'); const writG  = v('PTWRITTA_EXP_G');
+    const writDis    = v('PTWRITTA_EXP_FSM6CLA1A');
+    const writH      = v('PTWRITTA_HIGH');
+    const writHDis   = v('PTWRITTA_HIGH_FSM6CLA1A');
+
+    // ── GPS
+    const gps        = v('PTGPS_EXP');           const gpsB   = v('PTGPS_EXP_B');   const gpsG   = v('PTGPS_EXP_G');
+    const gpsDis     = v('PTGPS_EXP_FSM6CLA1A');
+    const gpsH       = v('PTGPS_HIGH');          const gpsHB  = v('PTGPS_HIGH_B');  const gpsHG  = v('PTGPS_HIGH_G');
+    const gpsHDis    = v('PTGPS_HIGH_FSM6CLA1A');
+    const gpsSc      = v('GPS_AVERAGE');
+    const gpsScB     = v('GPS_AVERAGE_B');       const gpsScG  = v('GPS_AVERAGE_G');
+    const gpsScDis   = v('GPS_AVERAGE_FSM6CLA1A'); const gpsScEAL = v('GPS_AVERAGE_EAL');
+
+    // ── Science
+    const sci        = v('PTSCITA_EXP');
 
     if (rwm || read || mat) {
       const trend = [rwm23, rwm24, rwm].filter(Boolean);
@@ -2055,32 +2074,55 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
       const na  = (key) => nat[key] != null ? `${nat[key]}%` : '—';
 
       lines.push('**Key Stage 2 (2024/25)**');
-      // EAL breakdown not published at school level in DfE KS2 CSV — column kept for
-      // consistency with KS4 layout but shows — throughout.
-      // Local avg requires a separate LA-level fetch — also shown as —.
+      // EAL breakdown available for RWM only in DfE school-level KS2 CSV.
+      // Local avg requires a separate LA-level API call — shown as — until implemented.
       lines.push('| Metric | All pupils | Boys | Girls | Disadvantaged | EAL | Local avg | National |');
       lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
 
       if (cohort || cohortDis)
-        lines.push(`| Cohort (KS2 eligible) | ${c(cohort)} | — | — | ${c(cohortDis)} | — | — | — |`);
-      if (rwm || rwmB || rwmG || rwmDis)
-        lines.push(`| RWM expected standard${trend.length > 1 ? ` _(3-yr: ${trend.join(' → ')})_` : ''} | ${c(rwm)} | ${c(rwmB)} | ${c(rwmG)} | ${c(rwmDis)} | — | — | ${na('PTRWM_EXP')} |`);
-      if (rwmH || rwmHB || rwmHG || rwmHDis)
-        lines.push(`| RWM high standard | ${c(rwmH)} | ${c(rwmHB)} | ${c(rwmHG)} | ${c(rwmHDis)} | — | — | ${na('PTRWM_HIGH')} |`);
+        lines.push(`| Cohort (KS2 eligible) | ${c(cohort)} | ${c(cohortB)} | ${c(cohortG)} | ${c(cohortDis)} | — | — | — |`);
+
+      // RWM — EAL available
+      if (rwm || rwmB || rwmG || rwmDis || rwmEAL)
+        lines.push(`| RWM expected standard${trend.length > 1 ? ` _(3-yr: ${trend.join(' → ')})_` : ''} | ${c(rwm)} | ${c(rwmB)} | ${c(rwmG)} | ${c(rwmDis)} | ${c(rwmEAL)} | — | ${na('PTRWM_EXP')} |`);
+      if (rwmH || rwmHB || rwmHG || rwmHDis || rwmHEAL)
+        lines.push(`| RWM high standard | ${c(rwmH)} | ${c(rwmHB)} | ${c(rwmHG)} | ${c(rwmHDis)} | ${c(rwmHEAL)} | — | ${na('PTRWM_HIGH')} |`);
+
+      // Reading
       if (read || readB || readG || readDis)
-        lines.push(`| Reading expected${readSc ? ` (avg score: ${readSc})` : ''} | ${c(read)} | ${c(readB)} | ${c(readG)} | ${c(readDis)} | — | — | ${na('PTREAD_EXP')} |`);
+        lines.push(`| Reading expected | ${c(read)} | ${c(readB)} | ${c(readG)} | ${c(readDis)} | — | — | ${na('PTREAD_EXP')} |`);
+      if (readH || readHDis)
+        lines.push(`| Reading high standard | ${c(readH)} | — | — | ${c(readHDis)} | — | — | — |`);
+      if (readSc || readScB || readScG || readScDis || readScEAL)
+        lines.push(`| Reading avg score | ${c(readSc)} | ${c(readScB)} | ${c(readScG)} | ${c(readScDis)} | ${c(readScEAL)} | — | — |`);
+
+      // Maths
       if (mat || matB || matG || matDis)
-        lines.push(`| Maths expected${matSc ? ` (avg score: ${matSc})` : ''} | ${c(mat)} | ${c(matB)} | ${c(matG)} | ${c(matDis)} | — | — | ${na('PTMAT_EXP')} |`);
+        lines.push(`| Maths expected | ${c(mat)} | ${c(matB)} | ${c(matG)} | ${c(matDis)} | — | — | ${na('PTMAT_EXP')} |`);
+      if (matH || matHDis)
+        lines.push(`| Maths high standard | ${c(matH)} | — | — | ${c(matHDis)} | — | — | — |`);
+      if (matSc || matScB || matScG || matScDis || matScEAL)
+        lines.push(`| Maths avg score | ${c(matSc)} | ${c(matScB)} | ${c(matScG)} | ${c(matScDis)} | ${c(matScEAL)} | — | — |`);
+
+      // Writing
       if (writ || writB || writG || writDis)
         lines.push(`| Writing expected | ${c(writ)} | ${c(writB)} | ${c(writG)} | ${c(writDis)} | — | — | ${na('PTWRITTA_EXP')} |`);
+      if (writH || writHDis)
+        lines.push(`| Writing high standard | ${c(writH)} | — | — | ${c(writHDis)} | — | — | — |`);
+
+      // GPS
       if (gps || gpsB || gpsG || gpsDis)
         lines.push(`| GPS expected | ${c(gps)} | ${c(gpsB)} | ${c(gpsG)} | ${c(gpsDis)} | — | — | ${na('PTGPS_EXP')} |`);
       if (gpsH || gpsHB || gpsHG || gpsHDis)
         lines.push(`| GPS high standard | ${c(gpsH)} | ${c(gpsHB)} | ${c(gpsHG)} | ${c(gpsHDis)} | — | — | ${na('PTGPS_HIGH')} |`);
+      if (gpsSc || gpsScB || gpsScG || gpsScDis || gpsScEAL)
+        lines.push(`| GPS avg score | ${c(gpsSc)} | ${c(gpsScB)} | ${c(gpsScG)} | ${c(gpsScDis)} | ${c(gpsScEAL)} | — | — |`);
+
+      // Science
       if (sci)
         lines.push(`| Science expected | ${sci} | — | — | — | — | — | — |`);
 
-      // Non-disadvantaged / gap rows — no gender breakdown available
+      // Disadvantaged gap (non-disadvantaged comparator)
       const rwmNonDis = v('PTRWM_EXP_NOTFSM6CLA1A');
       const gapNat    = v('DIFFN_RWM_EXP');
       if (rwmNonDis)
@@ -2088,7 +2130,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
       if (gapNat)
         lines.push(`| Gap vs national non-disadvantaged | ${gapNat}pp | — | — | — | — | — | — |`);
 
-      // Absent from tests — school-wide only, no breakdown
+      // Absent from tests
       const readAt = v('PTREAD_AT');
       const matAt  = v('PTMAT_AT');
       const gpsAt  = v('PTGPS_AT');
@@ -2100,7 +2142,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
         lines.push(`| Absent from tests | ${absentParts.join(' · ')} | — | — | — | — | — | — |`);
       }
 
-      // Progress scores — school-wide with CI; no gender/disadvantaged breakdown in DfE CSV
+      // Progress scores — school-wide with CI; national benchmark = 0 by definition
       const PROG_DESCR = { '1': 'well above', '2': 'above', '3': 'average', '4': 'below', '5': 'well below' };
       const fmtProg = (val, lo, hi, d) => {
         let s = val ?? '—';
