@@ -39,7 +39,7 @@ jobs:
         working-directory: functions/research
 
       - name: Run Jest unit tests
-        run: npm test -- --testPathPatterns='handler'
+        run: npm test -- --testPathPatterns='handler|govuk-logging'
         working-directory: functions/research
 
   test-pester:

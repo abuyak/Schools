@@ -1,105 +1,265 @@
 /**
- * Debug script — fetches all gov.uk data for a school and prints:
- *   1. SLIM BLOCK  — exactly what gets injected into the AI prompt (~1,800 tokens)
- *   2. FULL REPORT — complete human-readable data review (all raw fields)
+ * debug-govuk.mjs — end-to-end traceability for a single school.
  *
- * Does NOT need an OpenAI API key.
+ * Shows the full lineage:
+ *   Request → API calls → data fetched → section mapping → prompt block
+ *
  * Run:  node debug-govuk.mjs
+ * Or:   GOVUK_VERBOSE_LOGS=1 node debug-govuk.mjs  (to see per-URL fetch detail)
  */
 
 import {
   lookupSchoolURN,
+  getGIASDetails,
   getOfstedData,
+  fetchAndParseOfstedPdf,
   getPerformanceData,
   getFinancialData,
   getAreaData,
-  fetchAndParseOfstedPdf,
-  buildDetailedBlock,
   buildSlimBlock,
 } from './govuk.js';
+import { getSchoolEthnicity } from './local-data.js';
 
-// ── Change these to test different schools ─────────────────────────────────
-const SCHOOL_NAME = 'Alfred Salter School';
-const BRANCH      = 'prompt_branch_1';   // 'prompt_branch_1' or 'prompt_branch_2'
+// ── Change this to test different schools ──────────────────────────────────
+const SCHOOL_NAME = 'Redriff Primary, City of London Academy';
 // ──────────────────────────────────────────────────────────────────────────
 
-const detailed = BRANCH === 'prompt_branch_1';
+const hr  = (ch = '─', n = 72) => ch.repeat(n);
+const ok  = (msg) => console.log(`  ✅  ${msg}`);
+const nil = (msg) => console.log(`  —   ${msg}`);
+const err = (msg) => console.log(`  ❌  ${msg}`);
 
-console.log(`\n🔍 Looking up: "${SCHOOL_NAME}"\n`);
+function val(v, fallback = '—') {
+  return v != null ? String(v) : fallback;
+}
 
+// ── Helper: search performance namespaces for a variable ──────────────────
+function perfVar(performance, code) {
+  if (!performance) return null;
+  const sorted = Object.entries(performance)
+    .sort(([a], [b]) => (parseInt(b.match(/_(\d+)$/)?.[1] ?? '0', 10) - parseInt(a.match(/_(\d+)$/)?.[1] ?? '0', 10)))
+    .flatMap(([, rows]) => rows);
+  return sorted.find(r => r.variable === code)?.value ?? null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+console.log(`\n${hr('═')}`);
+console.log(`  GOVUK DEBUG — "${SCHOOL_NAME}"`);
+console.log(`${hr('═')}\n`);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 1 — API CALLS
+// ══════════════════════════════════════════════════════════════════════════════
+console.log(`${hr()}\n  1. API CALLS\n${hr()}\n`);
+
+// GIAS URN lookup
+console.log('GIAS URN lookup:');
 const identity = await lookupSchoolURN(SCHOOL_NAME);
-if (!identity) { console.error('URN lookup failed'); process.exit(1); }
-console.log(`✅ Found: ${identity.officialName}  URN: ${identity.urn}  (${identity.type ?? '?'})`);
-
+if (identity) {
+  ok(`"${identity.officialName}"  URN ${identity.urn}  ${identity.type ?? '?'}  ${identity.phase ?? '?'}  LA: ${identity.la ?? '?'}  independent: ${identity.isIndependent}`);
+} else {
+  err('URN not found — check spelling or try the full official name');
+  process.exit(1);
+}
 const urn = identity.urn;
 
-// Phase 1: Ofsted
+// GIAS detail page (capacity — only field not in DfE CSV)
+console.log('\nGIAS detail page:');
+const giasDetails = await getGIASDetails(urn);
+if (giasDetails) {
+  ok(`capacity: ${val(giasDetails.capacity)}  postcode: ${val(giasDetails.postcode)}`);
+} else {
+  nil('not retrieved');
+}
+
+// Ofsted grades
+console.log('\nOfsted inspection page:');
 const ofstedBase = identity.isIndependent ? null : await getOfstedData(urn);
 if (ofstedBase) {
-  console.log(`✅ Ofsted: ${ofstedBase.overall ?? 'no grade'}  (${ofstedBase.date ?? 'no date'})  PDF: ${ofstedBase.reportUrl ?? 'none'}`);
+  ok(`grade: ${val(ofstedBase.overall)}  date: ${val(ofstedBase.date)}  safeguarding: ${val(ofstedBase.safeguarding)}`);
+  ok(`PDF: ${ofstedBase.reportUrl ?? 'no link found'}`);
+} else if (identity.isIndependent) {
+  nil('independent school — Ofsted not applicable');
 } else {
-  console.log(`ℹ️  No Ofsted data (independent or fetch failed)`);
+  err('fetch failed');
 }
 
-// Phase 2: PDF + performance + financial in parallel
-const [pdfSections, performance, financial] = await Promise.all([
-  detailed && ofstedBase?.reportUrl
-    ? fetchAndParseOfstedPdf(ofstedBase.reportUrl)
-    : Promise.resolve(null),
-  getPerformanceData(urn),
-  getFinancialData(urn),
-]);
+// Ofsted PDF
+console.log('\nOfsted PDF parse:');
+const pdfSections = (ofstedBase?.reportUrl)
+  ? await fetchAndParseOfstedPdf(ofstedBase.reportUrl)
+  : null;
+if (pdfSections) {
+  ok(`pupilExperience: ${pdfSections.pupilExperience ? `${pdfSections.pupilExperience.length} chars` : 'not found'}`);
+  ok(`nextSteps: ${pdfSections.nextSteps ? `${pdfSections.nextSteps.length} chars` : 'not found'}`);
+  ok(`qualityOfEducation: ${pdfSections.qualityOfEducation ? 'found' : 'not found'}`);
+  ok(`behaviourAndAttitudes: ${pdfSections.behaviourAndAttitudes ? 'found' : 'not found'}`);
+  ok(`personalDevelopment: ${pdfSections.personalDevelopment ? 'found' : 'not found'}`);
+  ok(`leadershipAndManagement: ${pdfSections.leadershipAndManagement ? 'found' : 'not found'}`);
+} else {
+  nil('not extracted (no report URL, or parse failed)');
+}
 
-if (pdfSections) console.log(`✅ PDF extracted: pupilExperience=${!!pdfSections.pupilExperience}  nextSteps=${!!pdfSections.nextSteps}`);
-else console.log(`ℹ️  PDF: not extracted`);
-
+// DfE performance CSV
+console.log('\nDfE performance CSV:');
+const performance = await getPerformanceData(urn);
 if (performance) {
-  const nsByCount = Object.entries(performance).map(([ns, rows]) => `${ns}(${rows.length})`).join(', ');
-  console.log(`✅ Performance namespaces: ${nsByCount}`);
+  const summary = Object.entries(performance)
+    .map(([ns, rows]) => `${ns}(${rows.length} vars)`)
+    .join('  ');
+  ok(summary);
 } else {
-  console.log(`ℹ️  Performance: not retrieved`);
+  err('not retrieved');
 }
 
-if (financial) console.log(`✅ Financial: spend/pupil=${financial.totalSpendPerPupil ?? '?'}  PTR=${financial.pupilTeacherRatio ?? '?'}:1`);
-else console.log(`ℹ️  Financial: not retrieved`);
+// FBIT financial
+console.log('\nFBIT financial:');
+const financial = await getFinancialData(urn);
+if (financial) {
+  ok(`spend/pupil: ${val(financial.totalSpendPerPupil)}  PTR: ${val(financial.pupilTeacherRatio)}:1  QTS: ${val(financial.qualifiedTeachersPct)}  balance: ${val(financial.inYearBalance)}`);
+} else {
+  nil('not retrieved');
+}
 
-// Phase 3: area data
-const postcode = Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value ?? null;
-console.log(`\nPostcode from DfE CSV: ${postcode ?? '(not found)'}`);
-const area = detailed && postcode ? await getAreaData(postcode) : null;
+// Area data
+const postcode = perfVar(performance, 'PCODE');
+console.log(`\nArea data  (postcode: ${postcode ?? 'not in DfE CSV'}):`);
+const area = postcode ? await getAreaData(postcode) : null;
 if (area) {
-  console.log(`✅ Area: district=${area.district}  IMD decile=${area.imd?.imdDecile ?? '?'}  income=${area.crystalRoof?.income?.meanAnnualHouseholdIncome ?? '?'}  price=${area.pricePaid?.medianAllTypes ?? '?'}`);
+  ok(`district: ${val(area.district)}  IMD decile: ${val(area.imd?.imdDecile)}/10  income: ${val(area.crystalRoof?.income?.meanAnnualHouseholdIncome)}  median price: ${val(area.pricePaid?.medianAllTypes)}`);
+  ok(`ethnicity: ${area.ethnicity ? Object.keys(area.ethnicity).length + ' groups' : 'not retrieved'}`);
 } else {
-  console.log(`ℹ️  Area: not retrieved`);
+  nil('not retrieved — no postcode or postcode lookup failed');
 }
 
-// Build full ofsted object (grades + PDF sections merged)
+// Local DfE ethnicity index (zero-latency)
+console.log('\nDfE school ethnicity (local index):');
+const schoolEthnicity = getSchoolEthnicity(urn);
+if (schoolEthnicity) {
+  ok(`White ${schoolEthnicity.w}%  Asian ${schoolEthnicity.a}%  Black ${schoolEthnicity.b}%  Mixed ${schoolEthnicity.m}%  (${schoolEthnicity.yr})`);
+} else {
+  nil('URN not in bundled index');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 2 — SECTION MAPPING (which data populates which prompt section)
+// ══════════════════════════════════════════════════════════════════════════════
+console.log(`\n${hr()}\n  2. SECTION MAPPING  (Request → data → prompt section)\n${hr()}\n`);
+
+const pv = (code) => perfVar(performance, code);
+
+const sections = [
+  {
+    section: 'A1. School Identity',
+    source:  'GIAS',
+    status:  !!identity,
+    detail:  identity
+      ? `URN ${identity.urn} · ${identity.type ?? '?'} · ${identity.phase ?? '?'} · LA: ${identity.la ?? '?'} · capacity: ${val(giasDetails?.capacity)}`
+      : 'not resolved',
+  },
+  {
+    section: 'A2. Ofsted Inspection Grades',
+    source:  'Ofsted inspection page',
+    status:  !!ofstedBase,
+    detail:  ofstedBase
+      ? `Overall: ${val(ofstedBase.overall)} · QoE: ${val(ofstedBase.qualityOfEducation)} · B&A: ${val(ofstedBase.behaviour)} · PD: ${val(ofstedBase.personalDevelopment)} · L&M: ${val(ofstedBase.leadership)}`
+      : 'not retrieved',
+  },
+  {
+    section: 'A3. What It\'s Like to Be a Pupil',
+    source:  'Ofsted PDF',
+    status:  !!pdfSections?.pupilExperience,
+    detail:  pdfSections?.pupilExperience
+      ? `${pdfSections.pupilExperience.length} chars extracted`
+      : 'not extracted',
+  },
+  {
+    section: 'A4. What the School Needs to Improve',
+    source:  'Ofsted PDF',
+    status:  !!pdfSections?.nextSteps,
+    detail:  pdfSections?.nextSteps
+      ? `${pdfSections.nextSteps.length} chars extracted`
+      : pdfSections ? 'section not found in PDF' : 'PDF not parsed',
+  },
+  {
+    section: 'A5. Pupil Census',
+    source:  'DfE CSV (CENSUS namespace) + DfE ethnicity index',
+    status:  !!(performance?.CENSUS_25 || performance?.CENSUS_24 || schoolEthnicity),
+    detail:  [
+      pv('NOR')          ? `NOR: ${pv('NOR')}`                     : null,
+      pv('PNUMFSMEVER')  ? `FSM: ${pv('PNUMFSMEVER')}`              : null,
+      pv('PEALGRP')      ? `EAL: ${pv('PEALGRP')}`                 : null,
+      pv('PSENELK')      ? `SEN support: ${pv('PSENELK')}`         : null,
+      pv('PSENELSE')     ? `EHC plan: ${pv('PSENELSE')}`           : null,
+      schoolEthnicity    ? `ethnicity index: ✅`                    : `ethnicity index: —`,
+    ].filter(Boolean).join('  ·  ') || 'not retrieved',
+  },
+  {
+    section: 'A6. Academic Performance',
+    source:  'DfE CSV (KS2 / KS4 / KS5 namespaces)',
+    status:  !!(pv('PTRWM_EXP') || pv('ATT8SCR') || pv('P8MEA')),
+    detail:  [
+      pv('PTRWM_EXP') ? `KS2 RWM: ${pv('PTRWM_EXP')}%`            : null,
+      pv('ATT8SCR')   ? `Att8: ${pv('ATT8SCR')}`                   : null,
+      pv('P8MEA')     ? `P8: ${pv('P8MEA')}`                       : null,
+      pv('PTL2BASICS_95') ? `Gr5+ E&M: ${pv('PTL2BASICS_95')}%`   : null,
+    ].filter(Boolean).join('  ·  ') || 'not retrieved',
+  },
+  {
+    section: 'A7. Absence',
+    source:  'DfE CSV (CENSUS namespace)',
+    status:  !!(pv('PERCTOT') || pv('PPERSABS10')),
+    detail:  [
+      pv('PERCTOT')    ? `overall: ${pv('PERCTOT')}%`              : null,
+      pv('PPERSABS10') ? `persistent: ${pv('PPERSABS10')}%`        : null,
+    ].filter(Boolean).join('  ·  ') || 'not retrieved',
+  },
+  {
+    section: 'A8. Financial Position and Staffing',
+    source:  'FBIT (spending page + census ZIP)',
+    status:  !!financial,
+    detail:  financial
+      ? `spend/pupil: ${val(financial.totalSpendPerPupil)} · PTR: ${val(financial.pupilTeacherRatio)}:1 · QTS: ${val(financial.qualifiedTeachersPct)} · balance: ${val(financial.inYearBalance)}`
+      : 'not retrieved',
+  },
+  {
+    section: 'A9. Area Profile',
+    source:  'postcodes.io → ONS / Land Registry / IMD / CrystalRoof',
+    status:  !!area,
+    detail:  area
+      ? `IMD decile: ${val(area.imd?.imdDecile)}/10 · income: ${val(area.crystalRoof?.income?.meanAnnualHouseholdIncome)} · price: ${val(area.pricePaid?.medianAllTypes)} · ethnicity groups: ${area.ethnicity ? Object.keys(area.ethnicity).length : '—'}`
+      : 'not retrieved',
+  },
+];
+
+const colW = 38;
+for (const s of sections) {
+  const icon   = s.status ? '✅' : '—  ';
+  const label  = s.section.padEnd(colW);
+  console.log(`  ${icon}  ${label}  ← ${s.source}`);
+  console.log(`         ${''.padEnd(colW)}  ${s.detail}`);
+  console.log();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 3 — SLIM BLOCK (exactly what is injected into the AI prompt)
+// ══════════════════════════════════════════════════════════════════════════════
+console.log(`${hr()}\n  3. SLIM BLOCK — what the AI model receives\n${hr()}\n`);
+
 const ofstedFull = ofstedBase ? {
   ...ofstedBase,
-  pupilExperience:         pdfSections?.pupilExperience         ?? null,
-  qualityOfEducation:      pdfSections?.qualityOfEducation      ?? null,
-  behaviourAndAttitudes:   pdfSections?.behaviourAndAttitudes   ?? null,
-  personalDevelopment:     pdfSections?.personalDevelopment     ?? null,
-  leadershipAndManagement: pdfSections?.leadershipAndManagement ?? null,
-  achievement:             pdfSections?.achievement             ?? null,
-  inclusion:               pdfSections?.inclusion               ?? null,
-  nextSteps:               pdfSections?.nextSteps               ?? null,
+  pupilExperience:               pdfSections?.pupilExperience         ?? null,
+  qualityOfEducationDetail:      pdfSections?.qualityOfEducation      ?? null,
+  behaviourAndAttitudesDetail:   pdfSections?.behaviourAndAttitudes   ?? null,
+  personalDevelopmentDetail:     pdfSections?.personalDevelopment     ?? null,
+  leadershipAndManagementDetail: pdfSections?.leadershipAndManagement ?? null,
+  achievementDetail:             pdfSections?.achievement             ?? null,
+  inclusionDetail:               pdfSections?.inclusion               ?? null,
+  nextSteps:                     pdfSections?.nextSteps               ?? null,
 } : null;
 
-const school = { input: SCHOOL_NAME, identity, ofsted: ofstedFull, performance, financial, area };
-
-// ── 1. SLIM BLOCK — what the AI model actually receives ───────────────────
+const school = { input: SCHOOL_NAME, identity, ofsted: ofstedFull, performance, financial, area, schoolEthnicity, giasDetails };
 const slim = buildSlimBlock(school);
-const slimTokens = Math.ceil(slim.length / 4);
-console.log(`\n${'═'.repeat(72)}`);
-console.log(`SLIM BLOCK (prompt injection)  —  ~${slim.length} chars / ~${slimTokens} tokens`);
-console.log('═'.repeat(72));
 console.log(slim);
-
-// ── 2. FULL REPORT — complete human-readable data review ──────────────────
-console.log(`\n\n${'═'.repeat(72)}`);
-console.log('FULL REPORT (human review — NOT injected into prompt)');
-console.log('═'.repeat(72));
-console.log(buildDetailedBlock(school));
-
-console.log('\n\nDone.\n');
+console.log(`\n~${slim.length} chars  /  ~${Math.ceil(slim.length / 4)} tokens`);
+console.log(`\n${hr('═')}\n`);

@@ -26,7 +26,42 @@ const COMPARE_PERF  = 'https://www.compare-school-performance.service.gov.uk';
 const FIN_BENCH     = 'https://financial-benchmarking-and-insights-tool.education.gov.uk';
 const POSTCODES_IO  = 'https://api.postcodes.io/postcodes';
 
+// ─── Logging ──────────────────────────────────────────────────────────────────
+//
+// Two tiers:
+//   Always-log — emitted on every request; minimal noise, maximum traceability.
+//     Includes start/done, the per-school manifest, and hard failures that
+//     explain why a section shows "_Not retrieved_" in the AI output.
+//   Verbose-log — gated behind GOVUK_VERBOSE_LOGS=1.
+//     Per-URL HTTP outcomes, intermediate per-school steps, buffer ops.
+//     Turn on to debug a specific data-source problem; leave off in production.
+//
+// Journey you can trace with always-log only:
+//   govuk_start  →  govuk_manifest (one per school)  →  govuk_done
+//   Any failure events in between explain gaps in the output block.
+
+const GOVUK_VERBOSE = process.env.GOVUK_VERBOSE_LOGS === '1';
+
+const GLOG_ALWAYS = new Set([
+  // Lifecycle — always needed for request tracing
+  'govuk_no_names',    // explains why the block is empty
+  'govuk_start',       // which schools are being fetched
+  'govuk_manifest',    // per-school data-coverage map (see fetchGovDataForPrompt)
+  'govuk_done',        // total ms + school counts
+
+  // Hard failures — explain "_Not retrieved_" entries in the AI prompt block.
+  // These fire at most once per school per data source, so noise is low.
+  'govuk_gias_fail',         // URN lookup HTTP error → identity missing
+  'govuk_ofsted_fail',       // Ofsted page HTTP error → grade missing
+  'govuk_pdf_import_fail',   // pdf-parse not bundled → narrative missing
+  'govuk_pdf_empty',         // PDF fetched but parse returned no text
+  'govuk_perf_fail',         // DfE CSV download failed → performance missing
+  'govuk_fin_census_fail',   // FBIT census ZIP failed → staffing/QTS missing
+  'govuk_area_postcode_fail',// postcodes.io failed → area section missing
+]);
+
 function glog(event, props = {}) {
+  if (!GOVUK_VERBOSE && !GLOG_ALWAYS.has(event)) return;
   console.log(JSON.stringify({ event, ts: new Date().toISOString(), src: 'govuk', ...props }));
 }
 
@@ -233,13 +268,18 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
     inclusion:   extractSection(text, [/^inclusion\s*$/im]),
 
     // ── Improvement flags ─────────────────────────────────────────────────
-    // "Next steps" is an explicit section in the new Nov-2025 format.
-    // Older reports use "What does the school need to do to improve?" or similar.
-    // Strip Ofsted boilerplate preamble that precedes the actual improvement points.
+    // Heading varies by report era:
+    //   Nov 2025+  → "Next steps"
+    //   2019–2024  → "What does the school need to do to improve?"
+    //   2022–2024  → "What does the school do well and what does it need to do better?"
+    //                (merged section — Outstanding schools have no bullet requirements
+    //                 inside it; non-Outstanding schools list improvement items)
+    //   Older      → "Areas for improvement"
     nextSteps: (() => {
       const raw = extractSection(text, [
         /^next\s+steps\s*$/im,
         /^what\s+does\s+the\s+school\s+need\s+to\s+do\s+to\s+improve/im,
+        /^what\s+does\s+the\s+school\s+do\s+well\s+and\s+what\s+does\s+it\s+need\s+to\s+do\s+better/im,
         /^areas\s+for\s+improvement\s*$/im,
       ]);
       if (!raw) return null;
@@ -2598,6 +2638,28 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       return { input: name, identity, ofsted, performance, financial, area, schoolEthnicity, giasDetails };
     })
   );
+
+  // ── Per-school data-coverage manifest (always logs — traceable journey) ──────
+  // govuk_manifest shows exactly which data sources mapped into the output block.
+  // Read govuk_manifest events to trace: Request → govuk.js → mapping → output.
+  for (const s of schools) {
+    const pdfParsed = !!(s.ofsted?.pupilExperience || s.ofsted?.nextSteps);
+    glog('govuk_manifest', {
+      input:           s.input,
+      urn:             s.identity?.urn             ?? null,
+      name:            s.identity?.officialName    ?? null,
+      // Data sources → prompt block sections:
+      identity:        !!s.identity,              // → School Identity / A1
+      ofsted:          !!s.ofsted,                // → Inspection Outcomes / A2
+      ofstedGrade:     s.ofsted?.overall          ?? null,
+      pdfParsed,                                  // → A3 narrative + A4 next steps
+      parentView:      !!s.ofsted?.parentView,    // → B1 Parent View
+      performance:     !!s.performance,           // → Academic Results / A6
+      financial:       !!s.financial,             // → Financial / A8
+      area:            !!s.area,                  // → Area Profile / A9
+      schoolEthnicity: !!s.schoolEthnicity,       // → Pupil Census / A5
+    });
+  }
 
   glog('govuk_done', {
     branch,
