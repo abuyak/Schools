@@ -81,6 +81,7 @@ const NATIONAL_AVG = {
     PTMAT_EXP:              73,   // % meeting expected in maths
     PTWRITTA_EXP:           72,   // % meeting expected in writing (teacher assessment)
     PTGPS_EXP:              75,   // % meeting expected in grammar, punctuation and spelling
+    PTGPS_HIGH:             30,   // % achieving higher standard in GPS (2024/25 provisional)
     PTRWM_EXP_FSM6CLA1A:   46,   // % disadvantaged meeting expected in RWM
     PTREAD_EXP_FSM6CLA1A:  57,   // % disadvantaged meeting expected in reading
     PTMAT_EXP_FSM6CLA1A:   56,   // % disadvantaged meeting expected in maths
@@ -2033,6 +2034,8 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
     const matB   = v('PTMAT_EXP_B');    const matG   = v('PTMAT_EXP_G');
     const writB  = v('PTWRITTA_EXP_B'); const writG  = v('PTWRITTA_EXP_G');
     const gpsB   = v('PTGPS_EXP_B');    const gpsG   = v('PTGPS_EXP_G');
+    const gpsH   = v('PTGPS_HIGH');
+    const gpsHB  = v('PTGPS_HIGH_B');   const gpsHG  = v('PTGPS_HIGH_G');
     // Disadvantaged breakdowns
     const rwmDis  = v('PTRWM_EXP_FSM6CLA1A');
     const rwmHDis = v('PTRWM_HIGH_FSM6CLA1A');
@@ -2040,6 +2043,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
     const matDis  = v('PTMAT_EXP_FSM6CLA1A');
     const writDis = v('PTWRITTA_EXP_FSM6CLA1A');
     const gpsDis  = v('PTGPS_EXP_FSM6CLA1A');
+    const gpsHDis = v('PTGPS_HIGH_FSM6CLA1A');
     // Cohort sizes
     const cohort    = v('TELIG');
     const cohortDis = v('TFSM6CLA1A');
@@ -2071,6 +2075,8 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
         lines.push(`| Writing expected | ${c(writ)} | ${c(writB)} | ${c(writG)} | ${c(writDis)} | — | — | ${na('PTWRITTA_EXP')} |`);
       if (gps || gpsB || gpsG || gpsDis)
         lines.push(`| GPS expected | ${c(gps)} | ${c(gpsB)} | ${c(gpsG)} | ${c(gpsDis)} | — | — | ${na('PTGPS_EXP')} |`);
+      if (gpsH || gpsHB || gpsHG || gpsHDis)
+        lines.push(`| GPS high standard | ${c(gpsH)} | ${c(gpsHB)} | ${c(gpsHG)} | ${c(gpsHDis)} | — | — | ${na('PTGPS_HIGH')} |`);
       if (sci)
         lines.push(`| Science expected | ${sci} | — | — | — | — | — | — |`);
 
