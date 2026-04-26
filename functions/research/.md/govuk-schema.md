@@ -65,6 +65,25 @@ interface SchoolResult {
   financial:       FinancialData | null;
   area:            AreaData | null;     // branch 1 only; null for branch 2
   schoolEthnicity: EthnicityRow | null; // local-data.js; null if URN not in index
+  giasDetails:     GIASDetails | null;  // capacity — the one field not in DfE CSV
+}
+
+interface GIASDetails {
+  postcode?:           string;   // fallback if PCODE missing from DfE CSV (rare)
+  la?:                 string;   // redundant — already in GIASIdentity.la
+  numberOnRoll?:       string;   // redundant — use CENSUS_25.NOR instead
+  capacity?:           string;   // ✅ UNIQUE — not in DfE CSV; raw string e.g. "1200"
+  numberBoys?:         string;   // school-wide total (not KS4-specific — use BPUP for KS4)
+  numberGirls?:        string;   // school-wide total (not KS4-specific — use GPUP for KS4)
+  fsmPct?:             string;   // redundant — use CENSUS_25.PNUMFSMEVER
+  ehcPlanPct?:         string;   // redundant — use CENSUS_25.PSENELSE
+  senSupportPct?:      string;   // redundant — use CENSUS_25.PSENELK
+  gender?:             string;   // redundant — use L.GENDER
+  religiousCharacter?: string;   // redundant — use L.RELCHAR
+  admissionsPolicy?:   string;   // redundant — use L.ADMPOL
+  ofstedRating?:       string;   // redundant — use getOfstedData()
+  ofstedDate?:         string;   // redundant — use getOfstedData()
+  establishmentType?:  string;   // redundant — use GIASIdentity.type
 }
 ```
 
@@ -645,4 +664,4 @@ Note for A6: when no KS4 data exists (independent school, sixth-form only), fall
 | 4 | **ONS income is FYE 2018** | Stale (7+ years old); Crystal Roof income is more recent | Find current ONS MSOA income estimates CSV URL; replace `fetchONSIncome`. |
 | 5 | **KS4 EAL cohort count not published** | Can't show EAL cohort size in KS4 table | Not available in DfE school-level CSV — document as unavailable. |
 | 6 | **Progress 8 not published for 2024/25 or 2025/26** | `P8MEA` will be absent for most schools | Note in A6 output; do not show empty P8 row. COVID disruption affected KS2 assessments for these cohorts. |
-| 7 | **`getGIASDetails` not called in main flow** | GIAS detail page fields (capacity, fsmPct, ehcPlanPct from GIAS) are unused | The performance CSV provides most of these via CENSUS_25; GIAS detail is a redundant fallback. Currently exported but not wired into `fetchGovDataForPrompt`. |
+| ~~7~~ | ~~`getGIASDetails` not called in main flow~~ | ✅ **Resolved.** `getGIASDetails(urn)` added to Phase 2 parallel fetch. `capacity` (the one field not in the DfE CSV) shown in identity line as `capacity: 1,200 (850 on roll — 71% full)`. All other GIAS detail fields are covered by DfE CSV (CENSUS_25 / L namespace). |

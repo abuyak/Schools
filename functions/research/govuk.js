@@ -2330,7 +2330,7 @@ function fmtSchoolEthnicitySlim(e) {
 }
 
 function buildSlimBlock(school) {
-  const { input, identity, ofsted, performance, financial, area, schoolEthnicity } = school;
+  const { input, identity, ofsted, performance, financial, area, schoolEthnicity, giasDetails } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
 
@@ -2349,8 +2349,19 @@ function buildSlimBlock(school) {
   const relChar    = lField('RELCHAR');
   const admPol     = lField('ADMPOL');
 
+  // Capacity from GIAS detail — the one field not available in the DfE CSV.
+  // Fill rate = pupils on roll (NOR from CENSUS namespace) ÷ capacity × 100.
+  const capacity = giasDetails?.capacity ?? null;
+  const nor      = anyNsField('NOR');
+  const fillRate = (capacity && nor)
+    ? Math.round(parseInt(nor, 10) / parseInt(capacity.replace(/,/g, ''), 10) * 100)
+    : null;
+  const capacityNote = capacity
+    ? ` · capacity: ${capacity}${fillRate != null ? ` (${nor} on roll — ${fillRate}% full)` : ''}`
+    : '';
+
   const idLine = identity
-    ? `${identity.officialName} · URN ${urn} · ${identity.type ?? '?'} · ${identity.phase ?? '?'}${ageLow && ageHigh ? ` (ages ${ageLow}–${ageHigh})` : ''} · LA: ${identity.la ?? '?'}${postcode ? ` · ${postcode}` : ''}${gender ? ` · ${gender}` : ''}${relChar && relChar !== 'Does not apply' ? ` · ${relChar}` : ''}${admPol && admPol !== 'Not applicable' ? ` · admissions: ${admPol}` : ''}`
+    ? `${identity.officialName} · URN ${urn} · ${identity.type ?? '?'} · ${identity.phase ?? '?'}${ageLow && ageHigh ? ` (ages ${ageLow}–${ageHigh})` : ''} · LA: ${identity.la ?? '?'}${postcode ? ` · ${postcode}` : ''}${gender ? ` · ${gender}` : ''}${relChar && relChar !== 'Does not apply' ? ` · ${relChar}` : ''}${admPol && admPol !== 'Not applicable' ? ` · admissions: ${admPol}` : ''}${capacityNote}`
     : `"${input}" — URN not found`;
 
   const links = govLinks(urn).join(' · ');
@@ -2388,7 +2399,7 @@ ${fmtAreaDataSlim(area)}
 // ─── Build Branch 1 block (detailed — debug script / human report only) ──────
 
 function buildDetailedBlock(school) {
-  const { input, identity, ofsted, performance, financial, area, schoolEthnicity } = school;
+  const { input, identity, ofsted, performance, financial, area, schoolEthnicity, giasDetails } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
 
@@ -2404,6 +2415,13 @@ function buildDetailedBlock(school) {
   const ageLow    = lField('AGELOW');
   const ageHigh   = lField('AGEHIGH');
 
+  // Capacity from GIAS detail — only field not covered by DfE CSV.
+  const capacity = giasDetails?.capacity ?? null;
+  const nor      = anyNsField('NOR');
+  const fillRate = (capacity && nor)
+    ? Math.round(parseInt(nor, 10) / parseInt(capacity.replace(/,/g, ''), 10) * 100)
+    : null;
+
   const identityLines = identity ? [
     `- Official name: ${identity.officialName}`,
     `- URN: ${urn}`,
@@ -2411,10 +2429,11 @@ function buildDetailedBlock(school) {
     `- Phase: ${identity.phase ?? 'Unknown'}${ageLow && ageHigh ? ` (ages ${ageLow}–${ageHigh})` : ''}`,
     `- Local authority: ${identity.la ?? 'Unknown'}`,
     `- Independent: ${identity.isIndependent ? 'Yes' : 'No'}`,
-    ...(postcode        ? [`- Postcode: ${postcode}`]              : []),
-    ...(gender          ? [`- Gender: ${gender}`]                  : []),
-    ...(relChar         ? [`- Religious character: ${relChar}`]    : []),
-    ...(admPol          ? [`- Admissions policy: ${admPol}`]       : []),
+    ...(postcode  ? [`- Postcode: ${postcode}`]                                                                                    : []),
+    ...(capacity  ? [`- Capacity: ${capacity}${fillRate != null ? ` (${nor} on roll — ${fillRate}% full)` : ''}`]                  : []),
+    ...(gender    ? [`- Gender: ${gender}`]                                                                                        : []),
+    ...(relChar   ? [`- Religious character: ${relChar}`]                                                                          : []),
+    ...(admPol    ? [`- Admissions policy: ${admPol}`]                                                                             : []),
   ] : [
     `- Search term used: "${input}"`,
     `- URN: _Not found — check school name spelling and search GIAS manually._`,
@@ -2543,14 +2562,15 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Phase 1: Ofsted HTML scrape (fast, no PDF)
       const ofstedBase = identity.isIndependent ? null : await getOfstedData(urn);
 
-      // Phase 2: PDF + performance + financial + Parent View — all in parallel
-      const [pdfSections, performance, financial, parentView] = await Promise.all([
+      // Phase 2: PDF + performance + financial + Parent View + GIAS detail — all in parallel
+      const [pdfSections, performance, financial, parentView, giasDetails] = await Promise.all([
         detailed && ofstedBase?.reportUrl
           ? fetchAndParseOfstedPdf(ofstedBase.reportUrl)
           : Promise.resolve(null),
         getPerformanceData(urn),
         getFinancialData(urn),
         identity.isIndependent ? Promise.resolve(null) : fetchParentView(urn),
+        getGIASDetails(urn),
       ]);
 
       // Phase 3: area data — postcode comes from DfE CSV (PCODE in phase-specific namespace, e.g. KS2_25)
@@ -2575,7 +2595,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Bundled local data (zero-latency — no HTTP)
       const schoolEthnicity = urn ? getSchoolEthnicity(urn) : null;
 
-      return { input: name, identity, ofsted, performance, financial, area, schoolEthnicity };
+      return { input: name, identity, ofsted, performance, financial, area, schoolEthnicity, giasDetails };
     })
   );
 
