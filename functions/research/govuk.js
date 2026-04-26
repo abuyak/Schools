@@ -230,8 +230,16 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
 
   if (!fullText) { glog('govuk_pdf_empty', { url: reportUrl }); return null; }
 
-  // Normalise whitespace
-  const text = fullText.replace(/\r\n/g, '\n').replace(/[ \t]+/g, ' ');
+  // Normalise whitespace: collapse horizontal runs, unify line endings.
+  // Then rejoin lines that are clearly mid-sentence (PDF hard-wraps mid-line):
+  // if a line does NOT end with a sentence-terminal character (. ! ? : — or a
+  // bullet marker) and the next line starts with a lowercase letter or a
+  // continuation character, collapse the newline to a space.
+  // Lines that start bullets (- •) or are blank are left intact.
+  const text = fullText
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/([^\n.!?:—\-•])\n(?=[a-z,;(])/g, '$1 ');
 
   return {
     // ── Present in all report types ───────────────────────────────────────
