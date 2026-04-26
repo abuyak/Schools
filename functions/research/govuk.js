@@ -2016,60 +2016,73 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
 
   // ── KS2 (primary) ─────────────────────────────────────────────────────────
   if (/primary|middle.*primary/i.test(ph) || v('PTRWM_EXP')) {
-    const rwm   = v('PTRWM_EXP');
-    const rwmH  = v('PTRWM_HIGH');
-    const rwm24 = v('PTRWM_EXP_24');
-    const rwm23 = v('PTRWM_EXP_23');
-    const read  = v('PTREAD_EXP');  const readSc = v('READ_AVERAGE');
-    const mat   = v('PTMAT_EXP');   const matSc  = v('MAT_AVERAGE');
-    const writ  = v('PTWRITTA_EXP');
-    const gps   = v('PTGPS_EXP');
-    const sci   = v('PTSCITA_EXP');
+    // All-pupil attainment
+    const rwm    = v('PTRWM_EXP');
+    const rwmH   = v('PTRWM_HIGH');
+    const rwm24  = v('PTRWM_EXP_24');
+    const rwm23  = v('PTRWM_EXP_23');
+    const read   = v('PTREAD_EXP');   const readSc = v('READ_AVERAGE');
+    const mat    = v('PTMAT_EXP');    const matSc  = v('MAT_AVERAGE');
+    const writ   = v('PTWRITTA_EXP');
+    const gps    = v('PTGPS_EXP');
+    const sci    = v('PTSCITA_EXP');
+    // Gender breakdowns — DfE KS2 CSV uses _B / _G suffixes
+    const rwmB   = v('PTRWM_EXP_B');    const rwmG   = v('PTRWM_EXP_G');
+    const rwmHB  = v('PTRWM_HIGH_B');   const rwmHG  = v('PTRWM_HIGH_G');
+    const readB  = v('PTREAD_EXP_B');   const readG  = v('PTREAD_EXP_G');
+    const matB   = v('PTMAT_EXP_B');    const matG   = v('PTMAT_EXP_G');
+    const writB  = v('PTWRITTA_EXP_B'); const writG  = v('PTWRITTA_EXP_G');
+    const gpsB   = v('PTGPS_EXP_B');    const gpsG   = v('PTGPS_EXP_G');
+    // Disadvantaged breakdowns
+    const rwmDis  = v('PTRWM_EXP_FSM6CLA1A');
+    const rwmHDis = v('PTRWM_HIGH_FSM6CLA1A');
+    const readDis = v('PTREAD_EXP_FSM6CLA1A');
+    const matDis  = v('PTMAT_EXP_FSM6CLA1A');
+    const writDis = v('PTWRITTA_EXP_FSM6CLA1A');
+    const gpsDis  = v('PTGPS_EXP_FSM6CLA1A');
+    // Cohort sizes
+    const cohort    = v('TELIG');
+    const cohortDis = v('TFSM6CLA1A');
 
     if (rwm || read || mat) {
       const trend = [rwm23, rwm24, rwm].filter(Boolean);
       const nat = NATIONAL_AVG.KS2;
-      const na = (key) => nat[key] != null ? `${nat[key]}%` : '—';
+      const c   = (val) => val ?? '—';
+      const na  = (key) => nat[key] != null ? `${nat[key]}%` : '—';
+
       lines.push('**Key Stage 2 (2024/25)**');
-      lines.push('| Metric | School | National avg |');
-      lines.push('|---|---:|---:|');
-      if (rwm)  lines.push(`| RWM (Reading, Writing & Maths) expected standard${trend.length > 1 ? ` _(3-yr: ${trend.join(' → ')})_` : ''} | ${rwm} | ${na('PTRWM_EXP')} |`);
-      if (rwmH) lines.push(`| RWM high standard | ${rwmH} | ${na('PTRWM_HIGH')} |`);
-      if (read) lines.push(`| Reading expected${readSc ? ` (avg score: ${readSc})` : ''} | ${read} | ${na('PTREAD_EXP')} |`);
-      if (mat)  lines.push(`| Maths expected${matSc ? ` (avg score: ${matSc})` : ''} | ${mat} | ${na('PTMAT_EXP')} |`);
-      if (writ) lines.push(`| Writing expected | ${writ} | ${na('PTWRITTA_EXP')} |`);
-      if (gps)  lines.push(`| GPS (Grammar, Punctuation & Spelling) expected | ${gps} | ${na('PTGPS_EXP')} |`);
-      if (sci)  lines.push(`| Science expected | ${sci} | — |`);
+      // EAL breakdown not published at school level in DfE KS2 CSV — column kept for
+      // consistency with KS4 layout but shows — throughout.
+      // Local avg requires a separate LA-level fetch — also shown as —.
+      lines.push('| Metric | All pupils | Boys | Girls | Disadvantaged | EAL | Local avg | National |');
+      lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
 
-      // Disadvantaged gap
-      const cohortDisadv  = v('PTFSM6CLA1A');
-      const rwmDisadv     = v('PTRWM_EXP_FSM6CLA1A');
-      const rwmNonDisadv  = v('PTRWM_EXP_NOTFSM6CLA1A');
-      const gapNat        = v('DIFFN_RWM_EXP');
-      const readDisadv    = v('PTREAD_EXP_FSM6CLA1A');
-      const matDisadv     = v('PTMAT_EXP_FSM6CLA1A');
-      if (cohortDisadv || rwmDisadv) {
-        lines.push(`| Disadvantaged share of KS2 cohort | ${cohortDisadv ?? '—'} | — |`);
-        if (rwmDisadv)    lines.push(`| RWM expected — disadvantaged | ${rwmDisadv} | ${nat.PTRWM_EXP_FSM6CLA1A ? `${nat.PTRWM_EXP_FSM6CLA1A}%` : '—'} |`);
-        if (rwmNonDisadv) lines.push(`| RWM expected — non-disadvantaged | ${rwmNonDisadv} | — |`);
-        if (gapNat)       lines.push(`| Gap vs national non-disadvantaged | ${gapNat}pp | — |`);
-        if (readDisadv)   lines.push(`| Reading expected — disadvantaged | ${readDisadv} | ${nat.PTREAD_EXP_FSM6CLA1A ? `${nat.PTREAD_EXP_FSM6CLA1A}%` : '—'} |`);
-        if (matDisadv)    lines.push(`| Maths expected — disadvantaged | ${matDisadv} | ${nat.PTMAT_EXP_FSM6CLA1A ? `${nat.PTMAT_EXP_FSM6CLA1A}%` : '—'} |`);
-      }
+      if (cohort || cohortDis)
+        lines.push(`| Cohort (KS2 eligible) | ${c(cohort)} | — | — | ${c(cohortDis)} | — | — | — |`);
+      if (rwm || rwmB || rwmG || rwmDis)
+        lines.push(`| RWM expected standard${trend.length > 1 ? ` _(3-yr: ${trend.join(' → ')})_` : ''} | ${c(rwm)} | ${c(rwmB)} | ${c(rwmG)} | ${c(rwmDis)} | — | — | ${na('PTRWM_EXP')} |`);
+      if (rwmH || rwmHB || rwmHG || rwmHDis)
+        lines.push(`| RWM high standard | ${c(rwmH)} | ${c(rwmHB)} | ${c(rwmHG)} | ${c(rwmHDis)} | — | — | ${na('PTRWM_HIGH')} |`);
+      if (read || readB || readG || readDis)
+        lines.push(`| Reading expected${readSc ? ` (avg score: ${readSc})` : ''} | ${c(read)} | ${c(readB)} | ${c(readG)} | ${c(readDis)} | — | — | ${na('PTREAD_EXP')} |`);
+      if (mat || matB || matG || matDis)
+        lines.push(`| Maths expected${matSc ? ` (avg score: ${matSc})` : ''} | ${c(mat)} | ${c(matB)} | ${c(matG)} | ${c(matDis)} | — | — | ${na('PTMAT_EXP')} |`);
+      if (writ || writB || writG || writDis)
+        lines.push(`| Writing expected | ${c(writ)} | ${c(writB)} | ${c(writG)} | ${c(writDis)} | — | — | ${na('PTWRITTA_EXP')} |`);
+      if (gps || gpsB || gpsG || gpsDis)
+        lines.push(`| GPS expected | ${c(gps)} | ${c(gpsB)} | ${c(gpsG)} | ${c(gpsDis)} | — | — | ${na('PTGPS_EXP')} |`);
+      if (sci)
+        lines.push(`| Science expected | ${sci} | — | — | — | — | — | — |`);
 
-      // Group 4: Gender gap at high standard — can diverge sharply from overall high figure
-      const rwmHighB = v('PTRWM_HIGH_B');
-      const rwmHighG = v('PTRWM_HIGH_G');
-      if (rwmHighB != null || rwmHighG != null) {
-        if (rwmHighB != null) lines.push(`| RWM high standard — boys | ${rwmHighB} | — |`);
-        if (rwmHighG != null) lines.push(`| RWM high standard — girls | ${rwmHighG} | — |`);
-      }
+      // Non-disadvantaged / gap rows — no gender breakdown available
+      const rwmNonDis = v('PTRWM_EXP_NOTFSM6CLA1A');
+      const gapNat    = v('DIFFN_RWM_EXP');
+      if (rwmNonDis)
+        lines.push(`| RWM expected — non-disadvantaged | ${rwmNonDis} | — | — | — | — | — | — |`);
+      if (gapNat)
+        lines.push(`| Gap vs national non-disadvantaged | ${gapNat}pp | — | — | — | — | — | — |`);
 
-      // Group 7: Cohort size — governs statistical significance of every percentage above
-      const cohort = v('TELIG');
-      if (cohort) lines.push(`| KS2 eligible cohort | ${cohort} pupils | — |`);
-
-      // Group 3: Absent from tests — headline % only includes pupils who sat; absence inflates results
+      // Absent from tests — school-wide only, no breakdown
       const readAt = v('PTREAD_AT');
       const matAt  = v('PTMAT_AT');
       const gpsAt  = v('PTGPS_AT');
@@ -2078,10 +2091,10 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
         if (readAt) absentParts.push(`reading ${readAt}`);
         if (matAt)  absentParts.push(`maths ${matAt}`);
         if (gpsAt)  absentParts.push(`GPS ${gpsAt}`);
-        lines.push(`| Absent from KS2 tests | ${absentParts.join(' · ')} | — |`);
+        lines.push(`| Absent from tests | ${absentParts.join(' · ')} | — | — | — | — | — | — |`);
       }
 
-      // Group 6: Progress scores with CIs + DfE descriptor — CIs are critical for small cohorts
+      // Progress scores — school-wide with CI; no gender/disadvantaged breakdown in DfE CSV
       const PROG_DESCR = { '1': 'well above', '2': 'above', '3': 'average', '4': 'below', '5': 'well below' };
       const fmtProg = (val, lo, hi, d) => {
         let s = val ?? '—';
@@ -2093,9 +2106,9 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
       const wProg = v('WRITPROG_23'); const wLo = v('WRITPROG_LOWER_23'); const wHi = v('WRITPROG_UPPER_23'); const wD = v('WRITPROG_DESCR_23');
       const mProg = v('MATPROG_23');  const mLo = v('MATPROG_LOWER_23');  const mHi = v('MATPROG_UPPER_23');  const mD = v('MATPROG_DESCR_23');
       if (rProg || wProg || mProg) {
-        lines.push(`| Progress: reading (2022/23) | ${fmtProg(rProg, rLo, rHi, rD)} | — |`);
-        lines.push(`| Progress: writing (2022/23) | ${fmtProg(wProg, wLo, wHi, wD)} | — |`);
-        lines.push(`| Progress: maths (2022/23) | ${fmtProg(mProg, mLo, mHi, mD)} | — |`);
+        lines.push(`| Progress: reading (2022/23) | ${fmtProg(rProg, rLo, rHi, rD)} | — | — | — | — | — | 0 |`);
+        lines.push(`| Progress: writing (2022/23) | ${fmtProg(wProg, wLo, wHi, wD)} | — | — | — | — | — | 0 |`);
+        lines.push(`| Progress: maths (2022/23) | ${fmtProg(mProg, mLo, mHi, mD)} | — | — | — | — | — | 0 |`);
       }
     }
   }
