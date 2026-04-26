@@ -99,6 +99,7 @@ async function withRetry(fn, retries = 2, baseDelayMs = 800) {
 }
 
 async function safeFetchText(url, extraHeaders = {}) {
+  const tag = url.slice(0, 100);
   const attempt = async () => {
     try {
       const res = await fetch(url, {
@@ -110,9 +111,10 @@ async function safeFetchText(url, extraHeaders = {}) {
           ...extraHeaders,
         },
       });
-      if (!res.ok) return null;
+      if (!res.ok) { glog('fetch_text_fail', { url: tag, status: res.status }); return null; }
       return await res.text();
-    } catch {
+    } catch (err) {
+      glog('fetch_text_err', { url: tag, err: String(err.message ?? err).slice(0, 120) });
       return null;
     }
   };
@@ -120,6 +122,7 @@ async function safeFetchText(url, extraHeaders = {}) {
 }
 
 async function safeFetchJson(url, extraHeaders = {}) {
+  const tag = url.slice(0, 100);
   const attempt = async () => {
     try {
       const res = await fetch(url, {
@@ -131,9 +134,10 @@ async function safeFetchJson(url, extraHeaders = {}) {
           ...extraHeaders,
         },
       });
-      if (!res.ok) return null;
+      if (!res.ok) { glog('fetch_json_fail', { url: tag, status: res.status }); return null; }
       return await res.json();
-    } catch {
+    } catch (err) {
+      glog('fetch_json_err', { url: tag, err: String(err.message ?? err).slice(0, 120) });
       return null;
     }
   };
@@ -1129,8 +1133,14 @@ export async function getPerformanceData(urn) {
 
   if (!mainText && !post16Text) { glog('govuk_perf_fail', { urn }); return null; }
 
-  const main   = mainText   ? parsePerformanceCsv(mainText)   : null;
-  const post16 = post16Text ? parsePerformanceCsv(post16Text) : null;
+  // Detect if we got HTML instead of CSV (e.g. Cloudflare challenge page).
+  // The vertical DfE CSV always starts with "No," as the first field.
+  const looksLikeCsv = (t) => /^\s*No\s*,/i.test(t?.slice(0, 20) ?? '');
+  if (mainText   && !looksLikeCsv(mainText))   glog('govuk_perf_not_csv',   { urn, bytes: mainText.length,   preview: mainText.slice(0, 120).replace(/\s+/g, ' ') });
+  if (post16Text && !looksLikeCsv(post16Text)) glog('govuk_perf_not_csv16', { urn, bytes: post16Text.length, preview: post16Text.slice(0, 120).replace(/\s+/g, ' ') });
+
+  const main   = (mainText   && looksLikeCsv(mainText))   ? parsePerformanceCsv(mainText)   : null;
+  const post16 = (post16Text && looksLikeCsv(post16Text)) ? parsePerformanceCsv(post16Text) : null;
 
   // Merge: post-16 namespaces are added to the main result (KS5_25, KS5_STUDEST_25, etc.)
   const merged = { ...(main ?? {}), ...(post16 ?? {}) };
@@ -1217,16 +1227,20 @@ function parsePerformanceCsv(csv) {
  * Used for binary downloads (ZIP files).
  */
 async function safeFetchBuffer(url, extraHeaders = {}) {
+  const tag = url.slice(0, 100);
   const attempt = async () => {
     try {
       const res = await fetch(url, {
         signal: AbortSignal.timeout(FETCH_TIMEOUT_LONG_MS),
         headers: { 'User-Agent': BROWSER_UA, ...extraHeaders },
       });
-      if (!res.ok) return null;
+      if (!res.ok) { glog('fetch_buffer_fail', { url: tag, status: res.status }); return null; }
       const ab = await res.arrayBuffer();
-      return Buffer.from(ab);
-    } catch {
+      const buf = Buffer.from(ab);
+      glog('fetch_buffer_ok', { url: tag, bytes: buf.length });
+      return buf;
+    } catch (err) {
+      glog('fetch_buffer_err', { url: tag, err: String(err.message ?? err).slice(0, 120) });
       return null;
     }
   };
@@ -1342,8 +1356,21 @@ function parseCSVRow(line) {
  */
 async function fetchFBITCensus(urn) {
   const buf = await safeFetchBuffer(`${FIN_BENCH}/school/${urn}/census/download`);
+  if (!buf) { glog('govuk_fin_census_fail', { urn, reason: 'no_buffer' }); return null; }
+
+  // Validate ZIP magic bytes (PK\x03\x04). If we got HTML (e.g. Cloudflare challenge),
+  // the buffer starts with '<' (0x3c) — log the first bytes so CloudWatch shows the cause.
+  const isZip = buf[0] === 0x50 && buf[1] === 0x4b;
+  if (!isZip) {
+    glog('govuk_fin_census_fail', {
+      urn, reason: 'not_zip', bytes: buf.length,
+      prefix: buf.subarray(0, 60).toString('utf8').replace(/\s+/g, ' '),
+    });
+    return null;
+  }
+
   const csv = await unzipFirst(buf);
-  if (!csv) return null;
+  if (!csv) { glog('govuk_fin_census_fail', { urn, reason: 'unzip_fail', bytes: buf.length }); return null; }
 
   const lines = csv.split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length < 2) return null;
