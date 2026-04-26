@@ -2381,6 +2381,18 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
     'ISPRIMARY', 'ISSECONDARY', 'ISPOST16', 'NFTYPE', 'RELDENOM', 'AGERANGE',
   ]);
 
+  // Phase filter — mirrors fmtAcademicResults logic
+  let allowed;
+  if (/primary|middle.*primary/i.test(ph)) {
+    allowed = ns => /^(KS1|KS2|ABS)/.test(ns);
+  } else if (/secondary|all.through|middle.*secondary/i.test(ph)) {
+    allowed = ns => /^(KS1|KS2|KS4|KS5|ABS)/.test(ns);
+  } else if (/16.plus/i.test(ph)) {
+    allowed = ns => /^(KS5|ABS)/.test(ns);
+  } else {
+    allowed = () => true;
+  }
+
   for (const [namespace, rows] of Object.entries(perf)) {
     if (!allowed(namespace)) continue;
     // Skip identity/admin and census namespaces — those are rendered in other sections
