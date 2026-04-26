@@ -2367,6 +2367,43 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
     lines.push(`**Absence (2023/24):** ${parts.join(' · ')}`);
   }
 
+  // ── Supplementary: all remaining DfE CSV variables ────────────────────────
+  // Pass everything from the phase-relevant namespaces that wasn't captured in
+  // the structured sections above. Use the CSV description field as the label.
+  // This ensures no data is silently dropped — the model sees everything.
+  const suppressed = new Set([
+    // Admin / identity fields already shown elsewhere or not meaningful here
+    'URN', 'SCHNAME', 'LANAME', 'LA', 'LEA', 'ESTAB', 'LAESTAB', 'URN_AC',
+    'RECTYPE', 'ALPHAIND', 'EDITION', 'YEAR', 'ICLOSE',
+    'ADDRESS1', 'ADDRESS2', 'ADDRESS3', 'TOWN', 'TELNUM',
+    'PCON_CODE', 'PCON_NAME', 'TAB15', 'TAB1618', 'PCODE',
+    'GENDER', 'ADMPOL', 'RELCHAR', 'AGELOW', 'AGEHIGH',
+    'ISPRIMARY', 'ISSECONDARY', 'ISPOST16', 'NFTYPE', 'RELDENOM', 'AGERANGE',
+  ]);
+
+  for (const [namespace, rows] of Object.entries(perf)) {
+    if (!allowed(namespace)) continue;
+    // Skip identity/admin and census namespaces — those are rendered in other sections
+    if (/^L$|^CENSUS/.test(namespace)) continue;
+
+    const extras = rows.filter(r => !suppressed.has(r.variable));
+    if (!extras.length) continue;
+
+    const nsLabel = {
+      KS1_25: 'KS1', KS2_25: 'KS2', KS4_25: 'KS4',
+      KS5_25: 'KS5', KS5_STUDEST_25: 'KS5 destinations', ABS_24: 'Absence',
+    }[namespace] ?? namespace;
+
+    lines.push('');
+    lines.push(`**All ${nsLabel} variables (DfE CSV)**`);
+    lines.push('| Variable | Description | Value |');
+    lines.push('|---|---|---|');
+    for (const { variable, description, value } of extras) {
+      const desc = (description || '').trim().slice(0, 100) || '—';
+      lines.push(`| ${variable} | ${desc} | ${value} |`);
+    }
+  }
+
   return lines.length ? lines.join('\n') : '_No performance data available._';
 }
 
