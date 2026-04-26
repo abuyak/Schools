@@ -1997,12 +1997,14 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
     const cohortB   = v('NUMBOYS');
     const cohortDis = v('TFSM6CLA1A');
 
-    // EAL — only Att8 and EBacc APS confirmed; grade % vars unconfirmed so show — if absent
+    // EAL — variable names verified from DfE CSV download for KS4_25 namespace
     const att8eal   = v('ATT8SCR_EAL');
-    const g5eal     = v('PTEAL2BASICS_95');    // unconfirmed — shows — if wrong
-    const g4eal     = v('PTEAL2BASICS_94');    // unconfirmed — shows — if wrong
-    const ebApsEal  = v('EBACCAPS_EAL');
-    const cohortEal = v('TPUPEAL');             // unconfirmed — shows — if wrong
+    const g5eal     = v('PTL2BASICSEAL_95');   // Grade 5+ English & Maths — EAL pupils
+    const g4eal     = v('PTL2BASICSEAL_94');   // Grade 4+ English & Maths — EAL pupils
+    const eb4eal    = v('PTEBACCEAL_94');      // EBacc 4+ — EAL pupils
+    const eb5eal    = v('PTEBACCEAL_95');      // EBacc 5+ — EAL pupils
+    const ebApsEal  = v('EBACCAPS_EAL');       // EBacc APS — EAL pupils
+    // Note: KS4-specific EAL cohort count not published in DfE school CSV
 
     if (p8 || att8 || g4all || g5all) {
       const nat4 = NATIONAL_AVG.KS4;
@@ -2010,28 +2012,30 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
 
       lines.push('');
       lines.push('**Key Stage 4 (2024/25)**');
-      lines.push('| Metric | All pupils | Boys | Girls | Disadvantaged | EAL | Local avg | England |');
-      lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
+      // Note: "Local avg" column omitted — LA-level averages are not in the DfE school CSV download.
+      lines.push('| Metric | All pupils | Boys | Girls | Disadvantaged | EAL | England |');
+      lines.push('|---|---:|---:|---:|---:|---:|---:|');
 
-      // Cohort: All + Disadvantaged only — NUMGIRLS/NUMBOYS are school-wide totals, not KS4 cohort
+      // Cohort: KS4-specific boys/girls counts are not published in the DfE school CSV
+      // (NUMBOYS/NUMGIRLS are school-wide totals). Show total + disadvantaged only.
       if (cohort || cohortDis)
-        lines.push(`| Cohort size | ${c(cohort)} | — | — | ${c(cohortDis)} | ${c(cohortEal)} | — | — |`);
+        lines.push(`| Cohort size | ${c(cohort)} | | | ${c(cohortDis)} | | — |`);
       if (att8 || att8b || att8g || att8dis || att8eal)
-        lines.push(`| Attainment 8 | ${c(att8)} | ${c(att8b)} | ${c(att8g)} | ${c(att8dis)} | ${c(att8eal)} | — | ${nat4.ATT8SCR} |`);
+        lines.push(`| Attainment 8 | ${c(att8)} | ${c(att8b)} | ${c(att8g)} | ${c(att8dis)} | ${c(att8eal)} | ${nat4.ATT8SCR} |`);
       if (g5all || g5b || g5g || g5dis || g5eal)
-        lines.push(`| Grade 5+ English & Maths | ${c(g5all)} | ${c(g5b)} | ${c(g5g)} | ${c(g5dis)} | ${c(g5eal)} | — | ${nat4.PTL2BASICS_95}% |`);
+        lines.push(`| Grade 5+ English & Maths | ${c(g5all)} | ${c(g5b)} | ${c(g5g)} | ${c(g5dis)} | ${c(g5eal)} | ${nat4.PTL2BASICS_95}% |`);
       if (g4all || g4b || g4g || g4dis || g4eal)
-        lines.push(`| Grade 4+ English & Maths | ${c(g4all)} | ${c(g4b)} | ${c(g4g)} | ${c(g4dis)} | ${c(g4eal)} | — | ${nat4.PTL2BASICS_94}% |`);
-      if (eb5all || eb5b || eb5g)
-        lines.push(`| EBacc 5+ | ${c(eb5all)} | ${c(eb5b)} | ${c(eb5g)} | — | — | — | — |`);
-      if (eb4all || eb4b || eb4g || eb4dis)
-        lines.push(`| EBacc 4+ | ${c(eb4all)} | ${c(eb4b)} | ${c(eb4g)} | ${c(eb4dis)} | — | — | ${nat4.PTEBACC_94}% |`);
+        lines.push(`| Grade 4+ English & Maths | ${c(g4all)} | ${c(g4b)} | ${c(g4g)} | ${c(g4dis)} | ${c(g4eal)} | ${nat4.PTL2BASICS_94}% |`);
+      if (eb5all || eb5b || eb5g || eb5eal)
+        lines.push(`| EBacc 5+ | ${c(eb5all)} | ${c(eb5b)} | ${c(eb5g)} | — | ${c(eb5eal)} | — |`);
+      if (eb4all || eb4b || eb4g || eb4dis || eb4eal)
+        lines.push(`| EBacc 4+ | ${c(eb4all)} | ${c(eb4b)} | ${c(eb4g)} | ${c(eb4dis)} | ${c(eb4eal)} | ${nat4.PTEBACC_94}% |`);
       if (entering)
-        lines.push(`| Entering EBacc | ${entering} | — | — | — | — | — | ${nat4.PTEBACC_E_PTQ_EE}% |`);
+        lines.push(`| Entering EBacc | ${entering} | — | — | — | — | ${nat4.PTEBACC_E_PTQ_EE}% |`);
       if (ebApsAll || ebApsB || ebApsG || ebApsEal)
-        lines.push(`| EBacc APS | ${c(ebApsAll)} | ${c(ebApsB)} | ${c(ebApsG)} | ${c(ebApsDis)} | ${c(ebApsEal)} | — | — |`);
+        lines.push(`| EBacc APS | ${c(ebApsAll)} | ${c(ebApsB)} | ${c(ebApsG)} | ${c(ebApsDis)} | ${c(ebApsEal)} | — |`);
       if (p8)
-        lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} | — | — | ${c(p8dis)} | — | — | ${nat4.P8MEA} |`);
+        lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} | — | — | ${c(p8dis)} | — | ${nat4.P8MEA} |`);
     }
   }
 

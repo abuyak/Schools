@@ -172,9 +172,9 @@ Table with full names, not abbreviations:
 
 ### **A6. Academic Performance**
 
-**Reproduce the performance table(s) exactly as they appear in the pre-fetched block — do not reformat or reorder columns.** The pre-fetched block already contains a formatted markdown table with all relevant columns (e.g. All pupils, Boys, Girls, Disadvantaged, EAL, Local avg, England). Copy the full table verbatim, including the header row and separator row. Do not condense or summarise.
+**Reproduce the performance table(s) exactly as they appear in the pre-fetched block — do not reformat or reorder columns.** The pre-fetched block already contains formatted markdown tables. Copy each table verbatim, including the sub-section header (e.g. **Key Stage 4 (2024/25)**, **Key Stage 5 / 16–18 (2024/25)**), the column header row, the separator row, and all data rows. Do not condense, merge, or summarise the tables.
 
-If the pre-fetched block contains a **Key Stage 5 / 16–18** section (sixth form), reproduce it as a separate sub-table. Do not omit it.
+If the pre-fetched block contains a **Key Stage 5 / 16–18** section (sixth form), reproduce it as a separate sub-table with its own header. Do not omit it.
 
 **Verdict:** 2–3 sentences on overall strength, trends, and reliability (flag if cohort below 30 pupils or absent-from-tests above 5%). For schools with a sixth form, comment on sixth form performance separately.
 
