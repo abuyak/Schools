@@ -1,0 +1,2007 @@
+{
+  "_meta": {
+    "urn": 145217,
+    "label": "state-secondary",
+    "capturedAt": "2026-04-26T23:22:43.559Z",
+    "note": "KS4 only — Attainment 8, Progress 8, EBacc"
+  },
+  "input": "Reigate School",
+  "identity": {
+    "urn": "145217",
+    "officialName": "Reigate School",
+    "type": "Academy converter",
+    "phase": "Secondary",
+    "la": "Surrey",
+    "address": "Pendleton Road, Reigate, Surrey, RH2 7NT",
+    "postcode": "rh27nt",
+    "outward": "rh2",
+    "isIndependent": false,
+    "isOpen": true
+  },
+  "ofsted": {
+    "overall": "Good",
+    "date": "6 December 2023",
+    "qualityOfEducation": "Good",
+    "behaviour": "Outstanding",
+    "personalDevelopment": "Outstanding",
+    "leadership": "Good",
+    "sixthForm": null,
+    "achievement": null,
+    "attendance": null,
+    "curriculum": null,
+    "inclusion": null,
+    "leadershipGov": null,
+    "wellbeing": null,
+    "post16": null,
+    "safeguarding": null,
+    "reportUrl": "https://files.ofsted.gov.uk/v1/file/50238758",
+    "parentViewUrl": "https://parentview.ofsted.gov.uk/parent-view-results/urn/145217",
+    "pupilExperience": "This is a welcoming and inclusive school. The school’s values of ‘respect, curiosity,  resilience, friendship and kindness’ are being realised. Staff want the best for pupils. \nThey have very warm relationships with pupils and know them well. Pupils enjoy  coming to school and they are very proud of it. They get on very well with each  other and with staff. Leaders prioritise ensuring that Year 7 pupils settle in quickly  when they join the school. \n \nPupils’ conduct is excellent in lessons and around the school. Pupils are very clear  about the school’s expectations for behaviour. They settle to their work quickly and  are eager to learn. Parents and carers and pupils praise the school’s very high  quality of pastoral care. Pupils are well cared for. There is always somebody in the  school they can talk to if they have a problem. \n \nMany pupils take advantage of the extensive range of clubs and activities provided  outside their regular lessons. These cater for a wide range of pupils’ talents and  interests, including sports and the arts. The house system provides numerous  opportunities to develop leadership. For example, many pupils are sports leaders  and well-being ambassadors. \n \nWhat does the school do well and what does it need to do  better? \n \nThe school promotes a holistic approach to education. Pupils’ academic success and  personal development are equally valued. The provision for pupils’ personal  development is outstanding. The personal, social, health and economic education  programme is meticulously planned and effectively delivered. The ‘life skills’ lessons  are impressive. These enable pupils to gain a very confident understanding of issues  such as healthy relationships, including consent. The school’s work to develop pupils’  character is a significant strength. Pupils are respectful towards those from different  backgrounds. They are eager to contribute to school life. The careers programme  provides a wide range of experiences for pupils to learn from employers. Leaders  ensure that disadvantaged pupils, including those with special educational needs  and/or disabilities (SEND), receive extra help when they need it. This helps prepare  them for their next steps. \n \nLeaders have ensured that the curriculum is broad and ambitious for all pupils. \nLeaders are determined that the great majority of pupils continue to study modern  foreign languages until the end of key stage 4. English and mathematics are  particular strengths. Pupils, including those who are disadvantaged, achieve very  well in these subjects. Results in public examinations are above the national  average. However, in a few subjects, including modern foreign languages, current  pupils achieve less well. \nOverall, the curriculum is well planned and delivered. Staff know their subjects well  and teach with enthusiasm that engages pupils. They mostly plan activities that  build on what pupils have been taught before and check carefully that important \n\n \n \n \n \n \nInspection report: Reigate School \n6 and 7 December 2023 \n3 \n \n  knowledge has been learned. Pupils’ positive attitudes towards learning ensure a  purposeful atmosphere in lessons. As a result, teachers can get on with teaching  with very few disruptions. Staff understand the needs of pupils, including those who  are disadvantaged. These pupils are well supported in lessons by ‘progress and  achievement coaches’ and teaching assistants. However, teachers do not always  adapt lessons successfully to meet these pupils’ needs. As a result, gaps in learning  emerge. \n \nThe school has prioritised improving pupils’ literacy skills. There is a sharp focus on  identifying pupils who struggle to read confidently and competently. They are  provided with the rapid support that they need to improve. The school has recently  introduced new strategies that aim to strengthen pupils’ reading skills across the  curriculum. It is too soon to see the impact of this work. \n \nThe school is well led and managed. Staff are committed and work together in the  best interests of pupils. Staff appreciate the training they receive. They also value  the steps leaders take to consider their workload and well-being. Parents and carers  are overwhelmingly positive about the school. One parent’s comment reflected those  of many when they wrote via Ofsted Parent View, ‘Reigate School epitomises what a  good local comprehensive school should be, where all are welcomed equally and are  encouraged to achieve their best.’",
+    "nextSteps": "-  Lessons are not always adapted successfully to meet the needs of all pupils. This  means that not all pupils achieve highly, particularly the most disadvantaged. The  school should ensure that it keeps careful oversight of how well the curriculum is  being implemented and provides support so that it is of a consistently high  standard in all subjects. \n-  Plans to improve reading across the whole school have only recently been put in  place. As a result, many pupils who read below the expected level for their  chronological reading age are not able to read well enough to access the full  curriculum. The school needs to ensure that the new approaches to reading are  securely and consistently embedded and have the planned impact.",
+    "qualityOfEducationDetail": null,
+    "behaviourAndAttitudesDetail": null,
+    "personalDevelopmentDetail": null,
+    "leadershipAndManagementDetail": null,
+    "achievementDetail": null,
+    "inclusionDetail": null,
+    "parentView": null
+  },
+  "performance": {
+    "L": [
+      {
+        "variable": "ISPRIMARY",
+        "value": "0",
+        "description": "Does the school provide primary education? ( 0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "ISSECONDARY",
+        "value": "1",
+        "description": "Does the school provide secondary education? ( 0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "ISPOST16",
+        "value": "0",
+        "description": "Does the school provide post 16 education? (  0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "AGELOW",
+        "value": "11",
+        "description": "Lowest age of entry"
+      },
+      {
+        "variable": "AGEHIGH",
+        "value": "16",
+        "description": "Highest age of entry"
+      },
+      {
+        "variable": "GENDER",
+        "value": "Mixed",
+        "description": "Indicates whether it's a mixed or single sex school"
+      },
+      {
+        "variable": "RELCHAR",
+        "value": "Does not apply",
+        "description": "Religious character"
+      },
+      {
+        "variable": "ADMPOL",
+        "value": "Non-selective",
+        "description": "Admissions Policy"
+      }
+    ],
+    "CENSUS_25": [
+      {
+        "variable": "SCHOOLTYPE",
+        "value": "State-funded secondary",
+        "description": "Type of school"
+      },
+      {
+        "variable": "NOR",
+        "value": "1261",
+        "description": "Total number of pupils on roll"
+      },
+      {
+        "variable": "NORG",
+        "value": "592",
+        "description": "Number of girls on roll"
+      },
+      {
+        "variable": "NORB",
+        "value": "669",
+        "description": "Number of boys on roll"
+      },
+      {
+        "variable": "PNORG",
+        "value": "46.95%",
+        "description": "Percentage of girls on roll"
+      },
+      {
+        "variable": "PNORB",
+        "value": "53.05%",
+        "description": "Percentage of boys on roll"
+      },
+      {
+        "variable": "TSENELSE",
+        "value": "56",
+        "description": "Number of eligible pupils with an EHC plan"
+      },
+      {
+        "variable": "PSENELSE",
+        "value": "4.44%",
+        "description": "Percentage of eligible pupils with an EHC plan"
+      },
+      {
+        "variable": "TSENELK",
+        "value": "232",
+        "description": "Number of eligible pupils with SEN support"
+      },
+      {
+        "variable": "PSENELK",
+        "value": "18.40%",
+        "description": "Percentage of eligible pupils with SEN support"
+      },
+      {
+        "variable": "NUMEAL",
+        "value": "64",
+        "description": "No.  pupils where English not first language"
+      },
+      {
+        "variable": "NUMENGFL",
+        "value": "1197",
+        "description": "No. pupils with English first language"
+      },
+      {
+        "variable": "NUMUNCFL",
+        "value": "0",
+        "description": "No. pupils where first language is unclassified"
+      },
+      {
+        "variable": "PNUMEAL",
+        "value": "5.10%",
+        "description": "%  pupils where English not first language"
+      },
+      {
+        "variable": "PNUMENGFL",
+        "value": "94.90%",
+        "description": "% pupils with English first language"
+      },
+      {
+        "variable": "PNUMUNCLF",
+        "value": "0",
+        "description": ""
+      },
+      {
+        "variable": "NUMFSM",
+        "value": "257",
+        "description": "No. pupils eligible for free school meals"
+      },
+      {
+        "variable": "NUMFSMEVER",
+        "value": "258",
+        "description": "Number of pupils eligible for FSM at any time during the past 6 years"
+      },
+      {
+        "variable": "NORFSMEVER",
+        "value": "1261",
+        "description": "Total pupils for FSMEver"
+      },
+      {
+        "variable": "PNUMFSMEVER",
+        "value": "20.46%",
+        "description": "Percentage of pupils eligible for FSM at any time during the past 6 years"
+      }
+    ],
+    "ABS_24": [
+      {
+        "variable": "PERCTOT",
+        "value": "7.3",
+        "description": "Percentage of overall absence"
+      },
+      {
+        "variable": "PPERSABS10",
+        "value": "18",
+        "description": "Percentage of enrolments who are persistent absentees"
+      }
+    ],
+    "KS4_PUPDEST_25": [
+      {
+        "variable": "NFTYPE",
+        "value": "ACC",
+        "description": "School type"
+      },
+      {
+        "variable": "COHORT",
+        "value": "248",
+        "description": "Number of pupils completing key stage 4 in 2022/23"
+      },
+      {
+        "variable": "OVERALL_DEST",
+        "value": "230",
+        "description": "Pupils staying in education or employment for at least two terms after key stage 4 (number of pupils)"
+      },
+      {
+        "variable": "APPREN",
+        "value": "5",
+        "description": "Apprenticeships (number of pupils)"
+      },
+      {
+        "variable": "EMPLOYMENT",
+        "value": "5",
+        "description": "Pupils staying in employment for at least two terms after key stage 4 (number of pupils)"
+      },
+      {
+        "variable": "EDUCATION",
+        "value": "220",
+        "description": "Pupils staying in education for at least two terms after key stage 4 (number of pupils)"
+      },
+      {
+        "variable": "FE",
+        "value": "40",
+        "description": "Further education (number of pupils)"
+      },
+      {
+        "variable": "SCH_6TH",
+        "value": "5",
+        "description": "School sixth form (number of pupils)"
+      },
+      {
+        "variable": "SIXTH_COL",
+        "value": "172",
+        "description": "Sixth form college (number of pupils)"
+      },
+      {
+        "variable": "OTHER_EDU",
+        "value": "3",
+        "description": "Other education destination (number of pupils)"
+      },
+      {
+        "variable": "NOT_SUSTAINED",
+        "value": "14",
+        "description": "Pupils not staying in education or employment for at least two terms after key stage 4 (number of pupils)"
+      },
+      {
+        "variable": "UNKNOWN",
+        "value": "4",
+        "description": "Activity not captured (number of pupils)"
+      },
+      {
+        "variable": "OVERALL_DESTPER",
+        "value": "93%",
+        "description": "Pupils staying in education or employment for at least two terms after key stage 4 (percentage)"
+      },
+      {
+        "variable": "APPRENPER",
+        "value": "2%",
+        "description": "Apprenticeships (percentage)"
+      },
+      {
+        "variable": "EMPLOYMENTPER",
+        "value": "2%",
+        "description": "Pupils staying in employment for at least two terms after key stage 4 (percentage)"
+      },
+      {
+        "variable": "EDUCATIONPER",
+        "value": "89%",
+        "description": "Pupils staying in education for at least two terms after key stage 4 (percentage)"
+      },
+      {
+        "variable": "FEPER",
+        "value": "16%",
+        "description": "Further education (percentage)"
+      },
+      {
+        "variable": "SCH_6THPER",
+        "value": "2%",
+        "description": "School sixth form (percentage)"
+      },
+      {
+        "variable": "SIXTH_COLPER",
+        "value": "69%",
+        "description": "Sixth form college (percentage)"
+      },
+      {
+        "variable": "OTHER_EDUPER",
+        "value": "1%",
+        "description": "Other education destination (percentage)"
+      },
+      {
+        "variable": "NOT_SUSTAINEDPER",
+        "value": "6%",
+        "description": "Pupils not staying in education or employment for at least two terms after key stage 4 (percentage)"
+      },
+      {
+        "variable": "UNKNOWNPER",
+        "value": "2%",
+        "description": "Activity not captured (percentage)"
+      },
+      {
+        "variable": "COHORT_DIS",
+        "value": "51",
+        "description": "Number of disadvantaged pupils completing key stage 4 in 2022/23"
+      },
+      {
+        "variable": "OVERALL_DEST_DIS",
+        "value": "40",
+        "description": "Disadvantaged pupils staying in education or employment for at least two terms after key stage 4 (number of pupils)"
+      },
+      {
+        "variable": "APPREN_DIS",
+        "value": "3",
+        "description": "Apprenticeships (number of pupils)"
+      },
+      {
+        "variable": "EMPLOYMENT_DIS",
+        "value": "0",
+        "description": "Pupils staying in employment for at least two terms after key stage 4 (number of pupils)"
+      },
+      {
+        "variable": "EDUCATION_DIS",
+        "value": "37",
+        "description": "Pupils staying in education for at least two terms after key stage 4 (number of pupils)"
+      },
+      {
+        "variable": "FE_DIS",
+        "value": "11",
+        "description": "Further education (number of pupils)"
+      },
+      {
+        "variable": "SIXTH_COL_DIS",
+        "value": "22",
+        "description": "Sixth form college (number of pupils)"
+      },
+      {
+        "variable": "OVERALL_DESTPER_DIS",
+        "value": "78%",
+        "description": "Pupils staying in education or employment for at least two terms after key stage 4 (percentage)"
+      },
+      {
+        "variable": "APPRENPER_DIS",
+        "value": "6%",
+        "description": "Apprenticeships (percentage)"
+      },
+      {
+        "variable": "EMPLOYMENTPER_DIS",
+        "value": "0%",
+        "description": "Pupils staying in employment for at least two terms after key stage 4 (percentage)"
+      },
+      {
+        "variable": "EDUCATIONPER_DIS",
+        "value": "73%",
+        "description": "Pupils staying in education for at least two terms after key stage 4 (percentage)"
+      },
+      {
+        "variable": "FEPER_DIS",
+        "value": "22%",
+        "description": "Further education (percentage)"
+      },
+      {
+        "variable": "SIXTH_COLPER_DIS",
+        "value": "43%",
+        "description": "Sixth form college (percentage)"
+      },
+      {
+        "variable": "COHORT_NONDIS",
+        "value": "197",
+        "description": "Number of pupils not identified as disadvantaged (not found to be eligible for pupil premium in year 11) completing key stage 4 in 2022/23"
+      },
+      {
+        "variable": "OVERALL_DEST_NONDIS",
+        "value": "190",
+        "description": "Pupils not identified as disadvantaged (not found to be eligible for pupil premium in year 11) staying in education or employment for at least two terms after key stage 4 (number of pupils)"
+      },
+      {
+        "variable": "APPREN_NONDIS",
+        "value": "2",
+        "description": "Apprenticeships (number of pupils)"
+      },
+      {
+        "variable": "EMPLOYMENT_NONDIS",
+        "value": "5",
+        "description": "Pupils staying in employment for at least two terms after key stage 4 (number of pupils)"
+      },
+      {
+        "variable": "EDUCATION_NONDIS",
+        "value": "183",
+        "description": "Pupils staying in education for at least two terms after key stage 4 (number of pupils)"
+      },
+      {
+        "variable": "FE_NONDIS",
+        "value": "29",
+        "description": "Further education (number of pupils)"
+      },
+      {
+        "variable": "SIXTH_COL_NONDIS",
+        "value": "150",
+        "description": "Sixth form college (number of pupils)"
+      },
+      {
+        "variable": "OVERALL_DESTPER_NONDIS",
+        "value": "96%",
+        "description": "Pupils staying in education or employment for at least two terms after key stage 4 (percentage)"
+      },
+      {
+        "variable": "APPRENPER_NONDIS",
+        "value": "1%",
+        "description": "Apprenticeships (percentage)"
+      },
+      {
+        "variable": "EMPLOYMENTPER_NONDIS",
+        "value": "3%",
+        "description": "Pupils staying in employment for at least two terms after key stage 4 (percentage)"
+      },
+      {
+        "variable": "EDUCATIONPER_NONDIS",
+        "value": "93%",
+        "description": "Pupils staying in education for at least two terms after key stage 4 (percentage)"
+      },
+      {
+        "variable": "FEPER_NONDIS",
+        "value": "15%",
+        "description": "Further education (percentage)"
+      },
+      {
+        "variable": "SIXTH_COLPER_NONDIS",
+        "value": "76%",
+        "description": "Sixth form college (percentage)"
+      },
+      {
+        "variable": "COHORT_22",
+        "value": "248",
+        "description": "Number of pupils completing key stage 4 in 2021/22"
+      },
+      {
+        "variable": "OVERALL_DESTPER_22",
+        "value": "94%",
+        "description": "Pupils staying in education or employment for at least two terms after key stage 4 (percentage) (2021/22 leavers)"
+      },
+      {
+        "variable": "COHORT_DIS_22",
+        "value": "47",
+        "description": "Number of disadvantaged pupils completing key stage 4 in 2021/22"
+      },
+      {
+        "variable": "OVERALL_DESTPER_DIS_22",
+        "value": "85%",
+        "description": "Disadvantaged pupils staying in education or employment for at least two terms after key stage 4 (percentage) (2021/22 leavers)"
+      },
+      {
+        "variable": "COHORT_NONDIS_22",
+        "value": "201",
+        "description": "Number of pupils not identified as disadvantaged completing key stage 4 in 2021/22"
+      },
+      {
+        "variable": "OVERALL_DESTPER_NONDIS_22",
+        "value": "97%",
+        "description": "Pupils not identified as disadvantaged staying in education or employment for at least two terms after key stage 4 (percentage) (2021/22 leavers)"
+      },
+      {
+        "variable": "COHORT_21",
+        "value": "253",
+        "description": "Number of pupils completing key stage 4 in 2020/21"
+      },
+      {
+        "variable": "OVERALL_DESTPER_21",
+        "value": "96%",
+        "description": "Pupils staying in education or employment for at least two terms after key stage 4 (percentage) ( 2020/21 leavers)"
+      },
+      {
+        "variable": "COHORT_DIS_21",
+        "value": "38",
+        "description": "Number of disadvantaged pupils completing key stage 4 in 2020/21"
+      },
+      {
+        "variable": "OVERALL_DESTPER_DIS_21",
+        "value": "87%",
+        "description": "Disadvantaged pupils staying in education or employment for at least two terms after key stage 4 (percentage) ( 2020/21 leavers)"
+      },
+      {
+        "variable": "COHORT_NONDIS_21",
+        "value": "215",
+        "description": "Number of pupils not identified as disadvantaged completing key stage 4 in 2020/21"
+      },
+      {
+        "variable": "OVERALL_DESTPER_NONDIS_21",
+        "value": "98%",
+        "description": "Pupils not identified as disadvantaged staying in education or employment for at least two terms after key stage 4 (percentage) ( 2020/21 leavers)"
+      }
+    ],
+    "KS4_25": [
+      {
+        "variable": "PCODE",
+        "value": "RH2 7NT",
+        "description": "School postcode"
+      },
+      {
+        "variable": "CONTFLAG",
+        "value": "0",
+        "description": "Contingency flag - school results 'significantly affected'. This field is zero for all schools."
+      },
+      {
+        "variable": "NFTYPE",
+        "value": "ACC",
+        "description": "School type (see separate list of abbreviations used in the tables)"
+      },
+      {
+        "variable": "RELDENOM",
+        "value": "Does not apply",
+        "description": "School religious character"
+      },
+      {
+        "variable": "ADMPOL",
+        "value": "NSE",
+        "description": "School admissions policy (self-declared by schools on Get Information About Schools)"
+      },
+      {
+        "variable": "ADMPOL_PT",
+        "value": "OTHER NON SEL",
+        "description": "School admissions policy - new definition from 2019"
+      },
+      {
+        "variable": "EGENDER",
+        "value": "MIXED",
+        "description": "School gender of entry"
+      },
+      {
+        "variable": "FEEDER",
+        "value": "0",
+        "description": "Indicates whether school is a feeder school for sixth form centre/consortia (0=No; 1=Yes)"
+      },
+      {
+        "variable": "AGERANGE",
+        "value": "11 to 16",
+        "description": "Age range"
+      },
+      {
+        "variable": "TOTPUPS",
+        "value": "1261",
+        "description": "Number of pupils on roll (all ages)"
+      },
+      {
+        "variable": "NUMBOYS",
+        "value": "669",
+        "description": "Total boys on roll (including part-time pupils)"
+      },
+      {
+        "variable": "NUMGIRLS",
+        "value": "592",
+        "description": "Total girls on roll (including part-time pupils)"
+      },
+      {
+        "variable": "TPUP",
+        "value": "254",
+        "description": "Number of pupils at the end of key stage 4"
+      },
+      {
+        "variable": "BPUP",
+        "value": "143",
+        "description": "Number of boys at the end of key stage 4"
+      },
+      {
+        "variable": "PBPUP",
+        "value": "56.3%",
+        "description": "% of pupils at the end of key stage 4 who are boys"
+      },
+      {
+        "variable": "GPUP",
+        "value": "111",
+        "description": "Number of girls at the end of key stage 4"
+      },
+      {
+        "variable": "PGPUP",
+        "value": "43.7%",
+        "description": "% of pupils at the end key stage 4 who are girls"
+      },
+      {
+        "variable": "TFSM6CLA1A",
+        "value": "50",
+        "description": "Number of disadvantaged pupils at the end of key stage 4"
+      },
+      {
+        "variable": "PTFSM6CLA1A",
+        "value": "19.7%",
+        "description": "% of pupils at the end of key stage 4 who are disadvantaged"
+      },
+      {
+        "variable": "TNOTFSM6CLA1A",
+        "value": "204",
+        "description": "Number of non-disadvantaged pupils at the end of key stage 4"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1A",
+        "value": "80.3%",
+        "description": "% of pupils at the end of key stage 4 who are not disadvantaged"
+      },
+      {
+        "variable": "TEALGRP2",
+        "value": "13",
+        "description": "Number of pupils at the end of key stage 4 with English as additional language (EAL)"
+      },
+      {
+        "variable": "PTEALGRP2",
+        "value": "5.1%",
+        "description": "% of pupils at the end of key stage 4 with English as additional language (EAL)"
+      },
+      {
+        "variable": "TEALGRP1",
+        "value": "240",
+        "description": "Number of pupils at the end of key stage 4 with English as their first language"
+      },
+      {
+        "variable": "PTEALGRP1",
+        "value": "94.5%",
+        "description": "% of pupils at the end of key stage 4 with English as their first language"
+      },
+      {
+        "variable": "TEALGRP3",
+        "value": "1",
+        "description": "Number of pupils at the end of key stage 4 whose first language is unclassified"
+      },
+      {
+        "variable": "PTEALGRP3",
+        "value": "0.4%",
+        "description": "% of pupils at the end of key stage 4 whose first language is unclassified"
+      },
+      {
+        "variable": "TNMOB",
+        "value": "252",
+        "description": "Number of pupils at the end of key stage 4 who are non-mobile"
+      },
+      {
+        "variable": "PTNMOB",
+        "value": "99.2%",
+        "description": "% of pupils at the end of key stage 4 who are non-mobile"
+      },
+      {
+        "variable": "SENE4",
+        "value": "12",
+        "description": "Number of pupils at the end of key stage 4 with special educational needs (SEN) with an Education, health and care (EHC) plan"
+      },
+      {
+        "variable": "PSENE4",
+        "value": "4.7%",
+        "description": "% of pupils at the end of key stage 4 with special educational needs (SEN) with an Education, health and care (EHC) plan"
+      },
+      {
+        "variable": "SEN_ALL4",
+        "value": "54",
+        "description": "Number of pupils at the end of key stage 4 with special educational needs (SEN) including those with or without an Education, health and care (EHC) plan"
+      },
+      {
+        "variable": "PSEN_ALL4",
+        "value": "21.3%",
+        "description": "% of pupils at the end of key stage 4 with special educational needs (SEN) including those with or without an Education, health and care (EHC) plan"
+      },
+      {
+        "variable": "SENK4",
+        "value": "42",
+        "description": "Number of pupils at the end of key stage 4 with special educational needs (SEN) without an Education, health and care (EHC) plan"
+      },
+      {
+        "variable": "PSENK4",
+        "value": "16.5%",
+        "description": "% of pupils at the end of key stage 4 with special educational needs (SEN) without an Education, health and care (EHC) plan"
+      },
+      {
+        "variable": "TOTATT8",
+        "value": "13312.75",
+        "description": "Total sum of Attainment 8 scores"
+      },
+      {
+        "variable": "ATT8SCR",
+        "value": "52.4",
+        "description": "Average Attainment 8 score per pupil"
+      },
+      {
+        "variable": "TOTATT8ENG",
+        "value": "2788",
+        "description": "Total sum of Attainment 8 scores for English element"
+      },
+      {
+        "variable": "ATT8SCRENG",
+        "value": "11",
+        "description": "Average Attainment 8 score per pupil for English element"
+      },
+      {
+        "variable": "TOTATT8MAT",
+        "value": "2702",
+        "description": "Total sum of Attainment 8 scores for mathematics element"
+      },
+      {
+        "variable": "ATT8SCRMAT",
+        "value": "10.6",
+        "description": "Average Attainment 8 score per pupil for mathematics element"
+      },
+      {
+        "variable": "TOTATT8EBAC",
+        "value": "3785",
+        "description": "Total sum of Attainment 8 scores for EBacc element"
+      },
+      {
+        "variable": "ATT8SCREBAC",
+        "value": "14.9",
+        "description": "Average Attainment 8 score per pupil for EBacc element"
+      },
+      {
+        "variable": "TOTATT8OPEN",
+        "value": "4037.75",
+        "description": "Total sum of Attainment 8 scores for open element"
+      },
+      {
+        "variable": "ATT8SCROPEN",
+        "value": "15.9",
+        "description": "Average Attainment 8 score per pupil for open element"
+      },
+      {
+        "variable": "TOTATT8OPENG",
+        "value": "3417.5",
+        "description": "Total sum of Attainment 8 scores for open element - GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENG",
+        "value": "13.5",
+        "description": "Average Attainment 8 score per pupil for open element - GCSE only"
+      },
+      {
+        "variable": "TOTATT8OPENNG",
+        "value": "620.25",
+        "description": "Total sum of Attainment 8 scores for open element - non-GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENNG",
+        "value": "2.4",
+        "description": "Average Attainment 8 score per pupil for open element - non-GCSE only"
+      },
+      {
+        "variable": "AVGEBACFILL",
+        "value": "2.8",
+        "description": "Average number of EBacc slots filled in Attainment 8 per pupil"
+      },
+      {
+        "variable": "AVGOPENFILL",
+        "value": "2.9",
+        "description": "Average number of Open slots filled in Attainment 8 per pupil"
+      },
+      {
+        "variable": "PTL2BASICS_94",
+        "value": "76.4%",
+        "description": "% of pupils achieving standard 9-4 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PTL2BASICS_95",
+        "value": "61.0%",
+        "description": "% of pupils achieving strong 9-5 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "TOTEBACCAPS",
+        "value": "1215.8",
+        "description": "Total EBacc APS score per pupil"
+      },
+      {
+        "variable": "EBACCAPS",
+        "value": "4.79",
+        "description": "Average EBacc APS score per pupil"
+      },
+      {
+        "variable": "EBACCAPS_FSM6CLA1A",
+        "value": "3.22",
+        "description": "Average EBacc APS score per disadvantaged pupil"
+      },
+      {
+        "variable": "EBACCAPS_NFSM6CLA1A",
+        "value": "5.17",
+        "description": "Average EBacc APS score per non-disadvantaged pupil"
+      },
+      {
+        "variable": "EBACCAPS_EAL",
+        "value": "5.36",
+        "description": "Average EBacc APS score per pupil for whom English is an additional language"
+      },
+      {
+        "variable": "EBACCAPS_GIRLS",
+        "value": "4.83",
+        "description": "Average EBacc APS score per girl"
+      },
+      {
+        "variable": "EBACCAPS_BOYS",
+        "value": "4.75",
+        "description": "Average EBacc APS score per boy"
+      },
+      {
+        "variable": "EBACCAPS_NMOB",
+        "value": "4.81",
+        "description": "Average EBacc APS score per non-mobile pupil"
+      },
+      {
+        "variable": "TEBACC_E_PTQ_EE",
+        "value": "200",
+        "description": "Number of key stage 4 pupils with entries in all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PTEBACC_E_PTQ_EE",
+        "value": "78.7%",
+        "description": "% of key stage 4 pupils with entries in all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PTEBACC_94",
+        "value": "40.9%",
+        "description": "% of pupils achieving the English Baccalaureate with 9-4 passes"
+      },
+      {
+        "variable": "PTEBACC_95",
+        "value": "30.7%",
+        "description": "% of pupils achieving the English Baccalaureate with 9-5 passes"
+      },
+      {
+        "variable": "TEBACENG_E_PTQ_EE",
+        "value": "245",
+        "description": "Number of pupils entering the English Baccalaureate English subject area"
+      },
+      {
+        "variable": "PTEBACENG_E_PTQ_EE",
+        "value": "96.5%",
+        "description": "% of pupils entering the English Baccalaureate English subject area"
+      },
+      {
+        "variable": "TEBACMAT_E_PTQ_EE",
+        "value": "250",
+        "description": "Number of pupils entering the English Baccalaureate Maths subject area"
+      },
+      {
+        "variable": "PTEBACMAT_E_PTQ_EE",
+        "value": "98.4%",
+        "description": "% of pupils entering the English Baccalaureate Maths subject area"
+      },
+      {
+        "variable": "TEBAC2SCI_E_PTQ_EE",
+        "value": "242",
+        "description": "Number of pupils entering the English Baccalaureate Science subject area"
+      },
+      {
+        "variable": "PTEBAC2SCI_E_PTQ_EE",
+        "value": "95.3%",
+        "description": "%  of pupils entering the English Baccalaureate Science subject area"
+      },
+      {
+        "variable": "TEBACHUM_E_PTQ_EE",
+        "value": "241",
+        "description": "Number of pupils entering the English Baccalaureate Humanities subject area"
+      },
+      {
+        "variable": "PTEBACHUM_E_PTQ_EE",
+        "value": "94.9%",
+        "description": "%  of pupils entering the English Baccalaureate Humanities subject area"
+      },
+      {
+        "variable": "TEBACLAN_E_PTQ_EE",
+        "value": "200",
+        "description": "Number of pupils entering the English Baccalaureate Language subject area"
+      },
+      {
+        "variable": "PTEBACLAN_E_PTQ_EE",
+        "value": "78.7%",
+        "description": "%  of pupils entering the English Baccalaureate Language subject area"
+      },
+      {
+        "variable": "PTEBACENG_94",
+        "value": "81.5%",
+        "description": "% of pupils achieving the EBacc English subject area with a standard 9-4 pass"
+      },
+      {
+        "variable": "PTEBACENG_95",
+        "value": "71.3%",
+        "description": "% of pupils achieving the EBacc English subject area with a strong 9-5 pass"
+      },
+      {
+        "variable": "PTEBACMAT_94",
+        "value": "80.7%",
+        "description": "% of pupils achieving the EBacc Maths subject area with a standard 9-4 pass"
+      },
+      {
+        "variable": "PTEBACMAT_95",
+        "value": "68.1%",
+        "description": "% of pupils achieving the EBacc Maths subject area with a strong 9-5 pass"
+      },
+      {
+        "variable": "PTEBAC2SCI_94",
+        "value": "74.4%",
+        "description": "% of entered pupils achieving the EBacc Science subject area with a 9-4 pass"
+      },
+      {
+        "variable": "PTEBAC2SCI_95",
+        "value": "61.2%",
+        "description": "% of entered pupils achieving the EBacc Science subject area with a 9-5 pass"
+      },
+      {
+        "variable": "PTEBACHUM_94",
+        "value": "68.0%",
+        "description": "% of entered pupils achieving the EBacc Humanities subject area with a 9-4 pass"
+      },
+      {
+        "variable": "PTEBACHUM_95",
+        "value": "57.7%",
+        "description": "% of entered pupils achieving the EBacc Humanities subject area with a 9-5 pass"
+      },
+      {
+        "variable": "PTEBACLAN_94",
+        "value": "54.0%",
+        "description": "% of entered pupils achieving the EBacc Language subject area with a 9-4 pass"
+      },
+      {
+        "variable": "PTEBACLAN_95",
+        "value": "41.5%",
+        "description": "% of entered pupils achieving the EBacc Language subject area with a 9-5 pass"
+      },
+      {
+        "variable": "TEBACENG_94",
+        "value": "207",
+        "description": "Number of pupils achieving EBacc English subject area with a standard 9-4 pass"
+      },
+      {
+        "variable": "TEBACENG_95",
+        "value": "181",
+        "description": "Number of pupils achieving EBacc English subject area with a strong 9-5 pass"
+      },
+      {
+        "variable": "TEBACMAT_94",
+        "value": "205",
+        "description": "Number of pupils achieving EBacc Maths subject area with a standard 9-4 pass"
+      },
+      {
+        "variable": "TEBACMAT_95",
+        "value": "173",
+        "description": "Number of pupils achieving EBacc Maths subject area with a strong 9-5 pass"
+      },
+      {
+        "variable": "TEBAC2SCI_94",
+        "value": "180",
+        "description": "Number of pupils achieving EBacc Science subject area with a 9-4 pass"
+      },
+      {
+        "variable": "TEBAC2SCI_95",
+        "value": "148",
+        "description": "Number of pupils achieving EBacc Science subject area with a 9-5 pass"
+      },
+      {
+        "variable": "TEBACHUM_94",
+        "value": "164",
+        "description": "Number of pupils achieving EBacc Humanities subject area with a 9-4 pass"
+      },
+      {
+        "variable": "TEBACHUM_95",
+        "value": "139",
+        "description": "Number of pupils achieving EBacc Humanities subject area with a 9-5 pass"
+      },
+      {
+        "variable": "TEBACLAN_94",
+        "value": "108",
+        "description": "Number of pupils achieving EBacc Language subject area with a 9-4 pass"
+      },
+      {
+        "variable": "TEBACLAN_95",
+        "value": "83",
+        "description": "Number of pupils achieving EBacc Language subject area with a 9-5 pass"
+      },
+      {
+        "variable": "TEBACC91",
+        "value": "199",
+        "description": "Number of pupils achieving the English Baccalaureate at grades 9-1"
+      },
+      {
+        "variable": "PTEBACC91",
+        "value": "78.3%",
+        "description": "% of pupils achieving the English Baccalaureate at grades 9-1"
+      },
+      {
+        "variable": "TEBACENG91",
+        "value": "245",
+        "description": "Number of pupils achieving EBacc English subject area at grade 9-1"
+      },
+      {
+        "variable": "PTEBACENG91",
+        "value": "96.5%",
+        "description": "% of pupils achieving the EBacc English subject area at grade 9-1"
+      },
+      {
+        "variable": "TEBACMAT91",
+        "value": "248",
+        "description": "Number of pupils achieving EBacc Maths subject area at grade 9-1"
+      },
+      {
+        "variable": "PTEBACMAT91",
+        "value": "97.6%",
+        "description": "% of pupils achieving the EBacc Maths subject area at grade 9-1"
+      },
+      {
+        "variable": "TEBAC2SCI91",
+        "value": "241",
+        "description": "Number of pupils achieving EBacc Science subject area with grades 9-1"
+      },
+      {
+        "variable": "PTEBAC2SCI91",
+        "value": "99.6%",
+        "description": "% entered pupils achieving the EBacc Science subject area with grades 9-1"
+      },
+      {
+        "variable": "TEBACHUM91",
+        "value": "237",
+        "description": "Number of pupils achieving EBacc Humanities subject area with grades 9-1"
+      },
+      {
+        "variable": "PTEBACHUM91",
+        "value": "98.3%",
+        "description": "% entered pupils achieving the EBacc Humanities subject area with grades 9-1"
+      },
+      {
+        "variable": "TEBACLAN91",
+        "value": "200",
+        "description": "Number of pupils achieving EBacc Language subject area with grades 9-1"
+      },
+      {
+        "variable": "PTEBACLAN91",
+        "value": "100.0%",
+        "description": "% of entered pupils achieving the EBacc Language subject area with grades 9-1"
+      },
+      {
+        "variable": "ATT8SCR_FSM6CLA1A",
+        "value": "36.8",
+        "description": "Average Attainment 8 score per disadvantaged pupil"
+      },
+      {
+        "variable": "ATT8SCR_NFSM6CLA1A",
+        "value": "56.2",
+        "description": "Average Attainment 8 score per non-disadvantaged pupil"
+      },
+      {
+        "variable": "ATT8SCRENG_FSM6CLA1A",
+        "value": "7.9",
+        "description": "Average Attainment 8 score per disadvantaged pupil for English element"
+      },
+      {
+        "variable": "ATT8SCRMAT_FSM6CLA1A",
+        "value": "7.8",
+        "description": "Average Attainment 8 score per disadvantaged pupil for mathematics element"
+      },
+      {
+        "variable": "ATT8SCREBAC_FSM6CLA1A",
+        "value": "10",
+        "description": "Average Attainment 8 score per disadvantaged pupil for EBacc element"
+      },
+      {
+        "variable": "ATT8SCROPEN_FSM6CLA1A",
+        "value": "11.1",
+        "description": "Average Attainment 8 score per disadvantaged pupil for open element"
+      },
+      {
+        "variable": "ATT8SCRENG_NFSM6CLA1A",
+        "value": "11.7",
+        "description": "Average Attainment 8 score per non-disadvantaged pupil for English element"
+      },
+      {
+        "variable": "ATT8SCRMAT_NFSM6CLA1A",
+        "value": "11.3",
+        "description": "Average Attainment 8 score per non-disadvantaged pupil for mathematics element"
+      },
+      {
+        "variable": "ATT8SCREBAC_NFSM6CLA1A",
+        "value": "16.1",
+        "description": "Average Attainment 8 score per non-disadvantaged pupil for EBacc element"
+      },
+      {
+        "variable": "ATT8SCROPEN_NFSM6CLA1A",
+        "value": "17.1",
+        "description": "Average Attainment 8 score per non-disadvantaged pupil for open element"
+      },
+      {
+        "variable": "ATT8SCROPENG_FSM6CLA1A",
+        "value": "8.6",
+        "description": "Average Attainment 8 score per disadvantaged pupil for open element - GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENNG_FSM6CLA1A",
+        "value": "2.5",
+        "description": "Average Attainment 8 score per disadvantaged pupil for open element - non-GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENG_NFSM6CLA1A",
+        "value": "14.6",
+        "description": "Average Attainment 8 score per non-disadvantaged pupil for open element - GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENNG_NFSM6CLA1A",
+        "value": "2.4",
+        "description": "Average Attainment 8 score per non-disadvantaged pupil for open element - non-GCSE only"
+      },
+      {
+        "variable": "DIFFN_ATT8",
+        "value": "-13.6",
+        "description": "Difference between Attainment 8 for disadvantaged pupils in school/LA and non-disadvantaged pupils nationally"
+      },
+      {
+        "variable": "ATT8SCR_EAL",
+        "value": "56.9",
+        "description": "Average Attainment 8 score per pupil for whom English is an additional language"
+      },
+      {
+        "variable": "ATT8SCRENG_EAL",
+        "value": "10.6",
+        "description": "Average Attainment 8 score per pupil for whom English is an additional language for English element"
+      },
+      {
+        "variable": "ATT8SCRMAT_EAL",
+        "value": "12",
+        "description": "Average Attainment 8 score per pupil for whom English is an additional language for mathematics element"
+      },
+      {
+        "variable": "ATT8SCREBAC_EAL",
+        "value": "17.5",
+        "description": "Average Attainment 8 score per pupil for whom English is an additional language for EBacc element"
+      },
+      {
+        "variable": "ATT8SCROPEN_EAL",
+        "value": "16.8",
+        "description": "Average Attainment 8 score per pupil for whom English is an additional language for open element"
+      },
+      {
+        "variable": "ATT8SCROPENG_EAL",
+        "value": "14.5",
+        "description": "Average Attainment 8 score per pupil for whom English is an additional language - GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENNG_EAL",
+        "value": "2.3",
+        "description": "Average Attainment 8 score per pupil for whom English is an additional language - non-GCSE only"
+      },
+      {
+        "variable": "ATT8SCR_GIRLS",
+        "value": "53.4",
+        "description": "Average Attainment 8 score per girl"
+      },
+      {
+        "variable": "ATT8SCRENG_GIRLS",
+        "value": "11.8",
+        "description": "Average Attainment 8 score per girl for English element"
+      },
+      {
+        "variable": "ATT8SCRMAT_GIRLS",
+        "value": "9.9",
+        "description": "Average Attainment 8 score per girl for mathematics element"
+      },
+      {
+        "variable": "ATT8SCREBAC_GIRLS",
+        "value": "14.8",
+        "description": "Average Attainment 8 score per girl for EBacc element"
+      },
+      {
+        "variable": "ATT8SCROPEN_GIRLS",
+        "value": "16.9",
+        "description": "Average Attainment 8 score per girl for open element"
+      },
+      {
+        "variable": "ATT8SCROPENG_GIRLS",
+        "value": "15.1",
+        "description": "Average Attainment 8 score per girl - GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENNG_GIRLS",
+        "value": "1.8",
+        "description": "Average Attainment 8 score per girl - non-GCSE only"
+      },
+      {
+        "variable": "ATT8SCR_BOYS",
+        "value": "51.6",
+        "description": "Average Attainment 8 score per boy"
+      },
+      {
+        "variable": "ATT8SCRENG_BOYS",
+        "value": "10.4",
+        "description": "Average Attainment 8 score per boy for English element"
+      },
+      {
+        "variable": "ATT8SCRMAT_BOYS",
+        "value": "11.2",
+        "description": "Average Attainment 8 score per boy for mathematics element"
+      },
+      {
+        "variable": "ATT8SCREBAC_BOYS",
+        "value": "15",
+        "description": "Average Attainment 8 score per boy for EBacc element"
+      },
+      {
+        "variable": "ATT8SCROPEN_BOYS",
+        "value": "15.1",
+        "description": "Average Attainment 8 score per boy for open element"
+      },
+      {
+        "variable": "ATT8SCROPENG_BOYS",
+        "value": "12.2",
+        "description": "Average Attainment 8 score per boy - GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENNG_BOYS",
+        "value": "2.9",
+        "description": "Average Attainment 8 score per boy - non-GCSE only"
+      },
+      {
+        "variable": "ATT8SCR_NMOB",
+        "value": "52.7",
+        "description": "Average Attainment 8 score per non-mobile pupil"
+      },
+      {
+        "variable": "ATT8SCRENG_NMOB",
+        "value": "11",
+        "description": "Average Attainment 8 score per non-mobile pupil for English element"
+      },
+      {
+        "variable": "ATT8SCRMAT_NMOB",
+        "value": "10.7",
+        "description": "Average Attainment 8 score per non-mobile pupil for mathematics element"
+      },
+      {
+        "variable": "ATT8SCREBAC_NMOB",
+        "value": "15",
+        "description": "Average Attainment 8 score per non-mobile pupil for EBacc element"
+      },
+      {
+        "variable": "ATT8SCROPEN_NMOB",
+        "value": "16",
+        "description": "Average Attainment 8 score per non-mobile pupil for open element"
+      },
+      {
+        "variable": "ATT8SCROPENG_NMOB",
+        "value": "13.5",
+        "description": "Average Attainment 8 score per non-mobile pupil - GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENNG_NMOB",
+        "value": "2.5",
+        "description": "Average Attainment 8 score per non-mobile pupil - non-GCSE only"
+      },
+      {
+        "variable": "PTEBACC_EFSM6CLA1A_PTQ_EE",
+        "value": "48.0%",
+        "description": "% of disadvantaged pupils entering all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PTEBACC_ENFSM6CLA1A_PTQ_EE",
+        "value": "86.3%",
+        "description": "% of non-disadvantaged pupils entering all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PTEBACC_94_FSM6CLA1A",
+        "value": "14.0%",
+        "description": "% of disadvantaged pupils achieving the English Baccalaureate - with 9-4 passes"
+      },
+      {
+        "variable": "PTEBACC_95_FSM6CLA1A",
+        "value": "10.0%",
+        "description": "% of disadvantaged pupils achieving the English Baccalaureate - with 9-5 passes"
+      },
+      {
+        "variable": "PTEBACC_94_NFSM6CLA1A",
+        "value": "47.5%",
+        "description": "% of non-disadvantaged pupils achieving the English Baccalaureate - with 9-4 passes"
+      },
+      {
+        "variable": "PTEBACC_95_NFSM6CLA1A",
+        "value": "35.8%",
+        "description": "% of non-disadvantaged pupils achieving the English Baccalaureate - with 9-5 passes"
+      },
+      {
+        "variable": "PBEBACC_E_PTQ_EE",
+        "value": "77.6%",
+        "description": "% of boys with entries in all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PBEBACC_94",
+        "value": "35.7%",
+        "description": "% of KS4 boys achieving the Ebacc - with 9-4 passes"
+      },
+      {
+        "variable": "PBEBACC_95",
+        "value": "28.0%",
+        "description": "% of KS4 boys achieving the Ebacc - with 9-5 passes"
+      },
+      {
+        "variable": "PGEBACC_E_PTQ_EE",
+        "value": "80.2%",
+        "description": "% of girls with entries in all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PGEBACC_94",
+        "value": "47.7%",
+        "description": "% of KS4 girls achieving the Ebacc - with 9-4 passes"
+      },
+      {
+        "variable": "PGEBACC_95",
+        "value": "34.2%",
+        "description": "% of KS4 girls achieving the Ebacc - with 9-5 passes"
+      },
+      {
+        "variable": "PTEBACC_ENMOB_PTQ_EE",
+        "value": "79.4%",
+        "description": "% of non-mobile pupils with entries in all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PTEBACCNMOB_94",
+        "value": "41.3%",
+        "description": "% of non-mobile pupils achieving the English Baccalaureate with 9-4 passes"
+      },
+      {
+        "variable": "PTEBACCNMOB_95",
+        "value": "31.0%",
+        "description": "% of non-mobile pupils achieving the English Baccalaureate with 9-5 passes"
+      },
+      {
+        "variable": "PTEBACC_EEAL_PTQ_EE",
+        "value": "92.3%",
+        "description": "% of pupils for whom English is an additional language with entries in all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PTEBACCEAL_94",
+        "value": "53.8%",
+        "description": "% of pupils for whom English as an additional language achieving the English Baccalaureate with 9-4 passes"
+      },
+      {
+        "variable": "PTEBACCEAL_95",
+        "value": "46.2%",
+        "description": "% of pupils for whom English as an additional language achieving the English Baccalaureate with 9-5 passes"
+      },
+      {
+        "variable": "PT5EM_94",
+        "value": "73.2%",
+        "description": "% of pupils achieving Level 2 threshold including standard passes 9-4 in both English and Maths GCSEs"
+      },
+      {
+        "variable": "PTANYQ_PTQ_EE",
+        "value": "98.4%",
+        "description": "% of pupils achieving any qualifications"
+      },
+      {
+        "variable": "PTFSM6CLA1ABASICS_94",
+        "value": "50.0%",
+        "description": "% of disadvantaged pupils achieving standard 9-4 passes in GCSE English and maths"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1ABASICS_94",
+        "value": "82.8%",
+        "description": "% of non-disadvantaged pupils achieving standard 9-4 passes in GCSE English and maths"
+      },
+      {
+        "variable": "PBL2BASICS_94",
+        "value": "76.2%",
+        "description": "% of boys achieving standard 9-4 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PGL2BASICS_94",
+        "value": "76.6%",
+        "description": "% of girls achieving standard 9-4 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PTL2BASICSEAL_94",
+        "value": "76.9%",
+        "description": "% of pupils achieving standard 9-4 passes in both English and mathematics GCSEs and for whom English is an additional language"
+      },
+      {
+        "variable": "PTL2BASICSNMOB_94",
+        "value": "77.0%",
+        "description": "% of non-mobile pupils achieving standard 9-4 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PTFSM6CLA1ABASICS_95",
+        "value": "40.0%",
+        "description": "% of disadvantaged pupils achieving strong 9-5 passes in GCSE English and maths"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1ABASICS_95",
+        "value": "66.2%",
+        "description": "% of non-disadvantaged pupils achieving strong 9-5 passes in GCSE English and maths"
+      },
+      {
+        "variable": "PBL2BASICS_95",
+        "value": "59.4%",
+        "description": "% of boys achieving strong 9-5 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PGL2BASICS_95",
+        "value": "63.1%",
+        "description": "% of girls achieving strong 9-5 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PTL2BASICSEAL_95",
+        "value": "69.2%",
+        "description": "% of pupils achieving strong 9-5 passes in both English and mathematics GCSEs and for whom English is an additional language"
+      },
+      {
+        "variable": "PTL2BASICSNMOB_95",
+        "value": "61.5%",
+        "description": "% of non-mobile pupils achieving strong 9-5 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PTMULTILAN_E",
+        "value": "1.2%",
+        "description": "% of pupils entering more than one foreign language"
+      },
+      {
+        "variable": "PTTRIPLESCI_E",
+        "value": "22.4%",
+        "description": "% of pupils entering biology, chemistry and physics"
+      },
+      {
+        "variable": "TAVENT_E_3NG_PTQ_EE",
+        "value": "9.1",
+        "description": "Average number of KS4 entries per pupil"
+      },
+      {
+        "variable": "TAVENT_E_3NG_FSM6CLA1A_PTQ_EE",
+        "value": "7.8",
+        "description": "Average number of KS4 entries per disadvantaged pupil"
+      },
+      {
+        "variable": "TAVENT_E_3NG_NFSM6CLA1A_PTQ_EE",
+        "value": "9.4",
+        "description": "Average number of KS4 entries per non-disadvantaged pupil"
+      },
+      {
+        "variable": "TAVENT_G_PTQ_EE",
+        "value": "8.4",
+        "description": "Average number of GCSE entries per pupil"
+      },
+      {
+        "variable": "TAVENT_GFSM6CLA1A_PTQ_EE",
+        "value": "6.8",
+        "description": "Average number of GCSE entries per disadvantaged pupil"
+      },
+      {
+        "variable": "TAVENT_GNFSM6CLA1A_PTQ_EE",
+        "value": "8.7",
+        "description": "Average number of GCSE entries per non-disadvantaged pupil"
+      },
+      {
+        "variable": "TTOTENT_E_TOTAL_PTQ_EE",
+        "value": "2323",
+        "description": "Total volume of entries without discounting"
+      },
+      {
+        "variable": "TTOTENT_E_COVID_IMPACTED_PTQ_EE",
+        "value": "0",
+        "description": "Total volume of covid-impacted entries without discounting"
+      },
+      {
+        "variable": "PTOTENT_E_COVID_IMPACTED_PTQ_EE",
+        "value": "0%",
+        "description": "% of covid-impacted entries out of total number of entries"
+      },
+      {
+        "variable": "EBACCAPS_PREV",
+        "value": "4.89",
+        "description": "Average EBacc APS score per pupil in 2024"
+      },
+      {
+        "variable": "EBACCAPS_PREV2",
+        "value": "4.59",
+        "description": "Average EBacc APS score per pupil in 2023"
+      },
+      {
+        "variable": "EBACCAPS_FSM6CLA1A_PREV",
+        "value": "3.31",
+        "description": "Average EBacc APS score per disadvantaged pupil in 2024"
+      },
+      {
+        "variable": "EBACCAPS_FSM6CLA1A_PREV2",
+        "value": "2.98",
+        "description": "Average EBacc APS score per disadvantaged pupil in 2023"
+      },
+      {
+        "variable": "EBACCAPS_NFSM6CLA1A_PREV",
+        "value": "5.2",
+        "description": "Average EBacc APS score per non-disadvantaged pupil in 2024"
+      },
+      {
+        "variable": "EBACCAPS_NFSM6CLA1A_PREV2",
+        "value": "5.01",
+        "description": "Average EBacc APS score per non-disadvantaged pupil in 2023"
+      },
+      {
+        "variable": "ATT8SCR_PREV",
+        "value": "52.9",
+        "description": "Average Attainment 8 score per pupil - 2024"
+      },
+      {
+        "variable": "ATT8SCR_PREV2",
+        "value": "50",
+        "description": "Average Attainment 8 score per pupil  - 2023"
+      },
+      {
+        "variable": "P8PUP_PREV",
+        "value": "239",
+        "description": "Number of pupils in progress measure - 2024"
+      },
+      {
+        "variable": "P8PUP_PREV2",
+        "value": "243",
+        "description": "Number of pupils in progress measure - 2023"
+      },
+      {
+        "variable": "P8MEA_PREV",
+        "value": "0.38",
+        "description": "Progress 8 measure - 2024"
+      },
+      {
+        "variable": "P8MEA_PREV2",
+        "value": "0.27",
+        "description": "Progress 8 measure - 2023"
+      },
+      {
+        "variable": "P8CILOW_PREV",
+        "value": "0.2",
+        "description": "Progress 8 lower 95% confidence interval - 2024"
+      },
+      {
+        "variable": "P8CILOW_PREV2",
+        "value": "0.09",
+        "description": "Progress 8 lower 95% confidence interval - 2023"
+      },
+      {
+        "variable": "P8CIUPP_PREV",
+        "value": "0.56",
+        "description": "Progress 8 upper 95% confidence interval - 2024"
+      },
+      {
+        "variable": "P8CIUPP_PREV2",
+        "value": "0.45",
+        "description": "Progress 8 upper 95% confidence interval - 2023"
+      },
+      {
+        "variable": "ATT8SCR_FSM6CLA1A_PREV",
+        "value": "36.8",
+        "description": "Average Attainment 8 score per disadvantaged pupil - 2024"
+      },
+      {
+        "variable": "ATT8SCR_FSM6CLA1A_PREV2",
+        "value": "34",
+        "description": "Average Attainment 8 score per disadvantaged pupil - 2023"
+      },
+      {
+        "variable": "ATT8SCR_NFSM6CLA1A_PREV",
+        "value": "56.1",
+        "description": "Average Attainment 8 score per non-disadvantaged pupil  - 2024"
+      },
+      {
+        "variable": "ATT8SCR_NFSM6CLA1A_PREV2",
+        "value": "54.1",
+        "description": "Average Attainment 8 score per non-disadvantaged pupil - 2023"
+      },
+      {
+        "variable": "PTEBACC_E_PTQ_EE_PREV",
+        "value": "80.2%",
+        "description": "% of  pupils entering all English Baccalaureate subject areas in 2024"
+      },
+      {
+        "variable": "PTEBACC_E_PTQ_EE_PREV2",
+        "value": "80.6%",
+        "description": "% of pupils entering all English Baccalaureate subject areas in 2023"
+      },
+      {
+        "variable": "PTEBACC_94_PREV",
+        "value": "49.4%",
+        "description": "% of KS4 pupils achieving the Ebacc - with standard 9-4 passes in English and maths in 2024"
+      },
+      {
+        "variable": "PTEBACC_94_PREV2",
+        "value": "37.5%",
+        "description": "% of KS4 pupils achieving the Ebacc - with standard 9-4 passes in English and maths in 2023"
+      },
+      {
+        "variable": "PTEBACC_95_PREV",
+        "value": "36.4%",
+        "description": "% of KS4 pupils achieving the Ebacc - with strong 9-5 passes in English and maths in 2024"
+      },
+      {
+        "variable": "PTEBACC_95_PREV2",
+        "value": "23.0%",
+        "description": "% of KS4 pupils achieving the Ebacc - with strong 9-5 passes in English and maths in 2023"
+      },
+      {
+        "variable": "PTEBACC_EFSM6CLA1A_PTQ_EE_PREV",
+        "value": "58.5%",
+        "description": "% of disadvantaged pupils entering all English Baccalaureate subject areas in 2024"
+      },
+      {
+        "variable": "PTEBACC_EFSM6CLA1A_PTQ_EE_PREV2",
+        "value": "54.9%",
+        "description": "% of disadvantaged pupils entering all English Baccalaureate subject areas in 2023"
+      },
+      {
+        "variable": "PTEBACC_94_FSM6CLA1A_PREV",
+        "value": "17.1%",
+        "description": "% of disadvantaged pupils achieving the English Baccalaureate including 9-4 passes in English and maths in 2024"
+      },
+      {
+        "variable": "PTEBACC_94_FSM6CLA1A_PREV2",
+        "value": "11.8%",
+        "description": "% of disadvantaged pupils achieving the English Baccalaureate at grades 9-4 in 2023"
+      },
+      {
+        "variable": "PTEBACC_95_FSM6CLA1A_PREV",
+        "value": "12.2%",
+        "description": "% of disadvantaged pupils achieving the English Baccalaureate including 9-5 passes in English and maths in 2024"
+      },
+      {
+        "variable": "PTEBACC_95_FSM6CLA1A_PREV2",
+        "value": "2.0%",
+        "description": "% of disadvantaged pupils achieving the English Baccalaureate at grades 9-5 in 2023"
+      },
+      {
+        "variable": "PTEBACC_ENFSM6CLA1A_PTQ_EE_PREV",
+        "value": "84.5%",
+        "description": "% of non-disadvantaged pupils entering all English Baccalaureate subject areas in 2024"
+      },
+      {
+        "variable": "PTEBACC_ENFSM6CLA1A_PTQ_EE_PREV2",
+        "value": "87.3%",
+        "description": "% of non-disadvantaged pupils entering all English Baccalaureate subject areas in 2023"
+      },
+      {
+        "variable": "PTEBACC_94_NFSM6CLA1A_PREV",
+        "value": "55.8%",
+        "description": "% of non-disadvantaged pupils achieving the English Baccalaureate including 9-4 passes in English and maths in 2024"
+      },
+      {
+        "variable": "PTEBACC_94_NFSM6CLA1A_PREV2",
+        "value": "44.2%",
+        "description": "% of non-disadvantaged pupils achieving the English Baccalaureate at grade 9-4 in 2023"
+      },
+      {
+        "variable": "PTEBACC_95_NFSM6CLA1A_PREV",
+        "value": "41.3%",
+        "description": "% of non-disadvantaged pupils achieving the English Baccalaureate including 9-5 passes in English and maths in 2024"
+      },
+      {
+        "variable": "PTEBACC_95_NFSM6CLA1A_PREV2",
+        "value": "28.4%",
+        "description": "% of non-disadvantaged pupils achieving the English Baccalaureate at grade 9-5 in 2023"
+      },
+      {
+        "variable": "PT5EM_94_PREV",
+        "value": "70.0%",
+        "description": "% of pupils achieving Level 2 threshold including standard passes 9-4 in both English and Maths GCSEs in 2024"
+      },
+      {
+        "variable": "PT5EM_94_PREV2",
+        "value": "71.0%",
+        "description": "% of pupils achieving Level 2 threshold including standard passes 9-4 in both English and Maths GCSEs in 2023"
+      },
+      {
+        "variable": "PTL2BASICS_94_PREV",
+        "value": "76.1%",
+        "description": "% of pupils achieving 9-4 passes in GCSE English and maths in 2024"
+      },
+      {
+        "variable": "PTL2BASICS_94_PREV2",
+        "value": "74.2%",
+        "description": "% of pupils achieving 9-4 passes in GCSE English and maths in 2023"
+      },
+      {
+        "variable": "PTL2BASICS_95_PREV",
+        "value": "60.7%",
+        "description": "% of pupils achieving 9-5 passes in GCSE English and maths in 2024"
+      },
+      {
+        "variable": "PTL2BASICS_95_PREV2",
+        "value": "55.2%",
+        "description": "% of pupils achieving 9-5 passes in GCSE English and maths in 2023"
+      },
+      {
+        "variable": "PTFSM6CLA1ABASICS_94_PREV",
+        "value": "48.8%",
+        "description": "% of disadvantaged pupils achieving 9-4 passes in GCSE English and maths in 2024"
+      },
+      {
+        "variable": "PTFSM6CLA1ABASICS_94_PREV2",
+        "value": "51.0%",
+        "description": "% of disadvantaged pupils achieving 9-4 in GCSE English and maths in 2023"
+      },
+      {
+        "variable": "PTFSM6CLA1ABASICS_95_PREV",
+        "value": "26.8%",
+        "description": "% of disadvantaged pupils achieving 9-5 passes in GCSE English and maths in 2024"
+      },
+      {
+        "variable": "PTFSM6CLA1ABASICS_95_PREV2",
+        "value": "21.6%",
+        "description": "% of disadvantaged pupils achieving 9-5 passes in GCSE English and maths in 2023"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1ABASICS_94_PREV",
+        "value": "81.6%",
+        "description": "% of non-disadvantaged pupils achieving 9-4 passes in GCSE English and maths in 2024"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1ABASICS_94_PREV2",
+        "value": "80.2%",
+        "description": "% of non-disadvantaged pupils achieving 9-4 passes in GCSE English and maths in 2023"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1ABASICS_95_PREV",
+        "value": "67.5%",
+        "description": "% of non-disadvantaged pupils achieving 9-5 passes in GCSE English and maths in 2024"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1ABASICS_95_PREV2",
+        "value": "64.0%",
+        "description": "% of non-disadvantaged pupils achieving 9-5 passes in GCSE English and maths in 2023"
+      },
+      {
+        "variable": "TFSM6CLA1A_PREV",
+        "value": "41",
+        "description": "Number of disadvantaged pupils in 2024"
+      },
+      {
+        "variable": "TFSM6CLA1A_PREV2",
+        "value": "51",
+        "description": "Number of disadvantaged pupils at the end of key stage 4 in 2023"
+      },
+      {
+        "variable": "PTFSM6CLA1A_PREV",
+        "value": "16.6%",
+        "description": "% of pupils who were disadvantaged in 2024"
+      },
+      {
+        "variable": "PTFSM6CLA1A_PREV2",
+        "value": "20.6%",
+        "description": "% of pupils at the end of key stage 4 who were disadvantaged in 2023"
+      },
+      {
+        "variable": "TNOTFSM6CLA1A_PREV",
+        "value": "206",
+        "description": "Number of non-disadvantaged pupils in 2024"
+      },
+      {
+        "variable": "TNOTFSM6CLA1A_PREV2",
+        "value": "197",
+        "description": "Number of non-disadvantaged pupils at the end of key stage 4 in 2023"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1A_PREV",
+        "value": "83.4%",
+        "description": "% of pupils who were not disadvantaged in 2024"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1A_PREV2",
+        "value": "79.4%",
+        "description": "% of pupils at the end of key stage 4 who were not disadvantaged in 2023"
+      },
+      {
+        "variable": "TAVENT_E_3NG_FSM6CLA1A_PTQ_EE_PREV",
+        "value": "8.3",
+        "description": "Average number of KS4 entries per disadvantaged pupil in 2024"
+      },
+      {
+        "variable": "TAVENT_E_3NG_FSM6CLA1A_PTQ_EE_PREV2",
+        "value": "8.1",
+        "description": "Average number of KS4 entries per disadvantaged pupil in 2023"
+      },
+      {
+        "variable": "TAVENT_E_3NG_NFSM6CLA1A_PTQ_EE_PREV",
+        "value": "9.6",
+        "description": "Average number of KS4 entries per non-disadvantaged pupil in 2024"
+      },
+      {
+        "variable": "TAVENT_E_3NG_NFSM6CLA1A_PTQ_EE_PREV2",
+        "value": "9.5",
+        "description": "Average number of KS4 entries per non-disadvantaged pupil in 2023"
+      },
+      {
+        "variable": "TAVENT_GFSM6CLA1A_PTQ_EE_PREV",
+        "value": "7.6",
+        "description": "Average number of GCSE entries per disadvantaged pupil in 2024"
+      },
+      {
+        "variable": "TAVENT_GFSM6CLA1A_PTQ_EE_PREV2",
+        "value": "7.4",
+        "description": "Average number of GCSE entries per disadvantaged pupil in 2023"
+      },
+      {
+        "variable": "TAVENT_GNFSM6CLA1A_PTQ_EE_PREV",
+        "value": "9.1",
+        "description": "Average number of GCSE entries per non-disadvantaged pupil in 2024"
+      },
+      {
+        "variable": "TAVENT_GNFSM6CLA1A_PTQ_EE_PREV2",
+        "value": "9.1",
+        "description": "Average number of GCSE entries per non-disadvantaged pupil in 2023"
+      },
+      {
+        "variable": "TPUP_PREV",
+        "value": "247",
+        "description": ""
+      },
+      {
+        "variable": "P8_BANDING_PREV",
+        "value": "2",
+        "description": ""
+      },
+      {
+        "variable": "TPUP_PREV2",
+        "value": "248",
+        "description": ""
+      },
+      {
+        "variable": "P8_BANDING_PREV2",
+        "value": "2",
+        "description": ""
+      }
+    ]
+  },
+  "financial": {
+    "inYearBalance": "-£236,369",
+    "revenueReserve": "£628,135",
+    "totalSpendPerPupil": "£7,076/pupil",
+    "comparatorTotalPerPupil": "£7,190/pupil",
+    "spendingCategories": {
+      "Premises staff and services": {
+        "school": "£53/pupil",
+        "average": "£46/pupil",
+        "diff": "£7 more than avg",
+        "pctDiff": "15%"
+      },
+      "Educational supplies": {
+        "school": "£525/pupil",
+        "average": "£486/pupil",
+        "diff": "£39 more than avg",
+        "pctDiff": "8%"
+      },
+      "Administrative supplies": {
+        "school": "£227/pupil",
+        "average": "£167/pupil",
+        "diff": "£60 more than avg",
+        "pctDiff": "36%"
+      },
+      "Utilities": {
+        "school": "£15/pupil",
+        "average": "£14/pupil",
+        "diff": "£0 more than avg",
+        "pctDiff": "7%"
+      },
+      "Non-educational support staff": {
+        "school": "£744/pupil",
+        "average": "£800/pupil",
+        "diff": "£56 less than avg",
+        "pctDiff": "-7%"
+      },
+      "Teaching and Teaching support staff": {
+        "school": "£5,415/pupil",
+        "average": "£5,531/pupil",
+        "diff": "£117 less than avg",
+        "pctDiff": "-2%"
+      },
+      "Educational ICT": {
+        "school": "£32/pupil",
+        "average": "£45/pupil",
+        "diff": "£13 less than avg",
+        "pctDiff": "-29%"
+      },
+      "Catering staff and supplies": {
+        "school": "£65/pupil",
+        "average": "£101/pupil",
+        "diff": "£36 less than avg",
+        "pctDiff": "-36%"
+      }
+    },
+    "workforceFTE": 134.28,
+    "teachersFTE": 79.1,
+    "seniorLeadershipFTE": 8.8,
+    "teachingAssistantFTE": 23.74,
+    "qualifiedTeachersPct": "96%",
+    "comparatorQtsAvgPct": "96.2%",
+    "pupilTeacherRatio": 16
+  },
+  "area": {
+    "postcode": "RH2 7NT",
+    "district": "Reigate and Banstead",
+    "region": "South East",
+    "lsoa": "E01030594",
+    "msoa": "E02006387",
+    "ethnicity": {
+      "White: English, Welsh, Scottish, Northern Irish or British": 83,
+      "White: Irish": 1.2,
+      "White: Roma": 0.1,
+      "White: Other White": 5.2,
+      "Mixed or Multiple ethnic groups: White and Black Caribbean": 0.9,
+      "Mixed or Multiple ethnic groups: White and Black African": 0.9,
+      "Mixed or Multiple ethnic groups: White and Asian": 1.5,
+      "Mixed or Multiple ethnic groups: Other Mixed or Multiple ethnic groups": 1.1,
+      "Asian, Asian British or Asian Welsh: Indian": 1,
+      "Asian, Asian British or Asian Welsh: Pakistani": 0.8,
+      "Asian, Asian British or Asian Welsh: Bangladeshi": 0.3,
+      "Asian, Asian British or Asian Welsh: Chinese": 0.5,
+      "Asian, Asian British or Asian Welsh: Other Asian": 0.7,
+      "Black, Black British, Black Welsh, Caribbean or African: Caribbean": 0.4,
+      "Black, Black British, Black Welsh, Caribbean or African: African": 1.3,
+      "Black, Black British, Black Welsh, Caribbean or African: Other Black": 0.4,
+      "Other ethnic group: Arab": 0.2,
+      "Other ethnic group: Any other ethnic group": 0.6
+    },
+    "pricePaid": {
+      "radiusM": 800,
+      "yearsBack": 5,
+      "totalTransactions": 18,
+      "postcodesQueried": 100,
+      "medianAllTypes": "£405,000",
+      "byType": {
+        "Semi-detached": "£455,000",
+        "Detached": "£550,000",
+        "Flat / Maisonette": "£189,500"
+      },
+      "source": "HM Land Registry Price Paid Data"
+    },
+    "income": {
+      "msoaName": "Reigate and Banstead 013",
+      "netAnnualHouseholdIncome": "£43,200",
+      "totalAnnualHouseholdIncome": "£50,700",
+      "afterHousingCostsIncome": "£36,800",
+      "netEquivalisedIncome": "£13,900",
+      "year": "FYE 2018",
+      "source": "ONS Small Area Income Estimates"
+    },
+    "imd": {
+      "lsoaCode": "E01030594",
+      "year": "2025",
+      "imdScore": 11.65,
+      "imdRank": 22994,
+      "imdDecile": 7,
+      "subDomains": {
+        "Income": 5,
+        "Employment": 6,
+        "Education, Skills & Training": 8,
+        "Health & Disability": 7,
+        "Crime": 7,
+        "Barriers to Housing & Services": 9,
+        "Living Environment": 9
+      },
+      "population": 1939,
+      "populationYear": "2022",
+      "source": "MHCLG Indices of Multiple Deprivation 2025 via findthatpostcode.uk"
+    },
+    "crystalRoof": {
+      "qualifications": {
+        "noQualifications": 23,
+        "level1AndEntry": 11,
+        "level2": 17,
+        "apprenticeship": 3,
+        "level3": 14,
+        "level4AndAbove": 30,
+        "other": 2,
+        "totalResidents": 253
+      },
+      "occupation": {
+        "managerialProfessional": 32,
+        "intermediate": 24,
+        "routineAndManual": 34,
+        "neverWorkedLongTermUnemployed": 4,
+        "fullTimeStudents": 6,
+        "totalResidents": 253
+      },
+      "income": {
+        "meanAnnualHouseholdIncome": "£60,100",
+        "grain": "MSOA",
+        "measure": "mean gross annual household income"
+      }
+    }
+  },
+  "schoolEthnicity": {
+    "w": 85,
+    "m": 7,
+    "a": 5,
+    "b": 2,
+    "c": 0,
+    "o": 0,
+    "ns": 1,
+    "yr": "2024/25"
+  },
+  "giasDetails": {
+    "la": "Surrey (936)",
+    "admissionsPolicy": "Non-selective",
+    "religiousCharacter": "Does not apply"
+  }
+}

@@ -1,0 +1,1060 @@
+{
+  "_meta": {
+    "urn": 137648,
+    "label": "state-primary",
+    "capturedAt": "2026-04-26T23:22:37.229Z",
+    "note": "KS1 + KS2 — largest data set for primary"
+  },
+  "input": "Redriff Primary",
+  "identity": {
+    "urn": "137648",
+    "officialName": "Redriff Primary, City of London Academy",
+    "type": "Academy converter",
+    "phase": "Primary",
+    "la": "Southwark",
+    "address": "Salter Road, Rotherhithe, London, Not recorded, SE16 5LQ",
+    "postcode": "se165lq",
+    "outward": "se16",
+    "isIndependent": false,
+    "isOpen": true
+  },
+  "ofsted": {
+    "overall": "Outstanding",
+    "date": "28 November 2023",
+    "qualityOfEducation": "Outstanding",
+    "behaviour": "Outstanding",
+    "personalDevelopment": "Outstanding",
+    "leadership": "Outstanding",
+    "sixthForm": null,
+    "achievement": null,
+    "attendance": null,
+    "curriculum": null,
+    "inclusion": null,
+    "leadershipGov": null,
+    "wellbeing": null,
+    "post16": null,
+    "safeguarding": null,
+    "reportUrl": "https://files.ofsted.gov.uk/v1/file/50238234",
+    "parentViewUrl": "https://parentview.ofsted.gov.uk/parent-view-results/urn/137648",
+    "pupilExperience": "Pupils are happy at this school. They are proud to share their learning and show  excitement when they talk about their school community. The school has high  expectations for all pupils. Pupils enjoy an exciting curriculum which embraces the  heritage of the community. For example, pupils get to learn about the importance of  the Docklands through London’s history. Pupils clearly value where they live and the  diversity that exists within the school community. Pupils demonstrate excellent  attitudes to learning and achieve well. \n \nInnovative ideas for playtimes create a joyful, happy environment. For example,  pupils enjoy dressing up, role play and an exciting range of games. Pupils respect  and value each other. Staff and pupils share positive and warm working  relationships. Pupils feel safe and know that they can communicate any worries to  staff. Pupils with special educational needs and/or disabilities (SEND) are well  supported. Everyone looks out for each other and behaviour throughout the school  is calm and positive. \n \nThe school offers exceptional opportunities for pupils’ personal development. Pupils  enjoy their positions of responsibility and strive to make a difference to school life. \nThe school council works with leaders to ensure that pupils’ ideas are heard. For  example, school councillors recently worked with the school chef to create a new  menu. A wealth of visits enhances the curriculum, including outings to local  museums and parks. \n \nWhat does the school do well and what does it need to do  better? \n \nThe school’s curriculum is ambitious and carefully sequenced. It allows pupils to  build up their knowledge, skills and use of vocabulary over time. Children in the  early years receive a strong foundation to their school life. The stimulating learning  environment encourages children to be curious about their learning. Children focus  for sustained periods and show resilience in their problem-solving. For instance,  children in the Nursery worked together impressively to find the right building blocks  for a tower they were constructing. \n \nLeaders make sure that staff have the support and training they need to enable all  pupils to access the curriculum and learn well. Staff are highly skilled at identifying  and meeting pupils’ needs, including those with SEND. Throughout the school, staff  use a range of approaches consistently to support pupils’ learning. For example,  staff use different communication systems which enable all pupils to share their  answers, points of view and emotions. \n \nStaff present information clearly to pupils. They provide pupils with different  opportunities to show what they know. For example, in mathematics, some pupils  used practical resources to show the answers to their calculations while others  recorded these in their workbooks. \n \n\n \n \n \n \n \nInspection report: Redriff Primary School \n28 and 29 November 2023 \n3 \n \n \nTeachers’ subject knowledge is strong and used effectively to support pupils to learn  the curriculum content. In lessons, teachers check pupils’ understanding and  address any misconceptions that arise. Staff provide a range of additional support to  ensure that pupils keep up with their learning. \n \nThroughout the school, staff make the most of opportunities to support pupils’  language and communication. The impact of this could be seen in pupils’ answers  and in their discussions. In all year groups, teachers introduce pupils to a wide  range of high-quality and ambitious texts. In Year 6, for example, pupils used  different texts, including newspaper articles, to think about and discuss the effects  of an oil spill. Pupils in Reception and Year 1 learn to read through a consistently  delivered phonics programme. Teachers check pupils’ understanding regularly and  make sure pupils have books which are well matched to their phonics knowledge. \n \nA shared understanding of the school values creates a positive environment for  learning. Pupils’ behaviour throughout the school is exemplary. Leaders have  established positive and productive partnerships with parents and carers. Parents  are overwhelmingly supportive of the school’s work. Rates of pupils’ attendance are  high. \n \nPupils celebrate differences. They support and encourage peers with different needs  to their own. Pupils get to take on different responsibilities in school. For example,  pupils in Year 6 help to plan different special events, including those which celebrate  diversity. The curriculum is enhanced by a variety of enrichment opportunities. For  example, pupils get to visit places of worship, take part in residential trips and  proudly represent their school at tournaments and music events. \n \nThe trust and those responsible for governance have a secure understanding of the  school’s strengths and priorities for improvement. They share leaders’ high  expectations for all aspects of the school’s work. Staff are supported through well-\nplanned professional development opportunities. For example, subject leaders  routinely help other staff to enhance their understanding of different parts of the  curriculum. Staff are proud to work at the school. They value the collaborative work  and support of leaders and colleagues.",
+    "nextSteps": "The school’s curriculum is ambitious and carefully sequenced. It allows pupils to  build up their knowledge, skills and use of vocabulary over time. Children in the  early years receive a strong foundation to their school life. The stimulating learning  environment encourages children to be curious about their learning. Children focus  for sustained periods and show resilience in their problem-solving. For instance,  children in the Nursery worked together impressively to find the right building blocks  for a tower they were constructing. \n \nLeaders make sure that staff have the support and training they need to enable all  pupils to access the curriculum and learn well. Staff are highly skilled at identifying  and meeting pupils’ needs, including those with SEND. Throughout the school, staff  use a range of approaches consistently to support pupils’ learning. For example,  staff use different communication systems which enable all pupils to share their  answers, points of view and emotions. \n \nStaff present information clearly to pupils. They provide pupils with different  opportunities to show what they know. For example, in mathematics, some pupils  used practical resources to show the answers to their calculations while others  recorded these in their workbooks.",
+    "qualityOfEducationDetail": null,
+    "behaviourAndAttitudesDetail": null,
+    "personalDevelopmentDetail": null,
+    "leadershipAndManagementDetail": null,
+    "achievementDetail": null,
+    "inclusionDetail": null,
+    "parentView": null
+  },
+  "performance": {
+    "L": [
+      {
+        "variable": "ISPRIMARY",
+        "value": "1",
+        "description": "Does the school provide primary education? ( 0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "ISSECONDARY",
+        "value": "0",
+        "description": "Does the school provide secondary education? ( 0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "ISPOST16",
+        "value": "0",
+        "description": "Does the school provide post 16 education? (  0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "AGELOW",
+        "value": "3",
+        "description": "Lowest age of entry"
+      },
+      {
+        "variable": "AGEHIGH",
+        "value": "11",
+        "description": "Highest age of entry"
+      },
+      {
+        "variable": "GENDER",
+        "value": "Mixed",
+        "description": "Indicates whether it's a mixed or single sex school"
+      },
+      {
+        "variable": "RELCHAR",
+        "value": "Does not apply",
+        "description": "Religious character"
+      },
+      {
+        "variable": "ADMPOL",
+        "value": "Not applicable",
+        "description": "Admissions Policy"
+      }
+    ],
+    "CENSUS_25": [
+      {
+        "variable": "SCHOOLTYPE",
+        "value": "State-funded primary",
+        "description": "Type of school"
+      },
+      {
+        "variable": "NOR",
+        "value": "478",
+        "description": "Total number of pupils on roll"
+      },
+      {
+        "variable": "NORG",
+        "value": "238",
+        "description": "Number of girls on roll"
+      },
+      {
+        "variable": "NORB",
+        "value": "240",
+        "description": "Number of boys on roll"
+      },
+      {
+        "variable": "PNORG",
+        "value": "49.79%",
+        "description": "Percentage of girls on roll"
+      },
+      {
+        "variable": "PNORB",
+        "value": "50.21%",
+        "description": "Percentage of boys on roll"
+      },
+      {
+        "variable": "TSENELSE",
+        "value": "36",
+        "description": "Number of eligible pupils with an EHC plan"
+      },
+      {
+        "variable": "PSENELSE",
+        "value": "7.53%",
+        "description": "Percentage of eligible pupils with an EHC plan"
+      },
+      {
+        "variable": "TSENELK",
+        "value": "71",
+        "description": "Number of eligible pupils with SEN support"
+      },
+      {
+        "variable": "PSENELK",
+        "value": "14.85%",
+        "description": "Percentage of eligible pupils with SEN support"
+      },
+      {
+        "variable": "NUMEAL",
+        "value": "302",
+        "description": "No.  pupils where English not first language"
+      },
+      {
+        "variable": "NUMENGFL",
+        "value": "176",
+        "description": "No. pupils with English first language"
+      },
+      {
+        "variable": "NUMUNCFL",
+        "value": "0",
+        "description": "No. pupils where first language is unclassified"
+      },
+      {
+        "variable": "PNUMEAL",
+        "value": "63.20%",
+        "description": "%  pupils where English not first language"
+      },
+      {
+        "variable": "PNUMENGFL",
+        "value": "36.80%",
+        "description": "% pupils with English first language"
+      },
+      {
+        "variable": "PNUMUNCLF",
+        "value": "0",
+        "description": ""
+      },
+      {
+        "variable": "NUMFSM",
+        "value": "109",
+        "description": "No. pupils eligible for free school meals"
+      },
+      {
+        "variable": "NUMFSMEVER",
+        "value": "109",
+        "description": "Number of pupils eligible for FSM at any time during the past 6 years"
+      },
+      {
+        "variable": "NORFSMEVER",
+        "value": "431",
+        "description": "Total pupils for FSMEver"
+      },
+      {
+        "variable": "PNUMFSMEVER",
+        "value": "25.29%",
+        "description": "Percentage of pupils eligible for FSM at any time during the past 6 years"
+      }
+    ],
+    "ABS_24": [
+      {
+        "variable": "PERCTOT",
+        "value": "5.1",
+        "description": "Percentage of overall absence"
+      },
+      {
+        "variable": "PPERSABS10",
+        "value": "10.5",
+        "description": "Percentage of enrolments who are persistent absentees"
+      }
+    ],
+    "KS2_25": [
+      {
+        "variable": "PCODE",
+        "value": "SE16 5LQ",
+        "description": "School postcode"
+      },
+      {
+        "variable": "NFTYPE",
+        "value": "ACC",
+        "description": "School type"
+      },
+      {
+        "variable": "RELDENOM",
+        "value": "Does not apply",
+        "description": "Religious denomination"
+      },
+      {
+        "variable": "AGERANGE",
+        "value": "3 to 11",
+        "description": "Age range"
+      },
+      {
+        "variable": "TOTPUPS",
+        "value": "478",
+        "description": "Total number of pupils (including part-time pupils)"
+      },
+      {
+        "variable": "TPUPYEAR",
+        "value": "76",
+        "description": "Number of pupils aged 11"
+      },
+      {
+        "variable": "TELIG",
+        "value": "74",
+        "description": "Published eligible pupil number"
+      },
+      {
+        "variable": "BELIG",
+        "value": "47",
+        "description": "Eligible boys on school roll at time of tests"
+      },
+      {
+        "variable": "GELIG",
+        "value": "27",
+        "description": "Eligible girls on school roll at time of tests"
+      },
+      {
+        "variable": "PBELIG",
+        "value": "64%",
+        "description": "Percentage of eligible boys on school roll at time of tests"
+      },
+      {
+        "variable": "PGELIG",
+        "value": "36%",
+        "description": "Percentage of eligible girls on school roll at time of tests"
+      },
+      {
+        "variable": "TFSM6CLA1A",
+        "value": "20",
+        "description": "Number of key stage 2 disadvantaged pupils (those who were eligible for free school meals in last 6 years or are looked after by the LA for a day or more or who have been adopted from care)"
+      },
+      {
+        "variable": "PTFSM6CLA1A",
+        "value": "27%",
+        "description": "Percentage of key stage 2 disadvantaged pupils"
+      },
+      {
+        "variable": "TNOTFSM6CLA1A",
+        "value": "54",
+        "description": "Number of key stage 2 pupils who are not disadvantaged"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1A",
+        "value": "73%",
+        "description": "Percentage of key stage 2 pupils who are not disadvantaged"
+      },
+      {
+        "variable": "TEALGRP2",
+        "value": "47",
+        "description": "Number of eligible pupils with English as additional language (EAL)"
+      },
+      {
+        "variable": "PTEALGRP2",
+        "value": "64%",
+        "description": "Percentage of eligible pupils with English as additional language (EAL)"
+      },
+      {
+        "variable": "TMOBN",
+        "value": "73",
+        "description": "Number of eligible pupils classified as non-mobile"
+      },
+      {
+        "variable": "PTMOBN",
+        "value": "99%",
+        "description": "Percentage of eligible pupils classified as non-mobile"
+      },
+      {
+        "variable": "PTRWM_EXP",
+        "value": "89%",
+        "description": "Percentage of pupils reaching the expected standard in reading, writing and maths"
+      },
+      {
+        "variable": "PTRWM_HIGH",
+        "value": "28%",
+        "description": "Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing"
+      },
+      {
+        "variable": "PTREAD_EXP",
+        "value": "92%",
+        "description": "Percentage of pupils reaching the expected standard in reading"
+      },
+      {
+        "variable": "PTREAD_HIGH",
+        "value": "65%",
+        "description": "Percentage of pupils achieving a high score in reading"
+      },
+      {
+        "variable": "PTREAD_AT",
+        "value": "1%",
+        "description": "Percentage of pupils absent from or not able to access the test in reading"
+      },
+      {
+        "variable": "READ_AVERAGE",
+        "value": "110",
+        "description": "Average scaled score in reading"
+      },
+      {
+        "variable": "PTGPS_EXP",
+        "value": "89%",
+        "description": "Percentage of pupils reaching the expected standard in grammar, punctuation and spelling"
+      },
+      {
+        "variable": "PTGPS_HIGH",
+        "value": "68%",
+        "description": "Percentage of pupils achieving a high score in grammar, punctuation and spelling"
+      },
+      {
+        "variable": "PTGPS_AT",
+        "value": "1%",
+        "description": "Percentage of pupils absent from or not able to access the test in grammar, punctuation and spelling"
+      },
+      {
+        "variable": "GPS_AVERAGE",
+        "value": "112",
+        "description": "Average scaled score in grammar, punctuation and spelling"
+      },
+      {
+        "variable": "PTMAT_EXP",
+        "value": "91%",
+        "description": "Percentage of pupils reaching the expected standard in maths"
+      },
+      {
+        "variable": "PTMAT_HIGH",
+        "value": "49%",
+        "description": "Percentage of pupils achieving a high score in maths"
+      },
+      {
+        "variable": "PTMAT_AT",
+        "value": "1%",
+        "description": "Percentage of pupils absent from or not able to access the test in maths"
+      },
+      {
+        "variable": "MAT_AVERAGE",
+        "value": "109",
+        "description": "Average scaled score in maths"
+      },
+      {
+        "variable": "PTWRITTA_EXP",
+        "value": "91%",
+        "description": "Percentage of pupils reaching the expected standard in writing"
+      },
+      {
+        "variable": "PTWRITTA_HIGH",
+        "value": "43%",
+        "description": "Percentage of pupils working at greater depth within the expected standard in writing"
+      },
+      {
+        "variable": "PTWRITTA_WTS",
+        "value": "7%",
+        "description": "Percentage of pupils working towards the expected standard in writing"
+      },
+      {
+        "variable": "PTWRITTA_AD",
+        "value": "0%",
+        "description": "Percentage of pupils absent or disapplied in writing TA"
+      },
+      {
+        "variable": "PTSCITA_EXP",
+        "value": "91%",
+        "description": "Percentage of pupils reaching the expected standard in science TA"
+      },
+      {
+        "variable": "PTSCITA_AD",
+        "value": "0%",
+        "description": "Percentage of pupils absent or disapplied in science TA"
+      },
+      {
+        "variable": "PTRWM_EXP_B",
+        "value": "87%",
+        "description": "Percentage of boys reaching the expected standard in reading, writing and maths"
+      },
+      {
+        "variable": "PTRWM_EXP_G",
+        "value": "93%",
+        "description": "Percentage of girls reaching the expected standard in reading, writing and maths"
+      },
+      {
+        "variable": "PTRWM_EXP_FSM6CLA1A",
+        "value": "75%",
+        "description": "Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths"
+      },
+      {
+        "variable": "PTRWM_EXP_NOTFSM6CLA1A",
+        "value": "94%",
+        "description": "Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths"
+      },
+      {
+        "variable": "DIFFN_RWM_EXP",
+        "value": "6",
+        "description": "Difference between school percentage of disavantaged pupils and national percentage of other pupils reaching the expected standard in reading, writing and maths"
+      },
+      {
+        "variable": "PTRWM_EXP_EAL",
+        "value": "89%",
+        "description": "Percentage of EAL pupils reaching the expected standard in reading, writing and maths"
+      },
+      {
+        "variable": "PTRWM_EXP_MOBN",
+        "value": "89%",
+        "description": "Percentage of non-mobile pupils reaching the expected standard in reading, writing and maths"
+      },
+      {
+        "variable": "PTRWM_HIGH_B",
+        "value": "34%",
+        "description": "Percentage of boys achieving a high score in reading and maths and working at greater depth in writing"
+      },
+      {
+        "variable": "PTRWM_HIGH_G",
+        "value": "19%",
+        "description": "Percentage of girls reaching the HIGHected standard in reading, writing and maths"
+      },
+      {
+        "variable": "PTRWM_HIGH_FSM6CLA1A",
+        "value": "10%",
+        "description": "Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing"
+      },
+      {
+        "variable": "PTRWM_HIGH_NOTFSM6CLA1A",
+        "value": "35%",
+        "description": "Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing"
+      },
+      {
+        "variable": "DIFFN_RWM_HIGH",
+        "value": "-1",
+        "description": "Difference between school percentage of disavantaged pupils and national percentage of other pupils achieving a high score in reading, writing and maths"
+      },
+      {
+        "variable": "PTRWM_HIGH_EAL",
+        "value": "38%",
+        "description": "Percentage of EAL pupils achieving a high score in reading and maths and working at greater depth in writing"
+      },
+      {
+        "variable": "PTRWM_HIGH_MOBN",
+        "value": "29%",
+        "description": "Percentage of non-mobile pupils achieving a high score in reading and maths and working at greater depth in writing"
+      },
+      {
+        "variable": "READ_AVERAGE_B",
+        "value": "110",
+        "description": "Average scaled score in reading for boys"
+      },
+      {
+        "variable": "READ_AVERAGE_G",
+        "value": "110",
+        "description": "Average scaled score in reading for girls"
+      },
+      {
+        "variable": "READ_AVERAGE_FSM6CLA1A",
+        "value": "106",
+        "description": "Average scaled score in reading for disadvantaged pupils"
+      },
+      {
+        "variable": "READ_AVERAGE_NOTFSM6CLA1A",
+        "value": "111",
+        "description": "Average scaled score in reading for non-disadvantaged pupils"
+      },
+      {
+        "variable": "READ_AVERAGE_EAL",
+        "value": "109",
+        "description": "Average scaled score in reading for EAL pupils"
+      },
+      {
+        "variable": "READ_AVERAGE_MOBN",
+        "value": "110",
+        "description": "Average scaled score in reading for MOBN pupils"
+      },
+      {
+        "variable": "MAT_AVERAGE_B",
+        "value": "109",
+        "description": "Average scaled score in maths for boys"
+      },
+      {
+        "variable": "MAT_AVERAGE_G",
+        "value": "107",
+        "description": "Average scaled score in maths for girls"
+      },
+      {
+        "variable": "MAT_AVERAGE_FSM6CLA1A",
+        "value": "104",
+        "description": "Average scaled score in maths for disadvantaged pupils"
+      },
+      {
+        "variable": "MAT_AVERAGE_NOTFSM6CLA1A",
+        "value": "110",
+        "description": "Average scaled score in maths for non-disadvantaged pupils"
+      },
+      {
+        "variable": "MAT_AVERAGE_EAL",
+        "value": "110",
+        "description": "Average scaled score in maths for EAL pupils"
+      },
+      {
+        "variable": "MAT_AVERAGE_MOBN",
+        "value": "109",
+        "description": "Average scaled score in maths for MOBN pupils"
+      },
+      {
+        "variable": "GPS_AVERAGE_B",
+        "value": "112",
+        "description": "Average scaled score in GPS for boys"
+      },
+      {
+        "variable": "GPS_AVERAGE_G",
+        "value": "112",
+        "description": "Average scaled score in GPS for girls"
+      },
+      {
+        "variable": "GPS_AVERAGE_FSM6CLA1A",
+        "value": "107",
+        "description": "Average scaled score in GPS for disadvantaged pupils"
+      },
+      {
+        "variable": "GPS_AVERAGE_NOTFSM6CLA1A",
+        "value": "114",
+        "description": "Average scaled score in GPS for non-disadvantaged pupils"
+      },
+      {
+        "variable": "GPS_AVERAGE_EAL",
+        "value": "113",
+        "description": "Average scaled score in GPS for EAL pupils"
+      },
+      {
+        "variable": "GPS_AVERAGE_MOBN",
+        "value": "112",
+        "description": "Average scaled score in GPS for MOBN pupils"
+      },
+      {
+        "variable": "PTREAD_EXP_FSM6CLA1A",
+        "value": "85%",
+        "description": "Percentage of disadvantaged pupils reaching the expected standard in reading"
+      },
+      {
+        "variable": "PTREAD_EXP_NOTFSM6CLA1A",
+        "value": "94%",
+        "description": "Percentage of non-disadvantaged pupils reaching the expected standard in reading"
+      },
+      {
+        "variable": "PTGPS_EXP_FSM6CLA1A",
+        "value": "80%",
+        "description": "Percentage of disadvantaged pupils reaching the expected standard in grammar, punctuation and spelling"
+      },
+      {
+        "variable": "PTGPS_EXP_NOTFSM6CLA1A",
+        "value": "93%",
+        "description": "Percentage of non-disadvantaged pupils reaching the expected standard in grammar, punctuation and spelling"
+      },
+      {
+        "variable": "PTMAT_EXP_FSM6CLA1A",
+        "value": "80%",
+        "description": "Percentage of disadvantaged pupils reaching the expected standard in maths"
+      },
+      {
+        "variable": "PTMAT_EXP_NOTFSM6CLA1A",
+        "value": "94%",
+        "description": "Percentage of non-disadvantaged pupils reaching the expected standard in maths"
+      },
+      {
+        "variable": "PTWRITTA_EXP_FSM6CLA1A",
+        "value": "75%",
+        "description": "Percentage of disadvantaged pupils reaching the expected standard in writing"
+      },
+      {
+        "variable": "PTWRITTA_EXP_NOTFSM6CLA1A",
+        "value": "96%",
+        "description": "Percentage of non-disadvantaged pupils reaching the expected standard in writing"
+      },
+      {
+        "variable": "PTREAD_HIGH_FSM6CLA1A",
+        "value": "45%",
+        "description": "Percentage of disadvantaged pupils achieving a high score in reading"
+      },
+      {
+        "variable": "PTREAD_HIGH_NOTFSM6CLA1A",
+        "value": "72%",
+        "description": "Percentage of non-disadvantaged pupils achieving a high score in reading"
+      },
+      {
+        "variable": "PTGPS_HIGH_FSM6CLA1A",
+        "value": "40%",
+        "description": "Percentage of disadvantaged pupils achieving a high score in grammar, punctuation and spelling"
+      },
+      {
+        "variable": "PTGPS_HIGH_NOTFSM6CLA1A",
+        "value": "78%",
+        "description": "Percentage of non-disadvantaged pupils achieving a high score in grammar, punctuation and spelling"
+      },
+      {
+        "variable": "PTMAT_HIGH_FSM6CLA1A",
+        "value": "30%",
+        "description": "Percentage of disadvantaged pupils achieving a high score in maths"
+      },
+      {
+        "variable": "PTMAT_HIGH_NOTFSM6CLA1A",
+        "value": "56%",
+        "description": "Percentage of non-disadvantaged pupils achieving a high score in maths"
+      },
+      {
+        "variable": "PTWRITTA_HIGH_FSM6CLA1A",
+        "value": "25%",
+        "description": "Percentage of disadvantaged pupils working at greater depth in writing"
+      },
+      {
+        "variable": "PTWRITTA_HIGH_NOTFSM6CLA1A",
+        "value": "50%",
+        "description": "Percentage of non-disadvantaged pupils working at greater depth in writing"
+      },
+      {
+        "variable": "TEALGRP1",
+        "value": "27",
+        "description": "Number of eligible pupils with English as first language"
+      },
+      {
+        "variable": "PTEALGRP1",
+        "value": "36%",
+        "description": "Percentage of eligible pupils with English as first language"
+      },
+      {
+        "variable": "TEALGRP3",
+        "value": "0",
+        "description": "Number of eligible pupils with unclassified language"
+      },
+      {
+        "variable": "PTEALGRP3",
+        "value": "0%",
+        "description": "Percentage of eligible pupils with unclassified language"
+      },
+      {
+        "variable": "TSENELE",
+        "value": "8",
+        "description": "Number of eligible pupils with EHC plan"
+      },
+      {
+        "variable": "PSENELE",
+        "value": "11%",
+        "description": "Percentage of eligible pupils with EHC plan"
+      },
+      {
+        "variable": "TSENELK",
+        "value": "10",
+        "description": "Number of eligible pupils with SEN support"
+      },
+      {
+        "variable": "PSENELK",
+        "value": "14%",
+        "description": "Percentage of eligible pupils with SEN support"
+      },
+      {
+        "variable": "TSENELEK",
+        "value": "18",
+        "description": "Number of eligible pupils with SEN (EHC plan or SEN support)"
+      },
+      {
+        "variable": "PSENELEK",
+        "value": "24%",
+        "description": "Percentage of eligible pupils with SEN  (EHC plan or SEN support)"
+      },
+      {
+        "variable": "TELIG_24",
+        "value": "76",
+        "description": "Number of eligible pupils 2024"
+      },
+      {
+        "variable": "PTFSM6CLA1A_24",
+        "value": "26%",
+        "description": "Percentage of key stage 2 disadvantaged pupils one year prior"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1A_24",
+        "value": "74%",
+        "description": "Percentage of key stage 2 pupils who are not disadvantaged one year prior"
+      },
+      {
+        "variable": "PTRWM_EXP_24",
+        "value": "87%",
+        "description": "Percentage of pupils reaching the expected standard in reading, writing and maths one year prior"
+      },
+      {
+        "variable": "PTRWM_HIGH_24",
+        "value": "34%",
+        "description": "Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing  one year prior"
+      },
+      {
+        "variable": "PTRWM_EXP_FSM6CLA1A_24",
+        "value": "75%",
+        "description": "Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths one year prior"
+      },
+      {
+        "variable": "PTRWM_HIGH_FSM6CLA1A_24",
+        "value": "15%",
+        "description": "Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing one year prior"
+      },
+      {
+        "variable": "PTRWM_EXP_NOTFSM6CLA1A_24",
+        "value": "91%",
+        "description": "Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths one year prior"
+      },
+      {
+        "variable": "PTRWM_HIGH_NOTFSM6CLA1A_24",
+        "value": "41%",
+        "description": "Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing one year prior"
+      },
+      {
+        "variable": "READ_AVERAGE_24",
+        "value": "111",
+        "description": "Average scaled score in reading - one year prior"
+      },
+      {
+        "variable": "MAT_AVERAGE_24",
+        "value": "110",
+        "description": "Average scaled score in maths - one year prior"
+      },
+      {
+        "variable": "TELIG_23",
+        "value": "77",
+        "description": "Number of eligible pupils 2023"
+      },
+      {
+        "variable": "PTFSM6CLA1A_23",
+        "value": "23%",
+        "description": "Percentage of key stage 2 disadvantaged pupils - two years prior"
+      },
+      {
+        "variable": "PTNOTFSM6CLA1A_23",
+        "value": "77%",
+        "description": "Percentage of key stage 2 pupils who are not disadvantaged - two years prior"
+      },
+      {
+        "variable": "PTRWM_EXP_23",
+        "value": "73%",
+        "description": "Percentage of pupils reaching the expected standard in reading, writing and maths - two years prior"
+      },
+      {
+        "variable": "PTRWM_HIGH_23",
+        "value": "19%",
+        "description": "Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior"
+      },
+      {
+        "variable": "PTRWM_EXP_FSM6CLA1A_23",
+        "value": "39%",
+        "description": "Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths - two years prior"
+      },
+      {
+        "variable": "PTRWM_HIGH_FSM6CLA1A_23",
+        "value": "11%",
+        "description": "Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior"
+      },
+      {
+        "variable": "PTRWM_EXP_NOTFSM6CLA1A_23",
+        "value": "83%",
+        "description": "Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths - two years prior"
+      },
+      {
+        "variable": "PTRWM_HIGH_NOTFSM6CLA1A_23",
+        "value": "22%",
+        "description": "Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior"
+      },
+      {
+        "variable": "READPROG_23",
+        "value": "1.0",
+        "description": "Reading progress measure - two years prior"
+      },
+      {
+        "variable": "READPROG_LOWER_23",
+        "value": "-0.4",
+        "description": "Reading progress measure - lower confidence limit - two years prior"
+      },
+      {
+        "variable": "READPROG_UPPER_23",
+        "value": "2.4",
+        "description": "Reading progress measure - upper confidence limit - two years prior"
+      },
+      {
+        "variable": "WRITPROG_23",
+        "value": "3.3",
+        "description": "Writing progress measure - two years prior"
+      },
+      {
+        "variable": "WRITPROG_LOWER_23",
+        "value": "1.9",
+        "description": "Writing progress measure - lower confidence limit - two years prior"
+      },
+      {
+        "variable": "WRITPROG_UPPER_23",
+        "value": "4.7",
+        "description": "Writing progress measure - upper confidence limit -  two years prior"
+      },
+      {
+        "variable": "MATPROG_23",
+        "value": "3.8",
+        "description": "Maths progress measure - two years prior"
+      },
+      {
+        "variable": "MATPROG_LOWER_23",
+        "value": "2.4",
+        "description": "Maths progress measure - lower confidence limit - two years prior"
+      },
+      {
+        "variable": "MATPROG_UPPER_23",
+        "value": "5.1",
+        "description": "Maths progress measure - upper confidence limit  - two years prior"
+      },
+      {
+        "variable": "READ_AVERAGE_23",
+        "value": "107",
+        "description": "Average scaled score in reading - two years prior"
+      },
+      {
+        "variable": "MAT_AVERAGE_23",
+        "value": "108",
+        "description": "Average scaled score in maths - two years prior"
+      },
+      {
+        "variable": "TELIG_3YR",
+        "value": "227",
+        "description": "Total number of pupils at the end of Key Stage 2 over the past three years"
+      },
+      {
+        "variable": "PTRWM_EXP_3YR",
+        "value": "83%",
+        "description": "Percentage of pupils reaching the expected standard in reading, writing and maths  - 3 year total"
+      },
+      {
+        "variable": "PTRWM_HIGH_3YR",
+        "value": "27%",
+        "description": "Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing  - 3 year total"
+      },
+      {
+        "variable": "READ_AVERAGE_3YR",
+        "value": "109",
+        "description": "Average scaled score in reading - 3 year average"
+      },
+      {
+        "variable": "MAT_AVERAGE_3YR",
+        "value": "109",
+        "description": "Average scaled score in maths - 3 year average"
+      },
+      {
+        "variable": "READPROG_DESCR_23",
+        "value": "3",
+        "description": ""
+      },
+      {
+        "variable": "WRITPROG_DESCR_23",
+        "value": "1",
+        "description": ""
+      },
+      {
+        "variable": "MATPROG_DESCR_23",
+        "value": "1",
+        "description": ""
+      }
+    ]
+  },
+  "financial": {
+    "inYearBalance": "-£378,130",
+    "revenueReserve": "-£15,487",
+    "totalSpendPerPupil": "£12,259/pupil",
+    "comparatorTotalPerPupil": "£6,188/pupil",
+    "spendingCategories": {
+      "Teaching and Teaching support staff": {
+        "school": "£8,985/pupil",
+        "average": "£4,837/pupil",
+        "diff": "£4,148 more than avg",
+        "pctDiff": "86%"
+      },
+      "Non-educational support staff": {
+        "school": "£1,808/pupil",
+        "average": "£570/pupil",
+        "diff": "£1,238 more than avg",
+        "pctDiff": "217%"
+      },
+      "Catering staff and supplies": {
+        "school": "£657/pupil",
+        "average": "£335/pupil",
+        "diff": "£322 more than avg",
+        "pctDiff": "96%"
+      },
+      "Premises staff and services": {
+        "school": "£109/pupil",
+        "average": "£53/pupil",
+        "diff": "£56 more than avg",
+        "pctDiff": "106%"
+      },
+      "Administrative supplies": {
+        "school": "£423/pupil",
+        "average": "£111/pupil",
+        "diff": "£312 more than avg",
+        "pctDiff": "281%"
+      },
+      "Utilities": {
+        "school": "£16/pupil",
+        "average": "£17/pupil",
+        "diff": "£1 less than avg",
+        "pctDiff": "-6%"
+      },
+      "Educational supplies": {
+        "school": "£230/pupil",
+        "average": "£217/pupil",
+        "diff": "£13 more than avg",
+        "pctDiff": "6%"
+      },
+      "Educational ICT": {
+        "school": "£31/pupil",
+        "average": "£48/pupil",
+        "diff": "£16 less than avg",
+        "pctDiff": "-35%"
+      }
+    },
+    "workforceFTE": 78.3,
+    "teachersFTE": 27.3,
+    "seniorLeadershipFTE": 6.7,
+    "teachingAssistantFTE": 25.67,
+    "qualifiedTeachersPct": "89%",
+    "comparatorQtsAvgPct": "96.9%",
+    "pupilTeacherRatio": 17.5
+  },
+  "area": {
+    "postcode": "SE16 5LQ",
+    "district": "Southwark",
+    "region": "London",
+    "lsoa": "E01004056",
+    "msoa": "E02000814",
+    "ethnicity": {
+      "White: English, Welsh, Scottish, Northern Irish or British": 40,
+      "White: Irish": 1.8,
+      "White: Gypsy or Irish Traveller": 0.2,
+      "White: Roma": 1.5,
+      "White: Other White": 20.7,
+      "Mixed or Multiple ethnic groups: White and Black Caribbean": 1.4,
+      "Mixed or Multiple ethnic groups: White and Black African": 1.2,
+      "Mixed or Multiple ethnic groups: White and Asian": 1.4,
+      "Mixed or Multiple ethnic groups: Other Mixed or Multiple ethnic groups": 1.9,
+      "Asian, Asian British or Asian Welsh: Indian": 3.7,
+      "Asian, Asian British or Asian Welsh: Pakistani": 0.7,
+      "Asian, Asian British or Asian Welsh: Bangladeshi": 2.8,
+      "Asian, Asian British or Asian Welsh: Chinese": 3.8,
+      "Asian, Asian British or Asian Welsh: Other Asian": 3,
+      "Black, Black British, Black Welsh, Caribbean or African: Caribbean": 2.9,
+      "Black, Black British, Black Welsh, Caribbean or African: African": 6.6,
+      "Black, Black British, Black Welsh, Caribbean or African: Other Black": 1.9,
+      "Other ethnic group: Arab": 1.1,
+      "Other ethnic group: Any other ethnic group": 3.5
+    },
+    "pricePaid": {
+      "radiusM": 800,
+      "yearsBack": 5,
+      "totalTransactions": 237,
+      "postcodesQueried": 100,
+      "medianAllTypes": "£520,000",
+      "byType": {
+        "Flat / Maisonette": "£468,500",
+        "Terraced": "£685,000",
+        "Semi-detached": "£665,000"
+      },
+      "source": "HM Land Registry Price Paid Data"
+    },
+    "income": {
+      "msoaName": "Southwark 008",
+      "netAnnualHouseholdIncome": "£51,500",
+      "totalAnnualHouseholdIncome": "£60,900",
+      "afterHousingCostsIncome": "£43,600",
+      "netEquivalisedIncome": "£17,300",
+      "year": "FYE 2018",
+      "source": "ONS Small Area Income Estimates"
+    },
+    "imd": {
+      "lsoaCode": "E01004056",
+      "year": "2025",
+      "imdScore": 15.63,
+      "imdRank": 18633,
+      "imdDecile": 6,
+      "subDomains": {
+        "Income": 5,
+        "Employment": 6,
+        "Education, Skills & Training": 7,
+        "Health & Disability": 4,
+        "Crime": 5,
+        "Barriers to Housing & Services": 8,
+        "Living Environment": 6
+      },
+      "population": 2390,
+      "populationYear": "2022",
+      "source": "MHCLG Indices of Multiple Deprivation 2025 via findthatpostcode.uk"
+    },
+    "crystalRoof": {
+      "qualifications": {
+        "noQualifications": 23,
+        "level1AndEntry": 8,
+        "level2": 9,
+        "apprenticeship": 5,
+        "level3": 10,
+        "level4AndAbove": 43,
+        "other": 2,
+        "totalResidents": 316
+      },
+      "occupation": {
+        "managerialProfessional": 34,
+        "intermediate": 20,
+        "routineAndManual": 25,
+        "neverWorkedLongTermUnemployed": 15,
+        "fullTimeStudents": 7,
+        "totalResidents": 316
+      },
+      "income": {
+        "meanAnnualHouseholdIncome": "£77,200",
+        "grain": "MSOA",
+        "measure": "mean gross annual household income"
+      }
+    }
+  },
+  "schoolEthnicity": {
+    "w": 51,
+    "m": 17,
+    "a": 11,
+    "b": 13,
+    "c": 3,
+    "o": 5,
+    "ns": 0,
+    "yr": "2024/25"
+  },
+  "giasDetails": {
+    "la": "Southwark (210)",
+    "religiousCharacter": "Does not apply"
+  }
+}

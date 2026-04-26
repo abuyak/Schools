@@ -7,7 +7,8 @@
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:live": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=live",
-    "test:smoke": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=smoke --testTimeout=120000"
+    "test:smoke": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=smoke --testTimeout=120000",
+    "capture-fixtures": "node __tests__/capture-fixtures.mjs"
   },
   "jest": {
     "testEnvironment": "node",

@@ -1,0 +1,1184 @@
+{
+  "_meta": {
+    "urn": 100065,
+    "label": "independent-all-through",
+    "capturedAt": "2026-04-26T23:23:26.585Z",
+    "note": "Independent all-through — broadest independent case"
+  },
+  "input": "University College School",
+  "identity": {
+    "urn": "100065",
+    "officialName": "University College School",
+    "type": "Other independent school",
+    "phase": "Not applicable",
+    "la": "Camden",
+    "address": "Frognal, Hampstead, London, Not recorded, NW3 6XH",
+    "postcode": "nw36xh",
+    "outward": "nw3",
+    "isIndependent": true,
+    "isOpen": true
+  },
+  "ofsted": null,
+  "performance": {
+    "L": [
+      {
+        "variable": "ISPRIMARY",
+        "value": "1",
+        "description": "Does the school provide primary education? ( 0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "ISSECONDARY",
+        "value": "1",
+        "description": "Does the school provide secondary education? ( 0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "ISPOST16",
+        "value": "1",
+        "description": "Does the school provide post 16 education? (  0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "AGELOW",
+        "value": "4",
+        "description": "Lowest age of entry"
+      },
+      {
+        "variable": "AGEHIGH",
+        "value": "18",
+        "description": "Highest age of entry"
+      },
+      {
+        "variable": "GENDER",
+        "value": "Mixed",
+        "description": "Indicates whether it's a mixed or single sex school"
+      },
+      {
+        "variable": "RELCHAR",
+        "value": "None",
+        "description": "Religious character"
+      },
+      {
+        "variable": "ADMPOL",
+        "value": "Not applicable",
+        "description": "Admissions Policy"
+      }
+    ],
+    "CENSUS_25": [
+      {
+        "variable": "SCHOOLTYPE",
+        "value": "Independent school",
+        "description": "Type of school"
+      },
+      {
+        "variable": "NOR",
+        "value": "1305",
+        "description": "Total number of pupils on roll"
+      },
+      {
+        "variable": "NORG",
+        "value": "109",
+        "description": "Number of girls on roll"
+      },
+      {
+        "variable": "NORB",
+        "value": "1196",
+        "description": "Number of boys on roll"
+      },
+      {
+        "variable": "PNORG",
+        "value": "8.35%",
+        "description": "Percentage of girls on roll"
+      },
+      {
+        "variable": "PNORB",
+        "value": "91.65%",
+        "description": "Percentage of boys on roll"
+      },
+      {
+        "variable": "TSENELSE",
+        "value": "1",
+        "description": "Number of eligible pupils with an EHC plan"
+      },
+      {
+        "variable": "PSENELSE",
+        "value": "0.08%",
+        "description": "Percentage of eligible pupils with an EHC plan"
+      },
+      {
+        "variable": "TSENELK",
+        "value": "224",
+        "description": "Number of eligible pupils with SEN support"
+      },
+      {
+        "variable": "PSENELK",
+        "value": "17.16%",
+        "description": "Percentage of eligible pupils with SEN support"
+      },
+      {
+        "variable": "PNUMFSMEVER",
+        "value": "0.00%",
+        "description": "Percentage of pupils eligible for FSM at any time during the past 6 years"
+      }
+    ],
+    "KS4_25": [
+      {
+        "variable": "PCODE",
+        "value": "NW3 6XH",
+        "description": "School postcode"
+      },
+      {
+        "variable": "CONTFLAG",
+        "value": "0",
+        "description": "Contingency flag - school results 'significantly affected'. This field is zero for all schools."
+      },
+      {
+        "variable": "NFTYPE",
+        "value": "IND",
+        "description": "School type (see separate list of abbreviations used in the tables)"
+      },
+      {
+        "variable": "RELDENOM",
+        "value": "None",
+        "description": "School religious character"
+      },
+      {
+        "variable": "EGENDER",
+        "value": "MIXED",
+        "description": "School gender of entry"
+      },
+      {
+        "variable": "FEEDER",
+        "value": "0",
+        "description": "Indicates whether school is a feeder school for sixth form centre/consortia (0=No; 1=Yes)"
+      },
+      {
+        "variable": "AGERANGE",
+        "value": "4 to 18",
+        "description": "Age range"
+      },
+      {
+        "variable": "TOTPUPS",
+        "value": "1305",
+        "description": "Number of pupils on roll (all ages)"
+      },
+      {
+        "variable": "NUMBOYS",
+        "value": "1196",
+        "description": "Total boys on roll (including part-time pupils)"
+      },
+      {
+        "variable": "NUMGIRLS",
+        "value": "109",
+        "description": "Total girls on roll (including part-time pupils)"
+      },
+      {
+        "variable": "TPUP",
+        "value": "183",
+        "description": "Number of pupils at the end of key stage 4"
+      },
+      {
+        "variable": "BPUP",
+        "value": "127",
+        "description": "Number of boys at the end of key stage 4"
+      },
+      {
+        "variable": "PBPUP",
+        "value": "69.4%",
+        "description": "% of pupils at the end of key stage 4 who are boys"
+      },
+      {
+        "variable": "GPUP",
+        "value": "56",
+        "description": "Number of girls at the end of key stage 4"
+      },
+      {
+        "variable": "PGPUP",
+        "value": "30.6%",
+        "description": "% of pupils at the end key stage 4 who are girls"
+      },
+      {
+        "variable": "TOTATT8",
+        "value": "2910.66",
+        "description": "Total sum of Attainment 8 scores"
+      },
+      {
+        "variable": "ATT8SCR",
+        "value": "15.9",
+        "description": "Average Attainment 8 score per pupil"
+      },
+      {
+        "variable": "TOTATT8ENG",
+        "value": "0",
+        "description": "Total sum of Attainment 8 scores for English element"
+      },
+      {
+        "variable": "ATT8SCRENG",
+        "value": "0",
+        "description": "Average Attainment 8 score per pupil for English element"
+      },
+      {
+        "variable": "TOTATT8MAT",
+        "value": "18",
+        "description": "Total sum of Attainment 8 scores for mathematics element"
+      },
+      {
+        "variable": "ATT8SCRMAT",
+        "value": "0.1",
+        "description": "Average Attainment 8 score per pupil for mathematics element"
+      },
+      {
+        "variable": "TOTATT8EBAC",
+        "value": "1607",
+        "description": "Total sum of Attainment 8 scores for EBacc element"
+      },
+      {
+        "variable": "ATT8SCREBAC",
+        "value": "8.8",
+        "description": "Average Attainment 8 score per pupil for EBacc element"
+      },
+      {
+        "variable": "TOTATT8OPEN",
+        "value": "1285.66",
+        "description": "Total sum of Attainment 8 scores for open element"
+      },
+      {
+        "variable": "ATT8SCROPEN",
+        "value": "7",
+        "description": "Average Attainment 8 score per pupil for open element"
+      },
+      {
+        "variable": "TOTATT8OPENG",
+        "value": "1067",
+        "description": "Total sum of Attainment 8 scores for open element - GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENG",
+        "value": "5.8",
+        "description": "Average Attainment 8 score per pupil for open element - GCSE only"
+      },
+      {
+        "variable": "TOTATT8OPENNG",
+        "value": "218.66",
+        "description": "Total sum of Attainment 8 scores for open element - non-GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENNG",
+        "value": "1.2",
+        "description": "Average Attainment 8 score per pupil for open element - non-GCSE only"
+      },
+      {
+        "variable": "AVGEBACFILL",
+        "value": "1.1",
+        "description": "Average number of EBacc slots filled in Attainment 8 per pupil"
+      },
+      {
+        "variable": "AVGOPENFILL",
+        "value": "1",
+        "description": "Average number of Open slots filled in Attainment 8 per pupil"
+      },
+      {
+        "variable": "PTL2BASICS_94",
+        "value": "0.0%",
+        "description": "% of pupils achieving standard 9-4 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PTL2BASICS_95",
+        "value": "0.0%",
+        "description": "% of pupils achieving strong 9-5 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "TOTEBACCAPS",
+        "value": "124.97",
+        "description": "Total EBacc APS score per pupil"
+      },
+      {
+        "variable": "EBACCAPS",
+        "value": "0.68",
+        "description": "Average EBacc APS score per pupil"
+      },
+      {
+        "variable": "EBACCAPS_GIRLS",
+        "value": "0",
+        "description": "Average EBacc APS score per girl"
+      },
+      {
+        "variable": "EBACCAPS_BOYS",
+        "value": "0.98",
+        "description": "Average EBacc APS score per boy"
+      },
+      {
+        "variable": "TEBACC_E_PTQ_EE",
+        "value": "0",
+        "description": "Number of key stage 4 pupils with entries in all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PTEBACC_E_PTQ_EE",
+        "value": "0.0%",
+        "description": "% of key stage 4 pupils with entries in all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PTEBACC_94",
+        "value": "0.0%",
+        "description": "% of pupils achieving the English Baccalaureate with 9-4 passes"
+      },
+      {
+        "variable": "PTEBACC_95",
+        "value": "0.0%",
+        "description": "% of pupils achieving the English Baccalaureate with 9-5 passes"
+      },
+      {
+        "variable": "TEBACENG_E_PTQ_EE",
+        "value": "0",
+        "description": "Number of pupils entering the English Baccalaureate English subject area"
+      },
+      {
+        "variable": "PTEBACENG_E_PTQ_EE",
+        "value": "0.0%",
+        "description": "% of pupils entering the English Baccalaureate English subject area"
+      },
+      {
+        "variable": "TEBACMAT_E_PTQ_EE",
+        "value": "1",
+        "description": "Number of pupils entering the English Baccalaureate Maths subject area"
+      },
+      {
+        "variable": "PTEBACMAT_E_PTQ_EE",
+        "value": "0.5%",
+        "description": "% of pupils entering the English Baccalaureate Maths subject area"
+      },
+      {
+        "variable": "TEBAC2SCI_E_PTQ_EE",
+        "value": "0",
+        "description": "Number of pupils entering the English Baccalaureate Science subject area"
+      },
+      {
+        "variable": "PTEBAC2SCI_E_PTQ_EE",
+        "value": "0.0%",
+        "description": "%  of pupils entering the English Baccalaureate Science subject area"
+      },
+      {
+        "variable": "TEBACHUM_E_PTQ_EE",
+        "value": "0",
+        "description": "Number of pupils entering the English Baccalaureate Humanities subject area"
+      },
+      {
+        "variable": "PTEBACHUM_E_PTQ_EE",
+        "value": "0.0%",
+        "description": "%  of pupils entering the English Baccalaureate Humanities subject area"
+      },
+      {
+        "variable": "TEBACLAN_E_PTQ_EE",
+        "value": "89",
+        "description": "Number of pupils entering the English Baccalaureate Language subject area"
+      },
+      {
+        "variable": "PTEBACLAN_E_PTQ_EE",
+        "value": "48.6%",
+        "description": "%  of pupils entering the English Baccalaureate Language subject area"
+      },
+      {
+        "variable": "PTEBACENG_94",
+        "value": "0.0%",
+        "description": "% of pupils achieving the EBacc English subject area with a standard 9-4 pass"
+      },
+      {
+        "variable": "PTEBACENG_95",
+        "value": "0.0%",
+        "description": "% of pupils achieving the EBacc English subject area with a strong 9-5 pass"
+      },
+      {
+        "variable": "PTEBACMAT_94",
+        "value": "0.5%",
+        "description": "% of pupils achieving the EBacc Maths subject area with a standard 9-4 pass"
+      },
+      {
+        "variable": "PTEBACMAT_95",
+        "value": "0.5%",
+        "description": "% of pupils achieving the EBacc Maths subject area with a strong 9-5 pass"
+      },
+      {
+        "variable": "PTEBACLAN_94",
+        "value": "100.0%",
+        "description": "% of entered pupils achieving the EBacc Language subject area with a 9-4 pass"
+      },
+      {
+        "variable": "PTEBACLAN_95",
+        "value": "100.0%",
+        "description": "% of entered pupils achieving the EBacc Language subject area with a 9-5 pass"
+      },
+      {
+        "variable": "TEBACENG_94",
+        "value": "0",
+        "description": "Number of pupils achieving EBacc English subject area with a standard 9-4 pass"
+      },
+      {
+        "variable": "TEBACENG_95",
+        "value": "0",
+        "description": "Number of pupils achieving EBacc English subject area with a strong 9-5 pass"
+      },
+      {
+        "variable": "TEBACMAT_94",
+        "value": "1",
+        "description": "Number of pupils achieving EBacc Maths subject area with a standard 9-4 pass"
+      },
+      {
+        "variable": "TEBACMAT_95",
+        "value": "1",
+        "description": "Number of pupils achieving EBacc Maths subject area with a strong 9-5 pass"
+      },
+      {
+        "variable": "TEBACLAN_94",
+        "value": "89",
+        "description": "Number of pupils achieving EBacc Language subject area with a 9-4 pass"
+      },
+      {
+        "variable": "TEBACLAN_95",
+        "value": "89",
+        "description": "Number of pupils achieving EBacc Language subject area with a 9-5 pass"
+      },
+      {
+        "variable": "TEBACC91",
+        "value": "0",
+        "description": "Number of pupils achieving the English Baccalaureate at grades 9-1"
+      },
+      {
+        "variable": "PTEBACC91",
+        "value": "0.0%",
+        "description": "% of pupils achieving the English Baccalaureate at grades 9-1"
+      },
+      {
+        "variable": "TEBACENG91",
+        "value": "0",
+        "description": "Number of pupils achieving EBacc English subject area at grade 9-1"
+      },
+      {
+        "variable": "PTEBACENG91",
+        "value": "0.0%",
+        "description": "% of pupils achieving the EBacc English subject area at grade 9-1"
+      },
+      {
+        "variable": "TEBACMAT91",
+        "value": "1",
+        "description": "Number of pupils achieving EBacc Maths subject area at grade 9-1"
+      },
+      {
+        "variable": "PTEBACMAT91",
+        "value": "0.5%",
+        "description": "% of pupils achieving the EBacc Maths subject area at grade 9-1"
+      },
+      {
+        "variable": "TEBACLAN91",
+        "value": "89",
+        "description": "Number of pupils achieving EBacc Language subject area with grades 9-1"
+      },
+      {
+        "variable": "PTEBACLAN91",
+        "value": "100.0%",
+        "description": "% of entered pupils achieving the EBacc Language subject area with grades 9-1"
+      },
+      {
+        "variable": "ATT8SCR_GIRLS",
+        "value": "0",
+        "description": "Average Attainment 8 score per girl"
+      },
+      {
+        "variable": "ATT8SCRENG_GIRLS",
+        "value": "0",
+        "description": "Average Attainment 8 score per girl for English element"
+      },
+      {
+        "variable": "ATT8SCRMAT_GIRLS",
+        "value": "0",
+        "description": "Average Attainment 8 score per girl for mathematics element"
+      },
+      {
+        "variable": "ATT8SCREBAC_GIRLS",
+        "value": "0",
+        "description": "Average Attainment 8 score per girl for EBacc element"
+      },
+      {
+        "variable": "ATT8SCROPEN_GIRLS",
+        "value": "0",
+        "description": "Average Attainment 8 score per girl for open element"
+      },
+      {
+        "variable": "ATT8SCROPENG_GIRLS",
+        "value": "0",
+        "description": "Average Attainment 8 score per girl - GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENNG_GIRLS",
+        "value": "0",
+        "description": "Average Attainment 8 score per girl - non-GCSE only"
+      },
+      {
+        "variable": "ATT8SCR_BOYS",
+        "value": "22.9",
+        "description": "Average Attainment 8 score per boy"
+      },
+      {
+        "variable": "ATT8SCRENG_BOYS",
+        "value": "0",
+        "description": "Average Attainment 8 score per boy for English element"
+      },
+      {
+        "variable": "ATT8SCRMAT_BOYS",
+        "value": "0.1",
+        "description": "Average Attainment 8 score per boy for mathematics element"
+      },
+      {
+        "variable": "ATT8SCREBAC_BOYS",
+        "value": "12.7",
+        "description": "Average Attainment 8 score per boy for EBacc element"
+      },
+      {
+        "variable": "ATT8SCROPEN_BOYS",
+        "value": "10.1",
+        "description": "Average Attainment 8 score per boy for open element"
+      },
+      {
+        "variable": "ATT8SCROPENG_BOYS",
+        "value": "8.4",
+        "description": "Average Attainment 8 score per boy - GCSE only"
+      },
+      {
+        "variable": "ATT8SCROPENNG_BOYS",
+        "value": "1.7",
+        "description": "Average Attainment 8 score per boy - non-GCSE only"
+      },
+      {
+        "variable": "PBEBACC_E_PTQ_EE",
+        "value": "0.0%",
+        "description": "% of boys with entries in all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PBEBACC_94",
+        "value": "0.0%",
+        "description": "% of KS4 boys achieving the Ebacc - with 9-4 passes"
+      },
+      {
+        "variable": "PBEBACC_95",
+        "value": "0.0%",
+        "description": "% of KS4 boys achieving the Ebacc - with 9-5 passes"
+      },
+      {
+        "variable": "PGEBACC_E_PTQ_EE",
+        "value": "0.0%",
+        "description": "% of girls with entries in all English Baccalaureate subject areas"
+      },
+      {
+        "variable": "PGEBACC_94",
+        "value": "0.0%",
+        "description": "% of KS4 girls achieving the Ebacc - with 9-4 passes"
+      },
+      {
+        "variable": "PGEBACC_95",
+        "value": "0.0%",
+        "description": "% of KS4 girls achieving the Ebacc - with 9-5 passes"
+      },
+      {
+        "variable": "PT5EM_94",
+        "value": "0.0%",
+        "description": "% of pupils achieving Level 2 threshold including standard passes 9-4 in both English and Maths GCSEs"
+      },
+      {
+        "variable": "PTANYQ_PTQ_EE",
+        "value": "66.1%",
+        "description": "% of pupils achieving any qualifications"
+      },
+      {
+        "variable": "PBL2BASICS_94",
+        "value": "0.0%",
+        "description": "% of boys achieving standard 9-4 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PGL2BASICS_94",
+        "value": "0.0%",
+        "description": "% of girls achieving standard 9-4 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PBL2BASICS_95",
+        "value": "0.0%",
+        "description": "% of boys achieving strong 9-5 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PGL2BASICS_95",
+        "value": "0.0%",
+        "description": "% of girls achieving strong 9-5 passes in both English and mathematics GCSEs"
+      },
+      {
+        "variable": "PTMULTILAN_E",
+        "value": "27.3%",
+        "description": "% of pupils entering more than one foreign language"
+      },
+      {
+        "variable": "PTTRIPLESCI_E",
+        "value": "0.0%",
+        "description": "% of pupils entering biology, chemistry and physics"
+      },
+      {
+        "variable": "TAVENT_E_3NG_PTQ_EE",
+        "value": "2",
+        "description": "Average number of KS4 entries per pupil"
+      },
+      {
+        "variable": "TAVENT_G_PTQ_EE",
+        "value": "1.8",
+        "description": "Average number of GCSE entries per pupil"
+      },
+      {
+        "variable": "TTOTENT_E_TOTAL_PTQ_EE",
+        "value": "381",
+        "description": "Total volume of entries without discounting"
+      },
+      {
+        "variable": "TTOTENT_E_COVID_IMPACTED_PTQ_EE",
+        "value": "0",
+        "description": "Total volume of covid-impacted entries without discounting"
+      },
+      {
+        "variable": "PTOTENT_E_COVID_IMPACTED_PTQ_EE",
+        "value": "0%",
+        "description": "% of covid-impacted entries out of total number of entries"
+      },
+      {
+        "variable": "EBACCAPS_PREV",
+        "value": "1.37",
+        "description": "Average EBacc APS score per pupil in 2024"
+      },
+      {
+        "variable": "EBACCAPS_PREV2",
+        "value": "1.27",
+        "description": "Average EBacc APS score per pupil in 2023"
+      },
+      {
+        "variable": "ATT8SCR_PREV",
+        "value": "20.3",
+        "description": "Average Attainment 8 score per pupil - 2024"
+      },
+      {
+        "variable": "ATT8SCR_PREV2",
+        "value": "18.7",
+        "description": "Average Attainment 8 score per pupil  - 2023"
+      },
+      {
+        "variable": "PTEBACC_E_PTQ_EE_PREV",
+        "value": "0.0%",
+        "description": "% of  pupils entering all English Baccalaureate subject areas in 2024"
+      },
+      {
+        "variable": "PTEBACC_E_PTQ_EE_PREV2",
+        "value": "0.0%",
+        "description": "% of pupils entering all English Baccalaureate subject areas in 2023"
+      },
+      {
+        "variable": "PTEBACC_94_PREV",
+        "value": "0.0%",
+        "description": "% of KS4 pupils achieving the Ebacc - with standard 9-4 passes in English and maths in 2024"
+      },
+      {
+        "variable": "PTEBACC_94_PREV2",
+        "value": "0.0%",
+        "description": "% of KS4 pupils achieving the Ebacc - with standard 9-4 passes in English and maths in 2023"
+      },
+      {
+        "variable": "PTEBACC_95_PREV",
+        "value": "0.0%",
+        "description": "% of KS4 pupils achieving the Ebacc - with strong 9-5 passes in English and maths in 2024"
+      },
+      {
+        "variable": "PTEBACC_95_PREV2",
+        "value": "0.0%",
+        "description": "% of KS4 pupils achieving the Ebacc - with strong 9-5 passes in English and maths in 2023"
+      },
+      {
+        "variable": "PT5EM_94_PREV",
+        "value": "0.0%",
+        "description": "% of pupils achieving Level 2 threshold including standard passes 9-4 in both English and Maths GCSEs in 2024"
+      },
+      {
+        "variable": "PT5EM_94_PREV2",
+        "value": "0.0%",
+        "description": "% of pupils achieving Level 2 threshold including standard passes 9-4 in both English and Maths GCSEs in 2023"
+      },
+      {
+        "variable": "PTL2BASICS_94_PREV",
+        "value": "0.0%",
+        "description": "% of pupils achieving 9-4 passes in GCSE English and maths in 2024"
+      },
+      {
+        "variable": "PTL2BASICS_94_PREV2",
+        "value": "0.0%",
+        "description": "% of pupils achieving 9-4 passes in GCSE English and maths in 2023"
+      },
+      {
+        "variable": "PTL2BASICS_95_PREV",
+        "value": "0.0%",
+        "description": "% of pupils achieving 9-5 passes in GCSE English and maths in 2024"
+      },
+      {
+        "variable": "PTL2BASICS_95_PREV2",
+        "value": "0.0%",
+        "description": "% of pupils achieving 9-5 passes in GCSE English and maths in 2023"
+      },
+      {
+        "variable": "TPUP_PREV",
+        "value": "179",
+        "description": ""
+      },
+      {
+        "variable": "TPUP_PREV2",
+        "value": "183",
+        "description": ""
+      }
+    ],
+    "KS5_25": [
+      {
+        "variable": "REGION",
+        "value": "31",
+        "description": "Region code (see separate list of region and local authority codes)"
+      },
+      {
+        "variable": "LASORT",
+        "value": "1",
+        "description": "Local authority sort code within region"
+      },
+      {
+        "variable": "PCODE",
+        "value": "NW3 6XH",
+        "description": "School/college postcode"
+      },
+      {
+        "variable": "CONTFLAG",
+        "value": "0",
+        "description": "Contingency flag: results significantly affected: 0= not significantly affected; 1= significantly affected"
+      },
+      {
+        "variable": "NFTYPE/FESITYPE",
+        "value": "IND",
+        "description": "School type/FE college type"
+      },
+      {
+        "variable": "RELDENOM",
+        "value": "None",
+        "description": "Religious character"
+      },
+      {
+        "variable": "GEND1618",
+        "value": "MIXED",
+        "description": "Gender of sixth form: girls, boys or mixed"
+      },
+      {
+        "variable": "FEEDER",
+        "value": "0",
+        "description": "Indicates whether a school/college is a feeder school/college for sixth form centre or consortium:0= not a feeder school/college; 1= feeder school/college"
+      },
+      {
+        "variable": "AGERANGE",
+        "value": "Apr to 18",
+        "description": "Age range"
+      },
+      {
+        "variable": "CONFEXAM",
+        "value": "R",
+        "description": "Indicates if a school or college has confirmed their results:blank/null= confirmed; R= not confirmed"
+      },
+      {
+        "variable": "TPUP1618",
+        "value": "356",
+        "description": "Number of 16-18 year old students in sixth form"
+      },
+      {
+        "variable": "TALLPUP_1618",
+        "value": "183",
+        "description": "Number of students aged 16-18 at the end of 16-18 study (includes students who entered for advanced level 3 qualifications or below-level 3 qualifications)"
+      },
+      {
+        "variable": "TALLPUP_ALEV_1618",
+        "value": "183",
+        "description": "Number of students at the end of 16-18 study who entered for at least one AS or A level qualification"
+      },
+      {
+        "variable": "TALLPPE_ALEV_1618",
+        "value": "48.87",
+        "description": "Average point score per A level entry"
+      },
+      {
+        "variable": "TALLPPEGRD_ALEV_1618",
+        "value": "A",
+        "description": "Average point score per A level entry expressed as a grade"
+      },
+      {
+        "variable": "TINCLUDE_B3",
+        "value": "141",
+        "description": "Number of students included in the best 3 A levels measure"
+      },
+      {
+        "variable": "TB3PTSE",
+        "value": "49.34",
+        "description": "Average point score in best 3 A level entries"
+      },
+      {
+        "variable": "TB3PTSE_GRD",
+        "value": "A",
+        "description": "Average point score in best 3 A level entries expressed as a grade"
+      },
+      {
+        "variable": "TINCLUDE_AAB_2FAC",
+        "value": "141",
+        "description": "Number of students included in AAB in 2 facilitating subjects measure"
+      },
+      {
+        "variable": "PTAAB_2FAC",
+        "value": "54.6%",
+        "description": "Percentage of A level students achieving at least three levels at grades AAB or better, at least two of which are in facilitating subjects"
+      },
+      {
+        "variable": "TALLPUP_ACAD_1618",
+        "value": "183",
+        "description": "Number of students at the end of 16-18 study who entered for at least one advanced (level 3) academic qualification"
+      },
+      {
+        "variable": "TALLPPE_ACAD_1618",
+        "value": "48.94",
+        "description": "Average point score per academic entry"
+      },
+      {
+        "variable": "TALLPPEGRD_ACAD_1618",
+        "value": "A",
+        "description": "Average point score per academic entry expressed as a grade"
+      },
+      {
+        "variable": "TALLPUP_TLEVDENOM",
+        "value": "1",
+        "description": "Number of trigger students for 'level 3 vocational quals' - ignoring discounting and applied general"
+      },
+      {
+        "variable": "TALLPUP_AGENDENOM",
+        "value": "1",
+        "description": "Number of trigger students for 'level 3 vocational quals' - ignoring discounting and tech levels"
+      },
+      {
+        "variable": "TALLPUP_SCOPE_L3M",
+        "value": "181",
+        "description": "Number of students in scope for level 3 maths measure"
+      },
+      {
+        "variable": "L3M_PER",
+        "value": "54.7%",
+        "description": "Percentage of students in scope for the level 3 maths measure who achieved approved a level 3 maths qualification"
+      },
+      {
+        "variable": "ENTRIES_ALEV",
+        "value": "535",
+        "description": "Number of A level entries included in value added measure"
+      },
+      {
+        "variable": "VA_INS_ALEV",
+        "value": "0.2",
+        "description": "A level value added score"
+      },
+      {
+        "variable": "UCI_INS_ALEV",
+        "value": "0.29",
+        "description": "A level  value added upper confidence limit"
+      },
+      {
+        "variable": "LCI_INS_ALEV",
+        "value": "0.1",
+        "description": "A level value added lower confidence limit"
+      },
+      {
+        "variable": "PROGRESS_BAND_ALEV",
+        "value": "2",
+        "description": "A level progress band"
+      },
+      {
+        "variable": "ENTRIES_ACAD",
+        "value": "554",
+        "description": "Number of academic entries included in value added measure"
+      },
+      {
+        "variable": "VA_INS_ACAD",
+        "value": "0.2",
+        "description": "Academic value added score"
+      },
+      {
+        "variable": "UCI_INS_ACAD",
+        "value": "0.29",
+        "description": "Academic value added upper confidence limit"
+      },
+      {
+        "variable": "LCI_INS_ACAD",
+        "value": "0.11",
+        "description": "Academic value added lower confidence limit"
+      },
+      {
+        "variable": "PROGRESS_BAND_ACAD",
+        "value": "2",
+        "description": "Academic progress band"
+      },
+      {
+        "variable": "TALLPUP_1618_24",
+        "value": "179",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPUP_1618_23",
+        "value": "170",
+        "description": "This is a historical variable. It holds the 2023 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPUP_1618_22",
+        "value": "182",
+        "description": "This is a historical variable. It holds the 2022 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPUP_ALEV_1618_24",
+        "value": "179",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPUP_ALEV_1618_23",
+        "value": "169",
+        "description": "This is a historical variable. It holds the 2023 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPUP_ALEV_1618_22",
+        "value": "182",
+        "description": "This is a historical variable. It holds the 2022 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPE_ALEV_1618_24",
+        "value": "48.91",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPE_ALEV_1618_23",
+        "value": "47.18",
+        "description": "This is a historical variable. It holds the 2023 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPE_ALEV_1618_22",
+        "value": "51.67",
+        "description": "This is a historical variable. It holds the 2022 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPEGRD_ALEV_1618_24",
+        "value": "A",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPEGRD_ALEV_1618_23",
+        "value": "A-",
+        "description": "This is a historical variable. It holds the 2023 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPEGRD_ALEV_1618_22",
+        "value": "A+",
+        "description": "This is a historical variable. It holds the 2022 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPUP_ACAD_1618_24",
+        "value": "179",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPUP_ACAD_1618_23",
+        "value": "170",
+        "description": "This is a historical variable. It holds the 2023 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPUP_ACAD_1618_22",
+        "value": "182",
+        "description": "This is a historical variable. It holds the 2022 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPE_ACAD_1618_24",
+        "value": "49.01",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPE_ACAD_1618_23",
+        "value": "47.55",
+        "description": "This is a historical variable. It holds the 2023 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPE_ACAD_1618_22",
+        "value": "51.44",
+        "description": "This is a historical variable. It holds the 2022 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPEGRD_ACAD_1618_24",
+        "value": "A",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPEGRD_ACAD_1618_23",
+        "value": "A-",
+        "description": "This is a historical variable. It holds the 2023 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "TALLPPEGRD_ACAD_1618_22",
+        "value": "A",
+        "description": "This is a historical variable. It holds the 2022 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "ENTRIES_ALEV_24",
+        "value": "520",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "VA_INS_ALEV_24",
+        "value": "0.3",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "PROGRESS_BAND_ALEV_24",
+        "value": "2",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "UCI_INS_ALEV_24",
+        "value": "0.39",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "LCI_INS_ALEV_24",
+        "value": "0.2",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "ENTRIES_ACAD_24",
+        "value": "543",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "VA_INS_ACAD_24",
+        "value": "0.3",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "PROGRESS_BAND_ACAD_24",
+        "value": "2",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "UCI_INS_ACAD_24",
+        "value": "0.39",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      },
+      {
+        "variable": "LCI_INS_ACAD_24",
+        "value": "0.21",
+        "description": "This is a historical variable. It holds the 2024 value of the corresponding variable. Please see the current variable for the variable description."
+      }
+    ]
+  },
+  "financial": null,
+  "area": {
+    "postcode": "NW3 6XH",
+    "district": "Camden",
+    "region": "London",
+    "lsoa": "E01000879",
+    "msoa": "E02000169",
+    "ethnicity": {
+      "White: English, Welsh, Scottish, Northern Irish or British": 40.3,
+      "White: Irish": 1.3,
+      "White: Roma": 0.1,
+      "White: Other White": 33.4,
+      "Mixed or Multiple ethnic groups: White and Black Caribbean": 0.6,
+      "Mixed or Multiple ethnic groups: White and Black African": 0.4,
+      "Mixed or Multiple ethnic groups: White and Asian": 2.5,
+      "Mixed or Multiple ethnic groups: Other Mixed or Multiple ethnic groups": 1.9,
+      "Asian, Asian British or Asian Welsh: Indian": 3.2,
+      "Asian, Asian British or Asian Welsh: Pakistani": 0.5,
+      "Asian, Asian British or Asian Welsh: Bangladeshi": 1.1,
+      "Asian, Asian British or Asian Welsh: Chinese": 4.2,
+      "Asian, Asian British or Asian Welsh: Other Asian": 3.1,
+      "Black, Black British, Black Welsh, Caribbean or African: Caribbean": 0.3,
+      "Black, Black British, Black Welsh, Caribbean or African: African": 1.7,
+      "Black, Black British, Black Welsh, Caribbean or African: Other Black": 0.2,
+      "Other ethnic group: Arab": 0.9,
+      "Other ethnic group: Any other ethnic group": 4.2
+    },
+    "pricePaid": {
+      "radiusM": 800,
+      "yearsBack": 5,
+      "totalTransactions": 58,
+      "postcodesQueried": 100,
+      "medianAllTypes": "£1,300,725",
+      "byType": {
+        "Terraced": "£1,300,000",
+        "Flat / Maisonette": "£1,230,000"
+      },
+      "source": "HM Land Registry Price Paid Data"
+    },
+    "income": {
+      "msoaName": "Camden 004",
+      "netAnnualHouseholdIncome": "£46,300",
+      "totalAnnualHouseholdIncome": "£55,500",
+      "afterHousingCostsIncome": "£38,700",
+      "netEquivalisedIncome": "£16,800",
+      "year": "FYE 2018",
+      "source": "ONS Small Area Income Estimates"
+    },
+    "imd": {
+      "lsoaCode": "E01000879",
+      "year": "2025",
+      "imdScore": 6.58,
+      "imdRank": 29112,
+      "imdDecile": 9,
+      "subDomains": {
+        "Income": 9,
+        "Employment": 9,
+        "Education, Skills & Training": 10,
+        "Health & Disability": 9,
+        "Crime": 7,
+        "Barriers to Housing & Services": 10,
+        "Living Environment": 2
+      },
+      "population": 1273,
+      "populationYear": "2022",
+      "source": "MHCLG Indices of Multiple Deprivation 2025 via findthatpostcode.uk"
+    },
+    "crystalRoof": {
+      "qualifications": {
+        "noQualifications": 9,
+        "level1AndEntry": 3,
+        "level2": 8,
+        "apprenticeship": 1,
+        "level3": 10,
+        "level4AndAbove": 66,
+        "other": 3,
+        "totalResidents": 206
+      },
+      "occupation": {
+        "managerialProfessional": 56,
+        "intermediate": 22,
+        "routineAndManual": 7,
+        "neverWorkedLongTermUnemployed": 9,
+        "fullTimeStudents": 7,
+        "totalResidents": 206
+      },
+      "income": {
+        "meanAnnualHouseholdIncome": "£87,100",
+        "grain": "MSOA",
+        "measure": "mean gross annual household income"
+      }
+    }
+  },
+  "schoolEthnicity": {
+    "w": 0,
+    "m": 0,
+    "a": 0,
+    "b": 0,
+    "c": 0,
+    "o": 0,
+    "ns": 0,
+    "yr": "2024/25"
+  },
+  "giasDetails": {
+    "la": "Camden (202)",
+    "religiousCharacter": "None"
+  }
+}

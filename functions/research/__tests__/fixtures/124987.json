@@ -1,0 +1,285 @@
+{
+  "_meta": {
+    "urn": 124987,
+    "label": "state-infant",
+    "capturedAt": "2026-04-26T23:22:17.539Z",
+    "note": "KS1 only — no KS2/KS4/KS5 data expected"
+  },
+  "input": "Earlswood Infant and Nursery School",
+  "identity": {
+    "urn": "124987",
+    "officialName": "Earlswood Infant and Nursery School",
+    "type": "Community school",
+    "phase": "Primary",
+    "la": "Surrey",
+    "address": "St John&#39;s Road, Redhill, Surrey, RH1 6DZ",
+    "postcode": "rh16dz",
+    "outward": "rh1",
+    "isIndependent": false,
+    "isOpen": true
+  },
+  "ofsted": {
+    "overall": "Good",
+    "date": "12 March 2024",
+    "qualityOfEducation": null,
+    "behaviour": null,
+    "personalDevelopment": null,
+    "leadership": null,
+    "sixthForm": null,
+    "achievement": null,
+    "attendance": null,
+    "curriculum": null,
+    "inclusion": null,
+    "leadershipGov": null,
+    "wellbeing": null,
+    "post16": null,
+    "safeguarding": null,
+    "reportUrl": "https://files.ofsted.gov.uk/v1/file/50246525",
+    "parentViewUrl": "https://parentview.ofsted.gov.uk/parent-view-results/urn/124987",
+    "pupilExperience": "Pupils eagerly anticipate coming to this school. Sights are set high for pupils, and they  achieve well. They get a great start to their education in the Nursery, where adults  skilfully teach the curriculum with children’s interests in mind. Children quickly develop a  thirst for learning, fascinated by the captivating lessons and wider experiences their  teachers plan for them. They visit art galleries and museums and are inspired to find out  more about great artists and scientists. \n \nPupils are taught how to recognise their emotions and ways of staying calm such as  listening to music, peer massage or controlling their breathing. They know they can trust  adults to help them by talking openly about feelings of anger or sadness. As a result,  pupils live up to the school’s high expectations for behaviour and have excellent attitudes  to their learning. Right from the Nursery, children sustain long periods of concentration as  they explore and practise new concepts. As one parent put it: ‘Earlswood Infant and \nNursery School is a wonderful, nurturing environment where children feel welcome and  enjoy learning. It encourages them to be more independent and to work well with others.’ \n \nWhat does the school do well and what does it need to do better? \n \nThe school has a relentless focus on improving incrementally so that pupils can achieve  even more highly. Governors support the school to achieve its ambitious vision effectively. \nEveryone is committed to the plan for pupils’ personal development opportunities and  academic attainment. Staff are unanimously proud to be part of this school. \n \nThe school has worked hard to develop a broad and interesting curriculum which builds in  logical order from the Nursery to Year 2. As a result, all pupils, including those with  special educational needs and/or disabilities, learn the same ambitious curriculum and  achieve well. In many subjects, such as mathematics and science, the school has  identified the precise knowledge pupils need to build securely on what they have learned \n\n \n \n \n \n \nInspection report: Earlswood Infant and Nursery School \n12 and 13 March 2024 \n2 \n \n  before. From the Nursery, teachers focus on helping children learn the most important  knowledge about mathematics and the world, giving them opportunities to recap and  discuss it. Pupils commit their learning to long-term memory and can remember it in  detail. For example, they become fluent in mathematical operations and are able to  explain their thinking and reasoning about number problems. Teachers adapt activities so  they are precisely tailored to pupils’ learning needs. The school is further refining some  other subjects so that teachers know the exact knowledge that needs to be taught. In  mathematics and science, teachers use assessment systematically to check that pupils  understand the most important areas. In some other subjects, pupils do not learn as  securely because assessment is not used consistently well to help them with gaps in their  learning. \n \nStaff are knowledgeable about how young children develop. Teachers design activities  both inside and outdoors which stimulate pupils’ interests as they explore and discuss the  curriculum. Pupils independently find the resources they need to paint and make models. \nThey become confident to try out new ideas, building their understanding and resilience  as they get older. For example, in Reception, children learn about life cycles by predicting  how ducklings will hatch and how long beans will take to sprout. By Year 2, pupils know  how to carry out scientific tests as they consider what material would keep them dry in  the rain. The school has carefully considered the exact technical vocabulary pupils need to  understand. Teachers model new language expertly and pupils use it accurately when  talking about their learning. \n \nPhonics is taught consistently well. The school has worked hard to make sure that all staff  have the expertise they need to support struggling readers. Children practise listening  attentively in the Nursery, so they are ready to learn phonics in Reception. \nPupils enjoy reading. They are surrounded by captivating stories and poems which  teachers use to bring the curriculum to life. \n \nPupils’ personal development is a strong aspect of the school. Pupils contribute to the  school community by being elected pupil parliamentarians. They know the school’s values  and follow adults who lead by example through demonstrating respect and kindness. \nPupils learn how to stay safe on the internet, knowing never to share personal information  with strangers. Pupils learn that exercise, healthy food and sleep keep them healthy. \nPupils enjoy special curriculum events, such as science, technology, engineering and  mathematics (STEM) week. Visiting engineers and physicists inspire pupils, giving them  real-life insights into the curriculum and possible future careers.",
+    "nextSteps": "-  In some areas of the curriculum, the most important knowledge that pupils need to  know is not yet fully defined. As a result, pupils’ learning does not always build as",
+    "qualityOfEducationDetail": null,
+    "behaviourAndAttitudesDetail": null,
+    "personalDevelopmentDetail": null,
+    "leadershipAndManagementDetail": null,
+    "achievementDetail": null,
+    "inclusionDetail": null,
+    "parentView": null
+  },
+  "performance": {
+    "L": [
+      {
+        "variable": "ISPRIMARY",
+        "value": "1",
+        "description": "Does the school provide primary education? ( 0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "ISSECONDARY",
+        "value": "0",
+        "description": "Does the school provide secondary education? ( 0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "ISPOST16",
+        "value": "0",
+        "description": "Does the school provide post 16 education? (  0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "AGELOW",
+        "value": "3",
+        "description": "Lowest age of entry"
+      },
+      {
+        "variable": "AGEHIGH",
+        "value": "7",
+        "description": "Highest age of entry"
+      },
+      {
+        "variable": "GENDER",
+        "value": "Mixed",
+        "description": "Indicates whether it's a mixed or single sex school"
+      },
+      {
+        "variable": "RELCHAR",
+        "value": "Does not apply",
+        "description": "Religious character"
+      },
+      {
+        "variable": "ADMPOL",
+        "value": "Not applicable",
+        "description": "Admissions Policy"
+      }
+    ],
+    "CENSUS_25": [
+      {
+        "variable": "SCHOOLTYPE",
+        "value": "State-funded primary",
+        "description": "Type of school"
+      },
+      {
+        "variable": "NOR",
+        "value": "382",
+        "description": "Total number of pupils on roll"
+      },
+      {
+        "variable": "NORG",
+        "value": "178",
+        "description": "Number of girls on roll"
+      },
+      {
+        "variable": "NORB",
+        "value": "204",
+        "description": "Number of boys on roll"
+      },
+      {
+        "variable": "PNORG",
+        "value": "46.60%",
+        "description": "Percentage of girls on roll"
+      },
+      {
+        "variable": "PNORB",
+        "value": "53.40%",
+        "description": "Percentage of boys on roll"
+      },
+      {
+        "variable": "TSENELSE",
+        "value": "13",
+        "description": "Number of eligible pupils with an EHC plan"
+      },
+      {
+        "variable": "PSENELSE",
+        "value": "3.40%",
+        "description": "Percentage of eligible pupils with an EHC plan"
+      },
+      {
+        "variable": "TSENELK",
+        "value": "71",
+        "description": "Number of eligible pupils with SEN support"
+      },
+      {
+        "variable": "PSENELK",
+        "value": "18.59%",
+        "description": "Percentage of eligible pupils with SEN support"
+      },
+      {
+        "variable": "NUMEAL",
+        "value": "110",
+        "description": "No.  pupils where English not first language"
+      },
+      {
+        "variable": "NUMENGFL",
+        "value": "255",
+        "description": "No. pupils with English first language"
+      },
+      {
+        "variable": "NUMUNCFL",
+        "value": "17",
+        "description": "No. pupils where first language is unclassified"
+      },
+      {
+        "variable": "PNUMEAL",
+        "value": "28.80%",
+        "description": "%  pupils where English not first language"
+      },
+      {
+        "variable": "PNUMENGFL",
+        "value": "66.80%",
+        "description": "% pupils with English first language"
+      },
+      {
+        "variable": "PNUMUNCLF",
+        "value": "0.045",
+        "description": ""
+      },
+      {
+        "variable": "NUMFSM",
+        "value": "60",
+        "description": "No. pupils eligible for free school meals"
+      },
+      {
+        "variable": "NUMFSMEVER",
+        "value": "57",
+        "description": "Number of pupils eligible for FSM at any time during the past 6 years"
+      },
+      {
+        "variable": "NORFSMEVER",
+        "value": "336",
+        "description": "Total pupils for FSMEver"
+      },
+      {
+        "variable": "PNUMFSMEVER",
+        "value": "16.96%",
+        "description": "Percentage of pupils eligible for FSM at any time during the past 6 years"
+      }
+    ],
+    "ABS_24": [
+      {
+        "variable": "PERCTOT",
+        "value": "5.1",
+        "description": "Percentage of overall absence"
+      },
+      {
+        "variable": "PPERSABS10",
+        "value": "12.4",
+        "description": "Percentage of enrolments who are persistent absentees"
+      }
+    ]
+  },
+  "financial": {
+    "inYearBalance": "£55,027",
+    "revenueReserve": "£481,092",
+    "totalSpendPerPupil": "£5,696/pupil",
+    "comparatorTotalPerPupil": "£6,127/pupil",
+    "spendingCategories": {
+      "Utilities": {
+        "school": "£22/pupil",
+        "average": "£19/pupil",
+        "diff": "£4 more than avg",
+        "pctDiff": "16%"
+      },
+      "Educational ICT": {
+        "school": "£77/pupil",
+        "average": "£54/pupil",
+        "diff": "£23 more than avg",
+        "pctDiff": "43%"
+      },
+      "Premises staff and services": {
+        "school": "£61/pupil",
+        "average": "£54/pupil",
+        "diff": "£8 more than avg",
+        "pctDiff": "13%"
+      },
+      "Non-educational support staff": {
+        "school": "£558/pupil",
+        "average": "£566/pupil",
+        "diff": "£8 less than avg",
+        "pctDiff": "-1%"
+      },
+      "Catering staff and supplies": {
+        "school": "£275/pupil",
+        "average": "£290/pupil",
+        "diff": "£15 less than avg",
+        "pctDiff": "-5%"
+      },
+      "Administrative supplies": {
+        "school": "£55/pupil",
+        "average": "£56/pupil",
+        "diff": "£0 less than avg",
+        "pctDiff": "-2%"
+      },
+      "Educational supplies": {
+        "school": "£117/pupil",
+        "average": "£197/pupil",
+        "diff": "£80 less than avg",
+        "pctDiff": "-41%"
+      },
+      "Teaching and Teaching support staff": {
+        "school": "£4,531/pupil",
+        "average": "£4,891/pupil",
+        "diff": "£359 less than avg",
+        "pctDiff": "-7%"
+      }
+    },
+    "workforceFTE": 84.5,
+    "teachersFTE": 35.96,
+    "seniorLeadershipFTE": 6,
+    "teachingAssistantFTE": 29.32,
+    "qualifiedTeachersPct": "97.38%",
+    "comparatorQtsAvgPct": "96.7%",
+    "pupilTeacherRatio": 21.1
+  },
+  "area": null,
+  "schoolEthnicity": {
+    "w": 62,
+    "m": 8,
+    "a": 19,
+    "b": 5,
+    "c": 0,
+    "o": 1,
+    "ns": 5,
+    "yr": "2024/25"
+  },
+  "giasDetails": {
+    "la": "Surrey (936)",
+    "religiousCharacter": "Does not apply"
+  }
+}

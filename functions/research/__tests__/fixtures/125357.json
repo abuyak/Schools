@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "urn": 125357,
+    "label": "independent-primary",
+    "capturedAt": "2026-04-26T23:23:10.877Z",
+    "note": "Independent — no Ofsted, no DfE performance; ISI expected"
+  },
+  "input": "Micklefield School",
+  "identity": {
+    "urn": "125357",
+    "officialName": "Micklefield School",
+    "type": "Other independent school",
+    "phase": "Not applicable",
+    "la": "Surrey",
+    "address": "10 Somers Road, Reigate, Surrey, RH2 9DU",
+    "postcode": "rh29du",
+    "outward": "rh2",
+    "isIndependent": true,
+    "isOpen": true
+  },
+  "ofsted": null,
+  "performance": {
+    "L": [
+      {
+        "variable": "ISPRIMARY",
+        "value": "1",
+        "description": "Does the school provide primary education? ( 0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "ISSECONDARY",
+        "value": "0",
+        "description": "Does the school provide secondary education? ( 0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "ISPOST16",
+        "value": "0",
+        "description": "Does the school provide post 16 education? (  0 = No, 1 = Yes)"
+      },
+      {
+        "variable": "AGELOW",
+        "value": "2",
+        "description": "Lowest age of entry"
+      },
+      {
+        "variable": "AGEHIGH",
+        "value": "11",
+        "description": "Highest age of entry"
+      },
+      {
+        "variable": "GENDER",
+        "value": "Mixed",
+        "description": "Indicates whether it's a mixed or single sex school"
+      },
+      {
+        "variable": "RELCHAR",
+        "value": "None",
+        "description": "Religious character"
+      },
+      {
+        "variable": "ADMPOL",
+        "value": "Non-selective",
+        "description": "Admissions Policy"
+      }
+    ],
+    "CENSUS_25": [
+      {
+        "variable": "SCHOOLTYPE",
+        "value": "Independent school",
+        "description": "Type of school"
+      },
+      {
+        "variable": "NOR",
+        "value": "249",
+        "description": "Total number of pupils on roll"
+      },
+      {
+        "variable": "NORG",
+        "value": "136",
+        "description": "Number of girls on roll"
+      },
+      {
+        "variable": "NORB",
+        "value": "113",
+        "description": "Number of boys on roll"
+      },
+      {
+        "variable": "PNORG",
+        "value": "54.62%",
+        "description": "Percentage of girls on roll"
+      },
+      {
+        "variable": "PNORB",
+        "value": "45.38%",
+        "description": "Percentage of boys on roll"
+      },
+      {
+        "variable": "TSENELSE",
+        "value": "12",
+        "description": "Number of eligible pupils with an EHC plan"
+      },
+      {
+        "variable": "PSENELSE",
+        "value": "4.82%",
+        "description": "Percentage of eligible pupils with an EHC plan"
+      },
+      {
+        "variable": "TSENELK",
+        "value": "17",
+        "description": "Number of eligible pupils with SEN support"
+      },
+      {
+        "variable": "PSENELK",
+        "value": "6.83%",
+        "description": "Percentage of eligible pupils with SEN support"
+      },
+      {
+        "variable": "PNUMFSMEVER",
+        "value": "0.00%",
+        "description": "Percentage of pupils eligible for FSM at any time during the past 6 years"
+      }
+    ]
+  },
+  "financial": null,
+  "area": null,
+  "schoolEthnicity": {
+    "w": 0,
+    "m": 0,
+    "a": 0,
+    "b": 0,
+    "c": 0,
+    "o": 0,
+    "ns": 0,
+    "yr": "2024/25"
+  },
+  "giasDetails": {
+    "la": "Surrey (936)",
+    "admissionsPolicy": "Non-selective",
+    "religiousCharacter": "None"
+  }
+}
