@@ -680,6 +680,7 @@ export async function getAreaData(postcode) {
   const lsoa     = r.codes?.lsoa  ?? r.lsoa  ?? null;
   const msoa     = r.codes?.msoa  ?? r.msoa  ?? null;
   const district = r.admin_district ?? null;
+  const laCode   = r.codes?.admin_district ?? null;  // ONS LA code e.g. "E09000028" (Southwark)
   const region   = r.region ?? null;
   const lat      = r.latitude  ?? null;
   const lon      = r.longitude ?? null;
@@ -704,6 +705,7 @@ export async function getAreaData(postcode) {
   const result = {
     postcode: r.postcode,
     district,
+    laCode,
     region,
     lsoa,
     msoa,
@@ -1063,6 +1065,112 @@ async function fetchCrystalRoof(postcode) {
  * report card format (7 areas, different grade labels).
  * Also handles the timeline format used for older/closed school pages.
  */
+
+// ── EES dataset IDs ────────────────────────────────────────────────────────
+// Published at: https://api.education.gov.uk/statistics/v1/publications/{pubId}/data-sets
+const EES_KS2_LA_DATASET = '019afee5-4791-7467-a788-c163fd9b57de';
+const EES_KS4_LA_DATASET = 'b3e19901-5d2b-b676-bb4c-e60937d74725';
+
+// Filter/indicator codes for KS2 LA dataset (verified 2026-04-27)
+const EES_KS2 = {
+  // Filter group IDs
+  fCharacteristic: 'TkqPJ',  // "Characteristics of each group"
+  fTopic:          '0ciT5',  // "Topic of Characteristics"
+  fSchoolType:     'hZYyW',  // "School type"
+  fSubject:        'mWI9K',  // "Subjects"
+  // Filter option IDs
+  total:      'qf3xj',  // Characteristic = Total (all pupils)
+  allPupils:  'DIbUQ',  // Topic = All pupils
+  stateFunded:'Bpiw7',  // School type = All state funded
+  // Subject options
+  rwm:      'XVrAf',   // Reading, writing and maths
+  reading:  'uLXpo',
+  writing:  'crTy3',
+  maths:    'kZvTh',
+  gps:      'zTwGF',   // Grammar, punctuation and spelling
+  science:  'ThInP',
+  // Indicator IDs
+  indExpected: 'WmV2b',  // % meeting expected standard
+  indHigher:   'E1cqF',  // % meeting higher standard
+  indAvgScore: '45XUZ',  // Average scaled score
+};
+
+/**
+ * Fetches KS2 local-authority averages (state-funded, all pupils) from the
+ * DfE Explore Education Statistics API for a given LA ONS code.
+ *
+ * Returns an object keyed by subject with expected/higher/avgScore fields,
+ * or null if the fetch fails or the LA code is not found.
+ *
+ * @param {string} laCode  ONS LA code from postcodes.io (e.g. "E09000028" for Southwark)
+ */
+export async function getLAPerformanceKS2(laCode) {
+  if (!laCode) return null;
+
+  const EES_BASE = 'https://api.education.gov.uk/statistics/v1';
+  const params = new URLSearchParams({
+    'locations.in':  `LA|code|${laCode}`,
+    'timePeriods.in':'2024/2025|AY',
+    'pageSize':      '30',
+  });
+  // Filters: Total characteristic, All pupils topic, State funded school type
+  params.append('filters.in', EES_KS2.total);
+  params.append('filters.in', EES_KS2.allPupils);
+  params.append('filters.in', EES_KS2.stateFunded);
+  // Indicators
+  params.append('indicators', EES_KS2.indExpected);
+  params.append('indicators', EES_KS2.indHigher);
+  params.append('indicators', EES_KS2.indAvgScore);
+
+  const url = `${EES_BASE}/data-sets/${EES_KS2_LA_DATASET}/query?${params}`;
+  const data = await safeFetchJson(url);
+
+  if (!data?.results?.length) {
+    glog('govuk_ks2_la_fail', { laCode, status: data ? 'empty' : 'null' });
+    return null;
+  }
+
+  // Subject code → result key
+  const SUBJ_MAP = {
+    [EES_KS2.rwm]:     'rwm',
+    [EES_KS2.reading]: 'reading',
+    [EES_KS2.writing]: 'writing',
+    [EES_KS2.maths]:   'maths',
+    [EES_KS2.gps]:     'gps',
+    [EES_KS2.science]: 'science',
+  };
+
+  const out = {};
+
+  for (const row of data.results) {
+    const filters = row.filters ?? {};
+    // Only keep "Total" rows (characteristic = qf3xj, topic = DIbUQ)
+    if (filters[EES_KS2.fCharacteristic] !== EES_KS2.total)   continue;
+    if (filters[EES_KS2.fTopic]          !== EES_KS2.allPupils) continue;
+
+    const subjCode = filters[EES_KS2.fSubject];
+    const key      = SUBJ_MAP[subjCode];
+    if (!key) continue;
+
+    const vals = row.values ?? {};
+    const clean = (v) => (v && v !== 'z' && v !== 'x' && v !== 'c') ? String(v) : null;
+
+    out[key] = {
+      expected: clean(vals[EES_KS2.indExpected]),
+      higher:   clean(vals[EES_KS2.indHigher]),
+      avgScore: clean(vals[EES_KS2.indAvgScore]),
+    };
+  }
+
+  if (!Object.keys(out).length) {
+    glog('govuk_ks2_la_no_match', { laCode });
+    return null;
+  }
+
+  glog('govuk_ks2_la_ok', { laCode, subjects: Object.keys(out) });
+  return out;
+}
+
 export async function getOfstedData(urn) {
   let html = await safeFetchText(`https://reports.ofsted.gov.uk/provider/23/${urn}`);
   if (!html) html = await safeFetchText(`https://reports.ofsted.gov.uk/provider/21/${urn}`);
@@ -1978,7 +2086,7 @@ function govLinks(urn) {
  * Picks ~15 high-signal variables by code rather than dumping all rows.
  * Covers KS2 (primary), KS4 (secondary), plus pupil census and absence for all.
  */
-function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
+function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) {
   if (!perf) return '_Not retrieved_';
 
   // Fast lookup across all namespaces — prefer the most recent year.
@@ -2072,55 +2180,56 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null) {
       const nat = NATIONAL_AVG.KS2;
       const c   = (val) => val ?? '—';
       const na  = (key) => nat[key] != null ? `${nat[key]}%` : '—';
+      // LA averages from EES API (populated when laPerf is available)
+      const la  = (subj, field) => laPerf?.[subj]?.[field] != null ? `${laPerf[subj][field]}%` : '—';
+      const laS = (subj) => laPerf?.[subj]?.avgScore ?? '—';  // avg score (no % suffix)
 
       lines.push('**Key Stage 2 (2024/25)**');
-      // EAL breakdown available for RWM only in DfE school-level KS2 CSV.
-      // Local avg requires a separate LA-level API call — shown as — until implemented.
       lines.push('| Metric | All pupils | Boys | Girls | Disadvantaged | EAL | Local avg | National |');
       lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
 
       if (cohort || cohortDis)
         lines.push(`| Cohort (KS2 eligible) | ${c(cohort)} | ${c(cohortB)} | ${c(cohortG)} | ${c(cohortDis)} | — | — | — |`);
 
-      // RWM — EAL available
+      // RWM — EAL available; LA avg from EES API
       if (rwm || rwmB || rwmG || rwmDis || rwmEAL)
-        lines.push(`| RWM expected standard${trend.length > 1 ? ` _(3-yr: ${trend.join(' → ')})_` : ''} | ${c(rwm)} | ${c(rwmB)} | ${c(rwmG)} | ${c(rwmDis)} | ${c(rwmEAL)} | — | ${na('PTRWM_EXP')} |`);
+        lines.push(`| RWM expected standard${trend.length > 1 ? ` _(3-yr: ${trend.join(' → ')})_` : ''} | ${c(rwm)} | ${c(rwmB)} | ${c(rwmG)} | ${c(rwmDis)} | ${c(rwmEAL)} | ${la('rwm','expected')} | ${na('PTRWM_EXP')} |`);
       if (rwmH || rwmHB || rwmHG || rwmHDis || rwmHEAL)
-        lines.push(`| RWM high standard | ${c(rwmH)} | ${c(rwmHB)} | ${c(rwmHG)} | ${c(rwmHDis)} | ${c(rwmHEAL)} | — | ${na('PTRWM_HIGH')} |`);
+        lines.push(`| RWM high standard | ${c(rwmH)} | ${c(rwmHB)} | ${c(rwmHG)} | ${c(rwmHDis)} | ${c(rwmHEAL)} | ${la('rwm','higher')} | ${na('PTRWM_HIGH')} |`);
 
       // Reading
       if (read || readB || readG || readDis)
-        lines.push(`| Reading expected | ${c(read)} | ${c(readB)} | ${c(readG)} | ${c(readDis)} | — | — | ${na('PTREAD_EXP')} |`);
+        lines.push(`| Reading expected | ${c(read)} | ${c(readB)} | ${c(readG)} | ${c(readDis)} | — | ${la('reading','expected')} | ${na('PTREAD_EXP')} |`);
       if (readH || readHDis)
-        lines.push(`| Reading high standard | ${c(readH)} | — | — | ${c(readHDis)} | — | — | — |`);
+        lines.push(`| Reading high standard | ${c(readH)} | — | — | ${c(readHDis)} | — | ${la('reading','higher')} | — |`);
       if (readSc || readScB || readScG || readScDis || readScEAL)
-        lines.push(`| Reading avg score | ${c(readSc)} | ${c(readScB)} | ${c(readScG)} | ${c(readScDis)} | ${c(readScEAL)} | — | — |`);
+        lines.push(`| Reading avg score | ${c(readSc)} | ${c(readScB)} | ${c(readScG)} | ${c(readScDis)} | ${c(readScEAL)} | ${laS('reading')} | — |`);
 
       // Maths
       if (mat || matB || matG || matDis)
-        lines.push(`| Maths expected | ${c(mat)} | ${c(matB)} | ${c(matG)} | ${c(matDis)} | — | — | ${na('PTMAT_EXP')} |`);
+        lines.push(`| Maths expected | ${c(mat)} | ${c(matB)} | ${c(matG)} | ${c(matDis)} | — | ${la('maths','expected')} | ${na('PTMAT_EXP')} |`);
       if (matH || matHDis)
-        lines.push(`| Maths high standard | ${c(matH)} | — | — | ${c(matHDis)} | — | — | — |`);
+        lines.push(`| Maths high standard | ${c(matH)} | — | — | ${c(matHDis)} | — | ${la('maths','higher')} | — |`);
       if (matSc || matScB || matScG || matScDis || matScEAL)
-        lines.push(`| Maths avg score | ${c(matSc)} | ${c(matScB)} | ${c(matScG)} | ${c(matScDis)} | ${c(matScEAL)} | — | — |`);
+        lines.push(`| Maths avg score | ${c(matSc)} | ${c(matScB)} | ${c(matScG)} | ${c(matScDis)} | ${c(matScEAL)} | ${laS('maths')} | — |`);
 
       // Writing
       if (writ || writB || writG || writDis)
-        lines.push(`| Writing expected | ${c(writ)} | ${c(writB)} | ${c(writG)} | ${c(writDis)} | — | — | ${na('PTWRITTA_EXP')} |`);
+        lines.push(`| Writing expected | ${c(writ)} | ${c(writB)} | ${c(writG)} | ${c(writDis)} | — | ${la('writing','expected')} | ${na('PTWRITTA_EXP')} |`);
       if (writH || writHDis)
-        lines.push(`| Writing high standard | ${c(writH)} | — | — | ${c(writHDis)} | — | — | — |`);
+        lines.push(`| Writing high standard | ${c(writH)} | — | — | ${c(writHDis)} | — | ${la('writing','higher')} | — |`);
 
       // GPS
       if (gps || gpsB || gpsG || gpsDis)
-        lines.push(`| GPS expected | ${c(gps)} | ${c(gpsB)} | ${c(gpsG)} | ${c(gpsDis)} | — | — | ${na('PTGPS_EXP')} |`);
+        lines.push(`| GPS expected | ${c(gps)} | ${c(gpsB)} | ${c(gpsG)} | ${c(gpsDis)} | — | ${la('gps','expected')} | ${na('PTGPS_EXP')} |`);
       if (gpsH || gpsHB || gpsHG || gpsHDis)
-        lines.push(`| GPS high standard | ${c(gpsH)} | ${c(gpsHB)} | ${c(gpsHG)} | ${c(gpsHDis)} | — | — | ${na('PTGPS_HIGH')} |`);
+        lines.push(`| GPS high standard | ${c(gpsH)} | ${c(gpsHB)} | ${c(gpsHG)} | ${c(gpsHDis)} | — | ${la('gps','higher')} | ${na('PTGPS_HIGH')} |`);
       if (gpsSc || gpsScB || gpsScG || gpsScDis || gpsScEAL)
-        lines.push(`| GPS avg score | ${c(gpsSc)} | ${c(gpsScB)} | ${c(gpsScG)} | ${c(gpsScDis)} | ${c(gpsScEAL)} | — | — |`);
+        lines.push(`| GPS avg score | ${c(gpsSc)} | ${c(gpsScB)} | ${c(gpsScG)} | ${c(gpsScDis)} | ${c(gpsScEAL)} | ${laS('gps')} | — |`);
 
       // Science
       if (sci)
-        lines.push(`| Science expected | ${sci} | — | — | — | — | — | — |`);
+        lines.push(`| Science expected | ${sci} | — | — | — | — | ${la('science','expected')} | — |`);
 
       // Disadvantaged gap (non-disadvantaged comparator)
       const rwmNonDis = v('PTRWM_EXP_NOTFSM6CLA1A');
@@ -2586,7 +2695,7 @@ function fmtSchoolEthnicitySlim(e) {
 }
 
 function buildSlimBlock(school) {
-  const { input, identity, ofsted, performance, financial, area, schoolEthnicity, giasDetails } = school;
+  const { input, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
 
@@ -2633,7 +2742,7 @@ function buildSlimBlock(school) {
 **Links:** ${links}
 
 ### Academic Results (DfE)
-${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null)}
+${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null)}
 
 ### Financial Benchmarking (FBIT)
 ${fmtFinancial(financial)}
@@ -2838,6 +2947,13 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       const postcode = Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value ?? null;
       const area = detailed && postcode ? await getAreaData(postcode) : null;
 
+      // Phase 4: LA-level performance averages from EES API (primary/KS2 only)
+      // Uses ONS LA code captured from postcodes.io → area.laCode
+      const isPrimary = /primary|junior|infant|middle.*primary/i.test(identity?.phase ?? '');
+      const laPerf = detailed && isPrimary && area?.laCode
+        ? await getLAPerformanceKS2(area.laCode).catch(() => null)
+        : null;
+
       // IMPORTANT: PDF narrative fields are stored under *Detail keys to avoid
       // clobbering the grade strings of the same name on ofstedBase.
       const ofsted = ofstedBase ? {
@@ -2856,7 +2972,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Bundled local data (zero-latency — no HTTP)
       const schoolEthnicity = urn ? getSchoolEthnicity(urn) : null;
 
-      return { input: name, identity, ofsted, performance, financial, area, schoolEthnicity, giasDetails };
+      return { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails };
     })
   );
 

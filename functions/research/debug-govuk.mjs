@@ -16,6 +16,7 @@ import {
   getPerformanceData,
   getFinancialData,
   getAreaData,
+  getLAPerformanceKS2,
   buildSlimBlock,
   extractLocationHints,
 } from './govuk.js';
@@ -26,7 +27,7 @@ import { getSchoolEthnicity } from './local-data.js';
 // or area name. The debug tool mirrors the real pipeline: it extracts the
 // school name via regex, extracts location hints, then calls lookupSchoolURN
 // with both — so you'll catch wrong-school disambiguation bugs here.
-const QUESTION = 'Redriff Primary, City of London Academy';
+const QUESTION = 'Riverside Primary School SE16 Bermondsey';
 // ──────────────────────────────────────────────────────────────────────────
 
 // Replicate the name-extraction step that fetchGovDataForPrompt performs.
@@ -146,6 +147,20 @@ if (area) {
   ok(`ethnicity: ${area.ethnicity ? Object.keys(area.ethnicity).length + ' groups' : 'not retrieved'}`);
 } else {
   nil('not retrieved — no postcode or postcode lookup failed');
+}
+
+// LA performance (KS2) via EES API
+const isPrimary = /primary|junior|infant|middle.*primary/i.test(identity.phase ?? '');
+const laCode = area?.laCode ?? null;
+console.log(`\nLA performance KS2  (laCode: ${laCode ?? 'not available'}, isPrimary: ${isPrimary}):`);
+const laPerf = isPrimary && laCode ? await getLAPerformanceKS2(laCode).catch(e => { console.error('  ❌ ', e.message); return null; }) : null;
+if (laPerf) {
+  const subjects = Object.entries(laPerf).map(([k, v]) => `${k}: exp ${v.expected ?? '—'}%`).join('  ');
+  ok(subjects);
+} else if (!isPrimary) {
+  nil('not a primary school — LA KS2 averages not applicable');
+} else {
+  nil('not retrieved');
 }
 
 // Local DfE ethnicity index (zero-latency)
@@ -274,7 +289,7 @@ const ofstedFull = ofstedBase ? {
   nextSteps:                     pdfSections?.nextSteps               ?? null,
 } : null;
 
-const school = { input: SCHOOL_NAME, identity, ofsted: ofstedFull, performance, financial, area, schoolEthnicity, giasDetails };
+const school = { input: SCHOOL_NAME, identity, ofsted: ofstedFull, performance, financial, area, laPerf, schoolEthnicity, giasDetails };
 const slim = buildSlimBlock(school);
 console.log(slim);
 console.log(`\n~${slim.length} chars  /  ~${Math.ceil(slim.length / 4)} tokens`);

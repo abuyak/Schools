@@ -25,6 +25,7 @@ import {
   getPerformanceData,
   getFinancialData,
   getAreaData,
+  getLAPerformanceKS2,
   buildSlimBlock,
 } from '../govuk.js';
 
@@ -161,12 +162,27 @@ async function captureOne(school) {
   if (area) ok(`Area: IMD ${area.imd?.imdDecile ?? '—'}/10 · income £${area.crystalRoof?.income?.meanAnnualHouseholdIncome ?? '—'}`);
   else nil(`Area not retrieved (postcode: ${csvPostcode ?? 'not in CSV'})`);
 
-  // 6. Local ethnicity index
+  // 6. LA performance KS2 (primary schools only)
+  const isPrimary = /primary|junior|infant|middle.*primary/i.test(identity.phase ?? '');
+  const laCode = area?.laCode ?? null;
+  const laPerf = isPrimary && laCode
+    ? await getLAPerformanceKS2(laCode).catch(() => null)
+    : null;
+  if (laPerf) {
+    const rwm = laPerf.rwm;
+    ok(`LA KS2: RWM exp ${rwm?.expected ?? '—'}%  higher ${rwm?.higher ?? '—'}%  (laCode: ${laCode})`);
+  } else if (!isPrimary) {
+    nil('LA KS2: not a primary school');
+  } else {
+    nil(`LA KS2: not retrieved (laCode: ${laCode ?? 'missing'})`);
+  }
+
+  // 9. Local ethnicity index
   const schoolEthnicity = getSchoolEthnicity(urn);
   if (schoolEthnicity) ok(`Ethnicity index: W${schoolEthnicity.w}% A${schoolEthnicity.a}% B${schoolEthnicity.b}%`);
   else nil('Ethnicity index: URN not in bundle');
 
-  // 7. Assemble ofsted object (mirrors fetchGovDataForPrompt)
+  // 8. Assemble ofsted object (mirrors fetchGovDataForPrompt)
   const ofsted = ofstedBase ? {
     ...ofstedBase,
     pupilExperience:               pdfSections?.pupilExperience         ?? null,
@@ -180,13 +196,13 @@ async function captureOne(school) {
     parentView:                    null,  // not fetched in capture — add if needed
   } : null;
 
-  const schoolObj = { input: name, identity, ofsted, performance, financial, area, schoolEthnicity, giasDetails };
+  const schoolObj = { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails };
 
-  // 8. Render slim block
+  // 10. Render slim block
   const slim = buildSlimBlock(schoolObj);
   ok(`Slim block: ${slim.length} chars / ~${Math.ceil(slim.length / 4)} tokens`);
 
-  // 9. Save fixture (JSON) — strip non-serialisable bits
+  // 11. Save fixture (JSON) — strip non-serialisable bits
   const fixtureData = {
     _meta: {
       urn,
@@ -200,6 +216,7 @@ async function captureOne(school) {
     performance,
     financial,
     area,
+    laPerf,
     schoolEthnicity,
     giasDetails,
   };
@@ -210,7 +227,7 @@ async function captureOne(school) {
   );
   ok(`Saved fixtures/${urn}.json`);
 
-  // 10. Save snapshot (slim block output)
+  // 12. Save snapshot (slim block output)
   writeFileSync(
     join(SNAPSHOTS_DIR, `${urn}.slim.md`),
     `<!-- ${label} · URN ${urn} · captured ${new Date().toISOString()} -->\n\n${slim}\n`,
