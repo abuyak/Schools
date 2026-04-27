@@ -3141,64 +3141,430 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
     resolved: schools.filter(s => s.identity).length,
   });
 
-  if (!schools.length) return { block: '', flags: {} };
+  if (!schools.length) return { block: '', flags: {}, schools: [] };
 
   const block = '\n\n' + (detailed
     ? schools.map(buildSlimBlock).join('\n\n')
     : buildComparisonBlock(schools));
 
-  // Compute deterministic section flags from structured data (Branch 1 only).
-  // These override whatever the model outputs — no model judgment needed.
+  const flags = (detailed && schools.length === 1) ? computeFlags(schools[0]) : {};
+  return { block, flags, schools };
+}
+
+// ─── Deterministic flag computation ──────────────────────────────────────────
+//
+// Derives traffic-light flags for all Part A sections from structured data.
+// Called by fetchGovDataForPrompt and by renderPartA — single source of truth.
+
+export function computeFlags(school) {
+  const { ofsted, performance, financial, area, identity } = school;
   const flags = {};
-  if (detailed && schools.length === 1) {
-    const { ofsted, performance } = schools[0];
+  const allRows = Object.values(performance ?? {}).flat();
+  const vv = (code) => allRows.find(r => r.variable === code)?.value ?? null;
 
-    // A2 — Ofsted overall grade
-    const overall = (ofsted?.overall ?? '').toLowerCase();
-    if (/outstanding|exceptional/i.test(overall))           flags['A2. Ofsted Inspection Grades'] = 'green';
-    else if (/requires improvement|inadequate/i.test(overall)) flags['A2. Ofsted Inspection Grades'] = 'red';
+  // A2 — Ofsted overall grade
+  const overall = (ofsted?.overall ?? '').toLowerCase();
+  if (/outstanding|exceptional/i.test(overall))              flags['A2. Ofsted Inspection Grades'] = 'green';
+  else if (/requires improvement|inadequate/i.test(overall)) flags['A2. Ofsted Inspection Grades'] = 'red';
 
-    // A4 — improvement requirements: content present = red, empty + Outstanding = green
-    if (ofsted?.nextSteps)                                   flags['A4. What the School Needs to Improve'] = 'red';
-    else if (/outstanding/i.test(overall))                   flags['A4. What the School Needs to Improve'] = 'green';
+  // A4 — improvement requirements: content present = red, Outstanding + none = green
+  if (ofsted?.nextSteps)                  flags['A4. What the School Needs to Improve'] = 'red';
+  else if (/outstanding/i.test(overall))  flags['A4. What the School Needs to Improve'] = 'green';
 
-    // A6 — academic performance (KS4 attainment vs national, or KS5 if no KS4 data)
-    const allRows = Object.values(performance ?? {}).flat();
-    const vv = (code) => allRows.find(r => r.variable === code)?.value ?? null;
-    const att8 = parseFloat(vv('ATT8SCR'));
-    const p8   = parseFloat(vv('P8MEA'));
-    const rwm  = parseFloat(vv('PTRWM_EXP'));
-    const nat4 = NATIONAL_AVG.KS4;
-    const nat2 = NATIONAL_AVG.KS2;
-    const att8Above = !isNaN(att8) && att8 > nat4.ATT8SCR + 10;
-    const att8Below = !isNaN(att8) && att8 < nat4.ATT8SCR - 10;
-    const p8Above   = !isNaN(p8) && p8 > 0.5;
-    const p8Below   = !isNaN(p8) && p8 < -0.5;
-    const rwmAbove  = !isNaN(rwm) && rwm > nat2.PTRWM_EXP + 10;
-    const rwmBelow  = !isNaN(rwm) && rwm < nat2.PTRWM_EXP - 10;
-    const hasKS4 = !isNaN(att8) || !isNaN(p8) || !isNaN(rwm);
-    if (att8Above || p8Above || rwmAbove) {
-      flags['A6. Academic Performance'] = 'green';
-    } else if (att8Below || p8Below || rwmBelow) {
-      flags['A6. Academic Performance'] = 'red';
-    } else if (!hasKS4) {
-      // No KS4 data (e.g. independent or sixth-form-only school) — use KS5 progress band
-      const ks5Band = parseInt(vv('PROGRESS_BAND_ALEV'), 10);
-      if (ks5Band === 1) flags['A6. Academic Performance'] = 'green';
-      else if (ks5Band >= 4) flags['A6. Academic Performance'] = 'red';
-      else flags['A6. Academic Performance'] = 'none'; // prevent model from guessing
-    }
-
-    // A7 — absence
-    const abs  = parseFloat(vv('PERCTOT'));
-    const pers = parseFloat(vv('PPERSABS10'));
-    if (!isNaN(abs) && !isNaN(pers)) {
-      if (abs < 5 || pers < 15)          flags['A7. Absence'] = 'green';
-      else if (abs > 8.6 || pers > 23.3) flags['A7. Absence'] = 'red';
-    }
+  // A5 — pupil census: high FSM or EHC
+  const fsmPct = parseFloat(vv('PNUMFSMEVER') ?? '');
+  const ehcPct = parseFloat(vv('PSENELSE') ?? '');
+  const isPrimary5 = /primary|junior|infant|middle.*primary/i.test(identity?.phase ?? '');
+  if ((!isNaN(fsmPct) && fsmPct > (isPrimary5 ? 35 : 30)) ||
+      (!isNaN(ehcPct) && ehcPct > 6)) {
+    flags['A5. Pupil Census'] = 'red';
   }
 
-  return { block, flags };
+  // A6 — academic performance
+  const att8 = parseFloat(vv('ATT8SCR') ?? '');
+  const p8   = parseFloat(vv('P8MEA') ?? '');
+  const rwm  = parseFloat(vv('PTRWM_EXP') ?? '');
+  const nat4 = NATIONAL_AVG.KS4;
+  const nat2 = NATIONAL_AVG.KS2;
+  if (!isNaN(att8) || !isNaN(p8) || !isNaN(rwm)) {
+    if ((!isNaN(att8) && att8 > nat4.ATT8SCR + 10) ||
+        (!isNaN(p8)   && p8 > 0.5) ||
+        (!isNaN(rwm)  && rwm > nat2.PTRWM_EXP + 10)) {
+      flags['A6. Academic Performance'] = 'green';
+    } else if ((!isNaN(att8) && att8 < nat4.ATT8SCR - 10) ||
+               (!isNaN(p8)   && p8 < -0.5) ||
+               (!isNaN(rwm)  && rwm < nat2.PTRWM_EXP - 10)) {
+      flags['A6. Academic Performance'] = 'red';
+    }
+  } else {
+    // KS5-only schools — use VA band
+    const ks5Band = parseInt(vv('PROGRESS_BAND_ALEV') ?? '', 10);
+    if (ks5Band === 1)    flags['A6. Academic Performance'] = 'green';
+    else if (ks5Band >= 4) flags['A6. Academic Performance'] = 'red';
+  }
+
+  // A7 — absence
+  const absVal  = parseFloat(vv('PERCTOT') ?? '');
+  const persVal = parseFloat(vv('PPERSABS10') ?? '');
+  if (!isNaN(absVal) || !isNaN(persVal)) {
+    if ((!isNaN(absVal) && absVal < 5) || (!isNaN(persVal) && persVal < 15))
+      flags['A7. Absence'] = 'green';
+    else if ((!isNaN(absVal) && absVal > 8.6) || (!isNaN(persVal) && persVal > 23.3))
+      flags['A7. Absence'] = 'red';
+  }
+
+  // A8 — financial: red if in-year deficit or QTS below comparator
+  if (financial) {
+    const balStr = String(financial.inYearBalance ?? '').trim();
+    const isDeficit = balStr.startsWith('-');
+    const qts    = parseFloat(String(financial.qualifiedTeachersPct  ?? '').replace('%', ''));
+    const cmpQts = parseFloat(String(financial.comparatorQtsAvgPct   ?? '').replace('%', ''));
+    if (isDeficit || (!isNaN(qts) && !isNaN(cmpQts) && qts < cmpQts))
+      flags['A8. Financial Position and Staffing'] = 'red';
+  }
+
+  // A9 — area: red if IMD 1–3 or mean household income below £35,000
+  if (area) {
+    const imdDecile = area.imd?.imdDecile;
+    const incNum    = parseFloat(String(area.crystalRoof?.income?.meanAnnualHouseholdIncome ?? '').replace(/[£,]/g, ''));
+    if ((imdDecile != null && imdDecile <= 3) || (!isNaN(incNum) && incNum < 35000))
+      flags['A9. Area Profile'] = 'red';
+  }
+
+  return flags;
+}
+
+// ─── Server-side deterministic Part A renderer ────────────────────────────────
+//
+// Returns an array of { heading, body, flag } objects for A1–A9.
+// All content derived purely from structured data — no AI judgment.
+// Observation sentences use template logic keyed to data thresholds.
+//
+// Exported so the Lambda handler can call it after fetchGovDataForPrompt resolves.
+
+export function renderPartA(school, flags = {}) {
+  const { identity, ofsted, performance, financial, area, schoolEthnicity, laPerf, giasDetails } = school;
+  const isIndependent = identity?.isIndependent ?? false;
+
+  // ── Lookup helpers ─────────────────────────────────────────────────────────
+  const allRows = Object.entries(performance ?? {})
+    .sort(([a], [b]) => (parseInt(b.match(/_(\d+)$/)?.[1] ?? '0', 10) - parseInt(a.match(/_(\d+)$/)?.[1] ?? '0', 10)))
+    .flatMap(([, rows]) => rows);
+  const v  = (code) => allRows.find(r => r.variable === code)?.value ?? null;
+  const lv = (code) => performance?.L?.find(r => r.variable === code)?.value ?? null;
+  const d  = (val)  => (val != null ? String(val) : '—');
+
+  const sections = [];
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // A1. School Identity
+  // ────────────────────────────────────────────────────────────────────────────
+  {
+    const gender  = lv('GENDER');
+    const relChar = lv('RELCHAR');
+    const ageLow  = lv('AGELOW');
+    const ageHigh = lv('AGEHIGH');
+    const nor      = v('NOR');
+    const capacity = giasDetails?.capacity ?? null;
+
+    const genderDisplay  = gender === 'Boys' ? 'Boys only' : gender === 'Girls' ? 'Girls only' : (gender ?? '—');
+    const relDisplay     = (!relChar || relChar === 'Does not apply' || relChar === 'None') ? '—' : relChar;
+    const phaseDisplay   = [identity?.phase, ageLow && ageHigh ? `(ages ${ageLow}–${ageHigh})` : null].filter(Boolean).join(' ');
+
+    const lines = [
+      '| Field | Value |',
+      '|---|---|',
+      `| Official name | ${d(identity?.officialName)} |`,
+      `| URN | ${d(identity?.urn)} |`,
+      `| Type | ${d(identity?.type)} |`,
+      `| Phase and age range | ${phaseDisplay || '—'} |`,
+      `| Co-ed / single-sex | ${genderDisplay} |`,
+      `| Religious character | ${relDisplay} |`,
+      `| Local authority | ${d(identity?.la)} |`,
+    ];
+    if (capacity) lines.push(`| Capacity | ${capacity}${nor ? ` (${nor} on roll)` : ''} |`);
+
+    lines.push('');
+    lines.push(`This is ${d(identity?.officialName)}${identity?.la ? ` in ${identity.la}` : ''}, the subject of this report.`);
+
+    sections.push({ heading: 'A1. School Identity', body: lines.join('\n'), flag: 'none' });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // A2. Ofsted Inspection Grades
+  // ────────────────────────────────────────────────────────────────────────────
+  {
+    let body;
+    if (isIndependent) {
+      body = 'Independent school — Ofsted does not inspect independent schools. See ISI inspection reports at isi.net.';
+    } else if (!ofsted?.overall) {
+      body = `_Not retrieved — check [reports.ofsted.gov.uk](https://reports.ofsted.gov.uk) by URN or school name._`;
+    } else {
+      const lines = [];
+      if (ofsted.date)         lines.push(`Inspection date: ${ofsted.date}`);
+      if (ofsted.framework)    lines.push(`\nFramework used: ${ofsted.framework}`);
+      if (ofsted.safeguarding) lines.push(`\nSafeguarding status: ${ofsted.safeguarding}`);
+      lines.push('');
+
+      // Detect framework: new (Nov-2025) vs old
+      const isNew = !!(ofsted.achievement || ofsted.attendance || ofsted.curriculum);
+      lines.push('| Area | Grade |', '|---|---|');
+      lines.push(`| Overall | ${ofsted.overall} |`);
+      if (isNew) {
+        if (ofsted.achievement)   lines.push(`| Achievement | ${ofsted.achievement} |`);
+        if (ofsted.attendance)    lines.push(`| Attendance and Behaviour | ${ofsted.attendance} |`);
+        if (ofsted.curriculum)    lines.push(`| Curriculum and Teaching | ${ofsted.curriculum} |`);
+        if (ofsted.inclusion)     lines.push(`| Inclusion | ${ofsted.inclusion} |`);
+        if (ofsted.leadershipGov) lines.push(`| Leadership and Governance | ${ofsted.leadershipGov} |`);
+        if (ofsted.wellbeing)     lines.push(`| Personal Development and Wellbeing | ${ofsted.wellbeing} |`);
+        if (ofsted.post16)        lines.push(`| Post-16 Provision | ${ofsted.post16} |`);
+      } else {
+        if (ofsted.qualityOfEducation)  lines.push(`| Quality of Education | ${ofsted.qualityOfEducation} |`);
+        if (ofsted.behaviour)           lines.push(`| Behaviour and Attitudes | ${ofsted.behaviour} |`);
+        if (ofsted.personalDevelopment) lines.push(`| Personal Development | ${ofsted.personalDevelopment} |`);
+        if (ofsted.leadership)          lines.push(`| Leadership and Management | ${ofsted.leadership} |`);
+        if (ofsted.sixth)               lines.push(`| Sixth Form | ${ofsted.sixth} |`);
+      }
+
+      // Deterministic verdict (old framework only — new framework uses different terminology)
+      if (!isNew) {
+        const RANK = { 'Outstanding': 4, 'Exceptional': 5, 'Good': 3, 'Requires Improvement': 2, 'Inadequate': 1 };
+        const overallRank = RANK[ofsted.overall] ?? 3;
+        const subGrades = [ofsted.qualityOfEducation, ofsted.behaviour, ofsted.personalDevelopment, ofsted.leadership, ofsted.sixth].filter(Boolean);
+        const weaker   = subGrades.filter(g => (RANK[g] ?? 3) < overallRank);
+        const standout = subGrades.filter(g => (RANK[g] ?? 3) > overallRank);
+        lines.push('');
+        if (weaker.length)
+          lines.push(`Verdict: overall ${ofsted.overall}, with weaker sub-grade${weaker.length > 1 ? 's' : ''} — ${weaker.join(', ')}.`);
+        else if (standout.length)
+          lines.push(`Verdict: a clean overall picture at ${ofsted.overall}; standout sub-grade${standout.length > 1 ? 's' : ''} — ${standout.join(', ')}.`);
+        else
+          lines.push(`Verdict: overall ${ofsted.overall} — all sub-grades at or near the same level.`);
+      }
+
+      body = lines.join('\n');
+    }
+    sections.push({ heading: 'A2. Ofsted Inspection Grades', body, flag: flags['A2. Ofsted Inspection Grades'] ?? 'none' });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // A3. What It's Like to Be a Pupil
+  // ────────────────────────────────────────────────────────────────────────────
+  {
+    let body;
+    if (isIndependent) {
+      body = '_Independent school — see ISI inspection report for pupil experience narrative._';
+    } else if (ofsted?.pupilExperience) {
+      // Show verbatim PDF extract, capped to keep section manageable
+      const NARRATIVE_CAP = 2500;
+      const text = ofsted.pupilExperience;
+      const capped = text.length > NARRATIVE_CAP
+        ? text.slice(0, NARRATIVE_CAP).replace(/\s+\S*$/, '') + `… _(truncated — [full report](${ofsted.reportUrl ?? 'https://reports.ofsted.gov.uk'}))_`
+        : text;
+      body = `_Ofsted PDF extract._\n\n${capped}`;
+    } else {
+      body = `_Not extracted from Ofsted PDF.${ofsted?.reportUrl ? ` [View full report](${ofsted.reportUrl})` : ''}_`;
+    }
+    sections.push({ heading: "A3. What It's Like to Be a Pupil", body, flag: 'none' });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // A4. What the School Needs to Improve
+  // ────────────────────────────────────────────────────────────────────────────
+  {
+    let body;
+    if (isIndependent) {
+      body = '_Independent school — not applicable._';
+    } else if (ofsted?.nextSteps) {
+      body = ofsted.nextSteps;
+    } else if (ofsted?.overall) {
+      body = `_No improvement requirements stated. Ofsted grade: ${ofsted.overall}._`;
+    } else {
+      body = `_Not retrieved.${ofsted?.reportUrl ? ` [View full report](${ofsted.reportUrl})` : ''}_`;
+    }
+    sections.push({ heading: 'A4. What the School Needs to Improve', body, flag: flags['A4. What the School Needs to Improve'] ?? 'none' });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // A5. Pupil Census
+  // ────────────────────────────────────────────────────────────────────────────
+  {
+    const nor  = v('NOR');
+    const fsm  = v('PNUMFSMEVER');
+    const eal  = v('PNUMEAL');
+    const senK = v('PSENELK');
+    const senE = v('PSENELSE');
+
+    const lines = [
+      '| Metric | School | National avg |',
+      '|---|---:|---:|',
+    ];
+    if (nor)  lines.push(`| Pupils on roll | ${nor} | ~280 primary / ~1,000 secondary |`);
+    if (fsm)  lines.push(`| Free School Meals (FSM) eligible — last 6 years | ${fsm} | ~25% primary / ~20% secondary |`);
+    if (eal)  lines.push(`| English as Additional Language (EAL) pupils | ${eal} | — |`);
+    if (senK) lines.push(`| Special Educational Needs (SEN) support | ${senK} | ~13% |`);
+    if (senE) lines.push(`| Education, Health and Care (EHC) plans | ${senE} | ~4.5% |`);
+
+    if (schoolEthnicity) {
+      lines.push('');
+      lines.push('| Ethnic group | % of pupils |');
+      lines.push('|---|---:|');
+      if (schoolEthnicity.w  != null) lines.push(`| White | ${schoolEthnicity.w}% |`);
+      if (schoolEthnicity.m  != null) lines.push(`| Mixed | ${schoolEthnicity.m}% |`);
+      if (schoolEthnicity.a  != null) lines.push(`| Asian | ${schoolEthnicity.a}% |`);
+      if (schoolEthnicity.b  != null) lines.push(`| Black | ${schoolEthnicity.b}% |`);
+      if (schoolEthnicity.c  != null) lines.push(`| Chinese | ${schoolEthnicity.c}% |`);
+      if (schoolEthnicity.o  != null) lines.push(`| Other | ${schoolEthnicity.o}% |`);
+      if (schoolEthnicity.ns != null) lines.push(`| Not stated | ${schoolEthnicity.ns}% |`);
+    }
+
+    // Deterministic observations
+    const fsmNum = parseFloat(fsm ?? '');
+    const ealNum = parseFloat(eal ?? '');
+    const obs = [];
+    if (!isNaN(fsmNum)) {
+      const natFsm = /secondary|all.through/i.test(identity?.phase ?? '') ? 20 : 25;
+      if (fsmNum > natFsm + 10) obs.push(`FSM eligibility (${fsmNum}%) is well above the national average for this phase.`);
+      else if (fsmNum > natFsm)  obs.push(`FSM eligibility (${fsmNum}%) is above the national average.`);
+    }
+    if (!isNaN(ealNum) && ealNum > 30) obs.push(`EAL (${ealNum}%) is high, reflecting a diverse multilingual intake.`);
+
+    if (obs.length) { lines.push(''); lines.push('Observations: ' + obs.join(' ')); }
+
+    sections.push({ heading: 'A5. Pupil Census', body: lines.join('\n'), flag: flags['A5. Pupil Census'] ?? 'none' });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // A6. Academic Performance
+  // ────────────────────────────────────────────────────────────────────────────
+  {
+    // Reuse the existing slim formatter — it already produces all the KS2/KS4/KS5 tables
+    const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null);
+    sections.push({ heading: 'A6. Academic Performance', body, flag: flags['A6. Academic Performance'] ?? 'none' });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // A7. Absence
+  // ────────────────────────────────────────────────────────────────────────────
+  {
+    const abs  = v('PERCTOT');
+    const pers = v('PPERSABS10');
+    const lines = [
+      '| Metric | School | National avg |',
+      '|---|---:|---:|',
+      `| Overall absence | ${d(abs)} | 6.6% |`,
+      `| Persistent absence (missed 10%+ of sessions) | ${d(pers)} | 21.3% |`,
+    ];
+
+    const absN  = parseFloat(abs ?? '');
+    const persN = parseFloat(pers ?? '');
+    if (!isNaN(absN) || !isNaN(persN)) {
+      lines.push('');
+      if ((!isNaN(absN) && absN < 5) || (!isNaN(persN) && persN < 15))
+        lines.push('Observations: absence figures are comfortably below national averages — a strong sign of attendance and engagement.');
+      else if ((!isNaN(absN) && absN > 8.6) || (!isNaN(persN) && persN > 23.3))
+        lines.push('Observations: one or both absence measures are above national averages, which warrants monitoring.');
+      else
+        lines.push('Observations: absence figures are broadly in line with national averages.');
+    }
+
+    sections.push({ heading: 'A7. Absence', body: lines.join('\n'), flag: flags['A7. Absence'] ?? 'none' });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // A8. Financial Position and Staffing
+  // ────────────────────────────────────────────────────────────────────────────
+  {
+    let body;
+    if (isIndependent || !financial) {
+      body = isIndependent
+        ? '_Independent school — FBIT data not published for independent schools._'
+        : '_Not retrieved — only available for state-funded schools._';
+    } else {
+      const lines = [
+        '| Metric | School | Comparator avg |',
+        '|---|---:|---:|',
+        `| Spend per pupil | ${d(financial.totalSpendPerPupil)} | ${d(financial.comparatorTotalPerPupil)} |`,
+        `| In-year balance | ${d(financial.inYearBalance)} | — |`,
+        `| Revenue reserves | ${d(financial.revenueReserve)} | — |`,
+        `| Qualified Teacher Status (QTS) % | ${d(financial.qualifiedTeachersPct)}${financial.comparatorQtsAvgPct ? ` | ${financial.comparatorQtsAvgPct}` : ' | —'} |`,
+        `| Pupil:teacher ratio | ${financial.pupilTeacherRatio ? `${financial.pupilTeacherRatio}:1` : '—'} | — |`,
+      ];
+
+      // Deterministic observations
+      const obs = [];
+      const balStr = String(financial.inYearBalance ?? '').trim();
+      if (balStr.startsWith('-')) obs.push('The school ran an in-year deficit.');
+      const qts = parseFloat(String(financial.qualifiedTeachersPct ?? '').replace('%', ''));
+      if (!isNaN(qts) && qts === 100) obs.push('All teachers hold Qualified Teacher Status (QTS).');
+      else if (!isNaN(qts))           obs.push(`${financial.qualifiedTeachersPct} of teachers hold QTS.`);
+
+      if (obs.length) { lines.push(''); lines.push('Observations: ' + obs.join(' ')); }
+      body = lines.join('\n');
+    }
+    sections.push({ heading: 'A8. Financial Position and Staffing', body, flag: flags['A8. Financial Position and Staffing'] ?? 'none' });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // A9. Area Profile
+  // ────────────────────────────────────────────────────────────────────────────
+  {
+    let body;
+    if (!area) {
+      body = '_Not retrieved — postcode lookup unavailable._';
+    } else {
+      const crInc = area.crystalRoof?.income;
+      const pp    = area.pricePaid;
+      const imd   = area.imd;
+      const q     = area.crystalRoof?.qualifications;
+      const o     = area.crystalRoof?.occupation;
+
+      // Aggregate ethnicity to broad groups
+      let ethSummary = '—';
+      if (area.ethnicity && Object.keys(area.ethnicity).length) {
+        const groups = {};
+        for (const [label, pct] of Object.entries(area.ethnicity)) {
+          const broad = label.startsWith('White:') ? 'White'
+            : label.startsWith('Asian') ? 'Asian'
+            : label.startsWith('Black') ? 'Black'
+            : label.startsWith('Mixed') ? 'Mixed'
+            : 'Other';
+          groups[broad] = (groups[broad] ?? 0) + pct;
+        }
+        ethSummary = Object.entries(groups)
+          .sort(([, a], [, b]) => b - a)
+          .map(([k, pct]) => `${k} ${Math.round(pct)}%`).join(' · ');
+      }
+
+      const lines = [
+        '| Metric | Value |',
+        '|---|---|',
+        `| Household income (mean gross, MSOA) | ${crInc?.meanAnnualHouseholdIncome ?? '—'} |`,
+        `| Median property price (~800m radius) | ${pp?.medianAllTypes ?? '—'} |`,
+        `| Deprivation — Index of Multiple Deprivation (IMD) decile (1=most deprived, 10=least) | ${imd?.imdDecile != null ? `${imd.imdDecile}/10` : '—'} |`,
+        `| Ethnicity breakdown | ${ethSummary} |`,
+      ];
+      if (q) lines.push(`| Qualifications (% degree-level or above) | ${q.level4AndAbove ?? '—'}% |`);
+      if (o) lines.push(`| Occupation (% professional/managerial) | ${o.managerialProfessional ?? '—'}% |`);
+
+      // Deterministic observation
+      const imdDecile = imd?.imdDecile;
+      const obs = [];
+      if (imdDecile != null) {
+        if (imdDecile <= 3)      obs.push(`IMD decile ${imdDecile}/10 places the surrounding area in the most deprived third nationally.`);
+        else if (imdDecile <= 6) obs.push(`IMD decile ${imdDecile}/10 indicates moderate deprivation in the surrounding area.`);
+        else                     obs.push(`IMD decile ${imdDecile}/10 indicates a relatively low-deprivation area.`);
+      }
+      if (obs.length) { lines.push(''); lines.push('Observations: ' + obs.join(' ')); }
+      body = lines.join('\n');
+    }
+    sections.push({ heading: 'A9. Area Profile', body, flag: flags['A9. Area Profile'] ?? 'none' });
+  }
+
+  // Tag the first section with the Part A label so the UI renders the divider
+  if (sections.length > 0) sections[0]._partLabel = 'Part A — Official Record';
+
+  return sections;
 }
 
 // Debug helpers — exported so debug-govuk.mjs can print both blocks

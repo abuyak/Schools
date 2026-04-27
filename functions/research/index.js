@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { fetchGovDataForPrompt } from './govuk.js';
+import { fetchGovDataForPrompt, renderPartA, computeFlags } from './govuk.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -21,6 +21,13 @@ const BRANCH_FILES = {
   prompt_branch_3: 'prompt_branch_3_postcode_or_area.md',
   prompt_branch_4: 'prompt_branch_4_admissions_strategy.md',
 };
+
+// Branch 1 uses a two-call architecture:
+//   Call 1 — Quick Take + scorecard (cheap, no web search)
+//   Server  — Part A rendered deterministically from structured data
+//   Call 2  — Part B + Part C (full model, web search)
+// This file drives Call 2 for branch 1.
+const BRANCH_1_BC_FILE = 'prompt_branch_1_bc_v1.md';
 
 const OUTPUT_CONSTRAINTS = `
 ---
@@ -67,6 +74,63 @@ Apply these rules based on section content. Only inspection/performance/census/a
 `;
 
 
+// ── JSON schemas ──────────────────────────────────────────────────────────────
+
+const SCORECARD_ITEM = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    dimension: { type: 'string' },
+    rating:    { type: 'string', enum: ['strong', 'good', 'mixed', 'weak', 'unknown'] },
+    note:      { type: 'string' },
+  },
+  required: ['dimension', 'rating', 'note'],
+};
+
+const SECTION_ITEM = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    heading: { type: 'string' },
+    body:    { type: 'string' },
+    flag:    { type: 'string', enum: ['red', 'green', 'none'] },
+  },
+  required: ['heading', 'body', 'flag'],
+};
+
+// Call 1 (Quick Take): title + summary + scorecard — no sections
+const SCHEMA_QUICK_TAKE = {
+  type: 'json_schema',
+  name: 'school_scanner_quick_take',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      title:     { type: 'string' },
+      summary:   { type: 'string' },
+      scorecard: { type: 'array', items: SCORECARD_ITEM },
+    },
+    required: ['title', 'summary', 'scorecard'],
+  },
+};
+
+// Call 2 (B+C): sections only — Part A is rendered server-side
+const SCHEMA_BC = {
+  type: 'json_schema',
+  name: 'school_scanner_bc',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      sections: { type: 'array', items: SECTION_ITEM },
+    },
+    required: ['sections'],
+  },
+};
+
+// Kept for non-branch-1 paths (branches 2, 3, 4) that still use the single-call flow
 const RESPONSE_SCHEMA = {
   type: 'json_schema',
   name: 'school_scanner_answer',
@@ -75,38 +139,35 @@ const RESPONSE_SCHEMA = {
     type: 'object',
     additionalProperties: false,
     properties: {
-      title: { type: 'string' },
-      summary: { type: 'string' },
-      scorecard: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          properties: {
-            dimension: { type: 'string' },
-            rating: { type: 'string', enum: ['strong', 'good', 'mixed', 'weak', 'unknown'] },
-            note: { type: 'string' },
-          },
-          required: ['dimension', 'rating', 'note'],
-        },
-      },
-      sections: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          properties: {
-            heading: { type: 'string' },
-            body: { type: 'string' },
-            flag: { type: 'string', enum: ['red', 'green', 'none'] },
-          },
-          required: ['heading', 'body', 'flag'],
-        },
-      },
+      title:     { type: 'string' },
+      summary:   { type: 'string' },
+      scorecard: { type: 'array', items: SCORECARD_ITEM },
+      sections:  { type: 'array', items: SECTION_ITEM },
     },
     required: ['title', 'summary', 'scorecard', 'sections'],
   },
 };
+
+// ── Quick Take prompt (Call 1) ─────────────────────────────────────────────────
+const QUICK_TAKE_INSTRUCTIONS = `You are School Scanner, an AI school advisor.
+
+Pre-fetched government data for the school is appended at the end of this message.
+
+Your task — produce exactly three things:
+
+1. **title**: The school's official name and local authority in parentheses, e.g. "Riverside Primary School (Southwark)". Copy the name and LA verbatim from the pre-fetched block — never from the parent's question.
+
+2. **summary**: One paragraph — what this school looks like overall, who it suits best, and the single most important watchout. If the parent described their child, add a one-line fit verdict at the end.
+
+3. **scorecard**: 4–6 key dimensions. For each: a short dimension label, a rating (strong / good / mixed / weak / unknown), and a one-sentence note.
+
+Rules:
+- Use ONLY the pre-fetched block. Do not search the web.
+- Use the official school name and local authority exactly as they appear in the pre-fetched block.
+- Do not generate any Part A, Part B, or Part C sections.
+- Never ask clarifying questions.
+`;
+
 
 function validatePayload(body) {
   const errors = [];
@@ -139,6 +200,20 @@ function getBranchInstructions(branch, promptFile) {
   } else {
     file = BRANCH_FILES[branch];
     if (!file) throw new Error(`Unknown branch: ${branch}`);
+  }
+  const prompt = readFileSync(join(MD_ROOT, file), 'utf8');
+  return prompt + OUTPUT_CONSTRAINTS;
+}
+
+// Returns the Call 2 (B+C) instructions for branch 1.
+// Admin can override with a custom file via _promptFile.
+function getBCInstructions(promptFile) {
+  let file;
+  if (promptFile) {
+    if (!/^[\w\s()-]+\.md$/.test(promptFile)) throw new Error('Invalid prompt file name.');
+    file = promptFile;
+  } else {
+    file = BRANCH_1_BC_FILE;
   }
   const prompt = readFileSync(join(MD_ROOT, file), 'utf8');
   return prompt + OUTPUT_CONSTRAINTS;
@@ -244,6 +319,22 @@ function log(event, props = {}) {
   console.log(JSON.stringify({ event, ts: new Date().toISOString(), ...props }));
 }
 
+// Adds _partLabel to the first section of each part (A1, B1, C1).
+// The UI uses this to render a divider row directly above the section.
+function tagPartLabels(sections) {
+  const PART_LABELS = {
+    'A1.': 'Part A — Official Record',
+    'B1.': 'Part B — Independent Research',
+    'C1.': 'Part C — Verdict & Synthesis',
+  };
+  for (const s of sections) {
+    for (const [prefix, label] of Object.entries(PART_LABELS)) {
+      if (s.heading?.startsWith(prefix)) { s._partLabel = label; break; }
+    }
+  }
+  return sections;
+}
+
 export const handler = async (event) => {
   const t0 = Date.now();
 
@@ -287,47 +378,259 @@ export const handler = async (event) => {
         baseUrl,
         model,
       );
-      const block = typeof govukResult === 'string' ? govukResult : (govukResult?.block ?? '');
-      const flags = typeof govukResult === 'string' ? {} : (govukResult?.flags ?? {});
-      return okResponse({ status: 'debug_govuk', block, flags });
+      const block  = govukResult?.block  ?? '';
+      const flags  = govukResult?.flags  ?? {};
+      const school = govukResult?.schools?.[0] ?? null;
+      const partA  = school ? renderPartA(school, computeFlags(school)) : [];
+      return okResponse({ status: 'debug_govuk', block, flags, partASectionCount: partA.length });
     } catch (err) {
       return okResponse({ status: 'debug_govuk_error', error: err.message });
     }
   }
 
-  let instructions = getBranchInstructions(body.branch, promptFile);
+  // ── Branch 1: two-call architecture ─────────────────────────────────────────
+  //   Step 1 — Fetch gov.uk data (always)
+  //   Step 2 — Call 1: Quick Take + scorecard (cheap, no web search)
+  //   Step 3 — Server-render Part A (deterministic)
+  //   Step 4 — Call 2: Part B + Part C (full model, web search)
+  //   Step 5 — Assemble and return
+  //
+  // Branches 2, 3, 4 continue to use the original single-call flow below.
 
-  // Pre-fetch gov.uk data for branches 1 (detailed) and 2 (comparison summary)
-  let govukBlock = '';
-  let govukFlags = {};   // deterministic flag overrides keyed by section heading
-  let govukMs    = 0;
-  if (body.branch === 'prompt_branch_1' || body.branch === 'prompt_branch_2') {
+  if (body.branch === 'prompt_branch_1') {
+    // ── Step 1: Fetch gov.uk data ─────────────────────────────────────────────
+    let govukBlock = '';
+    let govukFlags = {};
+    let govukSchool = null;
+    let govukMs = 0;
     try {
       const govukT0 = Date.now();
-      const govukResult = await fetchGovDataForPrompt(
-        body.question,
-        body.branch,
-        apiKey,
-        baseUrl,
-        model,
-      );
-      // fetchGovDataForPrompt now returns { block, flags } — handle both shapes
-      // for safety in case a cached/old version returns a plain string.
-      if (typeof govukResult === 'string') {
-        govukBlock = govukResult ?? '';
+      const govukResult = await fetchGovDataForPrompt(body.question, 'prompt_branch_1', apiKey, baseUrl, model);
+      govukBlock  = govukResult?.block  ?? '';
+      govukFlags  = govukResult?.flags  ?? {};
+      govukSchool = govukResult?.schools?.[0] ?? null;
+      govukMs = Date.now() - govukT0;
+    } catch (err) {
+      log('govuk_inject_error', { branch: 'prompt_branch_1', error: err.message });
+      // Non-fatal — continue with empty data; server-rendered Part A will show "not retrieved"
+    }
+
+    // ── Step 2: Call 1 — Quick Take + scorecard ───────────────────────────────
+    const qt1Instructions = QUICK_TAKE_INSTRUCTIONS + (govukBlock ? `\n\n${govukBlock}` : '');
+    const qt1Model  = process.env.OPENAI_QUICK_TAKE_MODEL ?? model;
+    const qt1IsReasoning = /^o\d/i.test(qt1Model);
+
+    let qt1Response = null;
+    let qt1Ms = 0;
+    try {
+      const qt1T0 = Date.now();
+      const qt1Payload = {
+        model:             qt1Model,
+        tool_choice:       'none',   // no web search for Quick Take
+        instructions:      qt1Instructions,
+        input:             body.question,
+        max_output_tokens: 2000,
+        text:              { format: SCHEMA_QUICK_TAKE },
+      };
+      if (qt1IsReasoning) qt1Payload.reasoning = { effort: 'low' };
+
+      const qt1Res = await fetch(`${baseUrl}/responses`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body:    JSON.stringify(qt1Payload),
+        signal:  AbortSignal.timeout(40000),
+      });
+      if (qt1Res.ok) {
+        qt1Response = await qt1Res.json();
       } else {
-        govukBlock = govukResult?.block ?? '';
-        govukFlags = govukResult?.flags ?? {};
+        const txt = await qt1Res.text().catch(() => '');
+        log('qt1_error', { status: qt1Res.status, body: txt.slice(0, 200) });
       }
+      qt1Ms = Date.now() - qt1T0;
+    } catch (err) {
+      log('qt1_error', { error: err.message });
+    }
+
+    // Parse Call 1 — extract title, summary, scorecard
+    const qt1Parsed = parseOpenAIResponse(qt1Response ?? {});
+    const qt1Title    = qt1Parsed.title    || '';
+    const qt1Summary  = qt1Parsed.summary  || '';
+    const qt1Scorecard = qt1Parsed.scorecard || [];
+
+    // ── Step 3: Server-render Part A ──────────────────────────────────────────
+    // Flags come from structured data — fully deterministic, no AI needed.
+    const partAFlags = govukSchool ? computeFlags(govukSchool) : govukFlags;
+    const partASections = govukSchool
+      ? renderPartA(govukSchool, partAFlags)
+      : [];  // No school data — Part A will be empty; Call 2 can note this
+
+    // ── Step 4: Call 2 — Part B + Part C ─────────────────────────────────────
+    const call2Instructions = getBCInstructions(promptFile) + (govukBlock ? `\n\n${govukBlock}` : '');
+    const call2IsReasoning  = /^o\d/i.test(model);
+
+    let call2Response = null;
+    let call2Ms = 0;
+    let call2Err = null;
+    try {
+      const call2T0 = Date.now();
+      const call2Payload = {
+        model,
+        tools: [{
+          type: 'web_search',
+          user_location: { type: 'approximate', country: 'GB', city: 'London', region: 'London', timezone: 'Europe/London' },
+          external_web_access: true,
+        }],
+        tool_choice: 'auto',
+        include:     ['web_search_call.action.sources'],
+        instructions: call2Instructions,
+        input:        body.question,
+        max_output_tokens: parseInt(process.env.OPENAI_MAX_TOKENS ?? '8000', 10),
+        text: { format: SCHEMA_BC },
+      };
+      if (call2IsReasoning) call2Payload.reasoning = { effort: process.env.OPENAI_REASONING_EFFORT ?? 'low' };
+
+      const call2Res = await fetch(`${baseUrl}/responses`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body:    JSON.stringify(call2Payload),
+        signal:  AbortSignal.timeout(110000),
+      });
+
+      if (!call2Res.ok) {
+        const txt = await call2Res.text().catch(() => '');
+        call2Err = { status: call2Res.status, body: txt.slice(0, 400) };
+        const errSummary =
+          call2Res.status === 401 || call2Res.status === 403 ? 'The research provider rejected the API key.' :
+          call2Res.status === 429 ? 'Rate limit reached — try again shortly.' :
+          'The research provider could not complete the request.';
+        log('research_request', { status: 'upstream_error', httpStatus: call2Res.status, branch: body.branch, model, ms: Date.now() - t0 });
+        // Return partial result: Quick Take + Part A only
+        const partialSections = tagPartLabels(partASections);
+        return okResponse({
+          status: 'partial',
+          httpStatus: 200,
+          title:    qt1Title,
+          summary:  qt1Summary,
+          scorecard: qt1Scorecard,
+          sections: partialSections,
+          _warning: `Part B and Part C could not be generated: ${errSummary}`,
+        });
+      }
+
+      call2Response = await call2Res.json();
+      call2Ms = Date.now() - call2T0;
+    } catch (err) {
+      const timedOut = err.name === 'TimeoutError' || err.message?.includes('timed out');
+      log('research_request', { status: timedOut ? 'timeout' : 'upstream_error', branch: body.branch, model, ms: Date.now() - t0 });
+      const partialSections = tagPartLabels(partASections);
+      return okResponse({
+        status: 'partial',
+        httpStatus: 200,
+        title:    qt1Title,
+        summary:  qt1Summary,
+        scorecard: qt1Scorecard,
+        sections: partialSections,
+        _warning: timedOut ? 'Part B and Part C timed out.' : 'Part B and Part C could not be generated.',
+      });
+    }
+
+    // Parse Call 2 — sections only
+    const call2Parsed = parseOpenAIResponse(call2Response);
+    const bcSections  = call2Parsed.sections ?? [];
+
+    // Collect web search sources from Call 2
+    const call2Searches = (call2Response?.output ?? [])
+      .filter(item => item.type === 'web_search_call')
+      .map(item => item.action?.query ?? null)
+      .filter(Boolean);
+
+    const call2Sources = [];
+    for (const item of (call2Response?.output ?? [])) {
+      if (item.type === 'web_search_call' && item.action?.sources) {
+        for (const s of item.action.sources) {
+          if (s.url) call2Sources.push({ heading: s.title || s.url, body: s.url });
+        }
+      }
+    }
+
+    // Rename B "Sources" section → "Primary Sources", append Secondary Sources
+    let primarySourcesBody = null;
+    for (const s of bcSections) {
+      if (/^sources?$/i.test(s.heading)) { s.heading = 'Primary Sources'; primarySourcesBody = s.body; break; }
+    }
+    if (call2Sources.length) {
+      const secondary = call2Sources
+        .filter(s => !primarySourcesBody || !primarySourcesBody.includes(s.body))
+        .map(s => `[${s.heading}](${s.body})`);
+      if (secondary.length) bcSections.push({ heading: 'Secondary Sources', body: secondary.join('\n'), flag: 'none' });
+    }
+
+    // ── Step 5: Assemble and return ───────────────────────────────────────────
+    // Part A sections already have _partLabel on A1; tag B1 and C1 from Call 2.
+    const finalSections = tagPartLabels([...partASections, ...bcSections]);
+
+    const ms = Date.now() - t0;
+    const call2Usage = call2Response?.usage ?? {};
+
+    const trace = {
+      totalMs: ms,
+      govuk: {
+        ms:              govukMs,
+        injected:        govukBlock.length > 0,
+        chars:           govukBlock.length,
+        estimatedTokens: Math.ceil(govukBlock.length / 4),
+      },
+      call1: { ms: qt1Ms, model: qt1Model, inputTokens: qt1Response?.usage?.input_tokens ?? null, outputTokens: qt1Response?.usage?.output_tokens ?? null },
+      call2: { ms: call2Ms, model, inputTokens: call2Usage.input_tokens ?? null, outputTokens: call2Usage.output_tokens ?? null, webSearches: call2Searches },
+      output: { title: qt1Title, partASections: partASections.length, bcSections: bcSections.length },
+    };
+
+    log('research_request', {
+      status: 'completed',
+      httpStatus: 200,
+      branch: body.branch,
+      model,
+      question: body.question.slice(0, 200),
+      ms,
+      govuk:  { ms: govukMs, injected: govukBlock.length > 0, chars: govukBlock.length },
+      call1:  { ms: qt1Ms, outputTokens: trace.call1.outputTokens },
+      call2:  { ms: call2Ms, outputTokens: trace.call2.outputTokens, searches: call2Searches.length },
+      output: trace.output,
+    });
+
+    const result1 = {
+      status:    'completed',
+      httpStatus: 200,
+      title:     qt1Title,
+      summary:   qt1Summary,
+      scorecard: qt1Scorecard,
+      sections:  finalSections,
+    };
+
+    return okResponse(isAdmin ? { ...result1, _trace: trace } : result1);
+  }
+
+  // ── Branches 2, 3, 4: original single-call flow ───────────────────────────
+
+  let instructions = getBranchInstructions(body.branch, promptFile);
+
+  // Pre-fetch gov.uk data for branch 2 (comparison summary)
+  let govukBlock = '';
+  let govukFlags = {};
+  let govukMs    = 0;
+  if (body.branch === 'prompt_branch_2') {
+    try {
+      const govukT0 = Date.now();
+      const govukResult = await fetchGovDataForPrompt(body.question, body.branch, apiKey, baseUrl, model);
+      govukBlock = govukResult?.block  ?? '';
+      govukFlags = govukResult?.flags  ?? {};
       govukMs = Date.now() - govukT0;
       if (govukBlock) instructions += govukBlock;
     } catch (err) {
       log('govuk_inject_error', { branch: body.branch, error: err.message });
-      // Non-fatal — continue with the unaugmented prompt
     }
   }
 
-  // Call OpenAI
   const isReasoningModel = /^o\d/i.test(model);
 
   let apiResponse;
@@ -341,9 +644,6 @@ export const handler = async (event) => {
         user_location: { type: 'approximate', country: 'GB', city: 'London', region: 'London', timezone: 'Europe/London' },
         external_web_access: true,
       }],
-      // web_search_preview only supports tool_choice: 'auto' — 'required' now
-      // causes a 400 from the Responses API. The model uses search anyway because
-      // the prompt explicitly requires it for Part B sections.
       tool_choice: 'auto',
       include: ['web_search_call.action.sources'],
       instructions,
@@ -389,59 +689,25 @@ export const handler = async (event) => {
 
   const result = parseOpenAIResponse(apiResponse);
 
-  // Apply deterministic flag overrides — govukFlags are computed from structured
-  // data and are more reliable than the model's own judgment for data sections.
+  // Apply deterministic flag overrides from structured data
   if (result.sections && Object.keys(govukFlags).length) {
     for (const s of result.sections) {
       if (govukFlags[s.heading] !== undefined) s.flag = govukFlags[s.heading];
     }
   }
 
-  // Tag the first section of each part with its part label — the UI renders
-  // this as a divider glued directly above the section (no gap between them).
-  if (result.sections) {
-    const PART_LABELS = {
-      'A1.': 'Part A — Official Record',
-      'B1.': 'Part B — Independent Research',
-      'C1.': 'Part C — Verdict & Synthesis',
-    };
-    for (const s of result.sections) {
-      for (const [prefix, label] of Object.entries(PART_LABELS)) {
-        if (s.heading?.startsWith(prefix)) s._partLabel = label;
-      }
-    }
-  }
-
+  // Tag part labels
+  result.sections = tagPartLabels(result.sections ?? []);
 
   const ms = Date.now() - t0;
-
-  // ── Build trace ───────────────────────────────────────────────────────────────
-  const webSearches = (apiResponse.output ?? [])
-    .filter(item => item.type === 'web_search_call')
-    .map(item => item.action?.query ?? null)
-    .filter(Boolean);
-
+  const webSearches = (apiResponse.output ?? []).filter(i => i.type === 'web_search_call').map(i => i.action?.query ?? null).filter(Boolean);
   const usage = apiResponse.usage ?? {};
 
   const trace = {
     totalMs: ms,
-    govuk: {
-      ms:              govukMs,
-      injected:        govukBlock.length > 0,
-      chars:           govukBlock.length,
-      estimatedTokens: Math.ceil(govukBlock.length / 4),
-    },
-    openai: {
-      ms:           openaiMs,
-      inputTokens:  usage.input_tokens  ?? null,
-      outputTokens: usage.output_tokens ?? null,
-      webSearches,
-    },
-    output: {
-      status:   result.status,
-      title:    result.title ?? null,
-      sections: result.sections?.length ?? 0,
-    },
+    govuk:  { ms: govukMs, injected: govukBlock.length > 0, chars: govukBlock.length, estimatedTokens: Math.ceil(govukBlock.length / 4) },
+    openai: { ms: openaiMs, inputTokens: usage.input_tokens ?? null, outputTokens: usage.output_tokens ?? null, webSearches },
+    output: { status: result.status, title: result.title ?? null, sections: result.sections?.length ?? 0 },
   };
 
   log('research_request', {
