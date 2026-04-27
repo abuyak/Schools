@@ -3418,19 +3418,6 @@ export function renderPartA(school, flags = {}) {
       if (schoolEthnicity.ns != null) lines.push(`| Not stated | ${schoolEthnicity.ns}% |`);
     }
 
-    // Deterministic observations
-    const fsmNum = parseFloat(fsm ?? '');
-    const ealNum = parseFloat(eal ?? '');
-    const obs = [];
-    if (!isNaN(fsmNum)) {
-      const natFsm = /secondary|all.through/i.test(identity?.phase ?? '') ? 20 : 25;
-      if (fsmNum > natFsm + 10) obs.push(`FSM eligibility (${fsmNum}%) is well above the national average for this phase.`);
-      else if (fsmNum > natFsm)  obs.push(`FSM eligibility (${fsmNum}%) is above the national average.`);
-    }
-    if (!isNaN(ealNum) && ealNum > 30) obs.push(`EAL (${ealNum}%) is high, reflecting a diverse multilingual intake.`);
-
-    if (obs.length) { lines.push(''); lines.push('Observations: ' + obs.join(' ')); }
-
     sections.push({ heading: 'A5. Pupil Census', body: lines.join('\n'), flag: flags['A5. Pupil Census'] ?? 'none' });
   }
 
@@ -3456,18 +3443,6 @@ export function renderPartA(school, flags = {}) {
       `| Persistent absence (missed 10%+ of sessions) | ${d(pers)} | 21.3% |`,
     ];
 
-    const absN  = parseFloat(abs ?? '');
-    const persN = parseFloat(pers ?? '');
-    if (!isNaN(absN) || !isNaN(persN)) {
-      lines.push('');
-      if ((!isNaN(absN) && absN < 5) || (!isNaN(persN) && persN < 15))
-        lines.push('Observations: absence figures are comfortably below national averages — a strong sign of attendance and engagement.');
-      else if ((!isNaN(absN) && absN > 8.6) || (!isNaN(persN) && persN > 23.3))
-        lines.push('Observations: one or both absence measures are above national averages, which warrants monitoring.');
-      else
-        lines.push('Observations: absence figures are broadly in line with national averages.');
-    }
-
     sections.push({ heading: 'A7. Absence', body: lines.join('\n'), flag: flags['A7. Absence'] ?? 'none' });
   }
 
@@ -3491,15 +3466,6 @@ export function renderPartA(school, flags = {}) {
         `| Pupil:teacher ratio | ${financial.pupilTeacherRatio ? `${financial.pupilTeacherRatio}:1` : '—'} | — |`,
       ];
 
-      // Deterministic observations
-      const obs = [];
-      const balStr = String(financial.inYearBalance ?? '').trim();
-      if (balStr.startsWith('-')) obs.push('The school ran an in-year deficit.');
-      const qts = parseFloat(String(financial.qualifiedTeachersPct ?? '').replace('%', ''));
-      if (!isNaN(qts) && qts === 100) obs.push('All teachers hold Qualified Teacher Status (QTS).');
-      else if (!isNaN(qts))           obs.push(`${financial.qualifiedTeachersPct} of teachers hold QTS.`);
-
-      if (obs.length) { lines.push(''); lines.push('Observations: ' + obs.join(' ')); }
       body = lines.join('\n');
     }
     sections.push({ heading: 'A8. Financial Position and Staffing', body, flag: flags['A8. Financial Position and Staffing'] ?? 'none' });
@@ -3547,15 +3513,6 @@ export function renderPartA(school, flags = {}) {
       if (q) lines.push(`| Qualifications (% degree-level or above) | ${q.level4AndAbove ?? '—'}% |`);
       if (o) lines.push(`| Occupation (% professional/managerial) | ${o.managerialProfessional ?? '—'}% |`);
 
-      // Deterministic observation
-      const imdDecile = imd?.imdDecile;
-      const obs = [];
-      if (imdDecile != null) {
-        if (imdDecile <= 3)      obs.push(`IMD decile ${imdDecile}/10 places the surrounding area in the most deprived third nationally.`);
-        else if (imdDecile <= 6) obs.push(`IMD decile ${imdDecile}/10 indicates moderate deprivation in the surrounding area.`);
-        else                     obs.push(`IMD decile ${imdDecile}/10 indicates a relatively low-deprivation area.`);
-      }
-      if (obs.length) { lines.push(''); lines.push('Observations: ' + obs.join(' ')); }
       body = lines.join('\n');
     }
     sections.push({ heading: 'A9. Area Profile', body, flag: flags['A9. Area Profile'] ?? 'none' });

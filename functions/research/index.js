@@ -335,6 +335,61 @@ function tagPartLabels(sections) {
   return sections;
 }
 
+// Merges Call 2 output with server-rendered Part A sections.
+//
+// Sections whose headings match /^A\d+\. / (e.g. "A6. Verdict", "A5. Observations")
+// are spliced in immediately after their corresponding data section (e.g. "A6. Academic
+// Performance"). Everything else (B and C sections) is appended at the end.
+//
+// The match is on the numeric prefix only — "A6." matches "A6. Academic Performance"
+// regardless of the rest of the heading.
+function interleaveVerdicts(partASections, call2Sections) {
+  // Partition call2 sections into Part-A verdicts vs B/C sections
+  const aVerdicts = [];
+  const bcSections = [];
+  for (const s of call2Sections) {
+    if (/^A\d+\./i.test(s.heading ?? '')) {
+      aVerdicts.push(s);
+    } else {
+      bcSections.push(s);
+    }
+  }
+
+  if (!aVerdicts.length) return [...partASections, ...bcSections];
+
+  // Sort verdicts by section number so insertion order is predictable
+  aVerdicts.sort((a, b) => {
+    const na = parseInt(a.heading.match(/^A(\d+)/i)?.[1] ?? '0', 10);
+    const nb = parseInt(b.heading.match(/^A(\d+)/i)?.[1] ?? '0', 10);
+    return na - nb;
+  });
+
+  // Build result by inserting each verdict after its matching data section
+  const result = [...partASections];
+  let offset = 0; // tracks insertions so indices stay valid
+
+  for (const verdict of aVerdicts) {
+    const prefix = verdict.heading.match(/^A\d+/i)?.[0]; // e.g. "A6"
+    if (!prefix) { result.push(verdict); offset++; continue; }
+
+    // Find the last data section whose heading starts with this prefix
+    let insertAfterIdx = -1;
+    for (let i = 0; i < result.length; i++) {
+      if (result[i].heading?.startsWith(prefix + '.')) insertAfterIdx = i;
+    }
+
+    if (insertAfterIdx >= 0) {
+      result.splice(insertAfterIdx + 1, 0, verdict);
+      offset++;
+    } else {
+      // No matching data section found — append before B sections
+      result.push(verdict);
+    }
+  }
+
+  return [...result, ...bcSections];
+}
+
 export const handler = async (event) => {
   const t0 = Date.now();
 
@@ -567,7 +622,7 @@ export const handler = async (event) => {
 
     // ── Step 5: Assemble and return ───────────────────────────────────────────
     // Part A sections already have _partLabel on A1; tag B1 and C1 from Call 2.
-    const finalSections = tagPartLabels([...partASections, ...bcSections]);
+    const finalSections = tagPartLabels(interleaveVerdicts(partASections, bcSections));
 
     const ms = Date.now() - t0;
     const call2Usage = call2Response?.usage ?? {};
