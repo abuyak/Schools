@@ -680,7 +680,10 @@ export async function getAreaData(postcode) {
   const lsoa     = r.codes?.lsoa  ?? r.lsoa  ?? null;
   const msoa     = r.codes?.msoa  ?? r.msoa  ?? null;
   const district = r.admin_district ?? null;
-  const laCode   = r.codes?.admin_district ?? null;  // ONS LA code e.g. "E09000028" (Southwark)
+  // For two-tier areas (county + district), education is run by the county council.
+  // admin_county holds the county ONS code (e.g. E10000030 for Surrey); it is null for
+  // unitary authorities and London Boroughs where admin_district IS the education authority.
+  const laCode   = r.codes?.admin_county || r.codes?.admin_district || null;
   const region   = r.region ?? null;
   const lat      = r.latitude  ?? null;
   const lon      = r.longitude ?? null;
@@ -2944,7 +2947,10 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       ]);
 
       // Phase 3: area data — postcode comes from DfE CSV (PCODE in phase-specific namespace, e.g. KS2_25)
-      const postcode = Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value ?? null;
+      // Fall back to GIAS postcode for infant/nursery schools that lack a KS2/KS4 namespace.
+      const postcode = Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value
+        ?? giasDetails?.postcode
+        ?? null;
       const area = detailed && postcode ? await getAreaData(postcode) : null;
 
       // Phase 4: LA-level performance averages from EES API (primary/KS2 only)

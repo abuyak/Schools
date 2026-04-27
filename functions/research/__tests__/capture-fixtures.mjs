@@ -156,8 +156,10 @@ async function captureOne(school) {
   if (financial) ok(`Financial: spend/pupil ${financial.totalSpendPerPupil ?? '—'}`);
   else nil('Financial not retrieved');
 
-  // 5. Area data from postcode in DfE CSV
-  const csvPostcode = Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value ?? null;
+  // 5. Area data — postcode from DfE CSV, falling back to GIAS (infant schools lack a KS2 namespace)
+  const csvPostcode = Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value
+    ?? giasDetails?.postcode
+    ?? null;
   const area = csvPostcode ? await getAreaData(csvPostcode).catch(() => null) : null;
   if (area) ok(`Area: IMD ${area.imd?.imdDecile ?? '—'}/10 · income £${area.crystalRoof?.income?.meanAnnualHouseholdIncome ?? '—'}`);
   else nil(`Area not retrieved (postcode: ${csvPostcode ?? 'not in CSV'})`);

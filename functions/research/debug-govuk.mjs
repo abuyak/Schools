@@ -138,9 +138,9 @@ if (financial) {
   nil('not retrieved');
 }
 
-// Area data
-const postcode = perfVar(performance, 'PCODE');
-console.log(`\nArea data  (postcode: ${postcode ?? 'not in DfE CSV'}):`);
+// Area data — fall back to GIAS postcode for infant/nursery schools without a KS2 namespace
+const postcode = perfVar(performance, 'PCODE') ?? giasDetails?.postcode ?? null;
+console.log(`\nArea data  (postcode: ${postcode ?? 'not available'}):`);
 const area = postcode ? await getAreaData(postcode) : null;
 if (area) {
   ok(`district: ${val(area.district)}  IMD decile: ${val(area.imd?.imdDecile)}/10  income: ${val(area.crystalRoof?.income?.meanAnnualHouseholdIncome)}  median price: ${val(area.pricePaid?.medianAllTypes)}`);
