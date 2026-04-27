@@ -3173,20 +3173,20 @@ export function computeFlags(school) {
   if (/outstanding|exceptional/i.test(overall))              flags['A2. Ofsted Inspection Grades'] = 'green';
   else if (/requires improvement|inadequate/i.test(overall)) flags['A2. Ofsted Inspection Grades'] = 'red';
 
-  // A4 — improvement requirements: content present = red, Outstanding + none = green
-  if (ofsted?.nextSteps)                  flags['A4. What the School Needs to Improve'] = 'red';
-  else if (/outstanding/i.test(overall))  flags['A4. What the School Needs to Improve'] = 'green';
+  // A3 — improvement requirements: content present = red, Outstanding + none = green
+  if (ofsted?.nextSteps)                  flags['A3. What the School Needs to Improve'] = 'red';
+  else if (/outstanding/i.test(overall))  flags['A3. What the School Needs to Improve'] = 'green';
 
-  // A5 — pupil census: high FSM or EHC
+  // A4 — pupil census: high FSM or EHC
   const fsmPct = parseFloat(vv('PNUMFSMEVER') ?? '');
   const ehcPct = parseFloat(vv('PSENELSE') ?? '');
   const isPrimary5 = /primary|junior|infant|middle.*primary/i.test(identity?.phase ?? '');
   if ((!isNaN(fsmPct) && fsmPct > (isPrimary5 ? 35 : 30)) ||
       (!isNaN(ehcPct) && ehcPct > 6)) {
-    flags['A5. Pupil Census'] = 'red';
+    flags['A4. Pupil Census'] = 'red';
   }
 
-  // A6 — academic performance
+  // A5 — academic performance
   const att8 = parseFloat(vv('ATT8SCR') ?? '');
   const p8   = parseFloat(vv('P8MEA') ?? '');
   const rwm  = parseFloat(vv('PTRWM_EXP') ?? '');
@@ -3196,45 +3196,45 @@ export function computeFlags(school) {
     if ((!isNaN(att8) && att8 > nat4.ATT8SCR + 10) ||
         (!isNaN(p8)   && p8 > 0.5) ||
         (!isNaN(rwm)  && rwm > nat2.PTRWM_EXP + 10)) {
-      flags['A6. Academic Performance'] = 'green';
+      flags['A5. Academic Performance'] = 'green';
     } else if ((!isNaN(att8) && att8 < nat4.ATT8SCR - 10) ||
                (!isNaN(p8)   && p8 < -0.5) ||
                (!isNaN(rwm)  && rwm < nat2.PTRWM_EXP - 10)) {
-      flags['A6. Academic Performance'] = 'red';
+      flags['A5. Academic Performance'] = 'red';
     }
   } else {
     // KS5-only schools — use VA band
     const ks5Band = parseInt(vv('PROGRESS_BAND_ALEV') ?? '', 10);
-    if (ks5Band === 1)    flags['A6. Academic Performance'] = 'green';
-    else if (ks5Band >= 4) flags['A6. Academic Performance'] = 'red';
+    if (ks5Band === 1)    flags['A5. Academic Performance'] = 'green';
+    else if (ks5Band >= 4) flags['A5. Academic Performance'] = 'red';
   }
 
-  // A7 — absence
+  // A6 — absence
   const absVal  = parseFloat(vv('PERCTOT') ?? '');
   const persVal = parseFloat(vv('PPERSABS10') ?? '');
   if (!isNaN(absVal) || !isNaN(persVal)) {
     if ((!isNaN(absVal) && absVal < 5) || (!isNaN(persVal) && persVal < 15))
-      flags['A7. Absence'] = 'green';
+      flags['A6. Absence'] = 'green';
     else if ((!isNaN(absVal) && absVal > 8.6) || (!isNaN(persVal) && persVal > 23.3))
-      flags['A7. Absence'] = 'red';
+      flags['A6. Absence'] = 'red';
   }
 
-  // A8 — financial: red if in-year deficit or QTS below comparator
+  // A7 — financial: red if in-year deficit or QTS below comparator
   if (financial) {
     const balStr = String(financial.inYearBalance ?? '').trim();
     const isDeficit = balStr.startsWith('-');
     const qts    = parseFloat(String(financial.qualifiedTeachersPct  ?? '').replace('%', ''));
     const cmpQts = parseFloat(String(financial.comparatorQtsAvgPct   ?? '').replace('%', ''));
     if (isDeficit || (!isNaN(qts) && !isNaN(cmpQts) && qts < cmpQts))
-      flags['A8. Financial Position and Staffing'] = 'red';
+      flags['A7. Financial Position and Staffing'] = 'red';
   }
 
-  // A9 — area: red if IMD 1–3 or mean household income below £35,000
+  // A8 — area: red if IMD 1–3 or mean household income below £35,000
   if (area) {
     const imdDecile = area.imd?.imdDecile;
     const incNum    = parseFloat(String(area.crystalRoof?.income?.meanAnnualHouseholdIncome ?? '').replace(/[£,]/g, ''));
     if ((imdDecile != null && imdDecile <= 3) || (!isNaN(incNum) && incNum < 35000))
-      flags['A9. Area Profile'] = 'red';
+      flags['A8. Area Profile'] = 'red';
   }
 
   return flags;
@@ -3362,22 +3362,22 @@ export function renderPartA(school, flags = {}) {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // A3. What It's Like to Be a Pupil
+  // A9. What It's Like to Be a Pupil  (deferred — shown only after Call 2)
+  // Built here (data is available), pushed to sections array at the END.
   // ────────────────────────────────────────────────────────────────────────────
+  let _pupilExperienceBody;
   {
-    let body;
     if (isIndependent) {
-      body = '_Independent school — see ISI inspection report for pupil experience narrative._';
+      _pupilExperienceBody = '_Independent school — see ISI inspection report for pupil experience narrative._';
     } else if (ofsted?.pupilExperience) {
-      body = ofsted.pupilExperience;
+      _pupilExperienceBody = ofsted.pupilExperience;
     } else {
-      body = `_Not extracted from Ofsted PDF.${ofsted?.reportUrl ? ` [View full report](${ofsted.reportUrl})` : ''}_`;
+      _pupilExperienceBody = `_Not extracted from Ofsted PDF.${ofsted?.reportUrl ? ` [View full report](${ofsted.reportUrl})` : ''}_`;
     }
-    sections.push({ heading: "A3. What It's Like to Be a Pupil", body, flag: 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // A4. What the School Needs to Improve
+  // A3. What the School Needs to Improve  (was A4)
   // ────────────────────────────────────────────────────────────────────────────
   {
     let body;
@@ -3390,11 +3390,11 @@ export function renderPartA(school, flags = {}) {
     } else {
       body = `_Not retrieved.${ofsted?.reportUrl ? ` [View full report](${ofsted.reportUrl})` : ''}_`;
     }
-    sections.push({ heading: 'A4. What the School Needs to Improve', body, flag: flags['A4. What the School Needs to Improve'] ?? 'none' });
+    sections.push({ heading: 'A3. What the School Needs to Improve', body, flag: flags['A3. What the School Needs to Improve'] ?? 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // A5. Pupil Census
+  // A4. Pupil Census  (was A5)
   // ────────────────────────────────────────────────────────────────────────────
   {
     const nor  = v('NOR');
@@ -3426,21 +3426,21 @@ export function renderPartA(school, flags = {}) {
       if (schoolEthnicity.ns != null) lines.push(`| Not stated | ${schoolEthnicity.ns}% |`);
     }
 
-    sections.push({ heading: 'A5. Pupil Census', body: lines.join('\n'), flag: flags['A5. Pupil Census'] ?? 'none' });
+    sections.push({ heading: 'A4. Pupil Census', body: lines.join('\n'), flag: flags['A4. Pupil Census'] ?? 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // A6. Academic Performance
+  // A5. Academic Performance  (was A6)
   // ────────────────────────────────────────────────────────────────────────────
   {
     // tablesOnly=true: stop before the census/absence/raw-variable dump —
-    // those sections are already rendered in A5, A7, and the slim block.
+    // those sections are already rendered in A4, A6, and the slim block.
     const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null, true);
-    sections.push({ heading: 'A6. Academic Performance', body, flag: flags['A6. Academic Performance'] ?? 'none' });
+    sections.push({ heading: 'A5. Academic Performance', body, flag: flags['A5. Academic Performance'] ?? 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // A7. Absence
+  // A6. Absence  (was A7)
   // ────────────────────────────────────────────────────────────────────────────
   {
     const abs  = v('PERCTOT');
@@ -3452,11 +3452,11 @@ export function renderPartA(school, flags = {}) {
       `| Persistent absence (missed 10%+ of sessions) | ${d(pers)} | 21.3% |`,
     ];
 
-    sections.push({ heading: 'A7. Absence', body: lines.join('\n'), flag: flags['A7. Absence'] ?? 'none' });
+    sections.push({ heading: 'A6. Absence', body: lines.join('\n'), flag: flags['A6. Absence'] ?? 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // A8. Financial Position and Staffing
+  // A7. Financial Position and Staffing  (was A8)
   // ────────────────────────────────────────────────────────────────────────────
   {
     let body;
@@ -3477,11 +3477,11 @@ export function renderPartA(school, flags = {}) {
 
       body = lines.join('\n');
     }
-    sections.push({ heading: 'A8. Financial Position and Staffing', body, flag: flags['A8. Financial Position and Staffing'] ?? 'none' });
+    sections.push({ heading: 'A7. Financial Position and Staffing', body, flag: flags['A7. Financial Position and Staffing'] ?? 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // A9. Area Profile
+  // A8. Area Profile  (was A9)
   // ────────────────────────────────────────────────────────────────────────────
   {
     let body;
@@ -3524,8 +3524,13 @@ export function renderPartA(school, flags = {}) {
 
       body = lines.join('\n');
     }
-    sections.push({ heading: 'A9. Area Profile', body, flag: flags['A9. Area Profile'] ?? 'none' });
+    sections.push({ heading: 'A8. Area Profile', body, flag: flags['A8. Area Profile'] ?? 'none' });
   }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // A9. What It's Like to Be a Pupil  (deferred — pushed last, hidden until Call 2)
+  // ────────────────────────────────────────────────────────────────────────────
+  sections.push({ heading: "A9. What It's Like to Be a Pupil", body: _pupilExperienceBody, flag: 'none', _deferred: true });
 
   // Tag the first section with the Part A label so the UI renders the divider
   if (sections.length > 0) sections[0]._partLabel = 'Part A — Official Record';

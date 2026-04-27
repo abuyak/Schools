@@ -73,22 +73,22 @@ Required searches (run all now):
 
 ---
 
-### **A4. Observations**
+### **A3. Observations**
 
 One short paragraph flagging whether the improvement requirement is minor or systemic, and what it means in practice for a prospective parent. If there are no improvement requirements, output this section with body: `_No improvement requirements — school inspected without any action points._` and flag `none`.
 
 ---
 
-### **A5. Observations**
+### **A4. Observations**
 
 2–3 sentences covering:
 - How FSM and EAL levels compare to national norms and what they imply about the intake
 - Whether SEN provision appears resourced (note if EHC% is above or below the national ~4.5%)
-- Any notable gap between school ethnicity and area ethnicity (compare A5 pupil data to A9 area data)
+- Any notable gap between school ethnicity and area ethnicity (compare A4 pupil data to A8 area data)
 
 ---
 
-### **A6. Observations**
+### **A5. Observations**
 
 2–3 sentences covering:
 - Overall attainment strength relative to national and local benchmarks
@@ -98,13 +98,13 @@ One short paragraph flagging whether the improvement requirement is minor or sys
 
 ---
 
-### **A7. Observations**
+### **A6. Observations**
 
 1–2 sentences: are absence figures strong, weak, or average vs national? Note if persistent absence is particularly high or low as it is a stronger signal than overall absence.
 
 ---
 
-### **A8. Observations**
+### **A7. Observations**
 
 2–3 sentences covering:
 - Whether spend per pupil is notably above or below the comparator average and what that might signal
@@ -113,7 +113,7 @@ One short paragraph flagging whether the improvement requirement is minor or sys
 
 ---
 
-### **A9. Observations**
+### **A8. Observations**
 
 2–3 sentences covering:
 - Deprivation context (IMD decile) and what it means for the school's operating environment
