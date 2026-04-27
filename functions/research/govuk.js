@@ -2946,10 +2946,11 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
         getGIASDetails(urn),
       ]);
 
-      // Phase 3: area data — postcode comes from DfE CSV (PCODE in phase-specific namespace, e.g. KS2_25)
-      // Fall back to GIAS postcode for infant/nursery schools that lack a KS2/KS4 namespace.
+      // Phase 3: area data — postcode comes from DfE CSV (PCODE in phase-specific namespace, e.g. KS2_25).
+      // Fall back to identity.postcode (from GIAS search tile — always present when URN resolves)
+      // for infant/nursery schools that have no KS2/KS4 namespace and thus no PCODE in the CSV.
       const postcode = Object.values(performance ?? {}).flat().find(r => r.variable === 'PCODE')?.value
-        ?? giasDetails?.postcode
+        ?? identity?.postcode
         ?? null;
       const area = detailed && postcode ? await getAreaData(postcode) : null;
 

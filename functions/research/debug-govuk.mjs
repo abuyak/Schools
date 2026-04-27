@@ -138,8 +138,9 @@ if (financial) {
   nil('not retrieved');
 }
 
-// Area data — fall back to GIAS postcode for infant/nursery schools without a KS2 namespace
-const postcode = perfVar(performance, 'PCODE') ?? giasDetails?.postcode ?? null;
+// Area data — fall back to identity.postcode (GIAS search tile) for infant/nursery schools
+// that have no KS2/KS4 namespace and thus no PCODE variable in the DfE CSV.
+const postcode = perfVar(performance, 'PCODE') ?? identity?.postcode ?? null;
 console.log(`\nArea data  (postcode: ${postcode ?? 'not available'}):`);
 const area = postcode ? await getAreaData(postcode) : null;
 if (area) {
