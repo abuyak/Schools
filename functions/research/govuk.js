@@ -2183,97 +2183,140 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) 
     // ── Science
     const sci        = v('PTSCITA_EXP');
 
+    // ── Historical (for Table 4 — results over time)
+    const rwmH23 = v('PTRWM_HIGH_23');  const rwmH24 = v('PTRWM_HIGH_24');
+    const read23 = v('READ_AVERAGE_23'); const read24 = v('READ_AVERAGE_24');
+    const mat23  = v('MAT_AVERAGE_23');  const mat24  = v('MAT_AVERAGE_24');
+
     if (rwm || read || mat) {
-      const trend = [rwm23, rwm24, rwm].filter(Boolean);
       const nat = NATIONAL_AVG.KS2;
       const c   = (val) => val ?? '—';
       const na  = (key) => nat[key] != null ? `${nat[key]}%` : '—';
       // LA averages from EES API (populated when laPerf is available)
       const la  = (subj, field) => laPerf?.[subj]?.[field] != null ? `${laPerf[subj][field]}%` : '—';
-      const laS = (subj) => laPerf?.[subj]?.avgScore ?? '—';  // avg score (no % suffix)
+      const laS = (subj) => laPerf?.[subj]?.avgScore != null ? String(laPerf[subj].avgScore) : '—';
+
+      // EAL cohort count: DfE splits pupils into TEALGRP1 (English first language),
+      // TEALGRP2 (English as additional language), TEALGRP3 (unclassified).
+      // The EAL count is TEALGRP2 alone.
+      const cohortEAL = v('TEALGRP2');
 
       lines.push('**Key Stage 2 (2024/25)**');
-      lines.push('| Metric | All pupils | Boys | Girls | Disadvantaged | EAL | Local avg | National |');
+      lines.push('');
+
+      // ── Table 1: Results by pupil characteristics ────────────────────────
+      lines.push('*Results by pupil characteristics*');
+      lines.push('| | All pupils | Girls | Boys | EAL pupils | Disadvantaged | Local auth | England |');
       lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
 
       if (cohort || cohortDis)
-        lines.push(`| Cohort (KS2 eligible) | ${c(cohort)} | ${c(cohortB)} | ${c(cohortG)} | ${c(cohortDis)} | — | — | — |`);
+        lines.push(`| Eligible cohort | ${c(cohort)} | ${c(cohortG)} | ${c(cohortB)} | ${c(cohortEAL)} | ${c(cohortDis)} | — | — |`);
+      if (rwm || rwmG || rwmB || rwmEAL || rwmDis)
+        lines.push(`| % expected standard — RWM | ${c(rwm)} | ${c(rwmG)} | ${c(rwmB)} | ${c(rwmEAL)} | ${c(rwmDis)} | ${la('rwm','expected')} | ${na('PTRWM_EXP')} |`);
+      if (rwmH || rwmHG || rwmHB || rwmHEAL || rwmHDis)
+        lines.push(`| % higher standard — RWM | ${c(rwmH)} | ${c(rwmHG)} | ${c(rwmHB)} | ${c(rwmHEAL)} | ${c(rwmHDis)} | ${la('rwm','higher')} | ${na('PTRWM_HIGH')} |`);
+      if (readSc || readScG || readScB || readScEAL || readScDis)
+        lines.push(`| Reading avg score | ${c(readSc)} | ${c(readScG)} | ${c(readScB)} | ${c(readScEAL)} | ${c(readScDis)} | ${laS('reading')} | — |`);
+      if (matSc || matScG || matScB || matScEAL || matScDis)
+        lines.push(`| Maths avg score | ${c(matSc)} | ${c(matScG)} | ${c(matScB)} | ${c(matScEAL)} | ${c(matScDis)} | ${laS('maths')} | — |`);
 
-      // RWM — EAL available; LA avg from EES API
-      if (rwm || rwmB || rwmG || rwmDis || rwmEAL)
-        lines.push(`| RWM expected standard${trend.length > 1 ? ` _(3-yr: ${trend.join(' → ')})_` : ''} | ${c(rwm)} | ${c(rwmB)} | ${c(rwmG)} | ${c(rwmDis)} | ${c(rwmEAL)} | ${la('rwm','expected')} | ${na('PTRWM_EXP')} |`);
-      if (rwmH || rwmHB || rwmHG || rwmHDis || rwmHEAL)
-        lines.push(`| RWM high standard | ${c(rwmH)} | ${c(rwmHB)} | ${c(rwmHG)} | ${c(rwmHDis)} | ${c(rwmHEAL)} | ${la('rwm','higher')} | ${na('PTRWM_HIGH')} |`);
+      lines.push('');
 
-      // Reading
-      if (read || readB || readG || readDis)
-        lines.push(`| Reading expected | ${c(read)} | ${c(readB)} | ${c(readG)} | ${c(readDis)} | — | ${la('reading','expected')} | ${na('PTREAD_EXP')} |`);
-      if (readH || readHDis)
-        lines.push(`| Reading high standard | ${c(readH)} | — | — | ${c(readHDis)} | — | ${la('reading','higher')} | — |`);
-      if (readSc || readScB || readScG || readScDis || readScEAL)
-        lines.push(`| Reading avg score | ${c(readSc)} | ${c(readScB)} | ${c(readScG)} | ${c(readScDis)} | ${c(readScEAL)} | ${laS('reading')} | — |`);
-
-      // Maths
-      if (mat || matB || matG || matDis)
-        lines.push(`| Maths expected | ${c(mat)} | ${c(matB)} | ${c(matG)} | ${c(matDis)} | — | ${la('maths','expected')} | ${na('PTMAT_EXP')} |`);
-      if (matH || matHDis)
-        lines.push(`| Maths high standard | ${c(matH)} | — | — | ${c(matHDis)} | — | ${la('maths','higher')} | — |`);
-      if (matSc || matScB || matScG || matScDis || matScEAL)
-        lines.push(`| Maths avg score | ${c(matSc)} | ${c(matScB)} | ${c(matScG)} | ${c(matScDis)} | ${c(matScEAL)} | ${laS('maths')} | — |`);
-
-      // Writing
-      if (writ || writB || writG || writDis)
-        lines.push(`| Writing expected | ${c(writ)} | ${c(writB)} | ${c(writG)} | ${c(writDis)} | — | ${la('writing','expected')} | ${na('PTWRITTA_EXP')} |`);
-      if (writH || writHDis)
-        lines.push(`| Writing high standard | ${c(writH)} | — | — | ${c(writHDis)} | — | ${la('writing','higher')} | — |`);
-
-      // GPS
-      if (gps || gpsB || gpsG || gpsDis)
-        lines.push(`| GPS expected | ${c(gps)} | ${c(gpsB)} | ${c(gpsG)} | ${c(gpsDis)} | — | ${la('gps','expected')} | ${na('PTGPS_EXP')} |`);
-      if (gpsH || gpsHB || gpsHG || gpsHDis)
-        lines.push(`| GPS high standard | ${c(gpsH)} | ${c(gpsHB)} | ${c(gpsHG)} | ${c(gpsHDis)} | — | ${la('gps','higher')} | ${na('PTGPS_HIGH')} |`);
-      if (gpsSc || gpsScB || gpsScG || gpsScDis || gpsScEAL)
-        lines.push(`| GPS avg score | ${c(gpsSc)} | ${c(gpsScB)} | ${c(gpsScG)} | ${c(gpsScDis)} | ${c(gpsScEAL)} | ${laS('gps')} | — |`);
-
-      // Science
-      if (sci)
-        lines.push(`| Science expected | ${sci} | — | — | — | — | ${la('science','expected')} | — |`);
-
-      // Disadvantaged gap (non-disadvantaged comparator)
+      // ── Table 2: Additional measures per subject ─────────────────────────
+      const addRows = [];
+      if (read)        addRows.push(`| Reading expected | ${c(read)} | ${la('reading','expected')} | ${na('PTREAD_EXP')} |`);
+      if (readH)       addRows.push(`| Reading higher | ${c(readH)} | ${la('reading','higher')} | — |`);
+      if (mat)         addRows.push(`| Maths expected | ${c(mat)} | ${la('maths','expected')} | ${na('PTMAT_EXP')} |`);
+      if (matH)        addRows.push(`| Maths higher | ${c(matH)} | ${la('maths','higher')} | — |`);
+      if (writ)        addRows.push(`| Writing expected | ${c(writ)} | ${la('writing','expected')} | ${na('PTWRITTA_EXP')} |`);
+      if (writH)       addRows.push(`| Writing higher | ${c(writH)} | ${la('writing','higher')} | — |`);
+      if (gps)         addRows.push(`| GPS expected | ${c(gps)} | ${la('gps','expected')} | ${na('PTGPS_EXP')} |`);
+      if (gpsH)        addRows.push(`| GPS higher | ${c(gpsH)} | ${la('gps','higher')} | ${na('PTGPS_HIGH')} |`);
+      if (sci)         addRows.push(`| Science expected | ${c(sci)} | ${la('science','expected')} | — |`);
       const rwmNonDis = v('PTRWM_EXP_NOTFSM6CLA1A');
       const gapNat    = v('DIFFN_RWM_EXP');
-      if (rwmNonDis)
-        lines.push(`| RWM expected — non-disadvantaged | ${rwmNonDis} | — | — | — | — | — | — |`);
-      if (gapNat)
-        lines.push(`| Gap vs national non-disadvantaged | ${gapNat}pp | — | — | — | — | — | — |`);
+      if (rwmNonDis)   addRows.push(`| RWM expected — non-disadvantaged | ${rwmNonDis} | — | — |`);
+      if (gapNat)      addRows.push(`| Gap (school non-dis vs national non-dis) | ${gapNat}pp | — | — |`);
+      const readAt = v('PTREAD_AT'); const matAt = v('PTMAT_AT'); const gpsAt = v('PTGPS_AT');
+      const absParts = [];
+      if (readAt) absParts.push(`reading ${readAt}`);
+      if (matAt)  absParts.push(`maths ${matAt}`);
+      if (gpsAt)  absParts.push(`GPS ${gpsAt}`);
+      if (absParts.length) addRows.push(`| Absent from tests | ${absParts.join(' · ')} | — | — |`);
 
-      // Absent from tests
-      const readAt = v('PTREAD_AT');
-      const matAt  = v('PTMAT_AT');
-      const gpsAt  = v('PTGPS_AT');
-      if (readAt || matAt || gpsAt) {
-        const absentParts = [];
-        if (readAt) absentParts.push(`reading ${readAt}`);
-        if (matAt)  absentParts.push(`maths ${matAt}`);
-        if (gpsAt)  absentParts.push(`GPS ${gpsAt}`);
-        lines.push(`| Absent from tests | ${absentParts.join(' · ')} | — | — | — | — | — | — |`);
+      if (addRows.length) {
+        lines.push('*Additional measures*');
+        lines.push('| Measure | School | Local auth | England |');
+        lines.push('|---|---:|---:|---:|');
+        lines.push(...addRows);
+        lines.push('');
       }
 
-      // Progress scores — school-wide with CI; national benchmark = 0 by definition
+      // ── Table 3: Progress (KS1→KS2) ──────────────────────────────────────
       const PROG_DESCR = { '1': 'well above', '2': 'above', '3': 'average', '4': 'below', '5': 'well below' };
-      const fmtProg = (val, lo, hi, d) => {
-        let s = val ?? '—';
-        if (lo && hi) s += ` (CI: ${lo} to ${hi})`;
-        if (d)        s += ` — ${PROG_DESCR[String(d)] ?? d}`;
-        return s;
-      };
       const rProg = v('READPROG_23'); const rLo = v('READPROG_LOWER_23'); const rHi = v('READPROG_UPPER_23'); const rD = v('READPROG_DESCR_23');
       const wProg = v('WRITPROG_23'); const wLo = v('WRITPROG_LOWER_23'); const wHi = v('WRITPROG_UPPER_23'); const wD = v('WRITPROG_DESCR_23');
       const mProg = v('MATPROG_23');  const mLo = v('MATPROG_LOWER_23');  const mHi = v('MATPROG_UPPER_23');  const mD = v('MATPROG_DESCR_23');
       if (rProg || wProg || mProg) {
-        lines.push(`| Progress: reading (2022/23) | ${fmtProg(rProg, rLo, rHi, rD)} | — | — | — | — | — | 0 |`);
-        lines.push(`| Progress: writing (2022/23) | ${fmtProg(wProg, wLo, wHi, wD)} | — | — | — | — | — | 0 |`);
-        lines.push(`| Progress: maths (2022/23) | ${fmtProg(mProg, mLo, mHi, mD)} | — | — | — | — | — | 0 |`);
+        lines.push('*Progress (KS1 to KS2, 2022/23 cohort — national benchmark = 0)*');
+        lines.push('| Subject | Score | Banding | 95% CI |');
+        lines.push('|---|---:|---|---|');
+        if (rProg) lines.push(`| Reading | ${rProg} | ${PROG_DESCR[rD] ?? rD ?? '—'} | ${rLo && rHi ? `${rLo} to ${rHi}` : '—'} |`);
+        if (wProg) lines.push(`| Writing | ${wProg} | ${PROG_DESCR[wD] ?? wD ?? '—'} | ${wLo && wHi ? `${wLo} to ${wHi}` : '—'} |`);
+        if (mProg) lines.push(`| Maths | ${mProg} | ${PROG_DESCR[mD] ?? mD ?? '—'} | ${mLo && mHi ? `${mLo} to ${mHi}` : '—'} |`);
+        lines.push('');
+      }
+
+      // ── Table 4: Results over time ────────────────────────────────────────
+      // School: 3-year data from DfE CSV (_23/_24 suffixes)
+      // LA: current year from EES API; historical not yet fetched (shown as —)
+      // England: hardcoded from DfE national tables
+      // Source: https://explore-education-statistics.service.gov.uk/find-statistics/key-stage-2-attainment
+      const NAT_HIST = {
+        '2023': { rwmExp: 60, rwmHigh: 8, readAvg: 105, matAvg: 104 },
+        '2024': { rwmExp: 61, rwmHigh: 8, readAvg: 105, matAvg: 104 },
+        '2025': { rwmExp: nat.PTRWM_EXP ?? 61, rwmHigh: nat.PTRWM_HIGH ?? 9, readAvg: 106, matAvg: 105 },
+      };
+
+      if (rwm23 || rwm24 || rwm) {
+        lines.push('*Results over time*');
+
+        lines.push('RWM — % expected standard');
+        lines.push('| | 2023 | 2024 | 2025 |');
+        lines.push('|---|---:|---:|---:|');
+        lines.push(`| School | ${c(rwm23)} | ${c(rwm24)} | ${c(rwm)} |`);
+        lines.push(`| Local authority | — | — | ${la('rwm','expected')} |`);
+        lines.push(`| England | ${NAT_HIST['2023'].rwmExp}% | ${NAT_HIST['2024'].rwmExp}% | ${NAT_HIST['2025'].rwmExp}% |`);
+        lines.push('');
+
+        if (rwmH23 || rwmH24 || rwmH) {
+          lines.push('RWM — % higher standard');
+          lines.push('| | 2023 | 2024 | 2025 |');
+          lines.push('|---|---:|---:|---:|');
+          lines.push(`| School | ${c(rwmH23)} | ${c(rwmH24)} | ${c(rwmH)} |`);
+          lines.push(`| Local authority | — | — | ${la('rwm','higher')} |`);
+          lines.push(`| England | ${NAT_HIST['2023'].rwmHigh}% | ${NAT_HIST['2024'].rwmHigh}% | ${NAT_HIST['2025'].rwmHigh}% |`);
+          lines.push('');
+        }
+
+        if (read23 || read24 || readSc) {
+          lines.push('Reading — average score');
+          lines.push('| | 2023 | 2024 | 2025 |');
+          lines.push('|---|---:|---:|---:|');
+          lines.push(`| School | ${c(read23)} | ${c(read24)} | ${c(readSc)} |`);
+          lines.push(`| Local authority | — | — | ${laS('reading')} |`);
+          lines.push(`| England | ${NAT_HIST['2023'].readAvg} | ${NAT_HIST['2024'].readAvg} | ${NAT_HIST['2025'].readAvg} |`);
+          lines.push('');
+        }
+
+        if (mat23 || mat24 || matSc) {
+          lines.push('Maths — average score');
+          lines.push('| | 2023 | 2024 | 2025 |');
+          lines.push('|---|---:|---:|---:|');
+          lines.push(`| School | ${c(mat23)} | ${c(mat24)} | ${c(matSc)} |`);
+          lines.push(`| Local authority | — | — | ${laS('maths')} |`);
+          lines.push(`| England | ${NAT_HIST['2023'].matAvg} | ${NAT_HIST['2024'].matAvg} | ${NAT_HIST['2025'].matAvg} |`);
+        }
       }
     }
   }
