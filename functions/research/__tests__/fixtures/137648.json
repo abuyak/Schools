@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 137648,
     "label": "state-primary",
-    "capturedAt": "2026-04-26T23:22:37.229Z",
+    "capturedAt": "2026-04-27T08:02:07.847Z",
     "note": "KS1 + KS2 — largest data set for primary"
   },
   "input": "Redriff Primary",
@@ -952,6 +952,7 @@
   "area": {
     "postcode": "SE16 5LQ",
     "district": "Southwark",
+    "laCode": "E09000028",
     "region": "London",
     "lsoa": "E01004056",
     "msoa": "E02000814",
@@ -981,11 +982,11 @@
       "yearsBack": 5,
       "totalTransactions": 237,
       "postcodesQueried": 100,
-      "medianAllTypes": "£520,000",
+      "medianAllTypes": "£525,000",
       "byType": {
-        "Flat / Maisonette": "£468,500",
-        "Terraced": "£685,000",
-        "Semi-detached": "£665,000"
+        "Flat / Maisonette": "£475,000",
+        "Terraced": "£669,000",
+        "Semi-detached": "£675,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -1041,6 +1042,38 @@
         "grain": "MSOA",
         "measure": "mean gross annual household income"
       }
+    }
+  },
+  "laPerf": {
+    "rwm": {
+      "expected": "70",
+      "higher": "12",
+      "avgScore": null
+    },
+    "reading": {
+      "expected": "80",
+      "higher": "39",
+      "avgScore": "107"
+    },
+    "writing": {
+      "expected": "78",
+      "higher": "19",
+      "avgScore": null
+    },
+    "maths": {
+      "expected": "80",
+      "higher": "31",
+      "avgScore": "106"
+    },
+    "gps": {
+      "expected": "79",
+      "higher": "37",
+      "avgScore": "107"
+    },
+    "science": {
+      "expected": "85",
+      "higher": null,
+      "avgScore": null
     }
   },
   "schoolEthnicity": {

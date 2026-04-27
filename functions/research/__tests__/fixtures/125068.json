@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125068,
     "label": "state-junior",
-    "capturedAt": "2026-04-26T23:22:27.105Z",
+    "capturedAt": "2026-04-27T08:21:02.529Z",
     "note": "KS2 only — no KS1 or KS4"
   },
   "input": "Earlswood Junior School",
@@ -890,6 +890,7 @@
   "area": {
     "postcode": "RH1 6JX",
     "district": "Reigate and Banstead",
+    "laCode": "E10000030",
     "region": "South East",
     "lsoa": "E01030573",
     "msoa": "E02006388",
@@ -916,14 +917,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 381,
+      "totalTransactions": 268,
       "postcodesQueried": 100,
-      "medianAllTypes": "£415,000",
+      "medianAllTypes": "£500,000",
       "byType": {
-        "Semi-detached": "£500,000",
-        "Terraced": "£410,000",
-        "Detached": "£625,000",
-        "Flat / Maisonette": "£260,000"
+        "Semi-detached": "£550,000",
+        "Terraced": "£430,000",
+        "Detached": "£737,000",
+        "Flat / Maisonette": "£235,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -979,6 +980,38 @@
         "grain": "MSOA",
         "measure": "mean gross annual household income"
       }
+    }
+  },
+  "laPerf": {
+    "rwm": {
+      "expected": "66",
+      "higher": "11",
+      "avgScore": null
+    },
+    "reading": {
+      "expected": "80",
+      "higher": "41",
+      "avgScore": "107"
+    },
+    "writing": {
+      "expected": "75",
+      "higher": "15",
+      "avgScore": null
+    },
+    "maths": {
+      "expected": "78",
+      "higher": "32",
+      "avgScore": "106"
+    },
+    "gps": {
+      "expected": "77",
+      "higher": "35",
+      "avgScore": "107"
+    },
+    "science": {
+      "expected": "85",
+      "higher": null,
+      "avgScore": null
     }
   },
   "schoolEthnicity": {
