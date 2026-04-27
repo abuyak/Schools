@@ -681,9 +681,14 @@ export async function getAreaData(postcode) {
   const msoa     = r.codes?.msoa  ?? r.msoa  ?? null;
   const district = r.admin_district ?? null;
   // For two-tier areas (county + district), education is run by the county council.
-  // admin_county holds the county ONS code (e.g. E10000030 for Surrey); it is null for
-  // unitary authorities and London Boroughs where admin_district IS the education authority.
-  const laCode   = r.codes?.admin_county || r.codes?.admin_district || null;
+  // admin_county holds the county ONS code (e.g. E10000030 for Surrey); postcodes.io returns
+  // E99999999 as a placeholder when there is no county (London Boroughs, unitary authorities),
+  // so we exclude that sentinel and fall back to admin_district (which IS the education authority
+  // for unitary/London areas).
+  const countyCode = r.codes?.admin_county;
+  const laCode = (countyCode && countyCode !== 'E99999999')
+    ? countyCode
+    : r.codes?.admin_district || null;
   const region   = r.region ?? null;
   const lat      = r.latitude  ?? null;
   const lon      = r.longitude ?? null;
