@@ -63,11 +63,11 @@ const EXPECTATIONS = {
     shouldNotContain: ['Key Stage 2', 'Key Stage 4', 'Key Stage 5', 'Attainment 8'],
   },
   'state-junior': {
-    shouldContain:    ['Key Stage 2', 'Reading, Writing and Maths'],
+    shouldContain:    ['Key Stage 2', 'RWM'],
     shouldNotContain: ['Key Stage 1', 'Key Stage 4', 'Key Stage 5'],
   },
   'state-primary': {
-    shouldContain:    ['Key Stage 2', 'Reading, Writing and Maths'],
+    shouldContain:    ['Key Stage 2', 'RWM'],
     shouldNotContain: ['Key Stage 4', 'Key Stage 5', 'Attainment 8'],
   },
   'state-secondary': {

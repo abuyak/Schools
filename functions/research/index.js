@@ -477,8 +477,10 @@ export const handler = async (event) => {
 
     let qt1Response = null;
     let qt1Ms = 0;
+    let qt1HttpError = null; // { status, summary } — set on non-2xx or network/timeout
+
+    const qt1T0 = Date.now();
     try {
-      const qt1T0 = Date.now();
       const qt1Payload = {
         model:             qt1Model,
         tool_choice:       'none',   // no web search for Quick Take
@@ -495,19 +497,40 @@ export const handler = async (event) => {
         body:    JSON.stringify(qt1Payload),
         signal:  AbortSignal.timeout(40000),
       });
+      qt1Ms = Date.now() - qt1T0;
       if (qt1Res.ok) {
         qt1Response = await qt1Res.json();
       } else {
         const txt = await qt1Res.text().catch(() => '');
+        const summary =
+          qt1Res.status === 401 || qt1Res.status === 403 ? 'The research provider rejected the API key. Check OPENAI_API_KEY.' :
+          qt1Res.status === 429 ? 'The research provider is rate-limiting requests. Try again shortly.' :
+          'The research provider could not complete the request.';
+        qt1HttpError = { status: qt1Res.status, summary };
         log('qt1_error', { status: qt1Res.status, body: txt.slice(0, 200) });
       }
-      qt1Ms = Date.now() - qt1T0;
     } catch (err) {
+      qt1Ms = Date.now() - qt1T0;
+      const timedOut = err.name === 'TimeoutError' || err.message?.includes('timed out');
+      qt1HttpError = {
+        status:  timedOut ? 504 : 502,
+        summary: timedOut ? 'The research provider timed out. Try again.' : 'The research provider could not complete the request.',
+      };
       log('qt1_error', { error: err.message });
     }
 
-    // Parse Call 1 — extract title, summary, scorecard
+    // Propagate Call 1 fatal errors immediately — same contract as the single-call path
+    if (qt1HttpError) {
+      log('research_request', { status: 'upstream_error', httpStatus: qt1HttpError.status, branch: body.branch, model, question: body.question.slice(0, 200), ms: Date.now() - t0 });
+      return okResponse({ status: 'upstream_error', httpStatus: qt1HttpError.status, title: 'Research provider error', summary: qt1HttpError.summary, scorecard: [], sections: [{ heading: 'What happened', body: qt1HttpError.summary, flag: 'none' }] });
+    }
+
+    // Parse Call 1 — extract title, summary, scorecard; propagate format errors immediately
     const qt1Parsed = parseOpenAIResponse(qt1Response ?? {});
+    if (qt1Parsed.status === 'upstream_invalid_format') {
+      log('research_request', { status: 'upstream_invalid_format', httpStatus: qt1Parsed.httpStatus ?? 502, branch: body.branch, model, question: body.question.slice(0, 200), ms: Date.now() - t0 });
+      return okResponse(qt1Parsed);
+    }
     const qt1Title    = qt1Parsed.title    || '';
     const qt1Summary  = qt1Parsed.summary  || '';
     const qt1Scorecard = qt1Parsed.scorecard || [];

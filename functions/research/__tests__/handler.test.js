@@ -8,7 +8,9 @@ import { jest } from '@jest/globals';
 
 // Mock govuk.js so it never makes real fetch calls during unit tests
 await jest.unstable_mockModule('../govuk.js', () => ({
-  fetchGovDataForPrompt: jest.fn().mockResolvedValue(''),
+  fetchGovDataForPrompt: jest.fn().mockResolvedValue({ block: '', flags: {}, schools: [] }),
+  renderPartA: jest.fn().mockReturnValue([]),
+  computeFlags: jest.fn().mockReturnValue({}),
 }));
 
 // Mock fetch globally before importing the handler
@@ -58,6 +60,34 @@ function mockOpenAI(responseBody, status = 200) {
   });
 }
 
+// Branch 1 uses two calls: Call 1 = Quick Take, Call 2 = B+C sections.
+// VALID_QT_RESPONSE is the Call 1 mock; VALID_BC_RESPONSE is the Call 2 mock.
+// VALID_OPENAI_RESPONSE (all fields) is kept for branches 2/3/4 (single-call).
+const VALID_QT_RESPONSE = {
+  output_text: JSON.stringify({
+    title: 'Test School',
+    summary: 'A good school.',
+    scorecard: [{ dimension: 'Academic', rating: 'strong', note: 'Top results.' }],
+  }),
+  output: [],
+};
+
+const VALID_BC_RESPONSE = {
+  output_text: JSON.stringify({
+    sections: [
+      { heading: '1. Direct Answer', body: 'This is the answer.' },
+      { heading: 'Sources', body: '[Gov](https://gov.uk)' },
+    ],
+  }),
+  output: [],
+};
+
+// Convenience: set up both branch-1 mocks in one call
+function mockBranch1(qt = VALID_QT_RESPONSE, bc = VALID_BC_RESPONSE) {
+  mockOpenAI(qt);
+  mockOpenAI(bc);
+}
+
 const VALID_OPENAI_RESPONSE = {
   output_text: JSON.stringify({
     title: 'Test School',
@@ -77,7 +107,7 @@ const VALID_OPENAI_RESPONSE = {
 
 describe('Analytics logging', () => {
   test('logs research_request with status=completed on success', async () => {
-    mockOpenAI(VALID_OPENAI_RESPONSE);
+    mockBranch1();
     const { entries } = await captureLog(() =>
       handler(makeEvent({ branch: 'prompt_branch_1', question: 'Tell me about Eton' }))
     );
@@ -139,7 +169,7 @@ describe('Analytics logging', () => {
   });
 
   test('truncates question to 200 characters in log', async () => {
-    mockOpenAI(VALID_OPENAI_RESPONSE);
+    mockBranch1();
     const longQuestion = 'x'.repeat(300);
     const { entries } = await captureLog(() =>
       handler(makeEvent({ branch: 'prompt_branch_1', question: longQuestion }))
@@ -191,7 +221,8 @@ describe('Validation', () => {
 
   test('accepts all four valid branches', async () => {
     for (const branch of ['prompt_branch_1', 'prompt_branch_2', 'prompt_branch_3', 'prompt_branch_4']) {
-      mockOpenAI(VALID_OPENAI_RESPONSE);
+      // Branch 1 uses two API calls; all other branches use one
+      if (branch === 'prompt_branch_1') mockBranch1(); else mockOpenAI(VALID_OPENAI_RESPONSE);
       const res = await handler(makeEvent({ branch, question: 'Test question' }));
       // Should not be a validation error
       const body = JSON.parse(res.body);
@@ -212,7 +243,7 @@ describe('Validation', () => {
 describe('Response parsing', () => {
 
   test('returns completed status on valid OpenAI response', async () => {
-    mockOpenAI(VALID_OPENAI_RESPONSE);
+    mockBranch1();
     const res = await handler(makeEvent({ branch: 'prompt_branch_1', question: 'Tell me about Eton' }));
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
@@ -222,7 +253,7 @@ describe('Response parsing', () => {
   });
 
   test('renames Sources section to Primary Sources', async () => {
-    mockOpenAI(VALID_OPENAI_RESPONSE);
+    mockBranch1();
     const res = await handler(makeEvent({ branch: 'prompt_branch_1', question: 'Test' }));
     const body = JSON.parse(res.body);
     const headings = body.sections.map(s => s.heading);
@@ -231,13 +262,15 @@ describe('Response parsing', () => {
   });
 
   test('strips markdown code fences from response', async () => {
+    // Fences in Call 1 (Quick Take) — should be stripped and parsed correctly
     const withFences = {
       output_text: '```json\n' + JSON.stringify({
-        title: 'T', summary: 'S', scorecard: [], sections: [],
+        title: 'T', summary: 'S', scorecard: [],
       }) + '\n```',
       output: [],
     };
-    mockOpenAI(withFences);
+    mockOpenAI(withFences);       // Call 1
+    mockOpenAI(VALID_BC_RESPONSE); // Call 2
     const res = await handler(makeEvent({ branch: 'prompt_branch_1', question: 'Test' }));
     const body = JSON.parse(res.body);
     expect(body.status).toBe('completed');
@@ -259,9 +292,9 @@ describe('Response parsing', () => {
   });
 
   test('extracts web search sources into Secondary Sources', async () => {
-    const withSources = {
+    // Web search sources come from Call 2 (the B+C call with tool_choice: auto)
+    const call2WithSources = {
       output_text: JSON.stringify({
-        title: 'T', summary: 'S', scorecard: [],
         sections: [{ heading: '1. Answer', body: 'Body text.' }],
       }),
       output: [{
@@ -269,7 +302,8 @@ describe('Response parsing', () => {
         action: { sources: [{ url: 'https://example.com', title: 'Example' }] },
       }],
     };
-    mockOpenAI(withSources);
+    mockOpenAI(VALID_QT_RESPONSE); // Call 1
+    mockOpenAI(call2WithSources);  // Call 2
     const res = await handler(makeEvent({ branch: 'prompt_branch_1', question: 'Test' }));
     const body = JSON.parse(res.body);
     const secondary = body.sections.find(s => s.heading === 'Secondary Sources');
