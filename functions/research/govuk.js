@@ -240,6 +240,10 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
   const text = fullText
     .replace(/\r\n/g, '\n')
     .replace(/[ \t]+/g, ' ')
+    // Strip Ofsted PDF page headers that appear inline in extracted text.
+    // Pattern: "Inspection report: [School Name]\n[date line]\n[page number]\n"
+    // The date line contains a 4-digit year; the page number is digits only.
+    .replace(/\n+Inspection report:[^\n]+\n+[^\n]*\d{4}[^\n]*\n+\d+\n+/g, '\n')
     .replace(/([^\n.!?:—\-•])\n(?=[a-z,;(])/g, '$1 ');
 
   return {
@@ -3269,8 +3273,11 @@ export function renderPartA(school, flags = {}) {
     const nor         = v('NOR');
     const capacity    = giasDetails?.capacity ?? null;
     const headteacher = giasDetails?.headteacher ?? null;
-    // Address comes from the GIAS tile (street + town + postcode inline string)
-    const address     = identity?.address ?? null;
+    // Address comes from the GIAS tile (street + town + postcode inline string).
+    // GIAS sometimes includes "Not recorded" for missing address lines — strip those tokens.
+    const address     = identity?.address
+      ? identity.address.replace(/,?\s*Not recorded/gi, '').replace(/\s{2,}/g, ' ').replace(/^,\s*|,\s*$/g, '').trim() || null
+      : null;
 
     const genderDisplay  = gender === 'Boys' ? 'Boys only' : gender === 'Girls' ? 'Girls only' : (gender ?? '—');
     const relDisplay     = (!relChar || relChar === 'Does not apply' || relChar === 'None') ? '—' : relChar;

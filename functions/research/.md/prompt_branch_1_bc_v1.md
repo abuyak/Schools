@@ -88,7 +88,7 @@ One short paragraph flagging whether the improvement requirement is minor or sys
 
 ---
 
-### **A6. Verdict**
+### **A6. Observations**
 
 2–3 sentences covering:
 - Overall attainment strength relative to national and local benchmarks
