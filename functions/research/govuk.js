@@ -611,7 +611,11 @@ export async function getGIASDetails(urn) {
   //   <dt ...>Label</dt><dd ...>Value</dd>
   // We normalise label → camelCase key with a lookup table.
   const LABEL_MAP = {
-    'postcode':                         'postcode',
+    'postcode':                                  'postcode',
+    'headteacher':                              'headteacher',
+    'headteacher (head of institution)':        'headteacher',
+    'head teacher':                             'headteacher',
+    'head teacher (full name)':                 'headteacher',
     'local authority':                  'la',
     'school capacity':                  'capacity',
     'number of pupils on roll':         'numberOnRoll',
@@ -2094,7 +2098,7 @@ function govLinks(urn) {
  * Picks ~15 high-signal variables by code rather than dumping all rows.
  * Covers KS2 (primary), KS4 (secondary), plus pupil census and absence for all.
  */
-function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) {
+function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false) {
   if (!perf) return '_Not retrieved_';
 
   // Fast lookup across all namespaces — prefer the most recent year.
@@ -2234,37 +2238,37 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) 
       lines.push('');
 
       // ── Table 1: Results by pupil characteristics ────────────────────────
-      lines.push('*Results by pupil characteristics*');
-      lines.push('| | All pupils | Girls | Boys | EAL pupils | Disadvantaged | Local auth | England |');
+      lines.push('**Results by pupil characteristics**');
+      lines.push('| Measure | All pupils | Girls | Boys | EAL pupils | Disadvantaged | Local auth | England |');
       lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
 
       if (cohort || cohortDis)
         lines.push(`| Eligible cohort | ${c(cohort)} | ${c(cohortG)} | ${c(cohortB)} | ${c(cohortEAL)} | ${c(cohortDis)} | — | — |`);
       if (rwm || rwmG || rwmB || rwmEAL || rwmDis)
-        lines.push(`| % expected standard — RWM | ${c(rwm)} | ${c(rwmG)} | ${c(rwmB)} | ${c(rwmEAL)} | ${c(rwmDis)} | ${la('rwm','expected')} | ${na('PTRWM_EXP')} |`);
+        lines.push(`| % meeting expected standard — Reading, Writing and Maths | ${c(rwm)} | ${c(rwmG)} | ${c(rwmB)} | ${c(rwmEAL)} | ${c(rwmDis)} | ${la('rwm','expected')} | ${na('PTRWM_EXP')} |`);
       if (rwmH || rwmHG || rwmHB || rwmHEAL || rwmHDis)
-        lines.push(`| % higher standard — RWM | ${c(rwmH)} | ${c(rwmHG)} | ${c(rwmHB)} | ${c(rwmHEAL)} | ${c(rwmHDis)} | ${la('rwm','higher')} | ${na('PTRWM_HIGH')} |`);
+        lines.push(`| % achieving higher standard — Reading, Writing and Maths | ${c(rwmH)} | ${c(rwmHG)} | ${c(rwmHB)} | ${c(rwmHEAL)} | ${c(rwmHDis)} | ${la('rwm','higher')} | ${na('PTRWM_HIGH')} |`);
       if (readSc || readScG || readScB || readScEAL || readScDis)
-        lines.push(`| Reading avg score | ${c(readSc)} | ${c(readScG)} | ${c(readScB)} | ${c(readScEAL)} | ${c(readScDis)} | ${laS('reading')} | — |`);
+        lines.push(`| Reading — average score | ${c(readSc)} | ${c(readScG)} | ${c(readScB)} | ${c(readScEAL)} | ${c(readScDis)} | ${laS('reading')} | — |`);
       if (matSc || matScG || matScB || matScEAL || matScDis)
-        lines.push(`| Maths avg score | ${c(matSc)} | ${c(matScG)} | ${c(matScB)} | ${c(matScEAL)} | ${c(matScDis)} | ${laS('maths')} | — |`);
+        lines.push(`| Maths — average score | ${c(matSc)} | ${c(matScG)} | ${c(matScB)} | ${c(matScEAL)} | ${c(matScDis)} | ${laS('maths')} | — |`);
 
       lines.push('');
 
       // ── Table 2: Additional measures per subject ─────────────────────────
       const addRows = [];
-      if (read)        addRows.push(`| Reading expected | ${c(read)} | ${la('reading','expected')} | ${na('PTREAD_EXP')} |`);
-      if (readH)       addRows.push(`| Reading higher | ${c(readH)} | ${la('reading','higher')} | — |`);
-      if (mat)         addRows.push(`| Maths expected | ${c(mat)} | ${la('maths','expected')} | ${na('PTMAT_EXP')} |`);
-      if (matH)        addRows.push(`| Maths higher | ${c(matH)} | ${la('maths','higher')} | — |`);
-      if (writ)        addRows.push(`| Writing expected | ${c(writ)} | ${la('writing','expected')} | ${na('PTWRITTA_EXP')} |`);
-      if (writH)       addRows.push(`| Writing higher | ${c(writH)} | ${la('writing','higher')} | — |`);
-      if (gps)         addRows.push(`| GPS expected | ${c(gps)} | ${la('gps','expected')} | ${na('PTGPS_EXP')} |`);
-      if (gpsH)        addRows.push(`| GPS higher | ${c(gpsH)} | ${la('gps','higher')} | ${na('PTGPS_HIGH')} |`);
-      if (sci)         addRows.push(`| Science expected | ${c(sci)} | ${la('science','expected')} | — |`);
+      if (read)        addRows.push(`| Reading — meeting expected standard | ${c(read)} | ${la('reading','expected')} | ${na('PTREAD_EXP')} |`);
+      if (readH)       addRows.push(`| Reading — achieving higher standard | ${c(readH)} | ${la('reading','higher')} | — |`);
+      if (mat)         addRows.push(`| Maths — meeting expected standard | ${c(mat)} | ${la('maths','expected')} | ${na('PTMAT_EXP')} |`);
+      if (matH)        addRows.push(`| Maths — achieving higher standard | ${c(matH)} | ${la('maths','higher')} | — |`);
+      if (writ)        addRows.push(`| Writing — meeting expected standard | ${c(writ)} | ${la('writing','expected')} | ${na('PTWRITTA_EXP')} |`);
+      if (writH)       addRows.push(`| Writing — achieving higher standard | ${c(writH)} | ${la('writing','higher')} | — |`);
+      if (gps)         addRows.push(`| Grammar, Punctuation and Spelling — meeting expected standard | ${c(gps)} | ${la('gps','expected')} | ${na('PTGPS_EXP')} |`);
+      if (gpsH)        addRows.push(`| Grammar, Punctuation and Spelling — achieving higher standard | ${c(gpsH)} | ${la('gps','higher')} | ${na('PTGPS_HIGH')} |`);
+      if (sci)         addRows.push(`| Science — meeting expected standard | ${c(sci)} | ${la('science','expected')} | — |`);
       const rwmNonDis = v('PTRWM_EXP_NOTFSM6CLA1A');
       const gapNat    = v('DIFFN_RWM_EXP');
-      if (rwmNonDis)   addRows.push(`| RWM expected — non-disadvantaged | ${rwmNonDis} | — | — |`);
+      if (rwmNonDis)   addRows.push(`| Reading, Writing and Maths — meeting expected standard (non-disadvantaged) | ${rwmNonDis} | — | — |`);
       if (gapNat)      addRows.push(`| Gap (school non-dis vs national non-dis) | ${gapNat}pp | — | — |`);
       const readAt = v('PTREAD_AT'); const matAt = v('PTMAT_AT'); const gpsAt = v('PTGPS_AT');
       const absParts = [];
@@ -2274,7 +2278,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) 
       if (absParts.length) addRows.push(`| Absent from tests | ${absParts.join(' · ')} | — | — |`);
 
       if (addRows.length) {
-        lines.push('*Additional measures*');
+        lines.push('**Additional measures**');
         lines.push('| Measure | School | Local auth | England |');
         lines.push('|---|---:|---:|---:|');
         lines.push(...addRows);
@@ -2287,7 +2291,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) 
       const wProg = v('WRITPROG_23'); const wLo = v('WRITPROG_LOWER_23'); const wHi = v('WRITPROG_UPPER_23'); const wD = v('WRITPROG_DESCR_23');
       const mProg = v('MATPROG_23');  const mLo = v('MATPROG_LOWER_23');  const mHi = v('MATPROG_UPPER_23');  const mD = v('MATPROG_DESCR_23');
       if (rProg || wProg || mProg) {
-        lines.push('*Progress (KS1 to KS2, 2022/23 cohort — national benchmark = 0)*');
+        lines.push('**Progress (KS1 to KS2, 2022/23 cohort — national benchmark = 0)**');
         lines.push('| Subject | Score | Banding | 95% CI |');
         lines.push('|---|---:|---|---|');
         if (rProg) lines.push(`| Reading | ${rProg} | ${PROG_DESCR[rD] ?? rD ?? '—'} | ${rLo && rHi ? `${rLo} to ${rHi}` : '—'} |`);
@@ -2308,19 +2312,17 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) 
       };
 
       if (rwm23 || rwm24 || rwm) {
-        lines.push('*Results over time*');
+        lines.push('**Results over time**');
 
         // Cohort sizes (provides denominator context for all trend metrics)
         if (cohort23 || cohort24 || cohort) {
-          lines.push('Eligible cohort');
-          lines.push('| | 2023 | 2024 | 2025 | 3-yr pooled |');
+          lines.push('| Eligible cohort | 2023 | 2024 | 2025 | 3-yr pooled |');
           lines.push('|---|---:|---:|---:|---:|');
           lines.push(`| School | ${c(cohort23)} | ${c(cohort24)} | ${c(cohort)} | ${c(cohort3yr)} |`);
           lines.push('');
         }
 
-        lines.push('RWM — % expected standard');
-        lines.push('| | 2023 | 2024 | 2025 | 3-yr pooled |');
+        lines.push('| Reading, Writing and Maths — % meeting expected standard | 2023 | 2024 | 2025 | 3-yr pooled |');
         lines.push('|---|---:|---:|---:|---:|');
         lines.push(`| School | ${c(rwm23)} | ${c(rwm24)} | ${c(rwm)} | ${c(rwm3yr)} |`);
         lines.push(`| Local authority | — | — | ${la('rwm','expected')} | — |`);
@@ -2328,8 +2330,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) 
         lines.push('');
 
         if (rwmH23 || rwmH24 || rwmH) {
-          lines.push('RWM — % higher standard');
-          lines.push('| | 2023 | 2024 | 2025 | 3-yr pooled |');
+          lines.push('| Reading, Writing and Maths — % achieving higher standard | 2023 | 2024 | 2025 | 3-yr pooled |');
           lines.push('|---|---:|---:|---:|---:|');
           lines.push(`| School | ${c(rwmH23)} | ${c(rwmH24)} | ${c(rwmH)} | ${c(rwmH3yr)} |`);
           lines.push(`| Local authority | — | — | ${la('rwm','higher')} | — |`);
@@ -2338,8 +2339,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) 
         }
 
         if (read23 || read24 || readSc) {
-          lines.push('Reading — average score');
-          lines.push('| | 2023 | 2024 | 2025 | 3-yr pooled |');
+          lines.push('| Reading — average score | 2023 | 2024 | 2025 | 3-yr pooled |');
           lines.push('|---|---:|---:|---:|---:|');
           lines.push(`| School | ${c(read23)} | ${c(read24)} | ${c(readSc)} | ${c(read3yr)} |`);
           lines.push(`| Local authority | — | — | ${laS('reading')} | — |`);
@@ -2348,8 +2348,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) 
         }
 
         if (mat23 || mat24 || matSc) {
-          lines.push('Maths — average score');
-          lines.push('| | 2023 | 2024 | 2025 | 3-yr pooled |');
+          lines.push('| Maths — average score | 2023 | 2024 | 2025 | 3-yr pooled |');
           lines.push('|---|---:|---:|---:|---:|');
           lines.push(`| School | ${c(mat23)} | ${c(mat24)} | ${c(matSc)} | ${c(mat3yr)} |`);
           lines.push(`| Local authority | — | — | ${laS('maths')} | — |`);
@@ -2361,8 +2360,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) 
       // ── Table 5: SEN within KS2 cohort ───────────────────────────────────
       // Distinct from A5 which shows school-wide SEN; these are KS2-cohort-specific counts
       if (senTotCount || senEHCCount || senSuppCount) {
-        lines.push('*SEN within KS2 cohort*');
-        lines.push('| | Count | % of cohort |');
+        lines.push('| Special Educational Needs within Key Stage 2 cohort | Count | % of cohort |');
         lines.push('|---|---:|---:|');
         if (senEHCCount)  lines.push(`| EHC plan | ${senEHCCount} | ${senEHCPct ?? '—'} |`);
         if (senSuppCount) lines.push(`| SEN support | ${senSuppCount} | ${senSuppPct ?? '—'} |`);
@@ -2394,7 +2392,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) 
         disRows.push(`| GPS avg score | ${c(gpsScDis)} | ${c(gpsScNotDis)} |`);
 
       if (disRows.length) {
-        lines.push(`*Disadvantaged vs non-disadvantaged by subject*`);
+        lines.push(`**Disadvantaged vs non-disadvantaged by subject**`);
         lines.push(`| Subject | Disadvantaged${cohortDisLabel} | Non-disadvantaged${cohortNotDisLabel} |`);
         lines.push('|---|---:|---:|');
         lines.push(...disRows);
@@ -2576,6 +2574,10 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null) 
       if (disProg5)  lines.push(`| Progress score (VA) | ${disProg5} | — | 0 |`);
     }
   }
+
+  // When called from renderPartA (tablesOnly=true), stop here — census, absence
+  // and the raw variable dump are rendered separately in A5, A7 and the slim block.
+  if (tablesOnly) return lines.length ? lines.join('\n') : '_No performance data available._';
 
   // ── Pupil census ──────────────────────────────────────────────────────────
   const nor = v('NOR') ?? (fallbackNor != null ? String(fallbackNor) : null);
@@ -3260,12 +3262,15 @@ export function renderPartA(school, flags = {}) {
   // A1. School Identity
   // ────────────────────────────────────────────────────────────────────────────
   {
-    const gender  = lv('GENDER');
-    const relChar = lv('RELCHAR');
-    const ageLow  = lv('AGELOW');
-    const ageHigh = lv('AGEHIGH');
-    const nor      = v('NOR');
-    const capacity = giasDetails?.capacity ?? null;
+    const gender      = lv('GENDER');
+    const relChar     = lv('RELCHAR');
+    const ageLow      = lv('AGELOW');
+    const ageHigh     = lv('AGEHIGH');
+    const nor         = v('NOR');
+    const capacity    = giasDetails?.capacity ?? null;
+    const headteacher = giasDetails?.headteacher ?? null;
+    // Address comes from the GIAS tile (street + town + postcode inline string)
+    const address     = identity?.address ?? null;
 
     const genderDisplay  = gender === 'Boys' ? 'Boys only' : gender === 'Girls' ? 'Girls only' : (gender ?? '—');
     const relDisplay     = (!relChar || relChar === 'Does not apply' || relChar === 'None') ? '—' : relChar;
@@ -3278,10 +3283,12 @@ export function renderPartA(school, flags = {}) {
       `| URN | ${d(identity?.urn)} |`,
       `| Type | ${d(identity?.type)} |`,
       `| Phase and age range | ${phaseDisplay || '—'} |`,
+      `| Local authority | ${d(identity?.la)} |`,
       `| Co-ed / single-sex | ${genderDisplay} |`,
       `| Religious character | ${relDisplay} |`,
-      `| Local authority | ${d(identity?.la)} |`,
     ];
+    if (headteacher) lines.push(`| Headteacher | ${headteacher} |`);
+    if (address)     lines.push(`| Address | ${address} |`);
     if (capacity) lines.push(`| Capacity | ${capacity}${nor ? ` (${nor} on roll)` : ''} |`);
 
     lines.push('');
@@ -3355,13 +3362,7 @@ export function renderPartA(school, flags = {}) {
     if (isIndependent) {
       body = '_Independent school — see ISI inspection report for pupil experience narrative._';
     } else if (ofsted?.pupilExperience) {
-      // Show verbatim PDF extract, capped to keep section manageable
-      const NARRATIVE_CAP = 2500;
-      const text = ofsted.pupilExperience;
-      const capped = text.length > NARRATIVE_CAP
-        ? text.slice(0, NARRATIVE_CAP).replace(/\s+\S*$/, '') + `… _(truncated — [full report](${ofsted.reportUrl ?? 'https://reports.ofsted.gov.uk'}))_`
-        : text;
-      body = `_Ofsted PDF extract._\n\n${capped}`;
+      body = ofsted.pupilExperience;
     } else {
       body = `_Not extracted from Ofsted PDF.${ofsted?.reportUrl ? ` [View full report](${ofsted.reportUrl})` : ''}_`;
     }
@@ -3425,8 +3426,9 @@ export function renderPartA(school, flags = {}) {
   // A6. Academic Performance
   // ────────────────────────────────────────────────────────────────────────────
   {
-    // Reuse the existing slim formatter — it already produces all the KS2/KS4/KS5 tables
-    const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null);
+    // tablesOnly=true: stop before the census/absence/raw-variable dump —
+    // those sections are already rendered in A5, A7, and the slim block.
+    const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null, true);
     sections.push({ heading: 'A6. Academic Performance', body, flag: flags['A6. Academic Performance'] ?? 'none' });
   }
 

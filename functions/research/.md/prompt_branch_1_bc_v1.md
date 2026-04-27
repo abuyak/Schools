@@ -251,7 +251,7 @@ If a child description was provided, add one sentence at the end on overall fit.
 
 ### **C4. Sources**
 
-Short source list. Do not link to local prompt or data files.
+Short source list using markdown hyperlinks — format each entry as `[Descriptive title](https://full-url)`. Do not link to local prompt or data files. Do not list sources without a URL.
 
 ---
 
