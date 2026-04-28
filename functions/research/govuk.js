@@ -248,39 +248,59 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
     .replace(/\n+Inspection report:[^\n]+\n+[^\n]*\d{4}[^\n]*\n+\d+\n+/g, '\n')
     .replace(/([^\n.!?:—\-•])\n(?=[a-z,;(])/g, '$1 ');
 
+  // Shared cleanup for extracted PDF text — strips page artifacts that
+  // bleed through from PDF headers/footers regardless of the specific
+  // Ofsted report format (pre-2019, 2019–2024, Nov-2025+).
+  const cleanExtractedText = (raw) => {
+    if (!raw) return null;
+    return raw
+      // Strip page-header lines: "Inspection report: School Name"
+      .replace(/\n+\s*Inspection report:[^\n]*/gi, '\n')
+      // Strip date lines that appear as page headers ("6 and 7 December 2023")
+      .replace(/\n+\s*\d{1,2}\s+(?:and\s+\d{1,2}\s+)?(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\s*\n+/gi, '\n')
+      // Strip standalone page numbers (1-3 digits on their own line)
+      .replace(/\n\s*\d{1,3}\s*\n/g, '\n')
+      // Strip PDF Private Use Area bullet glyphs → plain hyphen
+      .replace(/[-]/g, '- ')
+      // Clean doubled bullets
+      .replace(/^- - /gm, '- ')
+      // Collapse multiple blank lines
+      .replace(/\n{3,}/g, '\n\n')
+      .trim() || null;
+  };
+
   return {
     // ── Present in all report types ───────────────────────────────────────
     // "What it's like to be a pupil / attend this school" — the introductory
-    // narrative paragraph(s). For monitoring visits this often flows straight
-    // into the "What does the school do well" content without a sub-heading.
-    pupilExperience: extractSection(text, [
+    // narrative paragraph(s). Truncated to ~800 chars so the AI summarises
+    // rather than reproducing the full PDF text verbatim.
+    pupilExperience: cleanExtractedText(extractSection(text, [
       /what\s+is\s+it\s+like\s+to\s+attend\s+this\s+school/i,
       /what\s+it['']s\s+like\s+to\s+be\s+a\s+pupil/i,
       /what\s+it\s+is\s+like\s+to\s+be\s+a\s+pupil/i,
-    ], 5000),   // larger window: monitoring visits have no sub-headings so the
-                // whole narrative sits in this one section
+    ], 5000)?.slice(0, 800) ?? null),
 
     // ── Old framework (pre-Nov 2025) graded inspection sub-sections ───────
-    qualityOfEducation: extractSection(text, [
+    qualityOfEducation: cleanExtractedText(extractSection(text, [
       /^quality\s+of\s+education\s*$/im,
-      /^curriculum\s+and\s+teaching\s*$/im,   // new format alias
-    ]),
-    behaviourAndAttitudes: extractSection(text, [
+      /^curriculum\s+and\s+teaching\s*$/im,
+    ])),
+    behaviourAndAttitudes: cleanExtractedText(extractSection(text, [
       /^behaviour\s+and\s+attitudes?\s*$/im,
-      /^attendance\s+and\s+behaviour\s*$/im,  // new format alias
-    ]),
-    personalDevelopment: extractSection(text, [
+      /^attendance\s+and\s+behaviour\s*$/im,
+    ])),
+    personalDevelopment: cleanExtractedText(extractSection(text, [
       /^personal\s+development\s*$/im,
       /^personal\s+development\s+and\s+wellbeing\s*$/im,
-    ]),
-    leadershipAndManagement: extractSection(text, [
+    ])),
+    leadershipAndManagement: cleanExtractedText(extractSection(text, [
       /^leadership\s+and\s+management\s*$/im,
       /^leadership\s+and\s+governance\s*$/im,
-    ]),
+    ])),
 
     // ── New Nov-2025 format sections (not present in older reports) ────────
-    achievement: extractSection(text, [/^achievement\s*$/im]),
-    inclusion:   extractSection(text, [/^inclusion\s*$/im]),
+    achievement: cleanExtractedText(extractSection(text, [/^achievement\s*$/im])),
+    inclusion:   cleanExtractedText(extractSection(text, [/^inclusion\s*$/im])),
 
     // ── Improvement flags ─────────────────────────────────────────────────
     // Heading varies by report era:
@@ -2908,15 +2928,14 @@ function fmtOfstedSlim(ofsted, isIndependent) {
   // Narrative — cap at 3,000 chars (raised from 1,500 to avoid cutting SEN/SEND commentary).
   // Each section is capped independently so a long quality-of-education section
   // doesn't crowd out safeguarding or SEND observations lower in the report.
-  const NARRATIVE_CAP = 3000;
-  const addNarrative = (heading, text) => {
+  const addNarrative = (heading, text, maxChars = 3000) => {
     if (!text) return;
-    const snippet = text.length > NARRATIVE_CAP
-      ? text.slice(0, NARRATIVE_CAP).replace(/\s+\S*$/, '') + ' …_(truncated — full PDF: ' + (ofsted.reportUrl ?? 'see Ofsted site') + ')_'
+    const snippet = text.length > maxChars
+      ? text.slice(0, maxChars).replace(/\s+\S*$/, '') + ' …_(truncated — full PDF: ' + (ofsted.reportUrl ?? 'see Ofsted site') + ')_'
       : text;
     lines.push(`\n**${heading}**\n${snippet}`);
   };
-  addNarrative("What it's like to be a pupil", ofsted.pupilExperience);
+  addNarrative("What it's like to be a pupil", ofsted.pupilExperience, 500);   // short — AI should summarise key themes
   addNarrative('Quality of Education (detail)', ofsted.qualityOfEducationDetail?.length      > 100 ? ofsted.qualityOfEducationDetail      : null);
   addNarrative('Behaviour and Attitudes (detail)', ofsted.behaviourAndAttitudesDetail?.length > 100 ? ofsted.behaviourAndAttitudesDetail   : null);
   addNarrative('Personal Development (detail)', ofsted.personalDevelopmentDetail?.length     > 100 ? ofsted.personalDevelopmentDetail     : null);
