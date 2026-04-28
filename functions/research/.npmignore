@@ -5,5 +5,4 @@ venv/
 # Test fixtures and snapshots — not needed at runtime
 __tests__/
 
-# Markdown prompt source files — bundled separately if needed
-.md/
+# Developer docs only — NOT .md/ (prompt files are read at runtime by the Lambda)
