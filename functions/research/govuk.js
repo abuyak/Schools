@@ -3618,15 +3618,17 @@ export function renderPartA(school, flags = {}) {
         const RANK = { 'Outstanding': 4, 'Exceptional': 5, 'Good': 3, 'Requires Improvement': 2, 'Inadequate': 1 };
         const overallRank = RANK[ofsted.overall] ?? 3;
         const subGrades = [ofsted.qualityOfEducation, ofsted.behaviour, ofsted.personalDevelopment, ofsted.leadership, ofsted.sixth].filter(Boolean);
-        const weaker   = subGrades.filter(g => (RANK[g] ?? 3) < overallRank);
-        const standout = subGrades.filter(g => (RANK[g] ?? 3) > overallRank);
-        lines.push('');
-        if (weaker.length)
-          lines.push(`Verdict: overall ${ofsted.overall}, with weaker sub-grade${weaker.length > 1 ? 's' : ''} — ${weaker.join(', ')}.`);
-        else if (standout.length)
-          lines.push(`Verdict: a clean overall picture at ${ofsted.overall}; standout sub-grade${standout.length > 1 ? 's' : ''} — ${standout.join(', ')}.`);
-        else
-          lines.push(`Verdict: overall ${ofsted.overall} — all sub-grades at or near the same level.`);
+        if (subGrades.length) {
+          const weaker   = subGrades.filter(g => (RANK[g] ?? 3) < overallRank);
+          const standout = subGrades.filter(g => (RANK[g] ?? 3) > overallRank);
+          lines.push('');
+          if (weaker.length)
+            lines.push(`Verdict: overall ${ofsted.overall}, with weaker sub-grade${weaker.length > 1 ? 's' : ''} — ${weaker.join(', ')}.`);
+          else if (standout.length)
+            lines.push(`Verdict: a clean overall picture at ${ofsted.overall}; standout sub-grade${standout.length > 1 ? 's' : ''} — ${standout.join(', ')}.`);
+          else
+            lines.push(`Verdict: overall ${ofsted.overall} — all sub-grades at or near the same level.`);
+        }
       }
 
       body = lines.join('\n');
