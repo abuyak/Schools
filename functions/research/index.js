@@ -542,6 +542,10 @@ export const handler = async (event) => {
       ? renderPartA(govukSchool, partAFlags)
       : [];  // No school data — Part A will be empty; Call 2 can note this
 
+    // Deferred sections (e.g. A9 Pupil Experience) are held back from partial
+    // responses and only included in the full response when Call 2 succeeds.
+    const deferredPartA = partASections.filter(s => s._deferred);
+    const visiblePartA  = partASections.filter(s => !s._deferred);
 
     // ── Step 4: Call 2 — Part B + Part C ─────────────────────────────────────
     const call2Instructions = getBCInstructions(promptFile) + (govukBlock ? `\n\n${govukBlock}` : '');
@@ -584,7 +588,7 @@ export const handler = async (event) => {
           'The research provider could not complete the request.';
         log('research_request', { status: 'upstream_error', httpStatus: call2Res.status, branch: body.branch, model, ms: Date.now() - t0 });
         // Return partial result: Quick Take + visible Part A only (no deferred sections)
-        const partialSections = tagPartLabels(partASections);
+        const partialSections = tagPartLabels(visiblePartA);
         return okResponse({
           status: 'partial',
           httpStatus: 200,
@@ -601,7 +605,7 @@ export const handler = async (event) => {
     } catch (err) {
       const timedOut = err.name === 'TimeoutError' || err.message?.includes('timed out');
       log('research_request', { status: timedOut ? 'timeout' : 'upstream_error', branch: body.branch, model, ms: Date.now() - t0 });
-      const partialSections = tagPartLabels(partASections);
+      const partialSections = tagPartLabels(visiblePartA);
       return okResponse({
         status: 'partial',
         httpStatus: 200,
