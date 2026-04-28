@@ -17,7 +17,7 @@ const ALLOWED_BRANCHES = [
 
 const BRANCH_FILES = {
   prompt_branch_1: 'prompt_branch_1_specific_school_v2.md',
-  prompt_branch_2: 'prompt_branch_2_compare_schools.md',
+  prompt_branch_2: 'prompt_branch_2_compare_schools_v2.md',
   prompt_branch_3: 'prompt_branch_3_postcode_or_area.md',
   prompt_branch_4: 'prompt_branch_4_admissions_strategy.md',
 };
