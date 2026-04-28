@@ -195,3 +195,45 @@ Pre-process at deploy time:
 recommended. Newly opened schools (rare) would fall back to live search.
 
 **Done when:** URN resolution is served from the bundled index for >95% of queries.
+
+---
+
+## TD-009 · Parent View — no fallback to historical years when latest is unavailable
+**Severity:** Medium — schools inspected under old frameworks may have no Parent View data for the current year  
+**File:** `functions/research/govuk.js` → `fetchParentView()`
+
+**Problem:**  
+`fetchParentView()` fetches the Ofsted Parent View print page for a single academic year (currently hardcoded to `2024/2025`). If a school was last inspected under an older framework or the current year's data isn't published yet, the function returns `null` and the slim block shows `_Not retrieved_`. The AI then has to search for Parent View data itself — which usually fails because the Parent View site is JS-rendered.
+
+Parent View data is cumulative — Ofsted publishes MI spreadsheets with all historical responses per school going back to 2017/18. A school that hasn't been inspected recently still has valid historical responses.
+
+**Fix:**
+1. `fetchParentView(urn)` already parses the parentview.ofsted.gov.uk print page. When the latest year returns no data:
+   - Try the previous academic year (e.g. `2023/2024` → `2022/2023` etc.)
+   - Parse each year's print page until data is found
+   - Stop after 3 years of no data (older data has limited signal value)
+2. Alternatively, pre-process the full Parent View MI dataset at deploy time (same pattern as TD-006/TD-007) and serve from bundled JSON, keyed by `{urn}-{academicYear}`.
+
+**Done when:** `fetchParentView()` returns data for schools with historical (not just current-year) Parent View responses.
+
+---
+
+## TD-010 · Ofsted PDF — A9 pupil experience parsing sometimes too short or generic
+**Severity:** Medium — parent users primarily care about the pupil experience narrative  
+**File:** `functions/research/govuk.js` → `fetchAndParseOfstedPdf()` and `extractSection()`
+
+**Problem:**  
+`fetchAndParseOfstedPdf()` downloads the Ofsted PDF and extracts structured sections (pupil experience, quality of education, behaviour, etc.) via `extractSection()`, which uses heading-pattern matching. For some report formats:
+- The "pupil experience" section is captured as only 1–2 sentences when the PDF's actual pupil-experience narrative spans several pages
+- Older-format Ofsted reports (pre-2019) use different section headings that the patterns don't match, causing the entire section to be missed
+- The 3,000-char cap per narrative section can cut off important content mid-sentence for unusually detailed reports
+
+The A9 section ("What it's like to be a pupil") is the most-read section by parents — thin or missing content here disproportionately impacts perceived answer quality.
+
+**Fix:**
+1. Add fallback heading patterns for older Ofsted framework reports (pre-2019: "Quality of teaching, learning and assessment", "Outcomes for pupils", "Personal development, behaviour and welfare")
+2. When the extracted pupil-experience section is under 300 chars but the PDF is large (>200 KB), attempt a broader extraction: grab all text between the inspection findings heading and the next major section heading
+3. Raise the per-section cap from 3,000 to 5,000 chars for the pupil-experience section specifically (other sections stay at 3,000)
+4. Add an `extractAllNarrative()` fallback that extracts the full inspection findings text when per-section extraction yields too little content
+
+**Done when:** A9 section consistently contains 500+ chars of pupil-experience narrative for Ofsted reports that include it, and pre-2019 reports are parsed correctly.
