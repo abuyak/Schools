@@ -418,17 +418,39 @@ export function extractLocationHints(question) {
  * Regex-based extraction. Matches title-cased word sequences that end in a
  * recognised school-type suffix. Fast but misses short-form names ("Eton").
  */
-function extractNamesRegex(question) {
-  // Title-case the input so the pattern works for all-lowercase queries like
-  // "redriff primary se16" → "Redriff Primary Se16". The resulting match is
-  // already title-cased and safe to pass to GIAS search.
-  const normalised = question.replace(/\b\w/g, c => c.toUpperCase());
+// Common English words that should never be treated as school-name tokens
+// even when title-cased.  Keep this compact — false positives are worse than
+// false negatives because they make the regex greedily consume sentence words.
+const REGEX_STOP_WORDS = new Set([
+  'tell','told','asking','ask','know','think','about','what','how','where',
+  'which','who','when','can','could','would','should','please','me','us',
+  'i','a','an','the','in','on','at','to','for','or','but','with','from',
+  'by','my','our','your','its','is','was','are','be','been','have','has',
+  'had','do','does','did','will','shall','may','might','must','get',
+  'looking','wondering','check','find','good','best','near','nearby',
+  'local','area','there','here','it',
+]);
 
+function extractNamesRegex(question) {
   const pattern =
     /\b([A-Z][a-zA-Z'-]+(?:\s+(?:of|the|and|&|St\.?|Saint|de|la|les|upon|at)?\s*[A-Z][a-zA-Z'-]+){0,6}\s+(?:School|College|Academy|Grammar|Primary|Secondary|Prep|Preparatory|Infant|Junior|Senior|High|Upper|Lower|Middle|Foundation|Free\s+School|Sixth\s+Form|Nursery|Convent))\b/g;
 
-  const matches = [...normalised.matchAll(pattern)];
-  return [...new Set(matches.map(m => m[1].trim()))];
+  // First pass: try on the original question (handles already-capitalised input).
+  const matches1 = [...question.matchAll(pattern)];
+  if (matches1.length) return [...new Set(matches1.map(m => m[1].trim()))];
+
+  // Second pass: capitalise non-stop-words so the pattern can find school names
+  // in all-lowercase queries like "redriff primary se16".
+  // Stop-words are left as-is so "Tell me about Eton College" → only "Eton"
+  // is capitalised in the name-candidate area.
+  const normalised = question.replace(/\b([a-z][a-zA-Z'-]*)\b/g, (word) =>
+    REGEX_STOP_WORDS.has(word.toLowerCase())
+      ? word
+      : word.charAt(0).toUpperCase() + word.slice(1)
+  );
+
+  const matches2 = [...normalised.matchAll(pattern)];
+  return [...new Set(matches2.map(m => m[1].trim()))];
 }
 
 /**
@@ -557,7 +579,46 @@ export async function lookupSchoolURN(name, locationHints = []) {
     tiles.push({ urn, officialName: tileName, type, phase, la, address, postcode, outward, isIndependent, isOpen });
   }
 
-  if (!tiles.length) { glog('govuk_gias_no_result', { name }); return null; }
+  if (!tiles.length) {
+    // Zero tiles — retry with just the distinctive name part (strip school-type
+    // suffix like "Primary", "School", "Academy") so GIAS fuzzy search has a
+    // better chance of handling spelling variations (e.g. "Mickelfield" → "Micklefield").
+    const stripped = name
+      .replace(/\b(School|College|Academy|Grammar|Primary|Secondary|Prep|Preparatory|Infant|Junior|Senior|High|Upper|Lower|Middle|Foundation|Nursery|Convent|Sixth\s+Form|Free\s+School)\b/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    if (stripped && stripped.toLowerCase() !== name.toLowerCase()) {
+      glog('govuk_gias_retry', { name, stripped });
+      const url2 = `${GIAS_SEARCH}?TextSearchModel.Text=${encodeURIComponent(stripped)}&SelectedTab=Establishments`;
+      const html2 = await safeFetchText(url2);
+      if (html2) {
+        for (const tileMatch of html2.matchAll(tileRe)) {
+          const tile = tileMatch[1];
+          const linkMatch = tile.match(/href="\/Establishments\/Establishment\/Details\/(\d{5,7})[^"]*"[^>]*>\s*([^<]+?)\s*<\/a>/);
+          if (!linkMatch) continue;
+          const urn = linkMatch[1]; const tileName = linkMatch[2].trim();
+          const ptMatch = tile.match(/Phase\s*\/\s*type[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
+          const phaseTypeRaw = ptMatch ? ptMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
+          const parts = phaseTypeRaw ? phaseTypeRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+          const phase = parts[0] ?? null; const type = parts.slice(1).join(', ') || null;
+          const isIndependent = /independent/i.test(phaseTypeRaw ?? '');
+          const statusMatch = tile.match(/Status[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
+          const status = statusMatch ? statusMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
+          const isOpen = !status || /^open$/i.test(status);
+          const laMatch = tile.match(/Local\s+authority[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
+          const la = laMatch ? laMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
+          const addrMatch = tile.match(/Address[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
+          const address = addrMatch ? addrMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : null;
+          const tileText = tile.replace(/<[^>]+>/g, ' ');
+          const pcMatch = tileText.match(/\b([A-Z]{1,2}\d{1,2}[A-Z]?)\s*(\d[A-Z]{2})\b/);
+          const postcode = pcMatch ? `${pcMatch[1]}${pcMatch[2]}`.toLowerCase() : null;
+          const outward = pcMatch ? pcMatch[1].toLowerCase() : null;
+          tiles.push({ urn, officialName: tileName, type, phase, la, address, postcode, outward, isIndependent, isOpen });
+        }
+      }
+    }
+    if (!tiles.length) { glog('govuk_gias_no_result', { name }); return null; }
+  }
 
   // Score tiles by name similarity — higher is better.
   // Open schools get a +200 bonus so a closed school is never preferred
