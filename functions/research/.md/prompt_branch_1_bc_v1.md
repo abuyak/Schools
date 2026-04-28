@@ -151,7 +151,28 @@ Never write this section as a single prose paragraph.
 
 **Parent View data is pre-fetched — it appears in the Ofsted section of the pre-fetched block under "Ofsted Parent View".** Use it directly. Do not search for it.
 
-**Reproduce the full Parent View table exactly as it appears in the pre-fetched block** (all rows, percentages, and any ⚠️ flags). Include the academic year in the heading or first line — e.g. "Parent View 2024/25 — 127 responses". Then add 2–3 sentences of commentary calling out any ⚠️ flagged rows explicitly.
+**The body MUST start with a markdown table** using `|` syntax. Reproduce every row and percentage exactly as it appears in the pre-fetched block — this is a data table, not prose. Include the academic year and response count in the heading. Example body format:
+
+```
+Parent View 2024/25 — 127 responses
+
+| Question | % agree or strongly agree |
+|---|---:|
+| Would recommend this school | 94% |
+| My child is happy here | 96% |
+| My child feels safe | 93% ⚠️ |
+| Pupils are well behaved | 89% |
+| Bullying dealt with well | 78% ⚠️ |
+| School communicates well | 91% |
+| Concerns dealt with properly | 85% |
+| Acts in child's best interests | 92% |
+| Right support to learn | 88% |
+| SEND support | 76% |
+```
+
+After the table, add 2–3 bullet points of commentary calling out any ⚠️ flagged rows.
+
+Never replace the table with a prose summary. The table IS the content.
 
 Thresholds (already applied in the pre-fetched table — ⚠️ rows are already marked):
 - Would recommend: below 80%
