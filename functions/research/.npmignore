@@ -1,0 +1,9 @@
+# Python virtual environment — never include in Lambda package
+.venv/
+venv/
+
+# Test fixtures and snapshots — not needed at runtime
+__tests__/
+
+# Markdown prompt source files — bundled separately if needed
+.md/
