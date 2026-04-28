@@ -1410,14 +1410,20 @@ export async function getOfstedData(urn) {
   const date = dateInBlock ?? dateInTime;
 
   // ── Sub-grades ────────────────────────────────────────────────────────────
-  // <div class="subjudgements__rates__item">
-  //   <p>Quality of education:</p>
-  //   <strong>Good</strong>
-  // </div>
+  // Structure varies: <p>/<span>/<div> → label, then <strong> → grade.
+  // Tolerate intervening whitespace and elements between label and grade.
   const subGrades = {};
-  for (const m of html.matchAll(/<div[^>]*class="[^"]*subjudgements__rates__item[^"]*"[^>]*>\s*<p>([^<]+)<\/p>\s*<strong>([^<]+)<\/strong>/gi)) {
-    const label = m[1].replace(/:$/, '').trim().toLowerCase();
-    subGrades[label] = m[2].trim();
+  const itemRe = /<div[^>]*class="[^"]*subjudgements__rates__item[^"]*"[^>]*>([\s\S]*?)<\/div>/gi;
+  for (const m of html.matchAll(itemRe)) {
+    const block = m[1];
+    // Extract label from the first <p> or <span> or plain text before <strong>
+    const labelMatch = block.match(/<(?:p|span|div)[^>]*>([^<]+)<\/(?:p|span|div)>/i)
+      ?? block.match(/>([^<]{3,40})</i);
+    const gradeMatch = block.match(/<strong[^>]*>([^<]+)<\/strong>/i);
+    if (labelMatch && gradeMatch) {
+      const label = labelMatch[1].replace(/:$/, '').trim().toLowerCase();
+      subGrades[label] = gradeMatch[1].trim();
+    }
   }
 
   const g = (key) => subGrades[key] ?? null;
