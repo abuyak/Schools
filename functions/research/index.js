@@ -45,7 +45,7 @@ const OUTPUT_CONSTRAINTS = `
 - When a topic has a colon label (e.g. "11+ mechanics:", "Timing:", "Upside:"), write the label as a plain text line (no leading -) and put the details as bullet sub-points on the following lines. Never merge a label and its content into a single bullet.
 - For any comparison table section, write the body as a markdown table using | col | col | syntax with a separator row of |---|---|.
 - Every section object MUST include a "flag" field set to exactly one of: "red", "green", or "none". Apply the traffic-light rules below. When in doubt, use "none".
-- All Part B observation sections (B1–B9) MUST use bullet-point format (- item) for every observation. Never write a Part B section body as a single prose paragraph. Each finding or observation gets its own bullet. Group related bullets under bold sub-headings (- **Sub-heading**) where the section covers multiple themes.
+- **CRITICAL — Bullet points for observations:** Every section under Part B (headings starting B1–B9) and Part C MUST use bullet-point format. Never write a B/C section body as a prose paragraph. Each distinct finding, observation, or data point must be a separate "- " bullet. Group related bullets under bold-only bullet headers ("- **Theme name**"). This applies especially to: Community Verdict, Fit Verdict, Value Verdict, Character and Reputation, and all Observations sections. A single paragraph of prose in a B/C section is the most common quality failure.
 
 ## Traffic Light Rules
 
@@ -258,12 +258,16 @@ function parseOpenAIResponse(apiResponse) {
     return { status: 'upstream_invalid_format', httpStatus: 502, title: 'Unexpected upstream response', summary: 'The research provider returned a response that did not match the expected JSON format.', scorecard: [], sections: [{ heading: 'Raw output (first 400 chars)', body: outputText.slice(0, 400), flag: 'none' }] };
   }
 
-  // Collect web search sources
+  // Collect web search sources — check multiple possible response formats
   const sources = [];
   for (const item of (apiResponse.output ?? [])) {
-    if (item.type === 'web_search_call' && item.action?.sources) {
-      for (const s of item.action.sources) {
-        if (s.url) sources.push({ heading: s.title || s.url, body: s.url });
+    const srcs = item.action?.sources ?? item.sources ?? item.output_sources
+      ?? item.action?.web_search?.sources ?? null;
+    if (srcs && Array.isArray(srcs)) {
+      for (const s of srcs) {
+        if (s.url && !sources.some(e => e.body === s.url)) {
+          sources.push({ heading: s.title || s.url, body: s.url });
+        }
       }
     }
   }
@@ -622,19 +626,30 @@ export const handler = async (event) => {
     const call2Parsed = parseOpenAIResponse(call2Response);
     const bcSections  = call2Parsed.sections ?? [];
 
-    // Collect web search sources from Call 2
-    const call2Searches = (call2Response?.output ?? [])
-      .filter(item => item.type === 'web_search_call')
-      .map(item => item.action?.query ?? null)
-      .filter(Boolean);
-
-    // Extract all web search result URLs — both from web_search_call items
-    // and from any other output items that carry source annotations.
+    // Collect web search sources from Call 2.
+    // The OpenAI Responses API returns web search results in output items of
+    // type web_search_call. Each item's action.sources array contains the
+    // individual page results with url and title fields.
+    const call2Searches = [];
     const call2Sources = [];
     for (const item of (call2Response?.output ?? [])) {
-      const sources = item.action?.sources ?? item.sources ?? null;
-      if (sources) {
+      // Track search queries for trace logging
+      if (item.type === 'web_search_call' && item.action?.query) {
+        call2Searches.push(item.action.query);
+      }
+      // Extract source URLs from any output item that has them
+      const sources = item.action?.sources ?? item.sources ?? item.output_sources ?? null;
+      if (sources && Array.isArray(sources)) {
         for (const s of sources) {
+          if (s.url && !call2Sources.some(e => e.body === s.url)) {
+            call2Sources.push({ heading: s.title || s.url, body: s.url });
+          }
+        }
+      }
+      // Some API versions nest sources under action.web_search.sources
+      const wsSources = item.action?.web_search?.sources ?? null;
+      if (wsSources && Array.isArray(wsSources)) {
+        for (const s of wsSources) {
           if (s.url && !call2Sources.some(e => e.body === s.url)) {
             call2Sources.push({ heading: s.title || s.url, body: s.url });
           }
