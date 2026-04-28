@@ -627,9 +627,6 @@ export const handler = async (event) => {
     const bcSections  = call2Parsed.sections ?? [];
 
     // Collect web search sources from Call 2.
-    // The OpenAI Responses API returns web search results in output items of
-    // type web_search_call. Each item's action.sources array contains the
-    // individual page results with url and title fields.
     const call2Searches = [];
     const call2Sources = [];
     for (const item of (call2Response?.output ?? [])) {
@@ -637,8 +634,10 @@ export const handler = async (event) => {
       if (item.type === 'web_search_call' && item.action?.query) {
         call2Searches.push(item.action.query);
       }
-      // Extract source URLs from any output item that has them
-      const sources = item.action?.sources ?? item.sources ?? item.output_sources ?? null;
+      // Extract source URLs — the OpenAI API nests these in action.sources
+      // on web_search_call items
+      const sources = item.action?.sources ?? item.sources ?? item.output_sources
+        ?? item.action?.web_search?.sources ?? null;
       if (sources && Array.isArray(sources)) {
         for (const s of sources) {
           if (s.url && !call2Sources.some(e => e.body === s.url)) {
@@ -646,16 +645,20 @@ export const handler = async (event) => {
           }
         }
       }
-      // Some API versions nest sources under action.web_search.sources
-      const wsSources = item.action?.web_search?.sources ?? null;
-      if (wsSources && Array.isArray(wsSources)) {
-        for (const s of wsSources) {
-          if (s.url && !call2Sources.some(e => e.body === s.url)) {
-            call2Sources.push({ heading: s.title || s.url, body: s.url });
-          }
-        }
-      }
     }
+
+    // Debug: log the output item types and whether we found sources
+    const outputItemTypes = (call2Response?.output ?? []).map(item => ({
+      type: item.type,
+      hasActionSources: !!item.action?.sources,
+      hasSources: !!item.sources,
+      sourceCount: (item.action?.sources ?? item.sources ?? []).length,
+    }));
+    log('research_debug_sources', {
+      outputItemTypes,
+      call2SourcesFound: call2Sources.length,
+      call2SearchesFound: call2Searches.length,
+    });
 
     // Rename model's "Sources" section → "Primary Sources", append Secondary Sources
     let primarySourcesBody = null;
