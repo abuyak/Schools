@@ -45,6 +45,7 @@ const OUTPUT_CONSTRAINTS = `
 - When a topic has a colon label (e.g. "11+ mechanics:", "Timing:", "Upside:"), write the label as a plain text line (no leading -) and put the details as bullet sub-points on the following lines. Never merge a label and its content into a single bullet.
 - For any comparison table section, write the body as a markdown table using | col | col | syntax with a separator row of |---|---|.
 - Every section object MUST include a "flag" field set to exactly one of: "red", "green", or "none". Apply the traffic-light rules below. When in doubt, use "none".
+- All Part B observation sections (B1–B9) MUST use bullet-point format (- item) for every observation. Never write a Part B section body as a single prose paragraph. Each finding or observation gets its own bullet. Group related bullets under bold sub-headings (- **Sub-heading**) where the section covers multiple themes.
 
 ## Traffic Light Rules
 
@@ -627,25 +628,39 @@ export const handler = async (event) => {
       .map(item => item.action?.query ?? null)
       .filter(Boolean);
 
+    // Extract all web search result URLs — both from web_search_call items
+    // and from any other output items that carry source annotations.
     const call2Sources = [];
     for (const item of (call2Response?.output ?? [])) {
-      if (item.type === 'web_search_call' && item.action?.sources) {
-        for (const s of item.action.sources) {
-          if (s.url) call2Sources.push({ heading: s.title || s.url, body: s.url });
+      const sources = item.action?.sources ?? item.sources ?? null;
+      if (sources) {
+        for (const s of sources) {
+          if (s.url && !call2Sources.some(e => e.body === s.url)) {
+            call2Sources.push({ heading: s.title || s.url, body: s.url });
+          }
         }
       }
     }
 
-    // Rename B "Sources" section → "Primary Sources", append Secondary Sources
+    // Rename model's "Sources" section → "Primary Sources", append Secondary Sources
     let primarySourcesBody = null;
     for (const s of bcSections) {
-      if (/^sources?$/i.test(s.heading)) { s.heading = 'Primary Sources'; primarySourcesBody = s.body; break; }
+      if (/^sources?$/i.test(s.heading)) {
+        s.heading = 'Primary Sources';
+        primarySourcesBody = s.body;
+        break;
+      }
     }
-    if (call2Sources.length) {
-      const secondary = call2Sources
-        .filter(s => !primarySourcesBody || !primarySourcesBody.includes(s.body))
-        .map(s => `[${s.heading}](${s.body})`);
-      if (secondary.length) bcSections.push({ heading: 'Secondary Sources', body: secondary.join('\n'), flag: 'none' });
+    // Always append Secondary Sources if we have web search URLs, even if the
+    // model didn't produce a Primary Sources section.
+    const secondaryUrls = primarySourcesBody
+      ? call2Sources.filter(s => !primarySourcesBody.includes(s.body))
+      : call2Sources;
+    if (secondaryUrls.length) {
+      const body = secondaryUrls
+        .map(s => `[${s.heading}](${s.body})`)
+        .join('\n');
+      bcSections.push({ heading: 'Secondary Sources', body, flag: 'none' });
     }
 
     // ── Step 5: Assemble and return ───────────────────────────────────────────

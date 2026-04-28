@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 102055,
     "label": "state-secondary-sixth",
-    "capturedAt": "2026-04-28T15:22:58.191Z",
+    "capturedAt": "2026-04-28T16:00:05.171Z",
     "note": "KS4 + KS5 — grammar with sixth form"
   },
   "input": "The Latymer School",
@@ -36,7 +36,7 @@
     "safeguarding": null,
     "reportUrl": "https://files.ofsted.gov.uk/v1/file/50184328",
     "parentViewUrl": "https://parentview.ofsted.gov.uk/parent-view-results/urn/102055",
-    "pupilExperience": "Latymer School provides pupils with high-quality education. Pupils are supported to  aim high and achieve well academically in most subjects. Leaders have high  expectations of pupils’ learning and how pupils should conduct themselves. Pupils  have a strong work ethic and show commitment to their learning. They attend  school extremely well. \n \nPupils feel safe, are well cared for and happy at school. Pupils of all ages get on well  with each other. Leaders ensure that all pupils are treated equally. Pupils are polite  and respectful. They behave well and want to learn. Bullying is rare but when it  happens, staff deal with it quickly. \n \nPupils enjoy school life and play an active role. They take full advantage of the  extensive range of societies and clubs on offer. These include plentiful opportunities  to develop their musical and sporting talents as well as interests such as chess and  engineering. \n \nParents and carers are highly supportive of the school. The majority of pupils  continue their studies at the school’s sixth form. Here, students learn exceptionally  well and respond eagerly to the high expectations that staff have of them. \n \nWhat does the school do well and what does it need to do  better? \n \nLeaders have designed an ambitious curriculum for all pupils. Pupils study a broad  range of subjects, including different languages such as German, Latin, Russian and \nFrench. In Years 10 and 11, almost all pupils follow the English Baccalaureate suite  of subjects. In the sixth form, the demanding curriculum inspires students to  develop a rich understanding of their A-level subjects. Students achieve extremely  well. Most go on to the university or apprenticeship of their choice. \n \nThe curriculum is well planned and sequenced. Leaders have identified what pupils  need to know and how their knowledge builds over time. Pupils recall their previous  learning well. For example, pupils in Year 9 explored the theme of duplicity in \nEnglish, using their previous learning about how writers create mystery and tension. \nIn Years 7 to 11, leaders’ curriculum thinking in a few subjects is not as developed  as it is in all the others. This means that, while concepts are typically taught, some  teaching does not progressively reinforce and deepen pupils’ understanding of  essential ideas in these subjects. \n \nTeachers have strong subject knowledge and are enthusiastic about their subjects. \nIn most subjects, they check what pupils know and encourage them to use subject-\nspecific vocabulary accurately. However, this strength is not consistent across all  areas of the curriculum in Years 7 to 11. In some instances, teachers do not make  full use of assessment approaches to identify and address gaps in pupils’ knowledge. \n \n\n \n \n \n \n \nInspection report: The Latymer School \n24 and 25 March 2022 \n3 \n \n \nLeaders identify pupils with special educational needs and/or disabilities (SEND)  accurately. Leaders ensure that teachers have up-to-date knowledge of strategies to  support pupils with SEND. This helps to ensure that pupils with SEND have the same  access to the curriculum as their peers. \n \nLeaders prioritise reading across the curriculum. Teachers support and encourage  pupils to read widely. The school library is well resourced and a welcoming place for  pupils to sit and read. Pupils in Years 7 to 9 enjoy their dedicated library lessons. \nStaff provide well-tailored support to pupils who need extra help with their reading. \n \nPupils learn in an orderly environment. Pupils are positive about the school and  enjoy their learning. Sixth-form students act as role models for younger pupils. They  set up and run clubs for pupils across the school. Sixth-form students also provide  support to pupils in local primary schools. \n \nThe provision for pupils’ personal development is a particular strength of the school. \nStaff prepare pupils well for their future and help them to understand their role in  the wider world. Pupils have access to high-quality careers education, including work  experience. Pupils are taught about positive relationships and how to manage their  mental health and well-being. They have rich opportunities to debate, including on  matters such as sexuality, race, religion and climate change. Pupils are proud to take  on leadership responsibilities, including the recent Latymer Equalities Action Project. \n \nStaff said that leaders support them well. Leaders take staff workload into account  when they make decisions. Staff are proud to work at the school. Leaders and  governors provide staff with various opportunities for professional development. \nGovernors are well informed and know the school well. They are reflective and work  closely with leaders to improve the school.",
+    "pupilExperience": "Latymer School provides pupils with high-quality education. Pupils are supported to  aim high and achieve well academically in most subjects. Leaders have high  expectations of pupils’ learning and how pupils should conduct themselves. Pupils  have a strong work ethic and show commitment to their learning. They attend  school extremely well. \n \nPupils feel safe, are well cared for and happy at school. Pupils of all ages get on well  with each other. Leaders ensure that all pupils are treated equally. Pupils are polite  and respectful. They behave well and want to learn. Bullying is rare but when it  happens, staff deal with it quickly. \n \nPupils enjoy school life and play an active role. They take full advantage of the  extensive range of societies and clubs on offer. These include plentif",
     "nextSteps": "-  In Years 7 to 11, leaders’ curriculum thinking in a few subjects is developing  further. Although leaders have defined which concepts should be taught,  consideration has not been given to the order that these concepts should be  taught and revisited. Where this is the case, leaders should strengthen the  curriculum by ensuring that subject knowledge is taught sequentially and pupils’  understanding of essential knowledge deepens over time. \n-  Occasionally, in Years 7 to 11, teachers do not check pupils’ understanding of  previous learning carefully. This means that misconceptions are not identified and  addressed in a timely way. Leaders should ensure that staff implement the  assessment policy across the curriculum consistently and as intended.",
     "qualityOfEducationDetail": null,
     "behaviourAndAttitudesDetail": null,
@@ -3686,12 +3686,12 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 131,
+      "totalTransactions": 140,
       "postcodesQueried": 100,
-      "medianAllTypes": "£425,000",
+      "medianAllTypes": "£430,000",
       "byType": {
-        "Terraced": "£430,000",
-        "Flat / Maisonette": "£247,500",
+        "Terraced": "£435,000",
+        "Flat / Maisonette": "£240,000",
         "Semi-detached": "£470,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -3705,7 +3705,25 @@
       "year": "FYE 2018",
       "source": "ONS Small Area Income Estimates"
     },
-    "imd": null,
+    "imd": {
+      "lsoaCode": "E01001461",
+      "year": "2025",
+      "imdScore": 61.81,
+      "imdRank": 835,
+      "imdDecile": 1,
+      "subDomains": {
+        "Income": 1,
+        "Employment": 1,
+        "Education, Skills & Training": 1,
+        "Health & Disability": 3,
+        "Crime": 2,
+        "Barriers to Housing & Services": 1,
+        "Living Environment": 2
+      },
+      "population": 1605,
+      "populationYear": "2022",
+      "source": "MHCLG Indices of Multiple Deprivation 2025 via findthatpostcode.uk"
+    },
     "crystalRoof": {
       "qualifications": {
         "noQualifications": 34,

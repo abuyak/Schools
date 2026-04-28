@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 124987,
     "label": "state-infant",
-    "capturedAt": "2026-04-28T15:22:24.411Z",
+    "capturedAt": "2026-04-28T15:59:29.695Z",
     "note": "KS1 only — no KS2/KS4/KS5 data expected"
   },
   "input": "Earlswood Infant and Nursery School",
@@ -36,7 +36,7 @@
     "safeguarding": null,
     "reportUrl": "https://files.ofsted.gov.uk/v1/file/50246525",
     "parentViewUrl": "https://parentview.ofsted.gov.uk/parent-view-results/urn/124987",
-    "pupilExperience": "Pupils eagerly anticipate coming to this school. Sights are set high for pupils, and they  achieve well. They get a great start to their education in the Nursery, where adults  skilfully teach the curriculum with children’s interests in mind. Children quickly develop a  thirst for learning, fascinated by the captivating lessons and wider experiences their  teachers plan for them. They visit art galleries and museums and are inspired to find out  more about great artists and scientists. \n \nPupils are taught how to recognise their emotions and ways of staying calm such as  listening to music, peer massage or controlling their breathing. They know they can trust  adults to help them by talking openly about feelings of anger or sadness. As a result,  pupils live up to the school’s high expectations for behaviour and have excellent attitudes  to their learning. Right from the Nursery, children sustain long periods of concentration as  they explore and practise new concepts. As one parent put it: ‘Earlswood Infant and \nNursery School is a wonderful, nurturing environment where children feel welcome and  enjoy learning. It encourages them to be more independent and to work well with others.’ \n \nWhat does the school do well and what does it need to do better? \n \nThe school has a relentless focus on improving incrementally so that pupils can achieve  even more highly. Governors support the school to achieve its ambitious vision effectively. \nEveryone is committed to the plan for pupils’ personal development opportunities and  academic attainment. Staff are unanimously proud to be part of this school. \n \nThe school has worked hard to develop a broad and interesting curriculum which builds in  logical order from the Nursery to Year 2. As a result, all pupils, including those with  special educational needs and/or disabilities, learn the same ambitious curriculum and  achieve well. In many subjects, such as mathematics and science, the school has  identified the precise knowledge pupils need to build securely on what they have learned \n\n \n \n \n \n \nInspection report: Earlswood Infant and Nursery School \n12 and 13 March 2024 \n2 \n \n  before. From the Nursery, teachers focus on helping children learn the most important  knowledge about mathematics and the world, giving them opportunities to recap and  discuss it. Pupils commit their learning to long-term memory and can remember it in  detail. For example, they become fluent in mathematical operations and are able to  explain their thinking and reasoning about number problems. Teachers adapt activities so  they are precisely tailored to pupils’ learning needs. The school is further refining some  other subjects so that teachers know the exact knowledge that needs to be taught. In  mathematics and science, teachers use assessment systematically to check that pupils  understand the most important areas. In some other subjects, pupils do not learn as  securely because assessment is not used consistently well to help them with gaps in their  learning. \n \nStaff are knowledgeable about how young children develop. Teachers design activities  both inside and outdoors which stimulate pupils’ interests as they explore and discuss the  curriculum. Pupils independently find the resources they need to paint and make models. \nThey become confident to try out new ideas, building their understanding and resilience  as they get older. For example, in Reception, children learn about life cycles by predicting  how ducklings will hatch and how long beans will take to sprout. By Year 2, pupils know  how to carry out scientific tests as they consider what material would keep them dry in  the rain. The school has carefully considered the exact technical vocabulary pupils need to  understand. Teachers model new language expertly and pupils use it accurately when  talking about their learning. \n \nPhonics is taught consistently well. The school has worked hard to make sure that all staff  have the expertise they need to support struggling readers. Children practise listening  attentively in the Nursery, so they are ready to learn phonics in Reception. \nPupils enjoy reading. They are surrounded by captivating stories and poems which  teachers use to bring the curriculum to life. \n \nPupils’ personal development is a strong aspect of the school. Pupils contribute to the  school community by being elected pupil parliamentarians. They know the school’s values  and follow adults who lead by example through demonstrating respect and kindness. \nPupils learn how to stay safe on the internet, knowing never to share personal information  with strangers. Pupils learn that exercise, healthy food and sleep keep them healthy. \nPupils enjoy special curriculum events, such as science, technology, engineering and  mathematics (STEM) week. Visiting engineers and physicists inspire pupils, giving them  real-life insights into the curriculum and possible future careers.",
+    "pupilExperience": "Pupils eagerly anticipate coming to this school. Sights are set high for pupils, and they  achieve well. They get a great start to their education in the Nursery, where adults  skilfully teach the curriculum with children’s interests in mind. Children quickly develop a  thirst for learning, fascinated by the captivating lessons and wider experiences their  teachers plan for them. They visit art galleries and museums and are inspired to find out  more about great artists and scientists. \n \nPupils are taught how to recognise their emotions and ways of staying calm such as  listening to music, peer massage or controlling their breathing. They know they can trust  adults to help them by talking openly about feelings of anger or sadness. As a result,  pupils live up to the school’s high expecta",
     "nextSteps": "-  In some areas of the curriculum, the most important knowledge that pupils need to  know is not yet fully defined. As a result, pupils’ learning does not always build as",
     "qualityOfEducationDetail": null,
     "behaviourAndAttitudesDetail": null,
@@ -297,14 +297,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 269,
+      "totalTransactions": 307,
       "postcodesQueried": 100,
-      "medianAllTypes": "£433,000",
+      "medianAllTypes": "£430,000",
       "byType": {
-        "Semi-detached": "£485,000",
+        "Semi-detached": "£500,000",
         "Terraced": "£400,000",
-        "Flat / Maisonette": "£230,000",
-        "Detached": "£565,000"
+        "Flat / Maisonette": "£235,000",
+        "Detached": "£560,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
