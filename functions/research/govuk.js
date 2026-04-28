@@ -52,8 +52,12 @@ const GLOG_ALWAYS = new Set([
 
   // Hard failures — explain "_Not retrieved_" entries in the AI prompt block.
   // These fire at most once per school per data source, so noise is low.
-  'govuk_gias_fail',         // URN lookup HTTP error → identity missing
-  'govuk_ofsted_fail',       // Ofsted page HTTP error → grade missing
+  'govuk_gias_fail',               // URN lookup HTTP error → identity missing
+  'govuk_gias_location_retry',     // stripping suffix to find location-matched candidates
+  'govuk_ofsted_fail',             // Ofsted page HTTP error → grade missing
+  'govuk_parentview_ok',           // Parent View fetched successfully
+  'govuk_parentview_retry',        // Parent View retry on previous year
+  'govuk_parentview_empty',        // Parent View — no data in any recent year
   'govuk_pdf_import_fail',   // pdf-parse not bundled → narrative missing
   'govuk_pdf_empty',         // PDF fetched but parse returned no text
   'govuk_perf_fail',         // DfE CSV download failed → performance missing
@@ -1419,6 +1423,48 @@ export async function getOfstedData(urn) {
  *
  * Returns null if the school has no Parent View data or the fetch fails.
  */
+/**
+ * Parses a Parent View print page and returns structured question results.
+ * Returns null if the page has no data.
+ */
+function parseParentViewHtml(html) {
+  if (!html || !html.includes('question-result')) return null;
+
+  const totalMatch   = html.match(/Responses for this school[\s\S]*?<div class="field__item">(\d+)<\/div>/);
+  const yearStrMatch = html.match(/Responses for year[\s\S]*?<div class="field__item">([^<]+)<\/div>/);
+  const total        = totalMatch ? parseInt(totalMatch[1], 10) : 0;
+  const academicYear = yearStrMatch?.[1]?.trim() ?? null;
+
+  const questionBlocks = html.matchAll(
+    /<a[^>]+class="[^"]*question-result[^"]*"[^>]*>([^<]+)<\/a>[\s\S]{0,1200}?chd=t(%3A|:)([\d%2C,]+)/g,
+  );
+
+  const findPct = (text, ...keywords) =>
+    keywords.some(kw => text.toLowerCase().includes(kw.toLowerCase()));
+
+  const questions = {};
+  for (const m of questionBlocks) {
+    const qText  = m[1].replace(/^\d+\.\s*/, '').trim();
+    const chdRaw = decodeURIComponent(m[3]);
+    const vals   = chdRaw.split(',').map(v => parseInt(v, 10) || 0);
+    const agreeAndAbove = (vals[0] ?? 0) + (vals[1] ?? 0);
+
+    if      (findPct(qText, 'happy'))                             questions.childHappy      = agreeAndAbove;
+    else if (findPct(qText, 'feels safe', 'feel safe'))           questions.childSafe       = agreeAndAbove;
+    else if (findPct(qText, 'well behaved'))                      questions.wellBehaved     = agreeAndAbove;
+    else if (findPct(qText, 'bullied'))                           questions.bullyingHandled = agreeAndAbove;
+    else if (findPct(qText, 'communicates', 'aware of what'))     questions.communication   = agreeAndAbove;
+    else if (findPct(qText, 'concerns', 'worries'))               questions.concernsHandled = agreeAndAbove;
+    else if (findPct(qText, 'recommend'))                         questions.wouldRecommend  = vals[0] ?? agreeAndAbove;
+    else if (findPct(qText, 'best interests'))                    questions.bestInterests   = agreeAndAbove;
+    else if (findPct(qText, 'support', 'learn well'))             questions.rightSupport    = agreeAndAbove;
+    else if (findPct(qText, 'special educational'))               questions.sendSupport     = agreeAndAbove;
+  }
+
+  if (!total && !Object.keys(questions).length) return null;
+  return { totalResponses: total, academicYear, ...questions };
+}
+
 async function fetchParentView(urn) {
   if (!urn) return null;
 
@@ -1428,13 +1474,13 @@ async function fetchParentView(urn) {
       `https://parentview.ofsted.gov.uk/parent-view-results/urn/${urn}`,
       { redirect: 'manual', headers: { 'User-Agent': BROWSER_UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
     );
-    if (urnRes.status < 300 || urnRes.status >= 400) return null; // no redirect = no PV record
+    if (urnRes.status < 300 || urnRes.status >= 400) return null;
     const loc1 = urnRes.headers.get('location') ?? '';
     const pvIdMatch = loc1.match(/\/result\/(\d+)\/current/);
     if (!pvIdMatch) return null;
     const pvId = pvIdMatch[1];
 
-    // ── Step 2: PV ID → year code (via /current redirect) ──────────────────
+    // ── Step 2: PV ID → latest year code (via /current redirect) ───────────
     const currentRes = await fetch(
       `https://parentview.ofsted.gov.uk/parent-view-results/survey/result/${pvId}/current`,
       { redirect: 'manual', headers: { 'User-Agent': BROWSER_UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
@@ -1442,55 +1488,35 @@ async function fetchParentView(urn) {
     const loc2 = currentRes.headers.get('location') ?? '';
     const yearMatch = loc2.match(/\/result\/\d+\/(\d+)$/);
     if (!yearMatch) return null;
-    const yearCode = yearMatch[1];
+    const latestYearCode = parseInt(yearMatch[1], 10);
 
-    // ── Step 3: Fetch print page (no auth needed) ───────────────────────────
-    const html = await safeFetchText(
-      `https://parentview.ofsted.gov.uk/parent-view-results/survey/result-print/${pvId}/${yearCode}`,
-    );
-    if (!html || !html.includes('question-result')) return null;
+    // ── Step 3: Try current year, fall back to previous 3 years ────────────
+    // Parent View year codes are numeric survey-cycle IDs. If the latest year
+    // has no data (school last inspected under an older framework, or data
+    // not yet published), walk backwards to find any available data.
+    // Stop after 3 misses — older data has diminishing signal value.
+    for (let offset = 0; offset <= 3; offset++) {
+      const yearCode = latestYearCode - offset;
+      if (yearCode <= 0) break;
 
-    // ── Step 4: Parse metadata ──────────────────────────────────────────────
-    const totalMatch   = html.match(/Responses for this school[\s\S]*?<div class="field__item">(\d+)<\/div>/);
-    const yearStrMatch = html.match(/Responses for year[\s\S]*?<div class="field__item">([^<]+)<\/div>/);
-    const total        = totalMatch ? parseInt(totalMatch[1], 10) : 0;
-    const academicYear = yearStrMatch?.[1]?.trim() ?? null;
-
-    // ── Step 5: Parse question results from chart image URLs ────────────────
-    // Pattern: <a ...class="...question-result...">QUESTION TEXT</a>
-    //   …followed shortly by… <img src="https://image-charts.com/...chd=t%3ASA%2CA%2CD%2CSD%2CDK...">
-    // chd values are URL-encoded: %3A = ':', %2C = ','
-    // First two values are Strongly Agree% and Agree% (order: SA, A, D, SD, DK, N/A)
-    const questionBlocks = html.matchAll(
-      /<a[^>]+class="[^"]*question-result[^"]*"[^>]*>([^<]+)<\/a>[\s\S]{0,1200}?chd=t(%3A|:)([\d%2C,]+)/g,
-    );
-
-    const findPct = (text, ...keywords) =>
-      keywords.some(kw => text.toLowerCase().includes(kw.toLowerCase()));
-
-    const questions = {};
-    for (const m of questionBlocks) {
-      const qText  = m[1].replace(/^\d+\.\s*/, '').trim();
-      const chdRaw = decodeURIComponent(m[3]);               // e.g. "76,20,1,2,0,0"
-      const vals   = chdRaw.split(',').map(v => parseInt(v, 10) || 0);
-      const agreeAndAbove = (vals[0] ?? 0) + (vals[1] ?? 0); // SA + A
-
-      if      (findPct(qText, 'happy'))                             questions.childHappy      = agreeAndAbove;
-      else if (findPct(qText, 'feels safe', 'feel safe'))           questions.childSafe       = agreeAndAbove;
-      else if (findPct(qText, 'well behaved'))                      questions.wellBehaved     = agreeAndAbove;
-      else if (findPct(qText, 'bullied'))                           questions.bullyingHandled = agreeAndAbove;
-      else if (findPct(qText, 'communicates', 'aware of what'))     questions.communication   = agreeAndAbove;
-      else if (findPct(qText, 'concerns', 'worries'))               questions.concernsHandled = agreeAndAbove;
-      else if (findPct(qText, 'recommend'))                         questions.wouldRecommend  = vals[0] ?? agreeAndAbove; // Q10 is Yes/No; first value = Yes%
-      else if (findPct(qText, 'best interests'))                    questions.bestInterests   = agreeAndAbove;
-      else if (findPct(qText, 'support', 'learn well'))             questions.rightSupport    = agreeAndAbove;
-      else if (findPct(qText, 'special educational'))               questions.sendSupport     = agreeAndAbove;
+      const html = await safeFetchText(
+        `https://parentview.ofsted.gov.uk/parent-view-results/survey/result-print/${pvId}/${yearCode}`,
+      );
+      const result = parseParentViewHtml(html);
+      if (result) {
+        glog('govuk_parentview_ok', {
+          urn, pvId, yearCode, academicYear: result.academicYear,
+          total: result.totalResponses, fallback: offset > 0 ? `-${offset}y` : null,
+        });
+        return result;
+      }
+      if (offset > 0) {
+        glog('govuk_parentview_retry', { urn, pvId, yearCode, offset });
+      }
     }
 
-    if (!total && !Object.keys(questions).length) return null;
-
-    glog('govuk_parentview_ok', { urn, pvId, yearCode, academicYear, total });
-    return { totalResponses: total, academicYear, ...questions };
+    glog('govuk_parentview_empty', { urn, pvId, latestYearCode });
+    return null;
 
   } catch (err) {
     glog('govuk_parentview_fail', { urn, error: err.message });
