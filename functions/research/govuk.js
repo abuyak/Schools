@@ -422,13 +422,27 @@ export function extractLocationHints(question) {
 // even when title-cased.  Keep this compact — false positives are worse than
 // false negatives because they make the regex greedily consume sentence words.
 const REGEX_STOP_WORDS = new Set([
-  'tell','told','asking','ask','know','think','about','what','how','where',
-  'which','who','when','can','could','would','should','please','me','us',
-  'i','a','an','the','in','on','at','to','for','or','but','with','from',
-  'by','my','our','your','its','is','was','are','be','been','have','has',
-  'had','do','does','did','will','shall','may','might','must','get',
-  'looking','wondering','check','find','good','best','near','nearby',
-  'local','area','there','here','it',
+  // pronouns / determiners
+  'i','me','my','we','us','our','you','your','he','she','his','her','they',
+  'them','their','it','its','this','that','these','those',
+  // common verbs / auxiliaries
+  'am','is','are','was','were','be','been','being',
+  'have','has','had','do','does','did','will','shall','would','should',
+  'could','may','might','must','can','get','got','go','goes','went',
+  // question / request words
+  'what','which','who','whom','whose','when','where','how','why',
+  'please','tell','told','ask','asked','asking','know','think','thought',
+  'wonder','wondering','check','find','looking','want','need','like','liked',
+  // prepositions / conjunctions
+  'a','an','the','in','on','at','to','for','of','or','and','but','nor',
+  'with','from','by','about','into','onto','upon','near','nearby',
+  'close','around','between','across','over','under','after','before',
+  // common adjectives / adverbs that are never school-name tokens
+  'good','best','great','really','very','quite','just','also','too','so',
+  'there','here','yes','no','not','only','even','still','now','then',
+  // misc sentence filler
+  'well','right','sure','okay','ok','up','its','it\'s','there\'s',
+  'local','area','child','kid','son','daughter','us','them',
 ]);
 
 function extractNamesRegex(question) {
