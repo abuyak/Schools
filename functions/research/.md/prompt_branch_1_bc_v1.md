@@ -75,13 +75,15 @@ Required searches (run all now):
 
 ### **A3. Observations**
 
-One short paragraph flagging whether the improvement requirement is minor or systemic, and what it means in practice for a prospective parent. If there are no improvement requirements, output this section with body: `_No improvement requirements — school inspected without any action points._` and flag `none`.
+2–4 bullet points. If there are no improvement requirements, output: `_No improvement requirements — school inspected without any action points._` and flag `none`. Otherwise cover:
+- Whether the requirement is minor and targeted or systemic
+- What it means in practice for a prospective parent (especially for SEND, behaviour, curriculum, or leadership concerns)
 
 ---
 
 ### **A4. Observations**
 
-2–3 sentences covering:
+2–4 bullet points covering:
 - How FSM and EAL levels compare to national norms and what they imply about the intake
 - Whether SEN provision appears resourced (note if EHC% is above or below the national ~4.5%)
 - Any notable gap between school ethnicity and area ethnicity (compare A4 pupil data to A8 area data)
@@ -90,7 +92,7 @@ One short paragraph flagging whether the improvement requirement is minor or sys
 
 ### **A5. Observations**
 
-2–3 sentences covering:
+2–4 bullet points covering:
 - Overall attainment strength relative to national and local benchmarks
 - Progress scores if present — above/well above/below national and what that implies
 - Any notable trend from the multi-year data or cohort size caveat (flag if cohort below 30)
@@ -100,13 +102,13 @@ One short paragraph flagging whether the improvement requirement is minor or sys
 
 ### **A6. Observations**
 
-1–2 sentences: are absence figures strong, weak, or average vs national? Note if persistent absence is particularly high or low as it is a stronger signal than overall absence.
+2–3 bullet points: are absence figures strong, weak, or average vs national? Note if persistent absence is particularly high or low as it is a stronger signal than overall absence.
 
 ---
 
 ### **A7. Observations**
 
-2–3 sentences covering:
+2–4 bullet points covering:
 - Whether spend per pupil is notably above or below the comparator average and what that might signal
 - In-year balance — note a deficit explicitly if present; note strong reserves as a stabilising factor
 - QTS% and pupil:teacher ratio relative to comparators
@@ -115,10 +117,16 @@ One short paragraph flagging whether the improvement requirement is minor or sys
 
 ### **A8. Observations**
 
-2–3 sentences covering:
+2–4 bullet points covering:
 - Deprivation context (IMD decile) and what it means for the school's operating environment
 - Income and housing profile — is this a mixed, affluent, or deprived catchment?
 - Whether the school's FSM/EAL intake matches or diverges from the surrounding area profile
+
+---
+
+### **A9. What It's Like to Be a Pupil**
+
+4–6 bullet points summarising the Ofsted pupil experience narrative from the pre-fetched block. Cover: atmosphere and culture, behaviour, SEND or pastoral notes, enrichment highlights. Flag `none`. Do not reproduce full sentences verbatim — distil into crisp bullets a parent can scan in 30 seconds.
 
 ---
 

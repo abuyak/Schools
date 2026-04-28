@@ -240,10 +240,13 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
   const text = fullText
     .replace(/\r\n/g, '\n')
     .replace(/[ \t]+/g, ' ')
-    // Strip Ofsted PDF page headers that appear inline in extracted text.
-    // Pattern: "Inspection report: [School Name]\n[date line]\n[page number]\n"
-    // The date line contains a 4-digit year; the page number is digits only.
-    .replace(/\n+Inspection report:[^\n]+\n+[^\n]*\d{4}[^\n]*\n+\d+\n+/g, '\n')
+    // After horizontal-whitespace collapse, blank lines may be "\n \n" (space between).
+    // Normalise them to true blank lines so the page-header regex can match.
+    .replace(/^ +$/mg, '')
+    // Strip Ofsted PDF page headers that appear inline in the extracted text.
+    // Pattern (Ofsted standard): "Inspection report: [School Name]\n[date line]\n[page number]"
+    // The date line contains a 4-digit year; the page number is 1–3 digits only.
+    .replace(/Inspection report:[^\n]+\n+[^\n]*\d{4}[^\n]*\n+\d{1,3}\n*/g, '')
     .replace(/([^\n.!?:—\-•])\n(?=[a-z,;(])/g, '$1 ');
 
   return {
@@ -617,9 +620,11 @@ export async function getGIASDetails(urn) {
   const LABEL_MAP = {
     'postcode':                                  'postcode',
     'headteacher':                              'headteacher',
+    'headteacher / principal':                  'headteacher',
     'headteacher (head of institution)':        'headteacher',
     'head teacher':                             'headteacher',
     'head teacher (full name)':                 'headteacher',
+    'principal':                                'headteacher',
     'local authority':                  'la',
     'school capacity':                  'capacity',
     'number of pupils on roll':         'numberOnRoll',
@@ -2888,8 +2893,11 @@ ${fmtFinancial(financial)}
 ### Inspection Outcomes (Ofsted)
 ${fmtOfstedSlim(ofsted, identity?.isIndependent ?? false)}
 
-### A4 — What the School Needs to Improve (verbatim from Ofsted PDF — reproduce exactly in A4 section)
+### A3 — What the School Needs to Improve (verbatim from Ofsted PDF — reproduce exactly in A3 section)
 ${identity?.isIndependent ? '_Independent school — not applicable._' : ofsted?.nextSteps ? ofsted.nextSteps : ofsted?.overall ? `_No improvement requirements stated. Ofsted grade: ${ofsted.overall}._` : '_Not retrieved — link to full Ofsted PDF if available._'}
+
+### A9 — What It's Like to Be a Pupil (Ofsted PDF narrative — write a 4–6 bullet summary for A9 section)
+${identity?.isIndependent ? '_Independent school — see ISI inspection report._' : ofsted?.pupilExperience ?? '_Not extracted from Ofsted PDF._'}
 
 ### School Pupil Ethnicity (DfE Census)
 ${fmtSchoolEthnicitySlim(schoolEthnicity)}
@@ -3361,20 +3369,8 @@ export function renderPartA(school, flags = {}) {
     sections.push({ heading: 'A2. Ofsted Inspection Grades', body, flag: flags['A2. Ofsted Inspection Grades'] ?? 'none' });
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // A9. What It's Like to Be a Pupil  (deferred — shown only after Call 2)
-  // Built here (data is available), pushed to sections array at the END.
-  // ────────────────────────────────────────────────────────────────────────────
-  let _pupilExperienceBody;
-  {
-    if (isIndependent) {
-      _pupilExperienceBody = '_Independent school — see ISI inspection report for pupil experience narrative._';
-    } else if (ofsted?.pupilExperience) {
-      _pupilExperienceBody = ofsted.pupilExperience;
-    } else {
-      _pupilExperienceBody = `_Not extracted from Ofsted PDF.${ofsted?.reportUrl ? ` [View full report](${ofsted.reportUrl})` : ''}_`;
-    }
-  }
+  // A9 "What It's Like to Be a Pupil" is NOT server-rendered — it is produced
+  // by Call 2 (model-generated summary from the Ofsted narrative in the slim block).
 
   // ────────────────────────────────────────────────────────────────────────────
   // A3. What the School Needs to Improve  (was A4)
@@ -3511,11 +3507,13 @@ export function renderPartA(school, flags = {}) {
           .map(([k, pct]) => `${k} ${Math.round(pct)}%`).join(' · ');
       }
 
+      const areaLabel = area.district ?? identity?.la ?? null;
       const lines = [
+        ...(areaLabel ? [`_${areaLabel} — data for the local area around the school_`, ''] : []),
         '| Metric | Value |',
         '|---|---|',
-        `| Household income (mean gross, MSOA) | ${crInc?.meanAnnualHouseholdIncome ?? '—'} |`,
-        `| Median property price (~800m radius) | ${pp?.medianAllTypes ?? '—'} |`,
+        `| Household income (mean gross) | ${crInc?.meanAnnualHouseholdIncome ?? '—'} |`,
+        `| Median property price (~0.5 mile radius, last 5 years) | ${pp?.medianAllTypes ?? '—'} |`,
         `| Deprivation — Index of Multiple Deprivation (IMD) decile (1=most deprived, 10=least) | ${imd?.imdDecile != null ? `${imd.imdDecile}/10` : '—'} |`,
         `| Ethnicity breakdown | ${ethSummary} |`,
       ];
@@ -3526,11 +3524,6 @@ export function renderPartA(school, flags = {}) {
     }
     sections.push({ heading: 'A8. Area Profile', body, flag: flags['A8. Area Profile'] ?? 'none' });
   }
-
-  // ────────────────────────────────────────────────────────────────────────────
-  // A9. What It's Like to Be a Pupil  (deferred — pushed last, hidden until Call 2)
-  // ────────────────────────────────────────────────────────────────────────────
-  sections.push({ heading: "A9. What It's Like to Be a Pupil", body: _pupilExperienceBody, flag: 'none', _deferred: true });
 
   // Tag the first section with the Part A label so the UI renders the divider
   if (sections.length > 0) sections[0]._partLabel = 'Part A — Official Record';
