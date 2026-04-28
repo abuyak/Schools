@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 102055,
     "label": "state-secondary-sixth",
-    "capturedAt": "2026-04-28T07:03:57.419Z",
+    "capturedAt": "2026-04-28T15:22:58.191Z",
     "note": "KS4 + KS5 — grammar with sixth form"
   },
   "input": "The Latymer School",
@@ -3686,12 +3686,12 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 169,
+      "totalTransactions": 131,
       "postcodesQueried": 100,
       "medianAllTypes": "£425,000",
       "byType": {
-        "Terraced": "£436,000",
-        "Flat / Maisonette": "£240,000",
+        "Terraced": "£430,000",
+        "Flat / Maisonette": "£247,500",
         "Semi-detached": "£470,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -3705,25 +3705,7 @@
       "year": "FYE 2018",
       "source": "ONS Small Area Income Estimates"
     },
-    "imd": {
-      "lsoaCode": "E01001461",
-      "year": "2025",
-      "imdScore": 61.81,
-      "imdRank": 835,
-      "imdDecile": 1,
-      "subDomains": {
-        "Income": 1,
-        "Employment": 1,
-        "Education, Skills & Training": 1,
-        "Health & Disability": 3,
-        "Crime": 2,
-        "Barriers to Housing & Services": 1,
-        "Living Environment": 2
-      },
-      "population": 1605,
-      "populationYear": "2022",
-      "source": "MHCLG Indices of Multiple Deprivation 2025 via findthatpostcode.uk"
-    },
+    "imd": null,
     "crystalRoof": {
       "qualifications": {
         "noQualifications": 34,

@@ -30,6 +30,7 @@ import {
 } from '../govuk.js';
 
 import { getSchoolEthnicity } from '../local-data.js';
+import { getISIInspection } from '../independent.js';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const FIXTURES_DIR  = join(__dir, 'fixtures');
@@ -136,24 +137,41 @@ async function captureOne(school) {
   if (giasDetails) ok(`GIAS: capacity ${giasDetails.capacity ?? '—'}`);
   else nil('GIAS detail not retrieved');
 
-  // 3. Ofsted base
-  const ofstedBase = identity.isIndependent ? null : await getOfstedData(urn).catch(() => null);
-  if (identity.isIndependent) nil('Independent — Ofsted not applicable');
-  else if (ofstedBase) ok(`Ofsted: ${ofstedBase.overall} (${ofstedBase.date})`);
-  else nil('Ofsted not retrieved');
+  // 3. Inspection data — Ofsted for state, ISI for independent
+  let ofstedBase = null;
+  if (identity.isIndependent) {
+    ofstedBase = await getISIInspection(urn, identity.officialName).catch(() => null);
+    if (ofstedBase) ok(`ISI: ${ofstedBase.overall} (${ofstedBase.date})`);
+    else nil('ISI inspection not retrieved');
+  } else {
+    ofstedBase = await getOfstedData(urn).catch(() => null);
+    if (ofstedBase) ok(`Ofsted: ${ofstedBase.overall} (${ofstedBase.date})`);
+    else nil('Ofsted not retrieved');
+  }
 
-  // 4. PDF + performance + financial + Parent View — parallel
+  // 4. PDF + performance + financial — in parallel
+  // Independent schools: ISI PDF already parsed by getISIInspection (narrative is in ofstedBase)
   const [pdfSections, performance, financial] = await Promise.all([
-    ofstedBase?.reportUrl ? fetchAndParseOfstedPdf(ofstedBase.reportUrl).catch(() => null) : Promise.resolve(null),
+    (!identity.isIndependent && ofstedBase?.reportUrl)
+      ? fetchAndParseOfstedPdf(ofstedBase.reportUrl).catch(() => null)
+      : Promise.resolve(null),
     getPerformanceData(urn).catch(() => null),
-    getFinancialData(urn).catch(() => null),
+    identity.isIndependent ? Promise.resolve(null) : getFinancialData(urn).catch(() => null),
   ]);
 
-  if (pdfSections) ok(`PDF: pupilExperience ${pdfSections.pupilExperience?.length ?? 0} chars`);
-  else nil('PDF not parsed');
+  if (identity.isIndependent) {
+    if (ofstedBase?.keyFindings) ok(`ISI key findings: ${ofstedBase.keyFindings.length} chars`);
+    else nil('ISI key findings not extracted');
+    nil('PDF: ISI narrative already in ofstedBase (not separate pdfSections)');
+  } else if (pdfSections) {
+    ok(`PDF: pupilExperience ${pdfSections.pupilExperience?.length ?? 0} chars`);
+  } else {
+    nil('PDF not parsed');
+  }
   if (performance) ok(`Performance: ${Object.keys(performance).join(', ')}`);
   else nil('Performance not retrieved');
-  if (financial) ok(`Financial: spend/pupil ${financial.totalSpendPerPupil ?? '—'}`);
+  if (identity.isIndependent) nil('Financial: not available for independent schools');
+  else if (financial) ok(`Financial: spend/pupil ${financial.totalSpendPerPupil ?? '—'}`);
   else nil('Financial not retrieved');
 
   // 5. Area data — postcode from DfE CSV, falling back to identity.postcode (GIAS search tile)
@@ -186,18 +204,22 @@ async function captureOne(school) {
   else nil('Ethnicity index: URN not in bundle');
 
   // 8. Assemble ofsted object (mirrors fetchGovDataForPrompt)
-  const ofsted = ofstedBase ? {
-    ...ofstedBase,
-    pupilExperience:               pdfSections?.pupilExperience         ?? null,
-    qualityOfEducationDetail:      pdfSections?.qualityOfEducation      ?? null,
-    behaviourAndAttitudesDetail:   pdfSections?.behaviourAndAttitudes   ?? null,
-    personalDevelopmentDetail:     pdfSections?.personalDevelopment     ?? null,
-    leadershipAndManagementDetail: pdfSections?.leadershipAndManagement ?? null,
-    achievementDetail:             pdfSections?.achievement             ?? null,
-    inclusionDetail:               pdfSections?.inclusion               ?? null,
-    nextSteps:                     pdfSections?.nextSteps               ?? null,
-    parentView:                    null,  // not fetched in capture — add if needed
-  } : null;
+  // For independent schools, ISI data already includes narrative fields.
+  // For state schools, merge the Ofsted PDF sections.
+  const ofsted = identity.isIndependent
+    ? ofstedBase  // ISI data is self-contained
+    : ofstedBase ? {
+        ...ofstedBase,
+        pupilExperience:               pdfSections?.pupilExperience         ?? null,
+        qualityOfEducationDetail:      pdfSections?.qualityOfEducation      ?? null,
+        behaviourAndAttitudesDetail:   pdfSections?.behaviourAndAttitudes   ?? null,
+        personalDevelopmentDetail:     pdfSections?.personalDevelopment     ?? null,
+        leadershipAndManagementDetail: pdfSections?.leadershipAndManagement ?? null,
+        achievementDetail:             pdfSections?.achievement             ?? null,
+        inclusionDetail:               pdfSections?.inclusion               ?? null,
+        nextSteps:                     pdfSections?.nextSteps               ?? null,
+        parentView:                    null,
+      } : null;
 
   const schoolObj = { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails };
 
