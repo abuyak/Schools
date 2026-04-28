@@ -16,6 +16,7 @@
  */
 
 import { getSchoolEthnicity } from './local-data.js';
+import { getISIInspection, getIndependentFees } from './independent.js';
 
 const FETCH_TIMEOUT_MS      =  8000;  // standard HTML / JSON fetches
 const FETCH_TIMEOUT_LONG_MS = 20000;  // binary / ZIP downloads (FBIT census, DfE performance)
@@ -3160,19 +3161,39 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
         return { input: name, identity: null, ofsted: null, performance: null, financial: null };
       }
 
-      // Phase 1: Ofsted HTML scrape (fast, no PDF)
-      const ofstedBase = identity.isIndependent ? null : await getOfstedData(urn);
+      // Phase 1: Inspection data — Ofsted for state schools, ISI for independent
+      let ofstedBase;
+      if (identity.isIndependent && detailed) {
+        ofstedBase = await getISIInspection(urn, identity.officialName);
+      } else if (!identity.isIndependent) {
+        ofstedBase = await getOfstedData(urn);
+      } else {
+        ofstedBase = null;
+      }
 
-      // Phase 2: PDF + performance + financial + Parent View + GIAS detail — all in parallel
+      // Phase 2: PDF narrative + performance + financial + Parent View + GIAS detail — all in parallel
+      // Independent schools: ISI PDF is already parsed by getISIInspection above,
+      // so ofstedBase already contains the narrative fields.
+      // State schools: fetch Ofsted PDF if we have a report URL.
       const [pdfSections, performance, financial, parentView, giasDetails] = await Promise.all([
-        detailed && ofstedBase?.reportUrl
+        (detailed && ofstedBase?.reportUrl && !identity.isIndependent)
           ? fetchAndParseOfstedPdf(ofstedBase.reportUrl)
           : Promise.resolve(null),
         getPerformanceData(urn),
-        getFinancialData(urn),
+        identity.isIndependent ? Promise.resolve(null) : getFinancialData(urn),
         identity.isIndependent ? Promise.resolve(null) : fetchParentView(urn),
         getGIASDetails(urn),
       ]);
+
+      // Phase 2b: Independent school fees (needs giasDetails from the parallel batch above)
+      let feesResult = null;
+      if (identity.isIndependent && detailed) {
+        const d = giasDetails;
+        const website = d?.website;
+        feesResult = website
+          ? await getIndependentFees(identity.officialName, website)
+          : null;
+      }
 
       // Phase 3: area data — postcode comes from DfE CSV (PCODE in phase-specific namespace, e.g. KS2_25).
       // Fall back to identity.postcode (from GIAS search tile — always present when URN resolves)
