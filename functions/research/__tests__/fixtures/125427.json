@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125427,
     "label": "independent-secondary",
-    "capturedAt": "2026-04-26T23:23:18.616Z",
+    "capturedAt": "2026-04-28T07:04:10.519Z",
     "note": "Independent secondary — fees, ISI, no DfE data"
   },
   "input": "Caterham School",
@@ -1068,6 +1068,7 @@
   "area": {
     "postcode": "CR3 6YA",
     "district": "Tandridge",
+    "laCode": "E10000030",
     "region": "South East",
     "lsoa": "E01030828",
     "msoa": "E02006431",
@@ -1091,13 +1092,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 81,
+      "totalTransactions": 183,
       "postcodesQueried": 74,
-      "medianAllTypes": "£736,000",
+      "medianAllTypes": "£710,000",
       "byType": {
-        "Flat / Maisonette": "£387,000",
-        "Detached": "£950,000",
-        "Semi-detached": "£680,000"
+        "Flat / Maisonette": "£340,000",
+        "Detached": "£989,668",
+        "Semi-detached": "£680,000",
+        "Terraced": "£672,500"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -1155,6 +1157,7 @@
       }
     }
   },
+  "laPerf": null,
   "schoolEthnicity": {
     "w": 0,
     "m": 0,

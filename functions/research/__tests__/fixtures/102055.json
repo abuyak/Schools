@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 102055,
     "label": "state-secondary-sixth",
-    "capturedAt": "2026-04-26T23:23:07.021Z",
+    "capturedAt": "2026-04-28T07:03:57.419Z",
     "note": "KS4 + KS5 — grammar with sixth form"
   },
   "input": "The Latymer School",
@@ -3658,6 +3658,7 @@
   "area": {
     "postcode": "N9 9TN",
     "district": "Enfield",
+    "laCode": "E09000010",
     "region": "London",
     "lsoa": "E01001461",
     "msoa": "E02000303",
@@ -3685,12 +3686,12 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 104,
+      "totalTransactions": 169,
       "postcodesQueried": 100,
-      "medianAllTypes": "£427,867",
+      "medianAllTypes": "£425,000",
       "byType": {
-        "Terraced": "£430,000",
-        "Flat / Maisonette": "£250,000",
+        "Terraced": "£436,000",
+        "Flat / Maisonette": "£240,000",
         "Semi-detached": "£470,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -3749,6 +3750,7 @@
       }
     }
   },
+  "laPerf": null,
   "schoolEthnicity": {
     "w": 33,
     "m": 21,

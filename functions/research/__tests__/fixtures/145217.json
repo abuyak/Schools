@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 145217,
     "label": "state-secondary",
-    "capturedAt": "2026-04-26T23:22:43.559Z",
+    "capturedAt": "2026-04-28T07:03:43.027Z",
     "note": "KS4 only — Attainment 8, Progress 8, EBacc"
   },
   "input": "Reigate School",
@@ -1899,6 +1899,7 @@
   "area": {
     "postcode": "RH2 7NT",
     "district": "Reigate and Banstead",
+    "laCode": "E10000030",
     "region": "South East",
     "lsoa": "E01030594",
     "msoa": "E02006387",
@@ -1925,13 +1926,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 18,
+      "totalTransactions": 248,
       "postcodesQueried": 100,
-      "medianAllTypes": "£405,000",
+      "medianAllTypes": "£445,000",
       "byType": {
-        "Semi-detached": "£455,000",
-        "Detached": "£550,000",
-        "Flat / Maisonette": "£189,500"
+        "Semi-detached": "£475,000",
+        "Terraced": "£445,000",
+        "Flat / Maisonette": "£255,000",
+        "Detached": "£805,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -1989,6 +1991,7 @@
       }
     }
   },
+  "laPerf": null,
   "schoolEthnicity": {
     "w": 85,
     "m": 7,

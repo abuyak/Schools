@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 145005,
     "label": "state-sixth-form",
-    "capturedAt": "2026-04-26T23:22:55.536Z",
+    "capturedAt": "2026-04-28T07:03:52.442Z",
     "note": "KS5 only — no KS2 or KS4"
   },
   "input": "Reigate College",
@@ -2918,6 +2918,7 @@
   "area": {
     "postcode": "RH2 0SD",
     "district": "Reigate and Banstead",
+    "laCode": "E10000030",
     "region": "South East",
     "lsoa": "E01030620",
     "msoa": "E02006386",
@@ -2944,10 +2945,11 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 7,
+      "totalTransactions": 9,
       "postcodesQueried": 100,
-      "medianAllTypes": "£210,000",
+      "medianAllTypes": "£251,000",
       "byType": {
+        "Detached": "£905,000",
         "Flat / Maisonette": "£210,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -3006,6 +3008,7 @@
       }
     }
   },
+  "laPerf": null,
   "schoolEthnicity": null,
   "giasDetails": {
     "la": "Surrey (936)",

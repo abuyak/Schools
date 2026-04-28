@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125357,
     "label": "independent-primary",
-    "capturedAt": "2026-04-27T08:02:12.522Z",
+    "capturedAt": "2026-04-28T07:04:03.900Z",
     "note": "Independent — no Ofsted, no DfE performance; ISI expected"
   },
   "input": "Micklefield School",
@@ -121,7 +121,102 @@
     ]
   },
   "financial": null,
-  "area": null,
+  "area": {
+    "postcode": "RH2 9DU",
+    "district": "Reigate and Banstead",
+    "laCode": "E10000030",
+    "region": "South East",
+    "lsoa": "E01030627",
+    "msoa": "E02006383",
+    "ethnicity": {
+      "White: English, Welsh, Scottish, Northern Irish or British": 74.5,
+      "White: Irish": 0.8,
+      "White: Gypsy or Irish Traveller": 0.2,
+      "White: Roma": 0.2,
+      "White: Other White": 11.1,
+      "Mixed or Multiple ethnic groups: White and Black Caribbean": 0.7,
+      "Mixed or Multiple ethnic groups: White and Black African": 0.6,
+      "Mixed or Multiple ethnic groups: White and Asian": 1.9,
+      "Mixed or Multiple ethnic groups: Other Mixed or Multiple ethnic groups": 1,
+      "Asian, Asian British or Asian Welsh: Indian": 1.7,
+      "Asian, Asian British or Asian Welsh: Pakistani": 1,
+      "Asian, Asian British or Asian Welsh: Bangladeshi": 0.1,
+      "Asian, Asian British or Asian Welsh: Chinese": 0.6,
+      "Asian, Asian British or Asian Welsh: Other Asian": 1.2,
+      "Black, Black British, Black Welsh, Caribbean or African: Caribbean": 0.5,
+      "Black, Black British, Black Welsh, Caribbean or African: African": 1.4,
+      "Black, Black British, Black Welsh, Caribbean or African: Other Black": 0.3,
+      "Other ethnic group: Arab": 0.4,
+      "Other ethnic group: Any other ethnic group": 1.9
+    },
+    "pricePaid": {
+      "radiusM": 800,
+      "yearsBack": 5,
+      "totalTransactions": 220,
+      "postcodesQueried": 100,
+      "medianAllTypes": "£360,000",
+      "byType": {
+        "Flat / Maisonette": "£290,000",
+        "Terraced": "£580,000",
+        "Detached": "£1,150,000",
+        "Semi-detached": "£780,000"
+      },
+      "source": "HM Land Registry Price Paid Data"
+    },
+    "income": {
+      "msoaName": "Reigate and Banstead 009",
+      "netAnnualHouseholdIncome": "£41,100",
+      "totalAnnualHouseholdIncome": "£48,700",
+      "afterHousingCostsIncome": "£34,700",
+      "netEquivalisedIncome": "£14,000",
+      "year": "FYE 2018",
+      "source": "ONS Small Area Income Estimates"
+    },
+    "imd": {
+      "lsoaCode": "E01030627",
+      "year": "2025",
+      "imdScore": 3.21,
+      "imdRank": 32550,
+      "imdDecile": 10,
+      "subDomains": {
+        "Income": 9,
+        "Employment": 10,
+        "Education, Skills & Training": 10,
+        "Health & Disability": 10,
+        "Crime": 8,
+        "Barriers to Housing & Services": 8,
+        "Living Environment": 7
+      },
+      "population": 1989,
+      "populationYear": "2022",
+      "source": "MHCLG Indices of Multiple Deprivation 2025 via findthatpostcode.uk"
+    },
+    "crystalRoof": {
+      "qualifications": {
+        "noQualifications": 9,
+        "level1AndEntry": 7,
+        "level2": 14,
+        "apprenticeship": 3,
+        "level3": 16,
+        "level4AndAbove": 48,
+        "other": 3,
+        "totalResidents": 250
+      },
+      "occupation": {
+        "managerialProfessional": 47,
+        "intermediate": 21,
+        "routineAndManual": 25,
+        "neverWorkedLongTermUnemployed": 4,
+        "fullTimeStudents": 4,
+        "totalResidents": 251
+      },
+      "income": {
+        "meanAnnualHouseholdIncome": "£73,300",
+        "grain": "MSOA",
+        "measure": "mean gross annual household income"
+      }
+    }
+  },
   "laPerf": null,
   "schoolEthnicity": {
     "w": 0,
