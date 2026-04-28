@@ -1383,7 +1383,14 @@ export async function getLAPerformanceKS2(laCode) {
 }
 
 export async function getOfstedData(urn) {
+  // Provider 23 is the current Ofsted URL but is increasingly JS-rendered
+  // (returns an 8KB HTML shell with no inspection data). Provider 21 still
+  // serves SSR content.  Try 23 first, but fall back to 21 if the response
+  // lacks the inspection data markers we need.
   let html = await safeFetchText(`https://reports.ofsted.gov.uk/provider/23/${urn}`);
+  if (html && !/subjudgements__overall|subjudgements__rates__item/i.test(html)) {
+    html = null; // JS shell — force fallback to provider 21
+  }
   if (!html) html = await safeFetchText(`https://reports.ofsted.gov.uk/provider/21/${urn}`);
   if (!html) { glog('govuk_ofsted_fail', { urn }); return null; }
 
