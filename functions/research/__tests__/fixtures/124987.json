@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 124987,
     "label": "state-infant",
-    "capturedAt": "2026-04-28T07:03:21.588Z",
+    "capturedAt": "2026-04-28T15:22:24.411Z",
     "note": "KS1 only — no KS2/KS4/KS5 data expected"
   },
   "input": "Earlswood Infant and Nursery School",
@@ -297,13 +297,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 276,
+      "totalTransactions": 269,
       "postcodesQueried": 100,
-      "medianAllTypes": "£445,500",
+      "medianAllTypes": "£433,000",
       "byType": {
-        "Semi-detached": "£508,000",
-        "Terraced": "£433,000",
-        "Flat / Maisonette": "£234,000",
+        "Semi-detached": "£485,000",
+        "Terraced": "£400,000",
+        "Flat / Maisonette": "£230,000",
         "Detached": "£565,000"
       },
       "source": "HM Land Registry Price Paid Data"

@@ -2752,7 +2752,24 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
  * The AI model can fetch the full PDF from reportUrl if it needs more.
  */
 function fmtOfstedSlim(ofsted, isIndependent) {
-  if (isIndependent) return '- Independent school — fetch ISI report from isi.net via web search.';
+  // For independent schools with ISI data, render ISI grades + narrative.
+  // For independent schools without ISI data, tell the AI to web-search.
+  if (isIndependent) {
+    if (ofsted?.overall) {
+      const lines = [`- Overall: **${ofsted.overall}**${ofsted.date ? ` (${ofsted.date})` : ''}`];
+      if (ofsted.framework) lines.push(`- Framework: ${ofsted.framework}`);
+      if (ofsted.academicJudgment) lines.push(`- Academic achievement: ${ofsted.academicJudgment}`);
+      if (ofsted.personalJudgment) lines.push(`- Personal development: ${ofsted.personalJudgment}`);
+      if (ofsted.keyFindings) {
+        lines.push(`\n**Key findings**\n${ofsted.keyFindings.slice(0, 1500)}`);
+      }
+      if (ofsted.recommendations) {
+        lines.push(`\n**Recommendations**\n${ofsted.recommendations.slice(0, 1500)}`);
+      }
+      return lines.join('\n');
+    }
+    return '- Independent school — fetch ISI report from isi.net via web search.';
+  }
   if (!ofsted?.overall) return '- _Not retrieved — search reports.ofsted.gov.uk_';
 
   const lines = [`- Overall: **${ofsted.overall}**${ofsted.date ? ` (${ofsted.date})` : ''}`];
@@ -2913,7 +2930,7 @@ function fmtSchoolEthnicitySlim(e) {
   return `- Pupil ethnicity (DfE ${e.yr}): ${parts.join(' · ')}`;
 }
 
-function buildSlimBlock(school) {
+export function buildSlimBlock(school) {
   const { input, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
@@ -3653,4 +3670,4 @@ export function renderPartA(school, flags = {}) {
 }
 
 // Debug helpers — exported so debug-govuk.mjs can print both blocks
-export { buildDetailedBlock, buildSlimBlock };
+export { buildDetailedBlock };
