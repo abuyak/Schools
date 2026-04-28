@@ -423,7 +423,7 @@ export const handler = async (event) => {
   // Admin overrides — only honoured when _adminKey matches ADMIN_KEY env var
   const adminKey = process.env.ADMIN_KEY;
   const isAdmin  = adminKey && body._adminKey === adminKey;
-  const model     = (isAdmin && body._model)      ? body._model      : (process.env.OPENAI_MODEL ?? 'o4-mini');
+  const model     = (isAdmin && body._model)      ? body._model      : (process.env.OPENAI_MODEL ?? 'gpt-5.4-mini');
   const promptFile= (isAdmin && body._promptFile) ? body._promptFile : null;
 
   const baseUrl = (process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1').replace(/\/$/, '');

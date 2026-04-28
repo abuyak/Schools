@@ -52,7 +52,7 @@ function Get-ResearchSettingsDefaults {
 
     return [ordered]@{
         provider = "openai_compatible"
-        model = "gpt-5-mini"
+        model = "gpt-5.4-mini"
         baseUrl = "https://api.openai.com/v1"
         responsesPath = "/responses"
         apiKeyRequired = $true
