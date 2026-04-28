@@ -373,7 +373,7 @@ export function extractLocationHints(question) {
   }
 
   // Outward code alone when no inward part given: SE16, SW1, EC2, W1A …
-  for (const m of question.matchAll(/\b([A-Z]{1,2}\d{1,2}[A-Z]?)\b/g)) {
+  for (const m of question.matchAll(/\b([A-Z]{1,2}\d{1,2}[A-Z]?)\b/gi)) {
     hints.add(m[1].toLowerCase());
   }
 
@@ -419,10 +419,15 @@ export function extractLocationHints(question) {
  * recognised school-type suffix. Fast but misses short-form names ("Eton").
  */
 function extractNamesRegex(question) {
+  // Title-case the input so the pattern works for all-lowercase queries like
+  // "redriff primary se16" → "Redriff Primary Se16". The resulting match is
+  // already title-cased and safe to pass to GIAS search.
+  const normalised = question.replace(/\b\w/g, c => c.toUpperCase());
+
   const pattern =
     /\b([A-Z][a-zA-Z'-]+(?:\s+(?:of|the|and|&|St\.?|Saint|de|la|les|upon|at)?\s*[A-Z][a-zA-Z'-]+){0,6}\s+(?:School|College|Academy|Grammar|Primary|Secondary|Prep|Preparatory|Infant|Junior|Senior|High|Upper|Lower|Middle|Foundation|Free\s+School|Sixth\s+Form|Nursery|Convent))\b/g;
 
-  const matches = [...question.matchAll(pattern)];
+  const matches = [...normalised.matchAll(pattern)];
   return [...new Set(matches.map(m => m[1].trim()))];
 }
 
@@ -3046,7 +3051,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
   const names = await extractSchoolNames(question, branch, apiKey, baseUrl, model);
   if (!names.length) {
     glog('govuk_no_names', { branch, question: question.slice(0, 120) });
-    return '';
+    return { block: '', flags: {}, schools: [] };
   }
 
   // Extract location hints once from the question — passed to every URN lookup
