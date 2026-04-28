@@ -3126,7 +3126,20 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
   // then Ofsted / performance / financial in parallel.
   const schools = await Promise.all(
     names.map(async (name) => {
-      const identity = await lookupSchoolURN(name, locationHints);
+      let identity = await lookupSchoolURN(name, locationHints);
+
+      // When GIAS can't resolve the name (0 tiles even after the stripped-name
+      // retry), ask the AI to spell-correct/canonicalise — e.g. "Mickelfield" →
+      // "Micklefield School".  Only attempt once to avoid latency loops.
+      if (!identity) {
+        const aiNames = await extractNamesAI(question, branch, apiKey, baseUrl, model);
+        const aiName  = aiNames.find(n => n.toLowerCase() !== name.toLowerCase());
+        if (aiName) {
+          glog('govuk_gias_ai_fallback', { original: name, aiName });
+          identity = await lookupSchoolURN(aiName, locationHints);
+        }
+      }
+
       const urn = identity?.urn ?? null;
 
       if (!urn) {
