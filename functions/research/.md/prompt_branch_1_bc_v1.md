@@ -151,7 +151,7 @@ Never write this section as a single prose paragraph.
 
 **Parent View data is pre-fetched — it appears in the Ofsted section of the pre-fetched block under "Ofsted Parent View".** Use it directly. Do not search for it.
 
-**Reproduce the full Parent View table exactly as it appears in the pre-fetched block** (all rows, percentages, and any ⚠️ flags). Then add 2–3 sentences of commentary calling out any ⚠️ flagged rows explicitly.
+**Reproduce the full Parent View table exactly as it appears in the pre-fetched block** (all rows, percentages, and any ⚠️ flags). Include the academic year in the heading or first line — e.g. "Parent View 2024/25 — 127 responses". Then add 2–3 sentences of commentary calling out any ⚠️ flagged rows explicitly.
 
 Thresholds (already applied in the pre-fetched table — ⚠️ rows are already marked):
 - Would recommend: below 80%
