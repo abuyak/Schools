@@ -1529,11 +1529,17 @@ export async function getOfstedData(urn) {
     return null;
   }
 
+  // When the latest inspection is ungraded (no subjudgements on the page),
+  // the overall grade comes from the timeline fallback. The graded PDF URL
+  // from that fallback contains the sub-grades we need.
+  const needsGradedPdf = !overall && !!timelineUrl && timelineUrl !== finalReport;
+
   const result = {
     overall: finalOverall, date: finalDate,
     qualityOfEducation, behaviour, personalDevelopment, leadership, sixthForm,
     achievement, attendance, curriculum, inclusion, leadershipGov, wellbeing, post16,
     safeguarding, reportUrl: finalReport,
+    gradedReportUrl: needsGradedPdf ? timelineUrl : null,  // for sub-grade extraction
     parentViewUrl,
     pupilExperience: null,
     nextSteps:       null,
@@ -3373,9 +3379,14 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Independent schools: ISI PDF is already parsed by getISIInspection above,
       // so ofstedBase already contains the narrative fields.
       // State schools: fetch Ofsted PDF if we have a report URL.
-      const [pdfSections, performance, financial, parentView, giasDetails] = await Promise.all([
+      // When the latest inspection is ungraded, also fetch the most recent graded
+      // PDF to extract sub-grades for A2.
+      const [pdfSections, gradedPdfSections, performance, financial, parentView, giasDetails] = await Promise.all([
         (detailed && ofstedBase?.reportUrl && !identity.isIndependent)
           ? fetchAndParseOfstedPdf(ofstedBase.reportUrl)
+          : Promise.resolve(null),
+        (detailed && ofstedBase?.gradedReportUrl)
+          ? fetchAndParseOfstedPdf(ofstedBase.gradedReportUrl)
           : Promise.resolve(null),
         getPerformanceData(urn),
         identity.isIndependent ? Promise.resolve(null) : getFinancialData(urn),
@@ -3412,16 +3423,20 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // clobbering the grade strings of the same name on ofstedBase.
       // PDF sub-grades fill gaps when the HTML scrape has none (common for
       // ungraded/monitoring inspections where the page lacks subjudgements).
-      const pdfSg = pdfSections?.pdfSubGrades ?? null;
+      // The graded PDF (if available) is the best source for sub-grades.
+      const pdfSg    = pdfSections?.pdfSubGrades ?? null;
+      const gpdfSg   = gradedPdfSections?.pdfSubGrades ?? null;
+      // Prefer graded PDF sub-grades over main PDF (which may be ungraded)
+      const bestSg   = gpdfSg ?? pdfSg;
       const ofsted = ofstedBase ? {
         ...ofstedBase,
-        // HTML sub-grades first, PDF as fallback
-        qualityOfEducation:             ofstedBase.qualityOfEducation          ?? pdfSg?.qualityOfEducation   ?? null,
-        behaviour:                      ofstedBase.behaviour                   ?? pdfSg?.behaviour            ?? null,
-        personalDevelopment:            ofstedBase.personalDevelopment         ?? pdfSg?.personalDevelopment  ?? null,
-        leadership:                     ofstedBase.leadership                  ?? pdfSg?.leadership           ?? null,
-        sixthForm:                      ofstedBase.sixthForm                   ?? pdfSg?.sixthForm            ?? null,
-        achievement:                    ofstedBase.achievement                 ?? pdfSg?.achievement          ?? null,
+        // HTML sub-grades first, graded PDF second, main PDF last
+        qualityOfEducation:             ofstedBase.qualityOfEducation          ?? bestSg?.qualityOfEducation   ?? null,
+        behaviour:                      ofstedBase.behaviour                   ?? bestSg?.behaviour            ?? null,
+        personalDevelopment:            ofstedBase.personalDevelopment         ?? bestSg?.personalDevelopment  ?? null,
+        leadership:                     ofstedBase.leadership                  ?? bestSg?.leadership           ?? null,
+        sixthForm:                      ofstedBase.sixthForm                   ?? bestSg?.sixthForm            ?? null,
+        achievement:                    ofstedBase.achievement                 ?? bestSg?.achievement          ?? null,
         // PDF narrative (detail) sections
         pupilExperience:               pdfSections?.pupilExperience         ?? null,
         qualityOfEducationDetail:      pdfSections?.qualityOfEducation      ?? null,
