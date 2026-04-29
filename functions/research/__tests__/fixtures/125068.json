@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125068,
     "label": "state-junior",
-    "capturedAt": "2026-04-28T15:59:37.255Z",
+    "capturedAt": "2026-04-29T19:38:21.623Z",
     "note": "KS2 only — no KS1 or KS4"
   },
   "input": "Earlswood Junior School",
@@ -35,6 +35,7 @@
     "post16": null,
     "safeguarding": null,
     "reportUrl": "https://files.ofsted.gov.uk/v1/file/50235645",
+    "gradedReportUrl": null,
     "parentViewUrl": "https://parentview.ofsted.gov.uk/parent-view-results/urn/125068",
     "pupilExperience": "‘A place to learn together’ is very much pupils’ experience at Earlswood Junior \nSchool. Pupils value the broad and ambitious curriculum they are offered, which is  enhanced through specialist teachers in music and physical education (PE). The  school has high expectations for all pupils, including pupils with special educational  needs and/or disabilities (SEND). As a result, the majority of pupils are achieving  well. \n \nPupils behave well here. They know what is expected of them. This is underpinned  by the ‘SMILE’ behaviours of self-regulation, manners, independence, listening with  respect and empathy. Pupils fully understand these and learn about them weekly. \nPupils feel safe, including from bullying. \n \nThe school provides a range of enrichment and leadership opportunities for pupi",
     "nextSteps": "-  The task design in some curriculum subjects does not support all pupils to move  swiftly on in their learning or develop a really deep understanding. This means  that some pupils do not always achieve as highly as they could. The school needs  to provide suitable tasks across all subjects that support all pupils to make the  most progress possible.",
@@ -917,14 +918,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 421,
+      "totalTransactions": 302,
       "postcodesQueried": 100,
-      "medianAllTypes": "£452,500",
+      "medianAllTypes": "£430,000",
       "byType": {
-        "Semi-detached": "£515,000",
-        "Terraced": "£422,500",
-        "Detached": "£575,000",
-        "Flat / Maisonette": "£260,000"
+        "Semi-detached": "£523,750",
+        "Terraced": "£400,000",
+        "Detached": "£780,000",
+        "Flat / Maisonette": "£255,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },

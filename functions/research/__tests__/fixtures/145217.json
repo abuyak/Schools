@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 145217,
     "label": "state-secondary",
-    "capturedAt": "2026-04-28T15:59:49.126Z",
+    "capturedAt": "2026-04-29T19:38:33.606Z",
     "note": "KS4 only — Attainment 8, Progress 8, EBacc"
   },
   "input": "Reigate School",
@@ -35,6 +35,7 @@
     "post16": null,
     "safeguarding": null,
     "reportUrl": "https://files.ofsted.gov.uk/v1/file/50238758",
+    "gradedReportUrl": null,
     "parentViewUrl": "https://parentview.ofsted.gov.uk/parent-view-results/urn/145217",
     "pupilExperience": "This is a welcoming and inclusive school. The school’s values of ‘respect, curiosity,  resilience, friendship and kindness’ are being realised. Staff want the best for pupils. \nThey have very warm relationships with pupils and know them well. Pupils enjoy  coming to school and they are very proud of it. They get on very well with each  other and with staff. Leaders prioritise ensuring that Year 7 pupils settle in quickly  when they join the school. \n \nPupils’ conduct is excellent in lessons and around the school. Pupils are very clear  about the school’s expectations for behaviour. They settle to their work quickly and  are eager to learn. Parents and carers and pupils praise the school’s very high  quality of pastoral care. Pupils are well cared for. There is always somebody in the  schoo",
     "nextSteps": "-  Lessons are not always adapted successfully to meet the needs of all pupils. This  means that not all pupils achieve highly, particularly the most disadvantaged. The  school should ensure that it keeps careful oversight of how well the curriculum is  being implemented and provides support so that it is of a consistently high  standard in all subjects. \n-  Plans to improve reading across the whole school have only recently been put in  place. As a result, many pupils who read below the expected level for their  chronological reading age are not able to read well enough to access the full  curriculum. The school needs to ensure that the new approaches to reading are  securely and consistently embedded and have the planned impact.",
@@ -1926,14 +1927,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 256,
+      "totalTransactions": 231,
       "postcodesQueried": 100,
-      "medianAllTypes": "£455,000",
+      "medianAllTypes": "£450,000",
       "byType": {
-        "Semi-detached": "£476,000",
+        "Semi-detached": "£475,000",
         "Terraced": "£445,000",
         "Flat / Maisonette": "£250,000",
-        "Detached": "£805,000"
+        "Detached": "£800,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },

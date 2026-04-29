@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 124987,
     "label": "state-infant",
-    "capturedAt": "2026-04-28T15:59:29.695Z",
+    "capturedAt": "2026-04-29T19:38:14.024Z",
     "note": "KS1 only — no KS2/KS4/KS5 data expected"
   },
   "input": "Earlswood Infant and Nursery School",
@@ -20,7 +20,7 @@
   },
   "ofsted": {
     "overall": "Good",
-    "date": "12 March 2024",
+    "date": "21 May 2014",
     "qualityOfEducation": null,
     "behaviour": null,
     "personalDevelopment": null,
@@ -35,6 +35,7 @@
     "post16": null,
     "safeguarding": null,
     "reportUrl": "https://files.ofsted.gov.uk/v1/file/50246525",
+    "gradedReportUrl": "https://files.ofsted.gov.uk/v1/file/2394729",
     "parentViewUrl": "https://parentview.ofsted.gov.uk/parent-view-results/urn/124987",
     "pupilExperience": "Pupils eagerly anticipate coming to this school. Sights are set high for pupils, and they  achieve well. They get a great start to their education in the Nursery, where adults  skilfully teach the curriculum with children’s interests in mind. Children quickly develop a  thirst for learning, fascinated by the captivating lessons and wider experiences their  teachers plan for them. They visit art galleries and museums and are inspired to find out  more about great artists and scientists. \n \nPupils are taught how to recognise their emotions and ways of staying calm such as  listening to music, peer massage or controlling their breathing. They know they can trust  adults to help them by talking openly about feelings of anger or sadness. As a result,  pupils live up to the school’s high expecta",
     "nextSteps": "-  In some areas of the curriculum, the most important knowledge that pupils need to  know is not yet fully defined. As a result, pupils’ learning does not always build as",
@@ -297,14 +298,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 307,
+      "totalTransactions": 273,
       "postcodesQueried": 100,
-      "medianAllTypes": "£430,000",
+      "medianAllTypes": "£422,500",
       "byType": {
         "Semi-detached": "£500,000",
-        "Terraced": "£400,000",
-        "Flat / Maisonette": "£235,000",
-        "Detached": "£560,000"
+        "Terraced": "£405,000",
+        "Flat / Maisonette": "£250,000",
+        "Detached": "£575,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },

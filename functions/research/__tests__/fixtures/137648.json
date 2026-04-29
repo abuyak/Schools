@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 137648,
     "label": "state-primary",
-    "capturedAt": "2026-04-28T15:59:45.017Z",
+    "capturedAt": "2026-04-29T19:38:29.268Z",
     "note": "KS1 + KS2 — largest data set for primary"
   },
   "input": "Redriff Primary",
@@ -35,6 +35,7 @@
     "post16": null,
     "safeguarding": null,
     "reportUrl": "https://files.ofsted.gov.uk/v1/file/50238234",
+    "gradedReportUrl": null,
     "parentViewUrl": "https://parentview.ofsted.gov.uk/parent-view-results/urn/137648",
     "pupilExperience": "Pupils are happy at this school. They are proud to share their learning and show  excitement when they talk about their school community. The school has high  expectations for all pupils. Pupils enjoy an exciting curriculum which embraces the  heritage of the community. For example, pupils get to learn about the importance of  the Docklands through London’s history. Pupils clearly value where they live and the  diversity that exists within the school community. Pupils demonstrate excellent  attitudes to learning and achieve well. \n \nInnovative ideas for playtimes create a joyful, happy environment. For example,  pupils enjoy dressing up, role play and an exciting range of games. Pupils respect  and value each other. Staff and pupils share positive and warm working  relationships. Pupils fe",
     "nextSteps": "The school’s curriculum is ambitious and carefully sequenced. It allows pupils to  build up their knowledge, skills and use of vocabulary over time. Children in the  early years receive a strong foundation to their school life. The stimulating learning  environment encourages children to be curious about their learning. Children focus  for sustained periods and show resilience in their problem-solving. For instance,  children in the Nursery worked together impressively to find the right building blocks  for a tower they were constructing. \n \nLeaders make sure that staff have the support and training they need to enable all  pupils to access the curriculum and learn well. Staff are highly skilled at identifying  and meeting pupils’ needs, including those with SEND. Throughout the school, staff  use a range of approaches consistently to support pupils’ learning. For example,  staff use different communication systems which enable all pupils to share their  answers, points of view and emotions. \n \nStaff present information clearly to pupils. They provide pupils with different  opportunities to show what they know. For example, in mathematics, some pupils  used practical resources to show the answers to their calculations while others  recorded these in their workbooks.",
@@ -980,13 +981,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 269,
+      "totalTransactions": 218,
       "postcodesQueried": 100,
-      "medianAllTypes": "£500,000",
+      "medianAllTypes": "£525,000",
       "byType": {
-        "Flat / Maisonette": "£450,000",
-        "Terraced": "£700,000",
-        "Semi-detached": "£675,000"
+        "Flat / Maisonette": "£480,000",
+        "Terraced": "£708,000",
+        "Semi-detached": "£730,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },

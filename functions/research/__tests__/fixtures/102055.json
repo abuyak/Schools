@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 102055,
     "label": "state-secondary-sixth",
-    "capturedAt": "2026-04-28T16:00:05.171Z",
+    "capturedAt": "2026-04-29T19:38:47.863Z",
     "note": "KS4 + KS5 — grammar with sixth form"
   },
   "input": "The Latymer School",
@@ -35,6 +35,7 @@
     "post16": null,
     "safeguarding": null,
     "reportUrl": "https://files.ofsted.gov.uk/v1/file/50184328",
+    "gradedReportUrl": null,
     "parentViewUrl": "https://parentview.ofsted.gov.uk/parent-view-results/urn/102055",
     "pupilExperience": "Latymer School provides pupils with high-quality education. Pupils are supported to  aim high and achieve well academically in most subjects. Leaders have high  expectations of pupils’ learning and how pupils should conduct themselves. Pupils  have a strong work ethic and show commitment to their learning. They attend  school extremely well. \n \nPupils feel safe, are well cared for and happy at school. Pupils of all ages get on well  with each other. Leaders ensure that all pupils are treated equally. Pupils are polite  and respectful. They behave well and want to learn. Bullying is rare but when it  happens, staff deal with it quickly. \n \nPupils enjoy school life and play an active role. They take full advantage of the  extensive range of societies and clubs on offer. These include plentif",
     "nextSteps": "-  In Years 7 to 11, leaders’ curriculum thinking in a few subjects is developing  further. Although leaders have defined which concepts should be taught,  consideration has not been given to the order that these concepts should be  taught and revisited. Where this is the case, leaders should strengthen the  curriculum by ensuring that subject knowledge is taught sequentially and pupils’  understanding of essential knowledge deepens over time. \n-  Occasionally, in Years 7 to 11, teachers do not check pupils’ understanding of  previous learning carefully. This means that misconceptions are not identified and  addressed in a timely way. Leaders should ensure that staff implement the  assessment policy across the curriculum consistently and as intended.",
@@ -3686,12 +3687,12 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 140,
+      "totalTransactions": 113,
       "postcodesQueried": 100,
-      "medianAllTypes": "£430,000",
+      "medianAllTypes": "£422,500",
       "byType": {
-        "Terraced": "£435,000",
-        "Flat / Maisonette": "£240,000",
+        "Terraced": "£430,000",
+        "Flat / Maisonette": "£222,500",
         "Semi-detached": "£470,000"
       },
       "source": "HM Land Registry Price Paid Data"
