@@ -1430,6 +1430,55 @@ export async function getLAPerformanceKS2(laCode) {
   return out;
 }
 
+/**
+ * Fetches KS4 local-authority averages (state-funded, all pupils) from the
+ * DfE Explore Education Statistics API for a given LA ONS code.
+ *
+ * Returns { att8, p8, grade5Em } or null.
+ */
+export async function getLAPerformanceKS4(laCode) {
+  if (!laCode) return null;
+
+  const EES_BASE = 'https://api.education.gov.uk/statistics/v1';
+  const params = new URLSearchParams({
+    'locations.in':  `LA|code|${laCode}`,
+    'timePeriods.in':'2024/2025|AY',
+    'pageSize':      '10',
+  });
+  // Filter: Disadvantaged status = Total (all pupils)
+  params.append('filters.in', 'uRBo4|bVOtT');
+  // Indicators: Attainment 8, Progress 8, grade 5+ EM
+  params.append('indicators', 'S9YVx');  // Average Attainment 8 score
+  params.append('indicators', 'OvpCL');  // Average Progress 8 score
+  params.append('indicators', 'kxGhs');  // % grade 5+ English and maths
+
+  const url = `${EES_BASE}/data-sets/${EES_KS4_LA_DATASET}/query?${params}`;
+  const data = await safeFetchJson(url);
+
+  if (!data?.results?.length) {
+    glog('govuk_ks4_la_fail', { laCode, status: data ? 'empty' : 'null' });
+    return null;
+  }
+
+  const row = data.results[0];
+  const vals = row.values ?? {};
+  const clean = (v) => (v && v !== 'z' && v !== 'x' && v !== 'c') ? String(v) : null;
+
+  const result = {
+    att8:    clean(vals['S9YVx']),
+    p8:      clean(vals['OvpCL']),
+    grade5Em: clean(vals['kxGhs']),
+  };
+
+  if (!result.att8 && !result.p8 && !result.grade5Em) {
+    glog('govuk_ks4_la_no_match', { laCode });
+    return null;
+  }
+
+  glog('govuk_ks4_la_ok', { laCode, ...result });
+  return result;
+}
+
 export async function getOfstedData(urn) {
   // Provider 23 is the current Ofsted URL but is increasingly JS-rendered
   // (returns an 8KB HTML shell with no inspection data). Provider 21 still
@@ -2741,20 +2790,19 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     if (p8 || att8 || g4all || g5all) {
       const nat4 = NATIONAL_AVG.KS4;
       const c = (val) => val ?? '—';
+      const la = (field) => laPerf?.[field] != null ? String(laPerf[field]) : '—';
 
       lines.push('');
       lines.push('**Key Stage 4 (2024/25)**');
-      // Note: "Local avg" column is LA-level data not included in the DfE school CSV download.
-      // It requires a separate LA-level fetch — shown as — until implemented.
       lines.push('| Metric | All pupils | Boys | Girls | Disadvantaged | EAL | Local avg | England |');
       lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
 
       if (cohort || cohortDis)
         lines.push(`| Cohort size | ${c(cohort)} | ${c(cohortB)} | ${c(cohortG)} | ${c(cohortDis)} | — | — | — |`);
       if (att8 || att8b || att8g || att8dis || att8eal)
-        lines.push(`| Attainment 8 | ${c(att8)} | ${c(att8b)} | ${c(att8g)} | ${c(att8dis)} | ${c(att8eal)} | — | ${nat4.ATT8SCR} |`);
+        lines.push(`| Attainment 8 | ${c(att8)} | ${c(att8b)} | ${c(att8g)} | ${c(att8dis)} | ${c(att8eal)} | ${la('att8')} | ${nat4.ATT8SCR} |`);
       if (g5all || g5b || g5g || g5dis || g5eal)
-        lines.push(`| Grade 5+ English & Maths | ${c(g5all)} | ${c(g5b)} | ${c(g5g)} | ${c(g5dis)} | ${c(g5eal)} | — | ${nat4.PTL2BASICS_95}% |`);
+        lines.push(`| Grade 5+ English & Maths | ${c(g5all)} | ${c(g5b)} | ${c(g5g)} | ${c(g5dis)} | ${c(g5eal)} | ${la('grade5Em')} | ${nat4.PTL2BASICS_95}% |`);
       if (g4all || g4b || g4g || g4dis || g4eal)
         lines.push(`| Grade 4+ English & Maths | ${c(g4all)} | ${c(g4b)} | ${c(g4g)} | ${c(g4dis)} | ${c(g4eal)} | — | ${nat4.PTL2BASICS_94}% |`);
       if (eb5all || eb5b || eb5g || eb5eal)
@@ -2766,7 +2814,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       if (ebApsAll || ebApsB || ebApsG || ebApsEal)
         lines.push(`| EBacc APS | ${c(ebApsAll)} | ${c(ebApsB)} | ${c(ebApsG)} | ${c(ebApsDis)} | ${c(ebApsEal)} | — | — |`);
       if (p8)
-        lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} | — | — | ${c(p8dis)} | — | — | ${nat4.P8MEA} |`);
+        lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} | — | — | ${c(p8dis)} | — | ${la('p8')} | ${nat4.P8MEA} |`);
     }
   }
 
@@ -3425,11 +3473,17 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
         ?? null;
       const area = detailed && postcode ? await getAreaData(postcode) : null;
 
-      // Phase 4: LA-level performance averages from EES API (primary/KS2 only)
-      // Uses ONS LA code captured from postcodes.io → area.laCode
+      // Phase 4: LA-level performance averages from EES API
+      // Uses ONS LA code captured from postcodes.io → area.laCode.
+      // Primary: KS2 averages. Secondary/all-through: KS4 averages.
       const isPrimary = /primary|junior|infant|middle.*primary/i.test(identity?.phase ?? '');
-      const laPerf = detailed && isPrimary && area?.laCode
-        ? await getLAPerformanceKS2(area.laCode).catch(() => null)
+      const isSecondary = /secondary|all.through/i.test(identity?.phase ?? '');
+      const laPerf = detailed && area?.laCode
+        ? (isPrimary
+            ? await getLAPerformanceKS2(area.laCode).catch(() => null)
+            : isSecondary
+              ? await getLAPerformanceKS4(area.laCode).catch(() => null)
+              : null)
         : null;
 
       // IMPORTANT: PDF narrative fields are stored under *Detail keys to avoid
