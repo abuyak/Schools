@@ -2506,11 +2506,6 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     const read23 = v('READ_AVERAGE_23'); const read24 = v('READ_AVERAGE_24');
     const mat23  = v('MAT_AVERAGE_23');  const mat24  = v('MAT_AVERAGE_24');
     const cohort23 = v('TELIG_23');      const cohort24 = v('TELIG_24');
-    const cohort3yr = v('TELIG_3YR');
-
-    // ── 3-year pooled (small-cohort context)
-    const rwm3yr   = v('PTRWM_EXP_3YR');  const rwmH3yr  = v('PTRWM_HIGH_3YR');
-    const read3yr  = v('READ_AVERAGE_3YR'); const mat3yr  = v('MAT_AVERAGE_3YR');
 
     if (rwm || read || mat) {
       const nat = NATIONAL_AVG.KS2;
@@ -2592,7 +2587,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       }
 
       // ── Table 4: Results over time ────────────────────────────────────────
-      // School: 3-year data from DfE CSV (_23/_24 suffixes) + 3-year pooled column
+      // School: 3-year data from DfE CSV (_23/_24 suffixes)
       // LA: current year from EES API; historical not yet fetched (shown as —)
       // England: hardcoded from DfE national tables
       // Source: https://explore-education-statistics.service.gov.uk/find-statistics/key-stage-2-attainment
@@ -2607,41 +2602,41 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
 
         // Cohort sizes (provides denominator context for all trend metrics)
         if (cohort23 || cohort24 || cohort) {
-          lines.push('| Eligible cohort | 2023 | 2024 | 2025 | 3-yr pooled |');
-          lines.push('|---|---:|---:|---:|---:|');
-          lines.push(`| School | ${c(cohort23)} | ${c(cohort24)} | ${c(cohort)} | ${c(cohort3yr)} |`);
+          lines.push('| Eligible cohort | 2023 | 2024 | 2025 |');
+          lines.push('|---|---:|---:|---:|');
+          lines.push(`| School | ${c(cohort23)} | ${c(cohort24)} | ${c(cohort)} |`);
           lines.push('');
         }
 
-        lines.push('| Reading, Writing and Maths — % meeting expected standard | 2023 | 2024 | 2025 | 3-yr pooled |');
-        lines.push('|---|---:|---:|---:|---:|');
-        lines.push(`| School | ${c(rwm23)} | ${c(rwm24)} | ${c(rwm)} | ${c(rwm3yr)} |`);
+        lines.push('| Reading, Writing and Maths — % meeting expected standard | 2023 | 2024 | 2025 |');
+        lines.push('|---|---:|---:|---:|');
+        lines.push(`| School | ${c(rwm23)} | ${c(rwm24)} | ${c(rwm)} |`);
         lines.push(`| Local authority | — | — | ${la('rwm','expected')} | — |`);
         lines.push(`| England | ${NAT_HIST['2023'].rwmExp}% | ${NAT_HIST['2024'].rwmExp}% | ${NAT_HIST['2025'].rwmExp}% | — |`);
         lines.push('');
 
         if (rwmH23 || rwmH24 || rwmH) {
-          lines.push('| Reading, Writing and Maths — % achieving higher standard | 2023 | 2024 | 2025 | 3-yr pooled |');
-          lines.push('|---|---:|---:|---:|---:|');
-          lines.push(`| School | ${c(rwmH23)} | ${c(rwmH24)} | ${c(rwmH)} | ${c(rwmH3yr)} |`);
+          lines.push('| Reading, Writing and Maths — % achieving higher standard | 2023 | 2024 | 2025 |');
+          lines.push('|---|---:|---:|---:|');
+          lines.push(`| School | ${c(rwmH23)} | ${c(rwmH24)} | ${c(rwmH)} |`);
           lines.push(`| Local authority | — | — | ${la('rwm','higher')} | — |`);
           lines.push(`| England | ${NAT_HIST['2023'].rwmHigh}% | ${NAT_HIST['2024'].rwmHigh}% | ${NAT_HIST['2025'].rwmHigh}% | — |`);
           lines.push('');
         }
 
         if (read23 || read24 || readSc) {
-          lines.push('| Reading — average score | 2023 | 2024 | 2025 | 3-yr pooled |');
-          lines.push('|---|---:|---:|---:|---:|');
-          lines.push(`| School | ${c(read23)} | ${c(read24)} | ${c(readSc)} | ${c(read3yr)} |`);
+          lines.push('| Reading — average score | 2023 | 2024 | 2025 |');
+          lines.push('|---|---:|---:|---:|');
+          lines.push(`| School | ${c(read23)} | ${c(read24)} | ${c(readSc)} |`);
           lines.push(`| Local authority | — | — | ${laS('reading')} | — |`);
           lines.push(`| England | ${NAT_HIST['2023'].readAvg} | ${NAT_HIST['2024'].readAvg} | ${NAT_HIST['2025'].readAvg} | — |`);
           lines.push('');
         }
 
         if (mat23 || mat24 || matSc) {
-          lines.push('| Maths — average score | 2023 | 2024 | 2025 | 3-yr pooled |');
-          lines.push('|---|---:|---:|---:|---:|');
-          lines.push(`| School | ${c(mat23)} | ${c(mat24)} | ${c(matSc)} | ${c(mat3yr)} |`);
+          lines.push('| Maths — average score | 2023 | 2024 | 2025 |');
+          lines.push('|---|---:|---:|---:|');
+          lines.push(`| School | ${c(mat23)} | ${c(mat24)} | ${c(matSc)} |`);
           lines.push(`| Local authority | — | — | ${laS('maths')} | — |`);
           lines.push(`| England | ${NAT_HIST['2023'].matAvg} | ${NAT_HIST['2024'].matAvg} | ${NAT_HIST['2025'].matAvg} | — |`);
           lines.push('');
