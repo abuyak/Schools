@@ -258,15 +258,31 @@ function parseOpenAIResponse(apiResponse) {
     return { status: 'upstream_invalid_format', httpStatus: 502, title: 'Unexpected upstream response', summary: 'The research provider returned a response that did not match the expected JSON format.', scorecard: [], sections: [{ heading: 'Raw output (first 400 chars)', body: outputText.slice(0, 400), flag: 'none' }] };
   }
 
-  // Collect web search sources — check multiple possible response formats
+  // Collect web search sources — check multiple possible response formats.
+  // gpt-5.4-mini returns citations as annotations on output_text content.
   const sources = [];
   for (const item of (apiResponse.output ?? [])) {
+    // o-series format: web_search_call items with action.sources
     const srcs = item.action?.sources ?? item.sources ?? item.output_sources
       ?? item.action?.web_search?.sources ?? null;
     if (srcs && Array.isArray(srcs)) {
       for (const s of srcs) {
         if (s.url && !sources.some(e => e.body === s.url)) {
           sources.push({ heading: s.title || s.url, body: s.url });
+        }
+      }
+    }
+    // gpt-5.4-mini format: url_citation annotations on message content
+    if (item.type === 'message' && Array.isArray(item.content)) {
+      for (const c of item.content) {
+        if (c.type === 'output_text' && Array.isArray(c.annotations)) {
+          for (const ann of c.annotations) {
+            if (ann.type === 'url_citation' && ann.url) {
+              if (!sources.some(e => e.body === ann.url)) {
+                sources.push({ heading: ann.title || ann.url, body: ann.url });
+              }
+            }
+          }
         }
       }
     }
@@ -569,7 +585,6 @@ export const handler = async (event) => {
           external_web_access: true,
         }],
         tool_choice: 'auto',
-        include:     ['web_search_call.action.sources'],
         instructions: call2Instructions,
         input:        body.question,
         max_output_tokens: parseInt(process.env.OPENAI_MAX_TOKENS ?? '8000', 10),
@@ -627,15 +642,17 @@ export const handler = async (event) => {
     const bcSections  = call2Parsed.sections ?? [];
 
     // Collect web search sources from Call 2.
+    // gpt-5.4-mini returns web search citations as annotations on the message
+    // content, not as separate web_search_call output items. We extract URLs
+    // from both output items (web_search_call type) and message content annotations.
     const call2Searches = [];
     const call2Sources = [];
     for (const item of (call2Response?.output ?? [])) {
-      // Track search queries for trace logging
+      // Track search queries
       if (item.type === 'web_search_call' && item.action?.query) {
         call2Searches.push(item.action.query);
       }
-      // Extract source URLs — the OpenAI API nests these in action.sources
-      // on web_search_call items
+      // Extract sources from action.sources (o-series format)
       const sources = item.action?.sources ?? item.sources ?? item.output_sources
         ?? item.action?.web_search?.sources ?? null;
       if (sources && Array.isArray(sources)) {
@@ -645,22 +662,36 @@ export const handler = async (event) => {
           }
         }
       }
+      // gpt-5.4-mini: extract URLs from message content annotations (citations)
+      if (item.type === 'message' && Array.isArray(item.content)) {
+        for (const c of item.content) {
+          if (c.type === 'output_text' && Array.isArray(c.annotations)) {
+            for (const ann of c.annotations) {
+              if (ann.type === 'url_citation' && ann.url) {
+                if (!call2Sources.some(e => e.body === ann.url)) {
+                  call2Sources.push({ heading: ann.title || ann.url, body: ann.url });
+                }
+              }
+            }
+          }
+        }
+      }
     }
 
-    // Debug: log the output item types and all top-level keys for diagnostics
+    // Debug: log output item structure to diagnose where sources live
     const outputItemTypes = (call2Response?.output ?? []).map(item => ({
       type: item.type,
       keys: Object.keys(item),
       actionKeys: item.action ? Object.keys(item.action) : null,
-      hasActionSources: !!item.action?.sources,
-      hasSources: !!item.sources,
-      sourceCount: (item.action?.sources ?? item.sources ?? []).length,
+      hasContent: item.type === 'message' && Array.isArray(item.content),
+      contentTypes: item.type === 'message' && Array.isArray(item.content)
+        ? item.content.map(c => ({ type: c.type, hasAnnotations: Array.isArray(c.annotations), annotationCount: c.annotations?.length ?? 0 }))
+        : null,
     }));
     log('research_debug_sources', {
       outputItemTypes,
       call2SourcesFound: call2Sources.length,
       call2SearchesFound: call2Searches.length,
-      includeParam: 'web_search_call.action.sources',
     });
 
     // Rename model's "Sources" section → "Primary Sources", append Secondary Sources
@@ -781,7 +812,6 @@ export const handler = async (event) => {
         external_web_access: true,
       }],
       tool_choice: 'auto',
-      include: ['web_search_call.action.sources'],
       instructions,
       input: body.question,
       max_output_tokens: parseInt(process.env.OPENAI_MAX_TOKENS ?? '8000', 10),
