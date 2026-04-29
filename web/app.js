@@ -178,14 +178,15 @@
 
   function renderTable(container, tableLines) {
     var table = document.createElement("table");
-    table.className = "md-table";
     var headerCells = null;
     var tbody = null;
+    var colCount = 0;
 
     tableLines.forEach(function (line, i) {
       if (isTableSeparator(line)) return;
       var cells = parseTableRow(line);
       if (i === 0) {
+        colCount = cells.length;
         var thead = document.createElement("thead");
         var tr = document.createElement("tr");
         cells.forEach(function (cell) {
@@ -207,6 +208,7 @@
         tbody.appendChild(tr);
       }
     });
+    table.className = "md-table cols-" + colCount;
     var scroll = document.createElement("div");
     scroll.className = "table-scroll";
     scroll.appendChild(table);
