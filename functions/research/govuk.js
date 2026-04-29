@@ -298,8 +298,11 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
       pdfSubGrades.behaviour = grade;
     if (label === 'personal development'
         || label === 'personal development and wellbeing'
-        || label === 'personal development behaviour and welfare')
+        || label === 'personal development behaviour and welfare') {
       pdfSubGrades.personalDevelopment = grade;
+      if (label === 'personal development behaviour and welfare')
+        pdfSubGrades.behaviour = grade;  // old framework merged these two
+    }
     if (label === 'leadership and management'
         || label === 'leadership and governance'
         || label === 'effectiveness of leadership and management')
@@ -3673,31 +3676,47 @@ export function renderPartA(school, flags = {}) {
       if (ofsted.safeguarding) lines.push(`\nSafeguarding status: ${ofsted.safeguarding}`);
       lines.push('');
 
-      // Detect framework. New (Nov-2025+) has achievement/attendance/curriculum.
-      // Old (2019–2024) has qualityOfEducation/behaviour/personalDevelopment.
-      // Pre-2019 (from graded PDF fallback) may only have the old labels.
-      const isNew = !!(ofsted.achievement || ofsted.attendance || ofsted.curriculum);
-      const hasOldGrades = !!(ofsted.qualityOfEducation || ofsted.behaviour || ofsted.personalDevelopment || ofsted.leadership);
+      // Show all available sub-grades. The Ofsted framework determines which
+      // labels to use, but when grades come from a mix of sources (HTML + old
+      // PDF fallback), just display whatever we have using the most appropriate
+      // labels.  Three frameworks: Nov-2025+, 2019–2024, pre-2019.
+      const hasNewGrades = !!(ofsted.attendance || ofsted.curriculum);
+      const hasMidGrades = !!(ofsted.qualityOfEducation || ofsted.behaviour || ofsted.personalDevelopment || ofsted.leadership || ofsted.sixthForm);
       lines.push('| Area | Grade |', '|---|---|');
       lines.push(`| Overall | ${ofsted.overall} |`);
-      if (isNew) {
-        if (ofsted.achievement)   lines.push(`| Achievement | ${ofsted.achievement} |`);
-        if (ofsted.attendance)    lines.push(`| Attendance and Behaviour | ${ofsted.attendance} |`);
-        if (ofsted.curriculum)    lines.push(`| Curriculum and Teaching | ${ofsted.curriculum} |`);
-        if (ofsted.inclusion)     lines.push(`| Inclusion | ${ofsted.inclusion} |`);
-        if (ofsted.leadershipGov) lines.push(`| Leadership and Governance | ${ofsted.leadershipGov} |`);
-        if (ofsted.wellbeing)     lines.push(`| Personal Development and Wellbeing | ${ofsted.wellbeing} |`);
-        if (ofsted.post16)        lines.push(`| Post-16 Provision | ${ofsted.post16} |`);
-      } else if (hasOldGrades) {
-        if (ofsted.qualityOfEducation)  lines.push(`| Quality of Education | ${ofsted.qualityOfEducation} |`);
-        if (ofsted.behaviour)           lines.push(`| Behaviour and Attitudes | ${ofsted.behaviour} |`);
-        if (ofsted.personalDevelopment) lines.push(`| Personal Development | ${ofsted.personalDevelopment} |`);
-        if (ofsted.leadership)          lines.push(`| Leadership and Management | ${ofsted.leadership} |`);
-        if (ofsted.sixthForm)           lines.push(`| Sixth Form | ${ofsted.sixthForm} |`);
-      }
+      // Nov-2025+ areas
+      if (ofsted.achievement && hasNewGrades)
+        lines.push(`| Achievement | ${ofsted.achievement} |`);
+      if (ofsted.attendance)
+        lines.push(`| Attendance and Behaviour | ${ofsted.attendance} |`);
+      if (ofsted.curriculum)
+        lines.push(`| Curriculum and Teaching | ${ofsted.curriculum} |`);
+      if (ofsted.inclusion)
+        lines.push(`| Inclusion | ${ofsted.inclusion} |`);
+      if (ofsted.leadershipGov)
+        lines.push(`| Leadership and Governance | ${ofsted.leadershipGov} |`);
+      if (ofsted.wellbeing)
+        lines.push(`| Personal Development and Wellbeing | ${ofsted.wellbeing} |`);
+      if (ofsted.post16)
+        lines.push(`| Post-16 Provision | ${ofsted.post16} |`);
+      // 2019–2024 areas (or pre-2019 mapped to these labels)
+      if (ofsted.qualityOfEducation)
+        lines.push(`| Quality of Education | ${ofsted.qualityOfEducation} |`);
+      if (ofsted.behaviour)
+        lines.push(`| Behaviour and Attitudes | ${ofsted.behaviour} |`);
+      if (ofsted.personalDevelopment)
+        lines.push(`| Personal Development | ${ofsted.personalDevelopment} |`);
+      if (ofsted.leadership)
+        lines.push(`| Leadership and Management | ${ofsted.leadership} |`);
+      if (ofsted.sixthForm)
+        lines.push(`| Sixth Form | ${ofsted.sixthForm} |`);
+      // Pre-2019 "Outcomes for pupils" — shown as Achievement when no newer
+      // framework grades are present
+      if (ofsted.achievement && !hasNewGrades)
+        lines.push(`| Achievement | ${ofsted.achievement} |`);
 
       // Deterministic verdict (old framework only — new framework uses different terminology)
-      if (!isNew) {
+      if (!hasNewGrades) {
         const RANK = { 'Outstanding': 4, 'Exceptional': 5, 'Good': 3, 'Requires Improvement': 2, 'Inadequate': 1 };
         const overallRank = RANK[ofsted.overall] ?? 3;
         const subGrades = [ofsted.qualityOfEducation, ofsted.behaviour, ofsted.personalDevelopment, ofsted.leadership, ofsted.sixth].filter(Boolean);
