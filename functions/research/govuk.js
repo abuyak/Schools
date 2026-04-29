@@ -3235,7 +3235,7 @@ ${fmtFinancial(financial)}
 ${fmtOfstedSlim(ofsted, identity?.isIndependent ?? false)}
 
 ### A4 — What the School Needs to Improve (verbatim from Ofsted PDF — reproduce exactly in A4 section)
-${identity?.isIndependent ? '_Independent school — not applicable._' : ofsted?.nextSteps ? ofsted.nextSteps : ofsted?.overall ? `_No improvement requirements stated. Ofsted grade: ${ofsted.overall}._` : '_Not retrieved — link to full Ofsted PDF if available._'}
+${identity?.isIndependent ? (ofsted?.recommendations || ofsted?.nextSteps || '_Independent school — no improvement recommendations available._') : ofsted?.nextSteps ? ofsted.nextSteps : ofsted?.overall ? `_No improvement requirements stated. Ofsted grade: ${ofsted.overall}._` : '_Not retrieved — link to full Ofsted PDF if available._'}
 
 ### School Pupil Ethnicity (DfE Census)
 ${fmtSchoolEthnicitySlim(schoolEthnicity)}
@@ -3714,8 +3714,22 @@ export function renderPartA(school, flags = {}) {
   // ────────────────────────────────────────────────────────────────────────────
   {
     let body;
-    if (isIndependent) {
-      body = 'Independent school — Ofsted does not inspect independent schools. See ISI inspection reports at isi.net.';
+    if (isIndependent && !ofsted?.overall) {
+      body = 'Independent school — ISI inspection report not retrieved. See isi.net.';
+    } else if (isIndependent && ofsted?.overall) {
+      // ISI data available — render same table format as Ofsted
+      const lines = [];
+      if (ofsted.date)         lines.push(`Inspection date: ${ofsted.date}`);
+      if (ofsted.framework)    lines.push(`\nFramework: ${ofsted.framework}`);
+      if (ofsted.safeguarding) lines.push(`\nSafeguarding: ${ofsted.safeguarding}`);
+      lines.push('');
+      lines.push('| Area | Grade |', '|---|---|');
+      lines.push(`| Overall | ${ofsted.overall} |`);
+      if (ofsted.academicJudgment)
+        lines.push(`| Academic achievement | ${ofsted.academicJudgment} |`);
+      if (ofsted.personalJudgment)
+        lines.push(`| Personal development | ${ofsted.personalJudgment} |`);
+      body = lines.join('\n');
     } else if (!ofsted?.overall) {
       body = `_Not retrieved — check [reports.ofsted.gov.uk](https://reports.ofsted.gov.uk) by URN or school name._`;
     } else {
@@ -3793,8 +3807,12 @@ export function renderPartA(school, flags = {}) {
   // ────────────────────────────────────────────────────────────────────────────
   {
     let body;
-    if (isIndependent) {
-      body = '_Independent school — not applicable._';
+    if (isIndependent && ofsted?.recommendations) {
+      body = ofsted.recommendations;  // ISI recommendations
+    } else if (isIndependent && ofsted?.nextSteps) {
+      body = ofsted.nextSteps;  // ISI next steps (alt key)
+    } else if (isIndependent) {
+      body = '_Independent school — no improvement recommendations available._';
     } else if (ofsted?.nextSteps) {
       body = ofsted.nextSteps;
     } else if (ofsted?.overall) {
