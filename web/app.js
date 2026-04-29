@@ -200,9 +200,24 @@
         table.appendChild(tbody);
       } else {
         var tr = document.createElement("tr");
-        cells.forEach(function (cell) {
+        cells.forEach(function (cell, ci) {
           var td = document.createElement("td");
-          appendTextWithLinks(td, cell);
+          // Detect evidence-level keywords and wrap in coloured badge
+          var trimmed = cell.trim();
+          var evidenceClass = null;
+          if (/^Strong$/i.test(trimmed)) evidenceClass = 'evidence-strong';
+          else if (/^Present$/i.test(trimmed)) evidenceClass = 'evidence-good';
+          else if (/^Mixed$/i.test(trimmed)) evidenceClass = 'evidence-mixed';
+          else if (/^Weak$/i.test(trimmed)) evidenceClass = 'evidence-weak';
+          else if (/^Not evident$/i.test(trimmed)) evidenceClass = 'evidence-unknown';
+          if (evidenceClass) {
+            var span = document.createElement("span");
+            span.className = evidenceClass;
+            span.textContent = trimmed;
+            td.appendChild(span);
+          } else {
+            appendTextWithLinks(td, cell);
+          }
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
