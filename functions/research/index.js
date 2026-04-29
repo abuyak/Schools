@@ -709,30 +709,66 @@ export const handler = async (event) => {
       }
     }
 
-    // Rename model's Sources section → "Primary Sources", append Secondary Sources.
-    // The heading may be bare ("Sources") or prefixed ("C4. Sources").
-    // Skip if already renamed to avoid "Primary Primary Sources".
-    let primarySourcesBody = null;
+    // Build Primary Sources from structured data we already have.
+    // These are the canonical pages the parent should read — we don't
+    // depend on the AI to generate them.
+    const primaryUrls = [];
+    if (govukSchool?.identity?.urn) {
+      const urn  = govukSchool.identity.urn;
+      const name = govukSchool.identity.officialName ?? govukSchool.input;
+      primaryUrls.push({
+        heading: `Get Information About Schools: ${name}`,
+        url: `https://www.get-information-schools.service.gov.uk/Establishments/Establishment/Details/${urn}`,
+      });
+      primaryUrls.push({
+        heading: `Compare School Performance: ${name}`,
+        url: `https://www.compare-school-performance.service.gov.uk/school/${urn}`,
+      });
+      if (!govukSchool.identity?.isIndependent) {
+        primaryUrls.push({
+          heading: `Ofsted report: ${name}`,
+          url: govukSchool.ofsted?.reportUrl
+            ?? `https://reports.ofsted.gov.uk/provider/21/${urn}`,
+        });
+      } else if (govukSchool.ofsted?.reportUrl) {
+        primaryUrls.push({
+          heading: `ISI report: ${name}`,
+          url: govukSchool.ofsted.reportUrl,
+        });
+      }
+    }
+    // Merge AI-generated sources (from its Sources section) into the list
+    let aiSourcesBody = null;
     for (const s of bcSections) {
       if (/^primary\s+sources$/i.test(s.heading)) {
-        primarySourcesBody = s.body; break;  // already renamed
+        aiSourcesBody = s.body; break;
       }
       if (/sources?$/i.test(s.heading)) {
         s.heading = s.heading.replace(/sources?$/i, 'Primary Sources');
-        primarySourcesBody = s.body;
+        aiSourcesBody = s.body;
         break;
       }
     }
-    // Always append Secondary Sources if we have web search URLs, even if the
-    // model didn't produce a Primary Sources section.
-    const secondaryUrls = primarySourcesBody
-      ? call2Sources.filter(s => !primarySourcesBody.includes(s.body))
-      : call2Sources;
-    if (secondaryUrls.length) {
-      const body = secondaryUrls
+    // Build Primary Sources — always include the canonical pages
+    const primaryBody = primaryUrls
+      .map(u => `[${u.heading}](${u.url})`)
+      .join('\n');
+    // Replace or insert the Primary Sources section
+    let psIdx = bcSections.findIndex(s => /primary\s+sources/i.test(s.heading));
+    if (psIdx >= 0) {
+      bcSections[psIdx] = { heading: 'Primary Sources', body: primaryBody + (aiSourcesBody ? '\n\n' + aiSourcesBody : ''), flag: 'none' };
+    } else {
+      bcSections.push({ heading: 'Primary Sources', body: primaryBody, flag: 'none' });
+    }
+    // Append Secondary Sources from web search results (if any)
+    if (call2Sources.length) {
+      const secondaryBody = call2Sources
+        .filter(s => !primaryBody.includes(s.body))
         .map(s => `[${s.heading}](${s.body})`)
         .join('\n');
-      bcSections.push({ heading: 'Secondary Sources', body, flag: 'none' });
+      if (secondaryBody) {
+        bcSections.push({ heading: 'Secondary Sources', body: secondaryBody, flag: 'none' });
+      }
     }
 
     // ── Step 5: Assemble and return ───────────────────────────────────────────
