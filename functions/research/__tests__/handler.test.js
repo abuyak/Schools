@@ -291,7 +291,7 @@ describe('Response parsing', () => {
     expect(body.status).toBe('upstream_invalid_format');
   });
 
-  test.skip('extracts web search sources into Secondary Sources', async () => {
+  test('extracts web search sources into Secondary Sources', async () => {
     // Web search sources come from Call 2 (the B+C call with tool_choice: auto)
     const call2WithSources = {
       output_text: JSON.stringify({

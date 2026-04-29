@@ -258,55 +258,23 @@ function parseOpenAIResponse(apiResponse) {
     return { status: 'upstream_invalid_format', httpStatus: 502, title: 'Unexpected upstream response', summary: 'The research provider returned a response that did not match the expected JSON format.', scorecard: [], sections: [{ heading: 'Raw output (first 400 chars)', body: outputText.slice(0, 400), flag: 'none' }] };
   }
 
-  // Collect web search sources — check multiple possible response formats.
-  // gpt-5.4-mini returns citations as annotations on output_text content.
+  // Collect web search sources
   const sources = [];
   for (const item of (apiResponse.output ?? [])) {
-    // o-series format: web_search_call items with action.sources
-    const srcs = item.action?.sources ?? item.sources ?? item.output_sources
-      ?? item.action?.web_search?.sources ?? null;
-    if (srcs && Array.isArray(srcs)) {
-      for (const s of srcs) {
-        if (s.url && !sources.some(e => e.body === s.url)) {
-          sources.push({ heading: s.title || s.url, body: s.url });
-        }
-      }
-    }
-    // gpt-5.4-mini format: url_citation annotations on message content
-    if (item.type === 'message' && Array.isArray(item.content)) {
-      for (const c of item.content) {
-        if (c.type === 'output_text' && Array.isArray(c.annotations)) {
-          for (const ann of c.annotations) {
-            if (ann.type === 'url_citation' && ann.url) {
-              if (!sources.some(e => e.body === ann.url)) {
-                sources.push({ heading: ann.title || ann.url, body: ann.url });
-              }
-            }
-          }
-        }
-        // Fallback: extract markdown links from output text
-        const text = c.text ?? '';
-        const urlRe = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
-        for (const m of text.matchAll(urlRe)) {
-          if (!sources.some(e => e.body === m[2])) {
-            sources.push({ heading: m[1], body: m[2] });
-          }
-        }
+    if (item.type === 'web_search_call' && item.action?.sources) {
+      for (const s of item.action.sources) {
+        if (s.url) sources.push({ heading: s.title || s.url, body: s.url });
       }
     }
   }
 
-  // Rename model's Sources section → "Primary Sources".
-  // Heading may be bare ("Sources") or prefixed ("C4. Sources").
+  // Rename model's "Sources" section to "Primary Sources"
   const sections = (parsed.sections ?? []).map(s => ({ ...s }));
 
   let primarySourcesBody = null;
   for (const s of sections) {
-    if (/^primary\s+sources$/i.test(s.heading)) {
-      primarySourcesBody = s.body; break;
-    }
-    if (/sources?$/i.test(s.heading)) {
-      s.heading = s.heading.replace(/sources?$/i, 'Primary Sources');
+    if (/^sources?$/i.test(s.heading)) {
+      s.heading = 'Primary Sources';
       primarySourcesBody = s.body;
       break;
     }
@@ -597,6 +565,7 @@ export const handler = async (event) => {
           external_web_access: true,
         }],
         tool_choice: 'auto',
+        include:     ['web_search_call.action.sources'],
         instructions: call2Instructions,
         input:        body.question,
         max_output_tokens: parseInt(process.env.OPENAI_MAX_TOKENS ?? '8000', 10),
@@ -653,122 +622,31 @@ export const handler = async (event) => {
     const call2Parsed = parseOpenAIResponse(call2Response);
     const bcSections  = call2Parsed.sections ?? [];
 
-    // Collect web search sources from Call 2.
-    // gpt-5.4-mini returns web search citations as annotations on the message
-    // content, not as separate web_search_call output items. We extract URLs
-    // from both output items (web_search_call type) and message content annotations.
-    const call2Searches = [];
+    // Collect web search sources from Call 2
+    const call2Searches = (call2Response?.output ?? [])
+      .filter(item => item.type === 'web_search_call')
+      .map(item => item.action?.query ?? null)
+      .filter(Boolean);
+
     const call2Sources = [];
     for (const item of (call2Response?.output ?? [])) {
-      // Track search queries
-      if (item.type === 'web_search_call' && item.action?.query) {
-        call2Searches.push(item.action.query);
-      }
-      // Extract sources from action.sources (o-series format)
-      const sources = item.action?.sources ?? item.sources ?? item.output_sources
-        ?? item.action?.web_search?.sources ?? null;
-      if (sources && Array.isArray(sources)) {
-        for (const s of sources) {
-          if (s.url && !call2Sources.some(e => e.body === s.url)) {
-            call2Sources.push({ heading: s.title || s.url, body: s.url });
-          }
-        }
-      }
-      // gpt-5.4-mini: extract URLs from message content annotations (citations)
-      if (item.type === 'message' && Array.isArray(item.content)) {
-        for (const c of item.content) {
-          if (c.type === 'output_text' && Array.isArray(c.annotations)) {
-            for (const ann of c.annotations) {
-              if (ann.type === 'url_citation' && ann.url) {
-                if (!call2Sources.some(e => e.body === ann.url)) {
-                  call2Sources.push({ heading: ann.title || ann.url, body: ann.url });
-                }
-              }
-            }
-          }
+      if (item.type === 'web_search_call' && item.action?.sources) {
+        for (const s of item.action.sources) {
+          if (s.url) call2Sources.push({ heading: s.title || s.url, body: s.url });
         }
       }
     }
 
-    // Fallback: extract URLs from the output text itself. gpt-5.4-mini cites
-    // sources inline as markdown links [label](url). Parse those when the API
-    // doesn't populate url_citation annotations.
-    if (!call2Sources.length) {
-      for (const item of (call2Response?.output ?? [])) {
-        if (item.type === 'message' && Array.isArray(item.content)) {
-          for (const c of item.content) {
-            const text = c.text ?? '';
-            const urlRe = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
-            for (const m of text.matchAll(urlRe)) {
-              if (!call2Sources.some(e => e.body === m[2])) {
-                call2Sources.push({ heading: m[1], body: m[2] });
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Build Primary Sources from structured data we already have.
-    // These are the canonical pages the parent should read — we don't
-    // depend on the AI to generate them.
-    const primaryUrls = [];
-    if (govukSchool?.identity?.urn) {
-      const urn  = govukSchool.identity.urn;
-      const name = govukSchool.identity.officialName ?? govukSchool.input;
-      primaryUrls.push({
-        heading: `Get Information About Schools: ${name}`,
-        url: `https://www.get-information-schools.service.gov.uk/Establishments/Establishment/Details/${urn}`,
-      });
-      primaryUrls.push({
-        heading: `Compare School Performance: ${name}`,
-        url: `https://www.compare-school-performance.service.gov.uk/school/${urn}`,
-      });
-      if (!govukSchool.identity?.isIndependent) {
-        primaryUrls.push({
-          heading: `Ofsted report: ${name}`,
-          url: govukSchool.ofsted?.reportUrl
-            ?? `https://reports.ofsted.gov.uk/provider/21/${urn}`,
-        });
-      } else if (govukSchool.ofsted?.reportUrl) {
-        primaryUrls.push({
-          heading: `ISI report: ${name}`,
-          url: govukSchool.ofsted.reportUrl,
-        });
-      }
-    }
-    // Merge AI-generated sources (from its Sources section) into the list
-    let aiSourcesBody = null;
+    // Rename model's "Sources" section → "Primary Sources", append Secondary Sources
+    let primarySourcesBody = null;
     for (const s of bcSections) {
-      if (/^primary\s+sources$/i.test(s.heading)) {
-        aiSourcesBody = s.body; break;
-      }
-      if (/sources?$/i.test(s.heading)) {
-        s.heading = s.heading.replace(/sources?$/i, 'Primary Sources');
-        aiSourcesBody = s.body;
-        break;
-      }
+      if (/^sources?$/i.test(s.heading)) { s.heading = 'Primary Sources'; primarySourcesBody = s.body; break; }
     }
-    // Build Primary Sources — always include the canonical pages
-    const primaryBody = primaryUrls
-      .map(u => `[${u.heading}](${u.url})`)
-      .join('\n');
-    // Replace or insert the Primary Sources section
-    let psIdx = bcSections.findIndex(s => /primary\s+sources/i.test(s.heading));
-    if (psIdx >= 0) {
-      bcSections[psIdx] = { heading: 'Primary Sources', body: primaryBody + (aiSourcesBody ? '\n\n' + aiSourcesBody : ''), flag: 'none' };
-    } else {
-      bcSections.push({ heading: 'Primary Sources', body: primaryBody, flag: 'none' });
-    }
-    // Append Secondary Sources from web search results (if any)
     if (call2Sources.length) {
-      const secondaryBody = call2Sources
-        .filter(s => !primaryBody.includes(s.body))
-        .map(s => `[${s.heading}](${s.body})`)
-        .join('\n');
-      if (secondaryBody) {
-        bcSections.push({ heading: 'Secondary Sources', body: secondaryBody, flag: 'none' });
-      }
+      const secondary = call2Sources
+        .filter(s => !primarySourcesBody || !primarySourcesBody.includes(s.body))
+        .map(s => `[${s.heading}](${s.body})`);
+      if (secondary.length) bcSections.push({ heading: 'Secondary Sources', body: secondary.join('\n'), flag: 'none' });
     }
 
     // ── Step 5: Assemble and return ───────────────────────────────────────────
@@ -868,6 +746,7 @@ export const handler = async (event) => {
         external_web_access: true,
       }],
       tool_choice: 'auto',
+      include: ['web_search_call.action.sources'],
       instructions,
       input: body.question,
       max_output_tokens: parseInt(process.env.OPENAI_MAX_TOKENS ?? '8000', 10),
