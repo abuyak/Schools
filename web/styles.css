@@ -481,27 +481,23 @@ input[type="email"]:focus,
   hyphens: auto;
 }
 
-/* Consistent column widths by column count */
+/* Part A tables: consistent 2-column widths */
 .cols-2 th:first-child,
 .cols-2 td:first-child { width: 60%; }
 .cols-2 th:last-child,
 .cols-2 td:last-child   { width: 40%; }
 
-.cols-3 th:first-child,
-.cols-3 td:first-child { width: 50%; }
-.cols-3 th:nth-child(2),
-.cols-3 td:nth-child(2) { width: 25%; }
-.cols-3 th:last-child,
-.cols-3 td:last-child   { width: 25%; }
+/* 3+ column tables (C1, comparison grids): auto layout for content fit */
+.cols-3, .cols-4, .cols-5, .cols-6 {
+  table-layout: auto;
+}
 
-.cols-4 th,
-.cols-4 td { width: 25%; }
-
-.cols-5 th,
-.cols-5 td { width: 20%; }
-
-.cols-6 th,
-.cols-6 td { width: 16.66%; }
+/* Evidence Level colour badges — same palette as Quick Take scorecard */
+.evidence-strong  { background: #16a34a; color: #fff; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+.evidence-good    { background: #2563eb; color: #fff; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+.evidence-mixed   { background: #d97706; color: #fff; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+.evidence-weak    { background: #dc2626; color: #fff; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+.evidence-unknown { background: #9ca3af; color: #fff; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
 
 /* Mobile: allow horizontal scroll instead of squishing columns */
 @media (max-width: 640px) {
@@ -513,12 +509,6 @@ input[type="email"]:focus,
   .cols-2 td:first-child { width: 55%; }
   .cols-2 th:last-child,
   .cols-2 td:last-child   { width: 45%; }
-  .cols-3 th:first-child,
-  .cols-3 td:first-child { width: 45%; }
-  .cols-3 th:nth-child(2),
-  .cols-3 td:nth-child(2) { width: 27.5%; }
-  .cols-3 th:last-child,
-  .cols-3 td:last-child   { width: 27.5%; }
 }
 
 .md-table th,
