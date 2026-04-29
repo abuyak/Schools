@@ -296,13 +296,17 @@ function parseOpenAIResponse(apiResponse) {
     }
   }
 
-  // Rename model's "Sources" section to "Primary Sources"
+  // Rename model's Sources section → "Primary Sources".
+  // Heading may be bare ("Sources") or prefixed ("C4. Sources").
   const sections = (parsed.sections ?? []).map(s => ({ ...s }));
 
   let primarySourcesBody = null;
   for (const s of sections) {
-    if (/^sources?$/i.test(s.heading)) {
-      s.heading = 'Primary Sources';
+    if (/^primary\s+sources$/i.test(s.heading)) {
+      primarySourcesBody = s.body; break;
+    }
+    if (/sources?$/i.test(s.heading)) {
+      s.heading = s.heading.replace(/sources?$/i, 'Primary Sources');
       primarySourcesBody = s.body;
       break;
     }
@@ -705,11 +709,16 @@ export const handler = async (event) => {
       }
     }
 
-    // Rename model's "Sources" section → "Primary Sources", append Secondary Sources
+    // Rename model's Sources section → "Primary Sources", append Secondary Sources.
+    // The heading may be bare ("Sources") or prefixed ("C4. Sources").
+    // Skip if already renamed to avoid "Primary Primary Sources".
     let primarySourcesBody = null;
     for (const s of bcSections) {
-      if (/^sources?$/i.test(s.heading)) {
-        s.heading = 'Primary Sources';
+      if (/^primary\s+sources$/i.test(s.heading)) {
+        primarySourcesBody = s.body; break;  // already renamed
+      }
+      if (/sources?$/i.test(s.heading)) {
+        s.heading = s.heading.replace(/sources?$/i, 'Primary Sources');
         primarySourcesBody = s.body;
         break;
       }
