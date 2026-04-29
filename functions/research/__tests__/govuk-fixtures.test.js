@@ -83,16 +83,16 @@ const EXPECTATIONS = {
     shouldNotContain: ['Key Stage 1', 'Key Stage 2'],
   },
   'independent-primary': {
-    shouldContain:    ['Independent'],
+    shouldContain:    ['ISI'],
     // Independent schools: Ofsted narrative won't be present
     shouldNotContain: ['Key Stage 4', 'Key Stage 5'],
   },
   'independent-secondary': {
-    shouldContain:    ['Independent'],
+    shouldContain:    ['ISI'],
     shouldNotContain: ['Key Stage 1', 'Key Stage 2'],
   },
   'independent-all-through': {
-    shouldContain:    ['Independent'],
+    shouldContain:    ['ISI'],
     shouldNotContain: [],
   },
 };
