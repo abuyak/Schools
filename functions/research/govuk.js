@@ -1517,8 +1517,11 @@ export async function getOfstedData(urn) {
     }
   }
 
+  // If the overall grade came from the timeline fallback, pair it with the
+  // matching timeline date — not the page-wide dateInTime which may belong to
+  // a more recent ungraded inspection.
   const finalOverall = overall ?? timelineOverall;
-  const finalDate    = date    ?? timelineDate;
+  const finalDate    = overall ? date : (timelineDate ?? date);
   const finalReport  = reportUrl ?? timelineUrl;
 
   if (!finalOverall && !finalDate) {
