@@ -622,6 +622,14 @@ export const handler = async (event) => {
     const call2Parsed = parseOpenAIResponse(call2Response);
     const bcSections  = call2Parsed.sections ?? [];
 
+    // DEBUG: dump raw response structure to find where sources live in gpt-5.4-mini
+    log('research_debug_raw_response', {
+      topLevelKeys: Object.keys(call2Response ?? {}),
+      outputLength: call2Response?.output?.length ?? 0,
+      outputTypes: (call2Response?.output ?? []).map(item => item.type),
+      rawOutput: JSON.stringify(call2Response?.output ?? []).slice(0, 4000),
+    });
+
     // Collect web search sources from Call 2
     const call2Searches = (call2Response?.output ?? [])
       .filter(item => item.type === 'web_search_call')
