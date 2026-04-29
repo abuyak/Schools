@@ -474,18 +474,25 @@ input[type="email"]:focus,
   table-layout: fixed;       /* consistent column widths within each table */
 }
 
+.md-table th,
+.md-table td {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
 /* Consistent column widths by column count */
 .cols-2 th:first-child,
-.cols-2 td:first-child { width: 55%; }
+.cols-2 td:first-child { width: 60%; }
 .cols-2 th:last-child,
-.cols-2 td:last-child   { width: 45%; }
+.cols-2 td:last-child   { width: 40%; }
 
 .cols-3 th:first-child,
-.cols-3 td:first-child { width: 44%; }
+.cols-3 td:first-child { width: 50%; }
 .cols-3 th:nth-child(2),
-.cols-3 td:nth-child(2) { width: 28%; }
+.cols-3 td:nth-child(2) { width: 25%; }
 .cols-3 th:last-child,
-.cols-3 td:last-child   { width: 28%; }
+.cols-3 td:last-child   { width: 25%; }
 
 .cols-4 th,
 .cols-4 td { width: 25%; }
@@ -495,6 +502,24 @@ input[type="email"]:focus,
 
 .cols-6 th,
 .cols-6 td { width: 16.66%; }
+
+/* Mobile: allow horizontal scroll instead of squishing columns */
+@media (max-width: 640px) {
+  .md-table {
+    min-width: 24rem;
+    font-size: 0.8rem;
+  }
+  .cols-2 th:first-child,
+  .cols-2 td:first-child { width: 55%; }
+  .cols-2 th:last-child,
+  .cols-2 td:last-child   { width: 45%; }
+  .cols-3 th:first-child,
+  .cols-3 td:first-child { width: 45%; }
+  .cols-3 th:nth-child(2),
+  .cols-3 td:nth-child(2) { width: 27.5%; }
+  .cols-3 th:last-child,
+  .cols-3 td:last-child   { width: 27.5%; }
+}
 
 .md-table th,
 .md-table td {
