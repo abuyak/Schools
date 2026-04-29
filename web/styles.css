@@ -471,7 +471,30 @@ input[type="email"]:focus,
   border-collapse: collapse;
   font-size: 0.875rem;
   line-height: 1.45;
+  table-layout: fixed;       /* consistent column widths within each table */
 }
+
+/* Consistent column widths by column count */
+.cols-2 th:first-child,
+.cols-2 td:first-child { width: 55%; }
+.cols-2 th:last-child,
+.cols-2 td:last-child   { width: 45%; }
+
+.cols-3 th:first-child,
+.cols-3 td:first-child { width: 44%; }
+.cols-3 th:nth-child(2),
+.cols-3 td:nth-child(2) { width: 28%; }
+.cols-3 th:last-child,
+.cols-3 td:last-child   { width: 28%; }
+
+.cols-4 th,
+.cols-4 td { width: 25%; }
+
+.cols-5 th,
+.cols-5 td { width: 20%; }
+
+.cols-6 th,
+.cols-6 td { width: 16.66%; }
 
 .md-table th,
 .md-table td {

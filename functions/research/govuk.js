@@ -2611,16 +2611,16 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
         lines.push('| Reading, Writing and Maths — % meeting expected standard | 2023 | 2024 | 2025 |');
         lines.push('|---|---:|---:|---:|');
         lines.push(`| School | ${c(rwm23)} | ${c(rwm24)} | ${c(rwm)} |`);
-        lines.push(`| Local authority | — | — | ${la('rwm','expected')} | — |`);
-        lines.push(`| England | ${NAT_HIST['2023'].rwmExp}% | ${NAT_HIST['2024'].rwmExp}% | ${NAT_HIST['2025'].rwmExp}% | — |`);
+        lines.push(`| Local authority | — | — | ${la('rwm','expected')} |`);
+        lines.push(`| England | ${NAT_HIST['2023'].rwmExp}% | ${NAT_HIST['2024'].rwmExp}% | ${NAT_HIST['2025'].rwmExp}% |`);
         lines.push('');
 
         if (rwmH23 || rwmH24 || rwmH) {
           lines.push('| Reading, Writing and Maths — % achieving higher standard | 2023 | 2024 | 2025 |');
           lines.push('|---|---:|---:|---:|');
           lines.push(`| School | ${c(rwmH23)} | ${c(rwmH24)} | ${c(rwmH)} |`);
-          lines.push(`| Local authority | — | — | ${la('rwm','higher')} | — |`);
-          lines.push(`| England | ${NAT_HIST['2023'].rwmHigh}% | ${NAT_HIST['2024'].rwmHigh}% | ${NAT_HIST['2025'].rwmHigh}% | — |`);
+          lines.push(`| Local authority | — | — | ${la('rwm','higher')} |`);
+          lines.push(`| England | ${NAT_HIST['2023'].rwmHigh}% | ${NAT_HIST['2024'].rwmHigh}% | ${NAT_HIST['2025'].rwmHigh}% |`);
           lines.push('');
         }
 
@@ -2628,8 +2628,8 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
           lines.push('| Reading — average score | 2023 | 2024 | 2025 |');
           lines.push('|---|---:|---:|---:|');
           lines.push(`| School | ${c(read23)} | ${c(read24)} | ${c(readSc)} |`);
-          lines.push(`| Local authority | — | — | ${laS('reading')} | — |`);
-          lines.push(`| England | ${NAT_HIST['2023'].readAvg} | ${NAT_HIST['2024'].readAvg} | ${NAT_HIST['2025'].readAvg} | — |`);
+          lines.push(`| Local authority | — | — | ${laS('reading')} |`);
+          lines.push(`| England | ${NAT_HIST['2023'].readAvg} | ${NAT_HIST['2024'].readAvg} | ${NAT_HIST['2025'].readAvg} |`);
           lines.push('');
         }
 
@@ -2637,8 +2637,8 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
           lines.push('| Maths — average score | 2023 | 2024 | 2025 |');
           lines.push('|---|---:|---:|---:|');
           lines.push(`| School | ${c(mat23)} | ${c(mat24)} | ${c(matSc)} |`);
-          lines.push(`| Local authority | — | — | ${laS('maths')} | — |`);
-          lines.push(`| England | ${NAT_HIST['2023'].matAvg} | ${NAT_HIST['2024'].matAvg} | ${NAT_HIST['2025'].matAvg} | — |`);
+          lines.push(`| Local authority | — | — | ${laS('maths')} |`);
+          lines.push(`| England | ${NAT_HIST['2023'].matAvg} | ${NAT_HIST['2024'].matAvg} | ${NAT_HIST['2025'].matAvg} |`);
           lines.push('');
         }
       }
