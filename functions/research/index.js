@@ -280,10 +280,11 @@ function parseOpenAIResponse(apiResponse) {
     }
   }
 
-  // Append secondary sources not already cited
+  // Append secondary sources not already cited in any section body
   if (sources.length) {
+    const allBodies = sections.map(s => s.body).filter(Boolean).join(' ');
     const secondary = sources
-      .filter(s => !primarySourcesBody || !primarySourcesBody.includes(s.body))
+      .filter(s => !allBodies.includes(s.body))
       .map(s => `[${s.heading}](${s.body})`);
     if (secondary.length) {
       sections.push({ heading: 'Secondary Sources', body: secondary.join('\n'), flag: 'none' });
@@ -622,14 +623,6 @@ export const handler = async (event) => {
     const call2Parsed = parseOpenAIResponse(call2Response);
     const bcSections  = call2Parsed.sections ?? [];
 
-    // DEBUG: dump raw response structure to find where sources live in gpt-5.4-mini
-    log('research_debug_raw_response', {
-      topLevelKeys: Object.keys(call2Response ?? {}),
-      outputLength: call2Response?.output?.length ?? 0,
-      outputTypes: (call2Response?.output ?? []).map(item => item.type),
-      rawOutput: JSON.stringify(call2Response?.output ?? []).slice(0, 4000),
-    });
-
     // Collect web search sources from Call 2
     const call2Searches = (call2Response?.output ?? [])
       .filter(item => item.type === 'web_search_call')
@@ -651,8 +644,10 @@ export const handler = async (event) => {
       if (/^sources?$/i.test(s.heading)) { s.heading = 'Primary Sources'; primarySourcesBody = s.body; break; }
     }
     if (call2Sources.length) {
+      // Dedup: exclude any URL already present in ANY existing section body
+      const allBodies = bcSections.map(s => s.body).filter(Boolean).join(' ');
       const secondary = call2Sources
-        .filter(s => !primarySourcesBody || !primarySourcesBody.includes(s.body))
+        .filter(s => !allBodies.includes(s.body))
         .map(s => `[${s.heading}](${s.body})`);
       if (secondary.length) bcSections.push({ heading: 'Secondary Sources', body: secondary.join('\n'), flag: 'none' });
     }
