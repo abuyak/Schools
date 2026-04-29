@@ -2736,7 +2736,10 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
   }
 
   // ── KS4 (secondary) ───────────────────────────────────────────────────────
-  if (/secondary|all.through/i.test(ph) || v('P8MEA')) {
+  // Show if the school has ANY KS4 data (not just Progress 8 — some independent
+  // schools have Attainment 8 but no P8, and all-through schools may show
+  // "Not applicable" as their phase).
+  if (/secondary|all.through/i.test(ph) || v('P8MEA') || v('ATT8SCR') || v('PTL2BASICS_95') || v('PTL2BASICS_94')) {
     // Attainment
     const att8     = v('ATT8SCR');
     const att8g    = v('ATT8SCR_GIRLS');
