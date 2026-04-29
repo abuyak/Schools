@@ -683,7 +683,24 @@ export const handler = async (event) => {
 
     // ── Step 5: Assemble and return ───────────────────────────────────────────
     // Part A sections already have _partLabel on A1; tag B1 and C1 from Call 2.
-    const finalSections = tagPartLabels(interleaveVerdicts(partASections, bcSections));
+    let finalSections = tagPartLabels(interleaveVerdicts(partASections, bcSections));
+
+    // Apply deterministic flag overrides to AI-generated verdict sections.
+    // partAFlags keys are like 'A5. Academic Performance'; verdict headings
+    // are like 'A5. Observations'. Match on the numeric prefix.
+    if (Object.keys(partAFlags).length) {
+      for (const s of finalSections) {
+        const prefix = s.heading?.match(/^(A\d+)\./)?.[1];  // e.g. "A5"
+        if (!prefix) continue;
+        // Find the matching data-section flag key (e.g. "A5. Academic Performance")
+        for (const [flagKey, flagVal] of Object.entries(partAFlags)) {
+          if (flagKey.startsWith(prefix + '.') && flagVal !== undefined) {
+            s.flag = flagVal;
+            break;
+          }
+        }
+      }
+    }
 
     const ms = Date.now() - t0;
     const call2Usage = call2Response?.usage ?? {};
