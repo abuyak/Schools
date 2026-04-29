@@ -284,6 +284,14 @@ function parseOpenAIResponse(apiResponse) {
             }
           }
         }
+        // Fallback: extract markdown links from output text
+        const text = c.text ?? '';
+        const urlRe = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+        for (const m of text.matchAll(urlRe)) {
+          if (!sources.some(e => e.body === m[2])) {
+            sources.push({ heading: m[1], body: m[2] });
+          }
+        }
       }
     }
   }
@@ -678,21 +686,24 @@ export const handler = async (event) => {
       }
     }
 
-    // Debug: log output item structure to diagnose where sources live
-    const outputItemTypes = (call2Response?.output ?? []).map(item => ({
-      type: item.type,
-      keys: Object.keys(item),
-      actionKeys: item.action ? Object.keys(item.action) : null,
-      hasContent: item.type === 'message' && Array.isArray(item.content),
-      contentTypes: item.type === 'message' && Array.isArray(item.content)
-        ? item.content.map(c => ({ type: c.type, hasAnnotations: Array.isArray(c.annotations), annotationCount: c.annotations?.length ?? 0 }))
-        : null,
-    }));
-    log('research_debug_sources', {
-      outputItemTypes,
-      call2SourcesFound: call2Sources.length,
-      call2SearchesFound: call2Searches.length,
-    });
+    // Fallback: extract URLs from the output text itself. gpt-5.4-mini cites
+    // sources inline as markdown links [label](url). Parse those when the API
+    // doesn't populate url_citation annotations.
+    if (!call2Sources.length) {
+      for (const item of (call2Response?.output ?? [])) {
+        if (item.type === 'message' && Array.isArray(item.content)) {
+          for (const c of item.content) {
+            const text = c.text ?? '';
+            const urlRe = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+            for (const m of text.matchAll(urlRe)) {
+              if (!call2Sources.some(e => e.body === m[2])) {
+                call2Sources.push({ heading: m[1], body: m[2] });
+              }
+            }
+          }
+        }
+      }
+    }
 
     // Rename model's "Sources" section → "Primary Sources", append Secondary Sources
     let primarySourcesBody = null;
