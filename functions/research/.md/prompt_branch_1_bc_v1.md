@@ -291,7 +291,12 @@ If a child description was provided, add one sentence at the end on overall fit.
 
 ### **C4. Sources**
 
-Short source list using markdown hyperlinks — format each entry as `[Descriptive title](https://full-url)`. Do not link to local prompt or data files. Do not list sources without a URL.
+Short source list using markdown hyperlinks. EVERY entry MUST include a real URL:
+```
+- [Get Information About Schools: school name](https://www.get-information-schools.service.gov.uk/Establishments/Establishment/Details/URN)
+- [Compare School Performance: school name](https://www.compare-school-performance.service.gov.uk/school/URN)
+```
+Do NOT list a source name without a live URL. If you don't have the URL, don't include that source. Sources without URLs will be stripped by the system.
 
 ---
 
