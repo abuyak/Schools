@@ -273,24 +273,39 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
   };
 
   // ── Extract sub-grades from PDF text ──────────────────────────────────────
-  // Ofsted PDFs list grades on page 1–2. These serve as a fallback when the
-  // HTML page has no sub-grades (e.g. ungraded/monitoring inspections where
-  // the most recent graded inspection data is only available in the PDF).
+  // Ofsted PDFs list grades on page 1–2 in a block.  Two frameworks exist:
+  //   2019–2024: Quality of education / Behaviour and attitudes / Personal
+  //              development / Leadership and management
+  //   Pre-2019:  Quality of teaching, learning and assessment / Personal
+  //              development, behaviour and welfare / Outcomes for pupils /
+  //              Effectiveness of leadership and management
+  // Both list "Overall effectiveness" first.
   const pdfSubGrades = {};
-  const gradeRe = /(Overall effectiveness|Quality of education|Behaviour and attitudes|Personal development|Leadership and management|Early years provision|Sixth form provision|Achievement|Attendance and behaviour|Curriculum and teaching|Inclusion|Leadership and governance|Personal development and wellbeing)\s*(?:–|-|:)?\s*(Outstanding|Good|Requires Improvement|Inadequate|Excellent)/gi;
+  // Match: "Label Grade" or "Label: Grade" or "Label – Grade"
+  const gradeRe = /(Overall effectiveness|Quality of education|Behaviour and attitudes|Personal development(?:,\s*behaviour\s+and\s+welfare)?|Leadership and management|Effectiveness of leadership and management|Early years provision|Sixth form provision|Achievement|Attendance and behaviour|Curriculum and teaching|Inclusion|Leadership and governance|Personal development and wellbeing|Quality of teaching,\s*learning\s+and\s+assessment|Outcomes for pupils|Personal development,\s*behaviour\s+and\s+welfare)\s*(?:–|-|:)?\s*(Outstanding|Good|Requires Improvement|Inadequate|Excellent)/gi;
   for (const m of text.matchAll(gradeRe)) {
-    const label = m[1].toLowerCase().trim();
+    const label = m[1].toLowerCase().trim().replace(/,/g, '');
     const grade = m[2];
     pdfSubGrades[label] = grade;
-    // Also map to the camelCase keys used downstream
-    if (label === 'quality of education' || label === 'curriculum and teaching')
+    // Map to the camelCase keys used downstream.
+    // Current framework (2019–2024)
+    if (label === 'quality of education'
+        || label === 'curriculum and teaching'
+        || label === 'quality of teaching learning and assessment')
       pdfSubGrades.qualityOfEducation = grade;
-    if (label === 'behaviour and attitudes' || label === 'attendance and behaviour')
+    if (label === 'behaviour and attitudes'
+        || label === 'attendance and behaviour')
       pdfSubGrades.behaviour = grade;
-    if (label === 'personal development' || label === 'personal development and wellbeing')
+    if (label === 'personal development'
+        || label === 'personal development and wellbeing'
+        || label === 'personal development behaviour and welfare')
       pdfSubGrades.personalDevelopment = grade;
-    if (label === 'leadership and management' || label === 'leadership and governance')
+    if (label === 'leadership and management'
+        || label === 'leadership and governance'
+        || label === 'effectiveness of leadership and management')
       pdfSubGrades.leadership = grade;
+    if (label === 'outcomes for pupils')
+      pdfSubGrades.achievement = grade;
     if (label === 'achievement')
       pdfSubGrades.achievement = grade;
     if (label === 'early years provision')
@@ -3658,8 +3673,11 @@ export function renderPartA(school, flags = {}) {
       if (ofsted.safeguarding) lines.push(`\nSafeguarding status: ${ofsted.safeguarding}`);
       lines.push('');
 
-      // Detect framework: new (Nov-2025) vs old
+      // Detect framework. New (Nov-2025+) has achievement/attendance/curriculum.
+      // Old (2019–2024) has qualityOfEducation/behaviour/personalDevelopment.
+      // Pre-2019 (from graded PDF fallback) may only have the old labels.
       const isNew = !!(ofsted.achievement || ofsted.attendance || ofsted.curriculum);
+      const hasOldGrades = !!(ofsted.qualityOfEducation || ofsted.behaviour || ofsted.personalDevelopment || ofsted.leadership);
       lines.push('| Area | Grade |', '|---|---|');
       lines.push(`| Overall | ${ofsted.overall} |`);
       if (isNew) {
@@ -3670,12 +3688,12 @@ export function renderPartA(school, flags = {}) {
         if (ofsted.leadershipGov) lines.push(`| Leadership and Governance | ${ofsted.leadershipGov} |`);
         if (ofsted.wellbeing)     lines.push(`| Personal Development and Wellbeing | ${ofsted.wellbeing} |`);
         if (ofsted.post16)        lines.push(`| Post-16 Provision | ${ofsted.post16} |`);
-      } else {
+      } else if (hasOldGrades) {
         if (ofsted.qualityOfEducation)  lines.push(`| Quality of Education | ${ofsted.qualityOfEducation} |`);
         if (ofsted.behaviour)           lines.push(`| Behaviour and Attitudes | ${ofsted.behaviour} |`);
         if (ofsted.personalDevelopment) lines.push(`| Personal Development | ${ofsted.personalDevelopment} |`);
         if (ofsted.leadership)          lines.push(`| Leadership and Management | ${ofsted.leadership} |`);
-        if (ofsted.sixth)               lines.push(`| Sixth Form | ${ofsted.sixth} |`);
+        if (ofsted.sixthForm)           lines.push(`| Sixth Form | ${ofsted.sixthForm} |`);
       }
 
       // Deterministic verdict (old framework only — new framework uses different terminology)
@@ -3683,7 +3701,8 @@ export function renderPartA(school, flags = {}) {
         const RANK = { 'Outstanding': 4, 'Exceptional': 5, 'Good': 3, 'Requires Improvement': 2, 'Inadequate': 1 };
         const overallRank = RANK[ofsted.overall] ?? 3;
         const subGrades = [ofsted.qualityOfEducation, ofsted.behaviour, ofsted.personalDevelopment, ofsted.leadership, ofsted.sixth].filter(Boolean);
-        if (subGrades.length) {
+        if (subGrades.length >= 3) {
+          // We have enough sub-grades to make a meaningful verdict
           const weaker   = subGrades.filter(g => (RANK[g] ?? 3) < overallRank);
           const standout = subGrades.filter(g => (RANK[g] ?? 3) > overallRank);
           lines.push('');
