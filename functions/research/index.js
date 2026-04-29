@@ -647,9 +647,11 @@ export const handler = async (event) => {
       }
     }
 
-    // Debug: log the output item types and whether we found sources
+    // Debug: log the output item types and all top-level keys for diagnostics
     const outputItemTypes = (call2Response?.output ?? []).map(item => ({
       type: item.type,
+      keys: Object.keys(item),
+      actionKeys: item.action ? Object.keys(item.action) : null,
       hasActionSources: !!item.action?.sources,
       hasSources: !!item.sources,
       sourceCount: (item.action?.sources ?? item.sources ?? []).length,
@@ -658,6 +660,7 @@ export const handler = async (event) => {
       outputItemTypes,
       call2SourcesFound: call2Sources.length,
       call2SearchesFound: call2Searches.length,
+      includeParam: 'web_search_call.action.sources',
     });
 
     // Rename model's "Sources" section → "Primary Sources", append Secondary Sources
