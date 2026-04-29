@@ -272,7 +272,37 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
       .trim() || null;
   };
 
+  // ── Extract sub-grades from PDF text ──────────────────────────────────────
+  // Ofsted PDFs list grades on page 1–2. These serve as a fallback when the
+  // HTML page has no sub-grades (e.g. ungraded/monitoring inspections where
+  // the most recent graded inspection data is only available in the PDF).
+  const pdfSubGrades = {};
+  const gradeRe = /(Overall effectiveness|Quality of education|Behaviour and attitudes|Personal development|Leadership and management|Early years provision|Sixth form provision|Achievement|Attendance and behaviour|Curriculum and teaching|Inclusion|Leadership and governance|Personal development and wellbeing)\s*(?:–|-|:)?\s*(Outstanding|Good|Requires Improvement|Inadequate|Excellent)/gi;
+  for (const m of text.matchAll(gradeRe)) {
+    const label = m[1].toLowerCase().trim();
+    const grade = m[2];
+    pdfSubGrades[label] = grade;
+    // Also map to the camelCase keys used downstream
+    if (label === 'quality of education' || label === 'curriculum and teaching')
+      pdfSubGrades.qualityOfEducation = grade;
+    if (label === 'behaviour and attitudes' || label === 'attendance and behaviour')
+      pdfSubGrades.behaviour = grade;
+    if (label === 'personal development' || label === 'personal development and wellbeing')
+      pdfSubGrades.personalDevelopment = grade;
+    if (label === 'leadership and management' || label === 'leadership and governance')
+      pdfSubGrades.leadership = grade;
+    if (label === 'achievement')
+      pdfSubGrades.achievement = grade;
+    if (label === 'early years provision')
+      pdfSubGrades.earlyYears = grade;
+    if (label === 'sixth form provision')
+      pdfSubGrades.sixthForm = grade;
+  }
+
   return {
+    // PDF-extracted sub-grades (fallback when HTML scrape finds none)
+    pdfSubGrades: Object.keys(pdfSubGrades).length > 0 ? pdfSubGrades : null,
+
     // ── Present in all report types ───────────────────────────────────────
     // "What it's like to be a pupil / attend this school" — the introductory
     // narrative paragraph(s). Truncated to ~800 chars so the AI summarises
@@ -3377,8 +3407,19 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
 
       // IMPORTANT: PDF narrative fields are stored under *Detail keys to avoid
       // clobbering the grade strings of the same name on ofstedBase.
+      // PDF sub-grades fill gaps when the HTML scrape has none (common for
+      // ungraded/monitoring inspections where the page lacks subjudgements).
+      const pdfSg = pdfSections?.pdfSubGrades ?? null;
       const ofsted = ofstedBase ? {
         ...ofstedBase,
+        // HTML sub-grades first, PDF as fallback
+        qualityOfEducation:             ofstedBase.qualityOfEducation          ?? pdfSg?.qualityOfEducation   ?? null,
+        behaviour:                      ofstedBase.behaviour                   ?? pdfSg?.behaviour            ?? null,
+        personalDevelopment:            ofstedBase.personalDevelopment         ?? pdfSg?.personalDevelopment  ?? null,
+        leadership:                     ofstedBase.leadership                  ?? pdfSg?.leadership           ?? null,
+        sixthForm:                      ofstedBase.sixthForm                   ?? pdfSg?.sixthForm            ?? null,
+        achievement:                    ofstedBase.achievement                 ?? pdfSg?.achievement          ?? null,
+        // PDF narrative (detail) sections
         pupilExperience:               pdfSections?.pupilExperience         ?? null,
         qualityOfEducationDetail:      pdfSections?.qualityOfEducation      ?? null,
         behaviourAndAttitudesDetail:   pdfSections?.behaviourAndAttitudes   ?? null,
