@@ -2457,6 +2457,22 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
 
   const v = (code) => allRows.find(r => r.variable === code)?.value ?? null;
 
+  // Variant finder — discovers gendered/FSM/EAL/prior-year breakdowns
+  const findVar = (base) => {
+    const r = { all: v(base) };
+    for (const [s, k] of [['_BOYS','boys'],['_GIRLS','girls'],['_FSM6CLA1A','dis'],['_NFSM6CLA1A','ndis'],['_EAL','eal'],['_PREV','prev'],['_PREV2','prev2']]) {
+      const val = v(base + s); if (val != null) r[k] = val;
+    }
+    if (base.startsWith('PT')) {
+      const t = base.slice(2);
+      if (!r.boys) { const bv = v('PB' + t); if (bv != null) r.boys = bv; }
+      if (!r.girls) { const gv = v('PG' + t); if (gv != null) r.girls = gv; }
+    }
+    if (!r.eal && /BASICS/.test(base)) { const ev = v(base.replace('BASICS', 'BASICSEAL')); if (ev != null) r.eal = ev; }
+    if (!r.eal && /EBACC/.test(base)) { const ev = v(base.replace('EBACC', 'EBACCEAL')); if (ev != null) r.eal = ev; }
+    return r;
+  };
+
   // DfE uses 0, 0%, 0.0% as suppression markers for small cohorts.
   const suppressed = (val) => {
     if (val == null) return true;
@@ -2530,7 +2546,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
   const KS4_TOPICS = [
     {
       heading: 'Attainment 8',
-      cols: 'all',
+      cols: 'abgd',
       rows: [
         { label: 'Attainment 8 score', var: 'ATT8SCR', eng: String(nat4.ATT8SCR) },
       ],
@@ -2554,21 +2570,21 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     },
     {
       heading: 'Grade 5+ English & Maths',
-      cols: 'all',
+      cols: 'abgd',
       rows: [
         { label: '% grade 5+ English & maths', var: 'PTL2BASICS_95', eng: nat4.PTL2BASICS_95 + '%' },
       ],
     },
     {
       heading: 'Grade 4+ English & Maths',
-      cols: 'all',
+      cols: 'abgd',
       rows: [
         { label: '% grade 4+ English & maths', var: 'PTL2BASICS_94', eng: nat4.PTL2BASICS_94 + '%' },
       ],
     },
     {
       heading: 'EBacc entry',
-      cols: 'all',
+      cols: 'abgd',
       rows: [
         { label: '% entering EBacc', var: 'PTEBACC_E_PTQ_EE', eng: nat4.PTEBACC_E_PTQ_EE + '%' },
       ],
@@ -2586,7 +2602,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     },
     {
       heading: 'EBacc achievement',
-      cols: 'all',
+      cols: 'abgd',
       rows: [
         { label: '% EBacc 5+', var: 'PTEBACC_95' },
         { label: '% EBacc 4+', var: 'PTEBACC_94', eng: nat4.PTEBACC_94 + '%' },
@@ -2676,49 +2692,39 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
 
       const cells = [row.label];
 
+      const vars = findVar(row.var);
+      const push = (v) => cells.push(v != null ? c(v) : '—');
+
       if (showAll) {
-        let cell = c(val);
+        let cell = c(vars.all);
         if (row.ciLo && row.ciHi) {
           const lo = v(row.ciLo), hi = v(row.ciHi);
-          if (lo != null && hi != null) cell += ` (CI: ${lo} to ${hi})`;
+          if (lo != null && hi != null) cell += ' (CI: ' + lo + ' to ' + hi + ')';
         }
         cells.push(cell);
       }
-      if (showB) {
-        const bvar = row.var + '_BOYS';
-        if (!bvar || bvar === row.var + '_BOYS') cells.push(c(v(row.var.replace('_95','_95').replace('_94','_94') + '_BOYS') || v(row.var + '_BOYS')));
-      }
-      // Simpler: just show All pupils for the main metric, other columns as "—"
-      // This avoids complex suffix-mangling. For a data-driven approach, we
-      // detect gendered/FSM variants by naming convention.
-      if (showB) {
-        // Try common gender suffixes
-        const bVal = v(row.var + '_BOYS') ?? v(row.var.replace(/ALL$/, 'B')) ?? v(row.var.replace('SCR', 'SCR_BOYS'));
-        cells.push(c(bVal));
-      }
-      if (showG) {
-        const gVal = v(row.var + '_GIRLS') ?? v(row.var.replace(/ALL$/, 'G')) ?? v(row.var.replace('SCR', 'SCR_GIRLS'));
-        cells.push(c(gVal));
-      }
-      if (showD) {
-        const dVal = v(row.var + '_FSM6CLA1A') ?? v(row.var.replace('ALL', 'FSM6CLA1A'));
-        cells.push(c(dVal));
-      }
-      if (showEal) {
-        const eVal = v(row.var + '_EAL') ?? v(row.var.replace('ALL', 'EAL'));
-        cells.push(c(eVal));
-      }
-      if (showLa) {
-        // Map to laPerf key
-        cells.push('—');
-      }
-      if (showEng) {
-        cells.push(row.eng ?? '—');
-      }
+      if (showB)   push(vars.boys);
+      if (showG)   push(vars.girls);
+      if (showD)   push(vars.dis);
+      if (showEal) push(vars.eal);
+      if (showLa)  cells.push('—');
+      if (showEng) cells.push(row.eng ?? '—');
 
-      // Only add row if it has any non-dash value beyond the label
       if (cells.slice(1).some(cell => cell !== '—')) {
         lines.push('| ' + cells.join(' | ') + ' |');
+      }
+
+      // Prior-year comparator
+      if (vars.prev != null && !suppressed(vars.prev)) {
+        const pyCells = [row.label + ' (prior year)'];
+        if (showAll) pyCells.push(c(vars.prev));
+        if (showB)   pyCells.push('—');
+        if (showG)   pyCells.push('—');
+        if (showD)   pyCells.push('—');
+        if (showEal) pyCells.push('—');
+        if (showLa)  pyCells.push('—');
+        if (showEng) pyCells.push('—');
+        lines.push('| ' + pyCells.join(' | ') + ' |');
       }
     }
   }
