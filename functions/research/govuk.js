@@ -2792,7 +2792,14 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
 
     if (p8 || att8 || g4all || g5all) {
       const nat4 = NATIONAL_AVG.KS4;
-      const c = (val) => val ?? '—';
+      // DfE uses "0.0%" / "0%" to indicate suppressed data (small cohort).
+      // Treat these as unavailable rather than zero achievement.
+      const c = (val) => {
+        if (!val) return '—';
+        const s = String(val).trim();
+        if (s === '0.0%' || s === '0%' || s === '0') return '—';
+        return s;
+      };
       const la = (field) => laPerf?.[field] != null ? String(laPerf[field]) : '—';
 
       lines.push('');

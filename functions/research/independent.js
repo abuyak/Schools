@@ -123,24 +123,31 @@ function parseISIListingPage(html) {
 export async function findISIInstitution(schoolName) {
   const nameLower = schoolName.toLowerCase().trim();
   const nameWords = nameLower.split(/\s+/).filter(w => w.length > 2);
+  // Also try with apostrophes/special chars replaced by spaces (handles
+  // "Alleyn's" → "alleyn s" matching index key "alleyn s school").
+  const nameNormalised = nameLower.replace(/[''`’]/g, ' ').replace(/\s+/g, ' ').trim();
+  const nameWordsNorm = nameNormalised.split(/\s+/).filter(w => w.length > 2);
 
   // ── Try bundled index first (zero latency) ─────────────────────────────────
   const index = loadISIIndex();
   if (index?.byName) {
-    // Exact match
-    if (index.byName[nameLower]) {
-      const entry = index.byName[nameLower];
+    // Exact match (try original then normalised)
+    let entry = index.byName[nameLower] ?? index.byName[nameNormalised];
+    if (entry) {
       return { slug: entry.slug, id: entry.id, nameHint: entry.nameHint };
     }
-    // Fuzzy match: find the entry with the most word overlap
+    // Fuzzy match: find the entry with the most word overlap.
+    // Try original words first, then normalised words.
     let best = null;
     let bestScore = 0;
-    for (const [key, entry] of Object.entries(index.byName)) {
+    for (const [key, entry2] of Object.entries(index.byName)) {
       if (key.startsWith('_id:')) continue;
-      const matched = nameWords.filter(w => key.includes(w)).length;
+      const matchedOrig = nameWords.filter(w => key.includes(w)).length;
+      const matchedNorm = nameWordsNorm.filter(w => key.includes(w)).length;
+      const matched = Math.max(matchedOrig, matchedNorm);
       if (matched > bestScore && matched >= Math.min(2, nameWords.length)) {
         bestScore = matched;
-        best = entry;
+        best = entry2;
       }
     }
     if (best) {
