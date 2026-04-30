@@ -2514,9 +2514,18 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
   const hasKS5 = hasNs('KS5');
 
   // LA helpers (populated when laPerf is available)
-  const la  = (field) => laPerf?.[field] != null ? String(laPerf[field]) : '—';
-  const laPct = (field) => laPerf?.[field] != null ? laPerf[field] + '%' : '—';
-  const laS  = (field) => laPerf?.[field] != null ? String(laPerf[field]) : '—';
+  // Supports nested paths like 'rwm.expected'
+  const la = (path) => {
+    if (!laPerf) return '—';
+    const parts = path.split('.');
+    let v = laPerf;
+    for (const p of parts) { v = v?.[p]; if (v == null) return '—'; }
+    return String(v);
+  };
+  const laPct = (path) => {
+    const val = la(path);
+    return val !== '—' ? val + '%' : '—';
+  };
 
   // ── Topic registry ────────────────────────────────────────────────────────
   //
@@ -2532,45 +2541,46 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       heading: 'Cohort',
       cols: 'abgdelE',
       rows: [
-        { label: 'Eligible cohort', var: 'TELIG' },
+        { label: 'Eligible cohort', var: 'TELIG',
+          colVars: { '_G': 'GELIG', '_B': 'BELIG', '_FSM6CLA1A': 'TFSM6CLA1A', '_EAL': 'TEALGRP2' } },
       ],
     },
     {
       heading: 'Attainment',
       cols: 'abgdelE',
       rows: [
-        { label: '% meeting expected standard (RWM)', var: 'PTRWM_EXP', eng: nat2.PTRWM_EXP + '%' },
-        { label: '% achieving higher standard (RWM)', var: 'PTRWM_HIGH', eng: nat2.PTRWM_HIGH + '%' },
+        { label: '% meeting expected standard (RWM)', var: 'PTRWM_EXP', la: 'rwm.expected', eng: nat2.PTRWM_EXP + '%' },
+        { label: '% achieving higher standard (RWM)', var: 'PTRWM_HIGH', la: 'rwm.higher', eng: nat2.PTRWM_HIGH + '%' },
       ],
     },
     {
       heading: 'Scaled scores',
       cols: 'abgdelE',
       rows: [
-        { label: 'Reading — average scaled score', var: 'READ_AVERAGE', eng: '105' },
-        { label: 'Maths — average scaled score', var: 'MAT_AVERAGE', eng: '104' },
-        { label: 'GPS — average scaled score', var: 'GPS_AVERAGE', eng: '105' },
+        { label: 'Reading — average scaled score', var: 'READ_AVERAGE', la: 'reading.avgScore', eng: '105' },
+        { label: 'Maths — average scaled score', var: 'MAT_AVERAGE', la: 'maths.avgScore', eng: '104' },
+        { label: 'GPS — average scaled score', var: 'GPS_AVERAGE', la: 'gps.avgScore', eng: '105' },
       ],
     },
     {
       heading: 'Per-subject attainment — % expected standard',
       cols: 'abgdelE',
       rows: [
-        { label: 'Reading', var: 'PTREAD_EXP', eng: nat2.PTREAD_EXP + '%' },
-        { label: 'Writing (TA)', var: 'PTWRITTA_EXP', eng: nat2.PTWRITTA_EXP + '%' },
-        { label: 'Maths', var: 'PTMAT_EXP', eng: nat2.PTMAT_EXP + '%' },
-        { label: 'GPS', var: 'PTGPS_EXP', eng: nat2.PTGPS_EXP + '%' },
-        { label: 'Science (TA)', var: 'PTSCITA_EXP', eng: nat2.PTSCITA_EXP + '%' },
+        { label: 'Reading', var: 'PTREAD_EXP', la: 'reading.expected', eng: nat2.PTREAD_EXP + '%' },
+        { label: 'Writing (TA)', var: 'PTWRITTA_EXP', la: 'writing.expected', eng: nat2.PTWRITTA_EXP + '%' },
+        { label: 'Maths', var: 'PTMAT_EXP', la: 'maths.expected', eng: nat2.PTMAT_EXP + '%' },
+        { label: 'GPS', var: 'PTGPS_EXP', la: 'gps.expected', eng: nat2.PTGPS_EXP + '%' },
+        { label: 'Science (TA)', var: 'PTSCITA_EXP', la: 'science.expected', eng: nat2.PTSCITA_EXP + '%' },
       ],
     },
     {
       heading: 'Per-subject attainment — % higher standard',
       cols: 'abgdelE',
       rows: [
-        { label: 'Reading', var: 'PTREAD_HIGH', eng: nat2.PTREAD_HIGH + '%' },
-        { label: 'Writing (TA)', var: 'PTWRITTA_HIGH', eng: nat2.PTWRITTA_HIGH + '%' },
-        { label: 'Maths', var: 'PTMAT_HIGH', eng: nat2.PTMAT_HIGH + '%' },
-        { label: 'GPS', var: 'PTGPS_HIGH', eng: nat2.PTGPS_HIGH + '%' },
+        { label: 'Reading', var: 'PTREAD_HIGH', la: 'reading.higher', eng: nat2.PTREAD_HIGH + '%' },
+        { label: 'Writing (TA)', var: 'PTWRITTA_HIGH', la: 'writing.higher', eng: nat2.PTWRITTA_HIGH + '%' },
+        { label: 'Maths', var: 'PTMAT_HIGH', la: 'maths.higher', eng: nat2.PTMAT_HIGH + '%' },
+        { label: 'GPS', var: 'PTGPS_HIGH', la: 'gps.higher', eng: nat2.PTGPS_HIGH + '%' },
       ],
     },
     {
@@ -2858,12 +2868,18 @@ const KS5_TOPICS = [
         }
         cells.push(cell);
       }
-      if (showG) cells.push(c(findVar(row.var, '_G')));
-      if (showB) cells.push(c(findVar(row.var, '_B')));
-      if (showD) cells.push(c(findVar(row.var, '_FSM6CLA1A')));
-      if (showEal) cells.push(c(findVar(row.var, '_EAL')));
+      const cv = row.colVars || {};
+      if (showG) cells.push(c(cv['_G'] ? v(cv['_G']) : findVar(row.var, '_G')));
+      if (showB) cells.push(c(cv['_B'] ? v(cv['_B']) : findVar(row.var, '_B')));
+      if (showD) cells.push(c(cv['_FSM6CLA1A'] ? v(cv['_FSM6CLA1A']) : findVar(row.var, '_FSM6CLA1A')));
+      if (showEal) cells.push(c(cv['_EAL'] ? v(cv['_EAL']) : findVar(row.var, '_EAL')));
       if (showLa) {
-        cells.push('—');
+        if (row.la) {
+          const laVal = la(row.la);
+          cells.push(laVal !== '—' && row.la.includes('Score') ? laVal : laPct(row.la));
+        } else {
+          cells.push('—');
+        }
       }
       if (showEng) {
         cells.push(row.eng ?? '—');
