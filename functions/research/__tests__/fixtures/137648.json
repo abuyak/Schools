@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 137648,
     "label": "state-primary",
-    "capturedAt": "2026-04-30T20:35:54.660Z",
+    "capturedAt": "2026-04-30T20:45:10.311Z",
     "note": "KS1 + KS2 — largest data set for primary"
   },
   "input": "Redriff Primary",
@@ -981,12 +981,12 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 248,
+      "totalTransactions": 110,
       "postcodesQueried": 100,
-      "medianAllTypes": "£520,000",
+      "medianAllTypes": "£525,000",
       "byType": {
-        "Flat / Maisonette": "£450,000",
-        "Terraced": "£700,000",
+        "Flat / Maisonette": "£480,000",
+        "Terraced": "£780,000",
         "Semi-detached": "£675,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -1047,34 +1047,46 @@
   },
   "laPerf": {
     "rwm": {
-      "expected": "70",
-      "higher": "12",
-      "avgScore": null
+      "yr25": {
+        "expected": "67",
+        "higher": "12",
+        "avgScore": null
+      }
     },
     "reading": {
-      "expected": "80",
-      "higher": "39",
-      "avgScore": "107"
+      "yr25": {
+        "expected": null,
+        "higher": null,
+        "avgScore": "106"
+      }
     },
     "writing": {
-      "expected": "78",
-      "higher": "19",
-      "avgScore": null
+      "yr25": {
+        "expected": null,
+        "higher": null,
+        "avgScore": null
+      }
     },
     "maths": {
-      "expected": "80",
-      "higher": "31",
-      "avgScore": "106"
+      "yr25": {
+        "expected": null,
+        "higher": null,
+        "avgScore": "105"
+      }
     },
     "gps": {
-      "expected": "79",
-      "higher": "37",
-      "avgScore": "107"
+      "yr25": {
+        "expected": "79",
+        "higher": "37",
+        "avgScore": "107"
+      }
     },
     "science": {
-      "expected": "85",
-      "higher": null,
-      "avgScore": null
+      "yr25": {
+        "expected": "85",
+        "higher": null,
+        "avgScore": null
+      }
     }
   },
   "schoolEthnicity": {

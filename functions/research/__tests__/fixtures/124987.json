@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 124987,
     "label": "state-infant",
-    "capturedAt": "2026-04-30T20:35:37.877Z",
+    "capturedAt": "2026-04-30T20:44:55.445Z",
     "note": "KS1 only — no KS2/KS4/KS5 data expected"
   },
   "input": "Earlswood Infant and Nursery School",
@@ -298,13 +298,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 420,
+      "totalTransactions": 287,
       "postcodesQueried": 100,
-      "medianAllTypes": "£425,000",
+      "medianAllTypes": "£435,000",
       "byType": {
-        "Semi-detached": "£496,500",
-        "Terraced": "£422,500",
-        "Flat / Maisonette": "£235,000",
+        "Semi-detached": "£505,000",
+        "Terraced": "£410,000",
+        "Flat / Maisonette": "£270,000",
         "Detached": "£560,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -365,34 +365,46 @@
   },
   "laPerf": {
     "rwm": {
-      "expected": "66",
-      "higher": "11",
-      "avgScore": null
+      "yr25": {
+        "expected": "65",
+        "higher": "11",
+        "avgScore": null
+      }
     },
     "reading": {
-      "expected": "80",
-      "higher": "41",
-      "avgScore": "107"
+      "yr25": {
+        "expected": null,
+        "higher": null,
+        "avgScore": "107"
+      }
     },
     "writing": {
-      "expected": "75",
-      "higher": "15",
-      "avgScore": null
+      "yr25": {
+        "expected": null,
+        "higher": null,
+        "avgScore": null
+      }
     },
     "maths": {
-      "expected": "78",
-      "higher": "32",
-      "avgScore": "106"
+      "yr25": {
+        "expected": null,
+        "higher": null,
+        "avgScore": "105"
+      }
     },
     "gps": {
-      "expected": "77",
-      "higher": "35",
-      "avgScore": "107"
+      "yr25": {
+        "expected": "77",
+        "higher": "35",
+        "avgScore": "107"
+      }
     },
     "science": {
-      "expected": "85",
-      "higher": null,
-      "avgScore": null
+      "yr25": {
+        "expected": "85",
+        "higher": null,
+        "avgScore": null
+      }
     }
   },
   "schoolEthnicity": {
