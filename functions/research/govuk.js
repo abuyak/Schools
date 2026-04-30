@@ -2627,6 +2627,19 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
         { label: 'Languages 9-5', var: 'PTEBACLAN_95' },
       ],
     },
+    {
+      heading: 'KS4 destinations (2022/23 leavers)',
+      cols: 'all',
+      rows: [
+        { label: '% sustained education or employment', var: 'OVERALL_DESTPER' },
+        { label: '% in education', var: 'EDUCATIONPER' },
+        { label: '% sixth form college', var: 'SIXTH_COLPER' },
+        { label: '% further education', var: 'FEPER' },
+        { label: '% apprenticeships', var: 'APPRENPER' },
+        { label: '% employment', var: 'EMPLOYMENTPER' },
+        { label: '% not sustained', var: 'NOT_SUSTAINEDPER' },
+      ],
+    },
   ];
 
   const KS5_TOPICS = [
@@ -2672,12 +2685,33 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       ],
     },
     {
-      heading: 'Destinations',
+      heading: 'Level 3 destinations (A-level cohort)',
       cols: 'all',
       rows: [
-        { label: '% to higher education', var: 'TOT_HEPER' },
-        { label: '% to any sustained destination', var: 'ALL_PROGRESSED' },
-        { label: '% staying in education', var: 'L3_EDUCATIONPER' },
+        { label: '% sustained education or employment', var: 'L3_OVERALLPER' },
+        { label: '% higher education', var: 'L3_HEPER' },
+        { label: '% employment', var: 'L3_EMPLOYMENTPER' },
+        { label: '% apprenticeships', var: 'L3_APPRENPER' },
+        { label: '% further education', var: 'L3_FEPER' },
+        { label: '% not sustained', var: 'L3_NOT_SUSTAINEDPER' },
+      ],
+    },
+    {
+      heading: 'Disadvantaged progression gap',
+      cols: 'all',
+      rows: [
+        { label: '% progressed (disadvantaged)', var: 'DIS_PROGRESSED' },
+        { label: '% progressed (all)', var: 'ALL_PROGRESSED' },
+        { label: '% HE (disadvantaged)', var: 'DIS_HE' },
+        { label: '% HE (all)', var: 'ALL_HE' },
+        { label: '% top third HE (disadvantaged)', var: 'DIS_TOP3RD' },
+        { label: '% top third HE (all)', var: 'ALL_TOP3RD' },
+      ],
+    },
+    {
+      heading: 'Facilitating subjects',
+      cols: 'all',
+      rows: [
         { label: '% AAB in ≥2 facilitating subjects', var: 'PTAAB_2FAC' },
         { label: '% achieving advanced maths', var: 'L3M_PER' },
       ],
