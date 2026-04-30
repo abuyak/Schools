@@ -3666,27 +3666,29 @@ export function renderPartA(school, flags = {}) {
     const senK = v('PSENELK');
     const senE = v('PSENELSE');
 
+    const sup = (val) => { const s = String(val ?? '').trim(); return s === '0%' || s === '0.0%' || s === '0.00%' || s === '0'; };
     const lines = [
       '| Metric | School | National avg |',
       '|---|---:|---:|',
     ];
-    if (nor)  lines.push(`| Pupils on roll | ${nor} | ~280 primary / ~1,000 secondary |`);
-    if (fsm)  lines.push(`| Free School Meals (FSM) eligible — last 6 years | ${fsm} | ~25% primary / ~20% secondary |`);
-    if (eal)  lines.push(`| English as Additional Language (EAL) pupils | ${eal} | — |`);
-    if (senK) lines.push(`| Special Educational Needs (SEN) support | ${senK} | ~13% |`);
-    if (senE) lines.push(`| Education, Health and Care (EHC) plans | ${senE} | ~4.5% |`);
+    if (nor && !sup(nor))  lines.push(`| Pupils on roll | ${nor} | ~280 primary / ~1,000 secondary |`);
+    if (fsm && !sup(fsm))  lines.push(`| Free School Meals (FSM) eligible — last 6 years | ${fsm} | ~25% primary / ~20% secondary |`);
+    if (eal && !sup(eal))  lines.push(`| English as Additional Language (EAL) pupils | ${eal} | — |`);
+    if (senK && !sup(senK)) lines.push(`| Special Educational Needs (SEN) support | ${senK} | ~13% |`);
+    if (senE && !sup(senE)) lines.push(`| Education, Health and Care (EHC) plans | ${senE} | ~4.5% |`);
 
-    if (schoolEthnicity) {
+    if (schoolEthnicity && !Object.values(schoolEthnicity).every(v => v === 0 || v === '0' || v === '0%')) {
       lines.push('');
       lines.push('| Ethnic group | % of pupils |');
       lines.push('|---|---:|');
-      if (schoolEthnicity.w  != null) lines.push(`| White | ${schoolEthnicity.w}% |`);
-      if (schoolEthnicity.m  != null) lines.push(`| Mixed | ${schoolEthnicity.m}% |`);
-      if (schoolEthnicity.a  != null) lines.push(`| Asian | ${schoolEthnicity.a}% |`);
-      if (schoolEthnicity.b  != null) lines.push(`| Black | ${schoolEthnicity.b}% |`);
-      if (schoolEthnicity.c  != null) lines.push(`| Chinese | ${schoolEthnicity.c}% |`);
-      if (schoolEthnicity.o  != null) lines.push(`| Other | ${schoolEthnicity.o}% |`);
-      if (schoolEthnicity.ns != null) lines.push(`| Not stated | ${schoolEthnicity.ns}% |`);
+      const eth = schoolEthnicity;
+      if (eth.w  && eth.w  !== 0) lines.push(`| White | ${eth.w}% |`);
+      if (eth.m  && eth.m  !== 0) lines.push(`| Mixed | ${eth.m}% |`);
+      if (eth.a  && eth.a  !== 0) lines.push(`| Asian | ${eth.a}% |`);
+      if (eth.b  && eth.b  !== 0) lines.push(`| Black | ${eth.b}% |`);
+      if (eth.c  && eth.c  !== 0) lines.push(`| Chinese | ${eth.c}% |`);
+      if (eth.o  && eth.o  !== 0) lines.push(`| Other | ${eth.o}% |`);
+      if (eth.ns && eth.ns !== 0) lines.push(`| Not stated | ${eth.ns}% |`);
     }
 
     sections.push({ heading: 'A4. Pupil Census', body: lines.join('\n'), flag: flags['A4. Pupil Census'] ?? 'none' });
