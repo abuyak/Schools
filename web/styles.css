@@ -529,7 +529,8 @@ input[type="email"]:focus,
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--ink);
-  white-space: nowrap;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .md-table tbody tr:nth-child(even) td {
