@@ -568,9 +568,30 @@ function extractNamesRegex(question) {
   const pattern =
     /\b([A-Z][a-zA-Z'-]+(?:\s+(?:of|the|and|&|St\.?|Saint|de|la|les|upon|at)?\s*[A-Z][a-zA-Z'-]+){0,6}\s+(?:School|College|Academy|Grammar|Primary|Secondary|Prep|Preparatory|Infant|Junior|Senior|High|Upper|Lower|Middle|Foundation|Free\s+School|Sixth\s+Form|Nursery|Convent))\b/g;
 
+  // Words that appear as school-type descriptors, not school names.
+  // "State Infant" should not match just because Infant is a phase label.
+  const DESCRIPTOR_WORDS = new Set([
+    'state', 'independent', 'private', 'maintained', 'voluntary',
+    'community', 'foundation', 'trust', 'academy', 'free',
+    'co-ed', 'coeducational', 'mixed', 'boys', 'girls', 'single',
+    'selective', 'non-selective', 'grammar',
+    'infant', 'junior', 'primary', 'secondary', 'nursery',
+    'school', 'college', 'prep', 'preparatory', 'senior', 'high',
+    'upper', 'lower', 'middle', 'sixth', 'form', 'convent',
+    'toddler',
+  ]);
+
+  const isDescriptorOnly = (name) => {
+    const words = name.split(/\s+/).filter(w => !/^(of|the|and|&|in|at|for)$/i.test(w));
+    // If all meaningful words are type descriptors, it's not a school name
+    return words.length > 0 && words.every(w => DESCRIPTOR_WORDS.has(w.toLowerCase()));
+  };
+
   // First pass: try on the original question (handles already-capitalised input).
-  const matches1 = [...question.matchAll(pattern)];
-  if (matches1.length) return [...new Set(matches1.map(m => m[1].trim()))];
+  const matches1 = [...question.matchAll(pattern)]
+    .map(m => m[1].trim())
+    .filter(n => !isDescriptorOnly(n));
+  if (matches1.length) return [...new Set(matches1)];
 
   // Second pass: capitalise non-stop-words so the pattern can find school names
   // in all-lowercase queries like "redriff primary se16".
@@ -582,8 +603,10 @@ function extractNamesRegex(question) {
       : word.charAt(0).toUpperCase() + word.slice(1)
   );
 
-  const matches2 = [...normalised.matchAll(pattern)];
-  return [...new Set(matches2.map(m => m[1].trim()))];
+  const matches2 = [...normalised.matchAll(pattern)]
+    .map(m => m[1].trim())
+    .filter(n => !isDescriptorOnly(n));
+  return [...new Set(matches2)];
 }
 
 /**
