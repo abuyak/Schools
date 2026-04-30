@@ -2567,10 +2567,10 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       cols: 'abgdelE',
       rows: [
         { label: 'Reading', var: 'PTREAD_EXP', la: 'reading.expected', eng: nat2.PTREAD_EXP + '%' },
-        { label: 'Writing (TA)', var: 'PTWRITTA_EXP', la: 'writing.expected', eng: nat2.PTWRITTA_EXP + '%' },
+        { label: 'Writing (Teacher Assessment)', var: 'PTWRITTA_EXP', la: 'writing.expected', eng: nat2.PTWRITTA_EXP + '%' },
         { label: 'Maths', var: 'PTMAT_EXP', la: 'maths.expected', eng: nat2.PTMAT_EXP + '%' },
         { label: 'GPS', var: 'PTGPS_EXP', la: 'gps.expected', eng: nat2.PTGPS_EXP + '%' },
-        { label: 'Science (TA)', var: 'PTSCITA_EXP', la: 'science.expected', eng: nat2.PTSCITA_EXP + '%' },
+        { label: 'Science (Teacher Assessment)', var: 'PTSCITA_EXP', la: 'science.expected', eng: nat2.PTSCITA_EXP + '%' },
       ],
     },
     {
@@ -2578,18 +2578,9 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       cols: 'abgdelE',
       rows: [
         { label: 'Reading', var: 'PTREAD_HIGH', la: 'reading.higher', eng: nat2.PTREAD_HIGH + '%' },
-        { label: 'Writing (TA)', var: 'PTWRITTA_HIGH', la: 'writing.higher', eng: nat2.PTWRITTA_HIGH + '%' },
+        { label: 'Writing (Teacher Assessment)', var: 'PTWRITTA_HIGH', la: 'writing.higher', eng: nat2.PTWRITTA_HIGH + '%' },
         { label: 'Maths', var: 'PTMAT_HIGH', la: 'maths.higher', eng: nat2.PTMAT_HIGH + '%' },
         { label: 'GPS', var: 'PTGPS_HIGH', la: 'gps.higher', eng: nat2.PTGPS_HIGH + '%' },
-      ],
-    },
-    {
-      heading: 'Progress (KS1 to KS2) — 2022/23',
-      cols: 'abgdelE',
-      rows: [
-        { label: 'Reading progress', var: 'READPROG_23', ciLo: 'READPROG_LOWER_23', ciHi: 'READPROG_UPPER_23', eng: '0' },
-        { label: 'Writing progress', var: 'WRITPROG_23', ciLo: 'WRITPROG_LOWER_23', ciHi: 'WRITPROG_UPPER_23', eng: '0' },
-        { label: 'Maths progress', var: 'MATPROG_23', ciLo: 'MATPROG_LOWER_23', ciHi: 'MATPROG_UPPER_23', eng: '0' },
       ],
     },
   ];
@@ -2891,11 +2882,95 @@ const KS5_TOPICS = [
     }
   }
 
+  // ── Progress renderer (different column layout) ───────────────────────────
+
+  const PROGRESS_BANDS = ['Well below average', 'Below average', 'Average', 'Above average', 'Well above average'];
+
+  function renderProgress() {
+    const subjects = [
+      { label: 'Reading', base: 'READPROG' },
+      { label: 'Writing', base: 'WRITPROG' },
+      { label: 'Maths',  base: 'MATPROG' },
+    ];
+    const rows = subjects.filter(s => v(s.base + '_23') != null);
+    if (!rows.length) return;
+
+    lines.push('');
+    lines.push('**Progress (KS1 to KS2) — 2022/23**');
+    lines.push('| Progress Scores | Score | Banding | Confidence Interval |');
+    lines.push('|---|---:|---|---|');
+
+    for (const s of rows) {
+      const b = s.base;
+      const rawScore = v(b + '_23');
+      const score = rawScore != null ? String(rawScore).trim() : '—';
+      const descrIdx = parseInt(v(b + '_DESCR_23') ?? '3', 10);
+      const band = PROGRESS_BANDS[Math.max(0, Math.min(4, (descrIdx || 3) - 1))] || 'Average';
+      const lo = v(b + '_LOWER_23');
+      const hi = v(b + '_UPPER_23');
+      const loStr = lo != null ? String(lo).trim() : '—';
+      const hiStr = hi != null ? String(hi).trim() : '—';
+      const ci = (loStr !== '—' && hiStr !== '—') ? `${loStr} to ${hiStr}` : '—';
+      lines.push(`| ${s.label} | ${score} | ${band} | ${ci} |`);
+    }
+  }
+
+  // ── Timeseries renderer — results over time ──────────────────────────────
+
+  function renderTimeseries() {
+    const groups = [
+      { heading: 'Expected Standard in Reading, Writing and Maths (RWM)',
+        base: 'PTRWM_EXP', laKey: 'rwm.expected', eng: nat2.PTRWM_EXP, isPct: true },
+      { heading: 'Higher Standard in Reading, Writing and Maths (RWM)',
+        base: 'PTRWM_HIGH', laKey: 'rwm.higher', eng: nat2.PTRWM_HIGH, isPct: true },
+      { heading: 'Average Score in Reading',
+        base: 'READ_AVERAGE', laKey: 'reading.avgScore', eng: '105', isPct: false },
+      { heading: 'Average Score in Maths',
+        base: 'MAT_AVERAGE', laKey: 'maths.avgScore', eng: '104', isPct: false },
+    ];
+
+    let hasAny = false;
+    const out = [];
+
+    for (const g of groups) {
+      const s25 = v(g.base);
+      const s24 = v(g.base + '_24');
+      const s23 = v(g.base + '_23');
+      const la25 = la(g.laKey);
+      if (suppressed(s25) && suppressed(s24) && suppressed(s23)) continue;
+      hasAny = true;
+
+      const sfx = g.isPct ? '%' : '';
+      const f = (val) => {
+        if (val == null) return '—';
+        const s = String(val).trim().replace(/%$/, '');
+        return suppressed(s) ? '—' : s + sfx;
+      };
+      out.push('');
+      out.push(`**${g.heading}**`);
+      out.push('| | 2023 final | 2024 final | 2025 final |');
+      out.push('|---|---:|---:|---:|');
+      out.push(`| School | ${f(s23)} | ${f(s24)} | ${f(s25)} |`);
+      out.push(`| Local Authority | — | — | ${la25 !== '—' ? la25 + sfx : '—'} |`);
+      out.push(`| England | — | — | ${g.eng}${sfx} |`);
+    }
+
+    if (hasAny) {
+      lines.push('');
+      lines.push('**Results over time**');
+      lines.push(...out);
+    }
+  }
+
   // ── Render key stages ─────────────────────────────────────────────────────
 
   if (hasKS2) {
     lines.push('**Key Stage 2 (2024/25)**');
+    lines.push('');
+    lines.push('_Reading, Maths and GPS are SATs-tested. Writing and Science are Teacher Assessed._');
     for (const topic of KS2_TOPICS) renderTopic(topic, 'KS2');
+    renderProgress();
+    renderTimeseries();
   }
 
   if (hasKS4) {
