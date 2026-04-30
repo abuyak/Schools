@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125068,
     "label": "state-junior",
-    "capturedAt": "2026-04-30T20:35:46.210Z",
+    "capturedAt": "2026-04-30T20:45:02.695Z",
     "note": "KS2 only — no KS1 or KS4"
   },
   "input": "Earlswood Junior School",
@@ -918,13 +918,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 391,
+      "totalTransactions": 345,
       "postcodesQueried": 100,
-      "medianAllTypes": "£445,000",
+      "medianAllTypes": "£436,500",
       "byType": {
-        "Semi-detached": "£520,000",
-        "Terraced": "£420,000",
-        "Detached": "£595,000",
+        "Semi-detached": "£500,000",
+        "Terraced": "£423,000",
+        "Detached": "£565,000",
         "Flat / Maisonette": "£265,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -985,34 +985,46 @@
   },
   "laPerf": {
     "rwm": {
-      "expected": "66",
-      "higher": "11",
-      "avgScore": null
+      "yr25": {
+        "expected": "65",
+        "higher": "11",
+        "avgScore": null
+      }
     },
     "reading": {
-      "expected": "80",
-      "higher": "41",
-      "avgScore": "107"
+      "yr25": {
+        "expected": null,
+        "higher": null,
+        "avgScore": "107"
+      }
     },
     "writing": {
-      "expected": "75",
-      "higher": "15",
-      "avgScore": null
+      "yr25": {
+        "expected": null,
+        "higher": null,
+        "avgScore": null
+      }
     },
     "maths": {
-      "expected": "78",
-      "higher": "32",
-      "avgScore": "106"
+      "yr25": {
+        "expected": null,
+        "higher": null,
+        "avgScore": "105"
+      }
     },
     "gps": {
-      "expected": "77",
-      "higher": "35",
-      "avgScore": "107"
+      "yr25": {
+        "expected": "77",
+        "higher": "35",
+        "avgScore": "107"
+      }
     },
     "science": {
-      "expected": "85",
-      "higher": null,
-      "avgScore": null
+      "yr25": {
+        "expected": "85",
+        "higher": null,
+        "avgScore": null
+      }
     }
   },
   "schoolEthnicity": {

@@ -1377,11 +1377,15 @@ export async function getLAPerformanceKS2(laCode) {
   if (!laCode) return null;
 
   const EES_BASE = 'https://api.education.gov.uk/statistics/v1';
+
   const params = new URLSearchParams({
     'locations.in':  `LA|code|${laCode}`,
-    'timePeriods.in':'2024/2025|AY',
-    'pageSize':      '30',
+    'pageSize':      '90',
   });
+  // Fetch 3 years: each as separate timePeriods.in param
+  params.append('timePeriods.in', '2022/2023|AY');
+  params.append('timePeriods.in', '2023/2024|AY');
+  params.append('timePeriods.in', '2024/2025|AY');
   // Filters: Total characteristic, All pupils topic, State funded school type
   params.append('filters.in', EES_KS2.total);
   params.append('filters.in', EES_KS2.allPupils);
@@ -1409,6 +1413,9 @@ export async function getLAPerformanceKS2(laCode) {
     [EES_KS2.science]: 'science',
   };
 
+  // Time period code → short year key
+  const YEAR_MAP = { '202223': '23', '202324': '24', '202425': '25' };
+
   const out = {};
 
   for (const row of data.results) {
@@ -1421,10 +1428,15 @@ export async function getLAPerformanceKS2(laCode) {
     const key      = SUBJ_MAP[subjCode];
     if (!key) continue;
 
+    // Extract year from time_period (e.g. "202425" → "25")
+    const tp = (row.time_period || '').replace(/\//g, '');
+    const yr = YEAR_MAP[tp] || '25';
+
     const vals = row.values ?? {};
     const clean = (v) => (v && v !== 'z' && v !== 'x' && v !== 'c') ? String(v) : null;
 
-    out[key] = {
+    out[key] = out[key] || {};
+    out[key]['yr' + yr] = {
       expected: clean(vals[EES_KS2.indExpected]),
       higher:   clean(vals[EES_KS2.indHigher]),
       avgScore: clean(vals[EES_KS2.indAvgScore]),
@@ -2520,10 +2532,12 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
   const hasKS5 = hasNs('KS5');
 
   // LA helpers (populated when laPerf is available)
-  // Supports nested paths like 'rwm.expected'
+  // Supports nested paths like 'rwm.yr25.expected' or 'rwm.expected' (yr25 default)
   const la = (path) => {
     if (!laPerf) return '—';
+    // Auto-insert yr25 for backward compatibility (e.g. 'rwm.expected' → 'rwm.yr25.expected')
     const parts = path.split('.');
+    if (parts.length === 2 && !parts[1].startsWith('yr')) parts.splice(1, 0, 'yr25');
     let v = laPerf;
     for (const p of parts) { v = v?.[p]; if (v == null) return '—'; }
     return String(v);
@@ -2948,7 +2962,7 @@ const KS5_TOPICS = [
       const rawScore = v(b + '_23');
       const score = rawScore != null ? String(rawScore).trim() : '—';
       const descrIdx = parseInt(v(b + '_DESCR_23') ?? '3', 10);
-      const band = PROGRESS_BANDS[Math.max(0, Math.min(4, (descrIdx || 3) - 1))] || 'Average';
+      const band = PROGRESS_BANDS[Math.max(0, Math.min(4, 5 - (descrIdx || 3)))] || 'Average';
       const lo = v(b + '_LOWER_23');
       const hi = v(b + '_UPPER_23');
       const loStr = lo != null ? String(lo).trim() : '—';
@@ -2987,6 +3001,8 @@ const KS5_TOPICS = [
       const s25 = v(g.base);
       const s24 = v(g.base + '_24');
       const s23 = v(g.base + '_23');
+      const la23 = la(g.laKey.replace(/^([^.]+)\.(.+)$/, '$1.yr23.$2'));
+      const la24 = la(g.laKey.replace(/^([^.]+)\.(.+)$/, '$1.yr24.$2'));
       const la25 = la(g.laKey);
       if (suppressed(s25) && suppressed(s24) && suppressed(s23)) continue;
       hasAny = true;
@@ -3002,7 +3018,7 @@ const KS5_TOPICS = [
       out.push('| | 2023 final | 2024 final | 2025 final |');
       out.push('|---|---:|---:|---:|');
       out.push(`| School | ${f(s23)} | ${f(s24)} | ${f(s25)} |`);
-      out.push(`| Local Authority | — | — | ${la25 !== '—' ? la25 + sfx : '—'} |`);
+      out.push(`| Local Authority | ${la23 !== '—' ? la23 + sfx : '—'} | ${la24 !== '—' ? la24 + sfx : '—'} | ${la25 !== '—' ? la25 + sfx : '—'} |`);
       out.push(`| England | ${g.eng[0]}${sfx} | ${g.eng[1]}${sfx} | ${g.eng[2]}${sfx} |`);
     }
 

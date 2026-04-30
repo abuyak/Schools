@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 145005,
     "label": "state-sixth-form",
-    "capturedAt": "2026-04-30T20:36:07.211Z",
+    "capturedAt": "2026-04-30T20:45:23.642Z",
     "note": "KS5 only — no KS2 or KS4"
   },
   "input": "Reigate College",
@@ -2945,11 +2945,10 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 9,
+      "totalTransactions": 7,
       "postcodesQueried": 100,
-      "medianAllTypes": "£251,000",
+      "medianAllTypes": "£210,000",
       "byType": {
-        "Detached": "£905,000",
         "Flat / Maisonette": "£210,000"
       },
       "source": "HM Land Registry Price Paid Data"
