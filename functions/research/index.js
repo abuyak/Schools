@@ -268,8 +268,12 @@ function parseOpenAIResponse(apiResponse) {
     }
   }
 
+  // Strip AI search result markers (turn0search2, turn1view0, etc.) that
+  // gpt-5.4-mini sometimes leaks into section bodies.
+  const cleanBody = (text) => (text ?? '').replace(/\.?turn\d+(?:search|view)\d+\.?/gi, '').replace(/\s{2,}/g, ' ').trim();
+
   // Rename model's "Sources" section to "Primary Sources"
-  const sections = (parsed.sections ?? []).map(s => ({ ...s }));
+  const sections = (parsed.sections ?? []).map(s => ({ ...s, body: cleanBody(s.body) }));
 
   let primarySourcesBody = null;
   for (const s of sections) {

@@ -3346,7 +3346,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Bundled local data (zero-latency — no HTTP)
       const schoolEthnicity = urn ? getSchoolEthnicity(urn) : null;
 
-      return { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails };
+      return { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees: feesResult };
     })
   );
 
@@ -3725,10 +3725,28 @@ export function renderPartA(school, flags = {}) {
   // ────────────────────────────────────────────────────────────────────────────
   {
     let body;
-    if (isIndependent || !financial) {
-      body = isIndependent
-        ? '_Independent school — FBIT data not published for independent schools._'
-        : '_Not retrieved — only available for state-funded schools._';
+    if (isIndependent) {
+      const f = school.fees;
+      if (f?.day) {
+        const lines = [
+          '| Metric | Value |',
+          '|---|---:|',
+        ];
+        if (f.day) {
+          const range = f.day.min === f.day.max ? `£${f.day.min.toLocaleString()}` : `£${f.day.min.toLocaleString()} — £${f.day.max.toLocaleString()}`;
+          lines.push(`| Day fees (${f.day.period}) | ${range} |`);
+        }
+        if (f.boarding) {
+          const range = f.boarding.min === f.boarding.max ? `£${f.boarding.min.toLocaleString()}` : `£${f.boarding.min.toLocaleString()} — £${f.boarding.max.toLocaleString()}`;
+          lines.push(`| Boarding fees (${f.boarding.period}) | ${range} |`);
+        }
+        if (f.source) lines.push(`| Source | ${f.source} |`);
+        body = lines.join('\n');
+      } else {
+        body = '_Fee data not retrieved from school website. Check the school site or ISC for current fees._';
+      }
+    } else if (!financial) {
+      body = '_Not retrieved — only available for state-funded schools._';
     } else {
       const lines = [
         '| Metric | School | Comparator avg |',
