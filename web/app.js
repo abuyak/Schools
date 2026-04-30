@@ -178,15 +178,17 @@
 
   function renderTable(container, tableLines) {
     var table = document.createElement("table");
-    var headerCells = null;
     var tbody = null;
     var colCount = 0;
+    var isEvidenceTable = false; // only C1 has "Evidence level" column
 
     tableLines.forEach(function (line, i) {
       if (isTableSeparator(line)) return;
       var cells = parseTableRow(line);
       if (i === 0) {
         colCount = cells.length;
+        // Detect C1 table by "Evidence level" header
+        isEvidenceTable = cells.some(function (c) { return /evidence\s*level/i.test(c); });
         var thead = document.createElement("thead");
         var tr = document.createElement("tr");
         cells.forEach(function (cell) {
@@ -202,22 +204,24 @@
         var tr = document.createElement("tr");
         cells.forEach(function (cell, ci) {
           var td = document.createElement("td");
-          // Detect evidence-level keywords and wrap in coloured badge
-          var trimmed = cell.trim();
-          var evidenceClass = null;
-          if (/^Strong$/i.test(trimmed)) evidenceClass = 'evidence-strong';
-          else if (/^Present$/i.test(trimmed)) evidenceClass = 'evidence-good';
-          else if (/^Mixed$/i.test(trimmed)) evidenceClass = 'evidence-mixed';
-          else if (/^Weak$/i.test(trimmed)) evidenceClass = 'evidence-weak';
-          else if (/^Not evident$/i.test(trimmed)) evidenceClass = 'evidence-unknown';
-          if (evidenceClass) {
-            var span = document.createElement("span");
-            span.className = evidenceClass;
-            span.textContent = trimmed;
-            td.appendChild(span);
-          } else {
-            appendTextWithLinks(td, cell);
+          if (isEvidenceTable) {
+            var trimmed = cell.trim();
+            var evidenceClass = null;
+            if (/^Strong$/i.test(trimmed)) evidenceClass = 'evidence-strong';
+            else if (/^Present$/i.test(trimmed)) evidenceClass = 'evidence-good';
+            else if (/^Mixed$/i.test(trimmed)) evidenceClass = 'evidence-mixed';
+            else if (/^Weak$/i.test(trimmed)) evidenceClass = 'evidence-weak';
+            else if (/^Not evident$/i.test(trimmed)) evidenceClass = 'evidence-unknown';
+            if (evidenceClass) {
+              var span = document.createElement("span");
+              span.className = evidenceClass;
+              span.textContent = trimmed;
+              td.appendChild(span);
+              tr.appendChild(td);
+              return;
+            }
           }
+          appendTextWithLinks(td, cell);
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
