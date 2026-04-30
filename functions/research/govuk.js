@@ -3796,6 +3796,38 @@ export function renderPartA(school, flags = {}) {
   // (Call 2 verdict).  No server placeholder needed — interleaveVerdicts
   // appends the AI-generated A9 section at the end of Part A.
 
+  // ────────────────────────────────────────────────────────────────────────────
+  // A10. Parent View
+  // ────────────────────────────────────────────────────────────────────────────
+  {
+    const pv = ofsted?.parentView;
+    if (pv && pv.totalResponses) {
+      const yr = pv.academicYear ? ` (${pv.academicYear})` : '';
+      const lines = [
+        `**Ofsted Parent View${yr} — ${pv.totalResponses} responses**`,
+        '',
+        '| Question | % agree |',
+        '|---|---:|',
+      ];
+      const row = (label, val, threshold) => {
+        if (val == null) return;
+        const flag = threshold && val < threshold ? ' ⚠️' : '';
+        lines.push(`| ${label} | ${val}%${flag} |`);
+      };
+      row('Would recommend this school',       pv.wouldRecommend,  80);
+      row('My child is happy here',            pv.childHappy,      null);
+      row('My child feels safe',               pv.childSafe,       88);
+      row('Pupils are well behaved',           pv.wellBehaved,     null);
+      row('Bullying dealt with well',          pv.bullyingHandled, 70);
+      row('School communicates well',          pv.communication,   null);
+      row('Concerns dealt with properly',      pv.concernsHandled, 75);
+      row('Acts in child\'s best interests',   pv.bestInterests,   null);
+      row('Right support to learn',            pv.rightSupport,    null);
+      row('SEND support',                      pv.sendSupport,     null);
+      sections.push({ heading: 'A10. Parent View', body: lines.join('\n'), flag: flags['A10. Parent View'] ?? 'none' });
+    }
+  }
+
   // Tag the first section with the Part A label so the UI renders the divider
   if (sections.length > 0) sections[0]._partLabel = 'Part A — Official Record';
 
