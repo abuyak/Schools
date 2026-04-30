@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 145005,
     "label": "state-sixth-form",
-    "capturedAt": "2026-04-30T07:51:49.204Z",
+    "capturedAt": "2026-04-30T08:08:05.864Z",
     "note": "KS5 only — no KS2 or KS4"
   },
   "input": "Reigate College",
@@ -2963,7 +2963,25 @@
       "year": "FYE 2018",
       "source": "ONS Small Area Income Estimates"
     },
-    "imd": null,
+    "imd": {
+      "lsoaCode": "E01030620",
+      "year": "2025",
+      "imdScore": 7.45,
+      "imdRank": 28123,
+      "imdDecile": 9,
+      "subDomains": {
+        "Income": 8,
+        "Employment": 8,
+        "Education, Skills & Training": 10,
+        "Health & Disability": 9,
+        "Crime": 6,
+        "Barriers to Housing & Services": 8,
+        "Living Environment": 4
+      },
+      "population": 1991,
+      "populationYear": "2022",
+      "source": "MHCLG Indices of Multiple Deprivation 2025 via findthatpostcode.uk"
+    },
     "crystalRoof": {
       "qualifications": {
         "noQualifications": 8,
