@@ -27,6 +27,17 @@ const COMPARE_PERF  = 'https://www.compare-school-performance.service.gov.uk';
 const FIN_BENCH     = 'https://financial-benchmarking-and-insights-tool.education.gov.uk';
 const POSTCODES_IO  = 'https://api.postcodes.io/postcodes';
 
+// ─── HTML entity decoder ──────────────────────────────────────────────────────
+
+function decodeHTMLEntities(str) {
+  return (str ?? '')
+    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&apos;/g, '\'').replace(/&#39;/g, '\'')
+    .replace(/&nbsp;/g, ' ');
+}
+
 // ─── Logging ──────────────────────────────────────────────────────────────────
 //
 // Two tiers:
@@ -666,7 +677,7 @@ export async function lookupSchoolURN(name, locationHints = []) {
     if (!linkMatch) continue;
 
     const urn      = linkMatch[1];
-    const tileName = linkMatch[2].trim();
+    const tileName = decodeHTMLEntities(linkMatch[2].trim());
 
     // Phase / type from the DL: <dt>Phase / type:</dt><dd>Secondary, Independent schools</dd>
     const ptMatch     = tile.match(/Phase\s*\/\s*type[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
@@ -719,7 +730,7 @@ export async function lookupSchoolURN(name, locationHints = []) {
           const tile = tileMatch[1];
           const linkMatch = tile.match(/href="\/Establishments\/Establishment\/Details\/(\d{5,7})[^"]*"[^>]*>\s*([^<]+?)\s*<\/a>/);
           if (!linkMatch) continue;
-          const urn = linkMatch[1]; const tileName = linkMatch[2].trim();
+          const urn = linkMatch[1]; const tileName = decodeHTMLEntities(linkMatch[2].trim());
           const ptMatch = tile.match(/Phase\s*\/\s*type[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
           const phaseTypeRaw = ptMatch ? ptMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
           const parts = phaseTypeRaw ? phaseTypeRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -775,7 +786,7 @@ export async function lookupSchoolURN(name, locationHints = []) {
             const urn = linkMatch[1];
             if (seenUrns.has(urn)) continue;
             seenUrns.add(urn);
-            const tileName = linkMatch[2].trim();
+            const tileName = decodeHTMLEntities(linkMatch[2].trim());
             const ptMatch = tile.match(/Phase\s*\/\s*type[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
             const phaseTypeRaw = ptMatch ? ptMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
             const parts = phaseTypeRaw ? phaseTypeRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -3655,27 +3666,29 @@ export function renderPartA(school, flags = {}) {
     const senK = v('PSENELK');
     const senE = v('PSENELSE');
 
+    const sup = (val) => { const s = String(val ?? '').trim(); return s === '0%' || s === '0.0%' || s === '0.00%' || s === '0'; };
     const lines = [
       '| Metric | School | National avg |',
       '|---|---:|---:|',
     ];
-    if (nor)  lines.push(`| Pupils on roll | ${nor} | ~280 primary / ~1,000 secondary |`);
-    if (fsm)  lines.push(`| Free School Meals (FSM) eligible — last 6 years | ${fsm} | ~25% primary / ~20% secondary |`);
-    if (eal)  lines.push(`| English as Additional Language (EAL) pupils | ${eal} | — |`);
-    if (senK) lines.push(`| Special Educational Needs (SEN) support | ${senK} | ~13% |`);
-    if (senE) lines.push(`| Education, Health and Care (EHC) plans | ${senE} | ~4.5% |`);
+    if (nor && !sup(nor))  lines.push(`| Pupils on roll | ${nor} | ~280 primary / ~1,000 secondary |`);
+    if (fsm && !sup(fsm))  lines.push(`| Free School Meals (FSM) eligible — last 6 years | ${fsm} | ~25% primary / ~20% secondary |`);
+    if (eal && !sup(eal))  lines.push(`| English as Additional Language (EAL) pupils | ${eal} | — |`);
+    if (senK && !sup(senK)) lines.push(`| Special Educational Needs (SEN) support | ${senK} | ~13% |`);
+    if (senE && !sup(senE)) lines.push(`| Education, Health and Care (EHC) plans | ${senE} | ~4.5% |`);
 
-    if (schoolEthnicity) {
+    if (schoolEthnicity && !Object.values(schoolEthnicity).every(v => v === 0 || v === '0' || v === '0%')) {
       lines.push('');
       lines.push('| Ethnic group | % of pupils |');
       lines.push('|---|---:|');
-      if (schoolEthnicity.w  != null) lines.push(`| White | ${schoolEthnicity.w}% |`);
-      if (schoolEthnicity.m  != null) lines.push(`| Mixed | ${schoolEthnicity.m}% |`);
-      if (schoolEthnicity.a  != null) lines.push(`| Asian | ${schoolEthnicity.a}% |`);
-      if (schoolEthnicity.b  != null) lines.push(`| Black | ${schoolEthnicity.b}% |`);
-      if (schoolEthnicity.c  != null) lines.push(`| Chinese | ${schoolEthnicity.c}% |`);
-      if (schoolEthnicity.o  != null) lines.push(`| Other | ${schoolEthnicity.o}% |`);
-      if (schoolEthnicity.ns != null) lines.push(`| Not stated | ${schoolEthnicity.ns}% |`);
+      const eth = schoolEthnicity;
+      if (eth.w  && eth.w  !== 0) lines.push(`| White | ${eth.w}% |`);
+      if (eth.m  && eth.m  !== 0) lines.push(`| Mixed | ${eth.m}% |`);
+      if (eth.a  && eth.a  !== 0) lines.push(`| Asian | ${eth.a}% |`);
+      if (eth.b  && eth.b  !== 0) lines.push(`| Black | ${eth.b}% |`);
+      if (eth.c  && eth.c  !== 0) lines.push(`| Chinese | ${eth.c}% |`);
+      if (eth.o  && eth.o  !== 0) lines.push(`| Other | ${eth.o}% |`);
+      if (eth.ns && eth.ns !== 0) lines.push(`| Not stated | ${eth.ns}% |`);
     }
 
     sections.push({ heading: 'A4. Pupil Census', body: lines.join('\n'), flag: flags['A4. Pupil Census'] ?? 'none' });
