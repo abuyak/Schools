@@ -2517,6 +2517,27 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       ],
     },
     {
+      heading: 'Per-subject attainment — % expected standard',
+      cols: 'all',
+      rows: [
+        { label: 'Reading', var: 'PTREAD_EXP' },
+        { label: 'Writing (TA)', var: 'PTWRITTA_EXP' },
+        { label: 'Maths', var: 'PTMAT_EXP' },
+        { label: 'GPS', var: 'PTGPS_EXP' },
+        { label: 'Science (TA)', var: 'PTSCITA_EXP' },
+      ],
+    },
+    {
+      heading: 'Per-subject attainment — % higher standard',
+      cols: 'all',
+      rows: [
+        { label: 'Reading', var: 'PTREAD_HIGH' },
+        { label: 'Writing (TA)', var: 'PTWRITTA_HIGH' },
+        { label: 'Maths', var: 'PTMAT_HIGH' },
+        { label: 'GPS', var: 'PTGPS_HIGH' },
+      ],
+    },
+    {
       heading: 'Progress (KS1 to KS2)',
       cols: 'all',
       rows: [
