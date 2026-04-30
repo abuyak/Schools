@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125427,
     "label": "independent-secondary",
-    "capturedAt": "2026-04-30T20:45:35.670Z",
+    "capturedAt": "2026-04-30T21:44:19.376Z",
     "note": "Independent secondary — fees, ISI, no DfE data"
   },
   "input": "Caterham School",
@@ -1110,13 +1110,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 80,
+      "totalTransactions": 115,
       "postcodesQueried": 74,
-      "medianAllTypes": "£725,000",
+      "medianAllTypes": "£800,000",
       "byType": {
         "Flat / Maisonette": "£312,500",
-        "Detached": "£880,000",
-        "Semi-detached": "£699,950"
+        "Detached": "£988,000",
+        "Semi-detached": "£679,950"
       },
       "source": "HM Land Registry Price Paid Data"
     },

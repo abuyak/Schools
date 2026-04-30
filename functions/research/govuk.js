@@ -3295,12 +3295,90 @@ ${fmtOfstedSlim(ofsted, identity?.isIndependent ?? false)}
 ### A4 — What the School Needs to Improve (verbatim from Ofsted PDF — reproduce exactly in A4 section)
 ${identity?.isIndependent ? (ofsted?.recommendations || ofsted?.nextSteps || '_Independent school — no improvement recommendations available._') : ofsted?.nextSteps ? ofsted.nextSteps : ofsted?.overall ? `_No improvement requirements stated. Ofsted grade: ${ofsted.overall}._` : '_Not retrieved — link to full Ofsted PDF if available._'}
 
-### School Pupil Ethnicity (DfE Census)
-${fmtSchoolEthnicitySlim(schoolEthnicity)}
+### Pupil Census (DfE)
+${fmtCensusSlim(performance, schoolEthnicity)}
+
+### Absence (DfE)
+${fmtAbsenceSlim(performance)}
 
 ### Surrounding Area
 ${fmtAreaDataSlim(area)}
 ---`.trim();
+}
+
+// ─── Pupil Census (A4) ──────────────────────────────────────────────────────
+
+function fmtCensusSlim(performance, schoolEthnicity) {
+  const anyNsField = (variable) => {
+    const sorted = Object.entries(performance ?? {})
+      .sort(([a], [b]) => (parseInt(b.match(/_(\d+)$/)?.[1] ?? '0', 10) - parseInt(a.match(/_(\d+)$/)?.[1] ?? '0', 10)))
+      .flatMap(([, rows]) => rows);
+    return sorted.find(r => r.variable === variable)?.value ?? null;
+  };
+
+  const nor  = anyNsField('NOR');
+  const fsm  = anyNsField('PNUMFSMEVER');
+  const eal  = anyNsField('PNUMEAL');
+  const senK = anyNsField('PSENELK');
+  const senE = anyNsField('PSENELSE');
+
+  if (!nor && !fsm && !eal && !senK && !senE && !schoolEthnicity) return '_No census data available._';
+
+  const lines = [];
+
+  if (nor || fsm || eal || senK || senE) {
+    lines.push('');
+    lines.push('**Pupil numbers**');
+    lines.push('| Category | School | National avg |');
+    lines.push('|---|---:|---:|');
+    if (nor)  lines.push(`| Pupils on roll | ${nor} | ~280 primary / ~1,000 secondary |`);
+    if (fsm)  lines.push(`| FSM eligible (last 6 years) | ${fsm} | ~25% primary / ~20% secondary |`);
+    if (eal)  lines.push(`| EAL pupils | ${eal} | — |`);
+    if (senK) lines.push(`| SEN support | ${senK} | ~13% |`);
+    if (senE) lines.push(`| EHC plans | ${senE} | ~4.5% |`);
+  }
+
+  if (schoolEthnicity) {
+    const eth = schoolEthnicity;
+    lines.push('');
+    lines.push('**Ethnicity**');
+    lines.push('| Ethnic group | % of pupils |');
+    lines.push('|---|---:|');
+    if (eth.w  != null) lines.push(`| White | ${eth.w}% |`);
+    if (eth.m  != null) lines.push(`| Mixed | ${eth.m}% |`);
+    if (eth.a  != null) lines.push(`| Asian | ${eth.a}% |`);
+    if (eth.b  != null) lines.push(`| Black | ${eth.b}% |`);
+    if (eth.c  != null) lines.push(`| Chinese | ${eth.c}% |`);
+    if (eth.o  != null) lines.push(`| Other | ${eth.o}% |`);
+    if (eth.ns != null) lines.push(`| Not stated | ${eth.ns}% |`);
+  }
+
+  return lines.join('\n');
+}
+
+// ─── Absence (A6) ───────────────────────────────────────────────────────────
+
+function fmtAbsenceSlim(performance) {
+  const anyNsField = (variable) => {
+    const sorted = Object.entries(performance ?? {})
+      .sort(([a], [b]) => (parseInt(b.match(/_(\d+)$/)?.[1] ?? '0', 10) - parseInt(a.match(/_(\d+)$/)?.[1] ?? '0', 10)))
+      .flatMap(([, rows]) => rows);
+    return sorted.find(r => r.variable === variable)?.value ?? null;
+  };
+
+  const abs   = anyNsField('PERCTOT');
+  const pers  = anyNsField('PPERSABS10');
+  const nat   = NATIONAL_AVG.ABSENCE;
+
+  if (!abs && !pers) return '_No absence data available._';
+
+  const lines = [
+    '| Category | School | National avg |',
+    '|---|---:|---:|',
+  ];
+  if (abs)  lines.push(`| Overall absence | ${abs}% | ${nat.PERCTOT}% |`);
+  if (pers) lines.push(`| Persistent absence | ${pers}% | ${nat.PPERSABS10}% |`);
+  return lines.join('\n');
 }
 
 // ─── Build Branch 1 block (detailed — debug script / human report only) ──────
