@@ -27,17 +27,6 @@ const COMPARE_PERF  = 'https://www.compare-school-performance.service.gov.uk';
 const FIN_BENCH     = 'https://financial-benchmarking-and-insights-tool.education.gov.uk';
 const POSTCODES_IO  = 'https://api.postcodes.io/postcodes';
 
-// ─── HTML entity decoder ──────────────────────────────────────────────────────
-
-function decodeHTMLEntities(str) {
-  return (str ?? '')
-    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
-    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&apos;/g, '\'').replace(/&#39;/g, '\'')
-    .replace(/&nbsp;/g, ' ');
-}
-
 // ─── Logging ──────────────────────────────────────────────────────────────────
 //
 // Two tiers:
@@ -677,7 +666,7 @@ export async function lookupSchoolURN(name, locationHints = []) {
     if (!linkMatch) continue;
 
     const urn      = linkMatch[1];
-    const tileName = decodeHTMLEntities(linkMatch[2].trim());
+    const tileName = linkMatch[2].trim();
 
     // Phase / type from the DL: <dt>Phase / type:</dt><dd>Secondary, Independent schools</dd>
     const ptMatch     = tile.match(/Phase\s*\/\s*type[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
@@ -730,7 +719,7 @@ export async function lookupSchoolURN(name, locationHints = []) {
           const tile = tileMatch[1];
           const linkMatch = tile.match(/href="\/Establishments\/Establishment\/Details\/(\d{5,7})[^"]*"[^>]*>\s*([^<]+?)\s*<\/a>/);
           if (!linkMatch) continue;
-          const urn = linkMatch[1]; const tileName = decodeHTMLEntities(linkMatch[2].trim());
+          const urn = linkMatch[1]; const tileName = linkMatch[2].trim();
           const ptMatch = tile.match(/Phase\s*\/\s*type[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
           const phaseTypeRaw = ptMatch ? ptMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
           const parts = phaseTypeRaw ? phaseTypeRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -786,7 +775,7 @@ export async function lookupSchoolURN(name, locationHints = []) {
             const urn = linkMatch[1];
             if (seenUrns.has(urn)) continue;
             seenUrns.add(urn);
-            const tileName = decodeHTMLEntities(linkMatch[2].trim());
+            const tileName = linkMatch[2].trim();
             const ptMatch = tile.match(/Phase\s*\/\s*type[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
             const phaseTypeRaw = ptMatch ? ptMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
             const parts = phaseTypeRaw ? phaseTypeRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -2468,22 +2457,6 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
 
   const v = (code) => allRows.find(r => r.variable === code)?.value ?? null;
 
-  // Variant finder — discovers gendered/FSM/EAL/prior-year breakdowns
-  const findVar = (base) => {
-    const r = { all: v(base) };
-    for (const [s, k] of [['_BOYS','boys'],['_GIRLS','girls'],['_FSM6CLA1A','dis'],['_NFSM6CLA1A','ndis'],['_EAL','eal'],['_PREV','prev'],['_PREV2','prev2'],['_24','py24'],['_23','py23']]) {
-      const val = v(base + s); if (val != null) r[k] = val;
-    }
-    if (base.startsWith('PT')) {
-      const t = base.slice(2);
-      if (!r.boys) { const bv = v('PB' + t); if (bv != null) r.boys = bv; }
-      if (!r.girls) { const gv = v('PG' + t); if (gv != null) r.girls = gv; }
-    }
-    if (!r.eal && /BASICS/.test(base)) { const ev = v(base.replace('BASICS', 'BASICSEAL')); if (ev != null) r.eal = ev; }
-    if (!r.eal && /EBACC/.test(base)) { const ev = v(base.replace('EBACC', 'EBACCEAL')); if (ev != null) r.eal = ev; }
-    return r;
-  };
-
   // DfE uses 0, 0%, 0.0% as suppression markers for small cohorts.
   const suppressed = (val) => {
     if (val == null) return true;
@@ -2557,7 +2530,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
   const KS4_TOPICS = [
     {
       heading: 'Attainment 8',
-      cols: 'abgd',
+      cols: 'all',
       rows: [
         { label: 'Attainment 8 score', var: 'ATT8SCR', eng: String(nat4.ATT8SCR) },
       ],
@@ -2569,9 +2542,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
         { label: 'English element', var: 'ATT8SCRENG' },
         { label: 'Maths element', var: 'ATT8SCRMAT' },
         { label: 'EBacc element', var: 'ATT8SCREBAC' },
-        { label: 'Open element (total)', var: 'ATT8SCROPEN' },
-        { label: 'Open — GCSE only', var: 'ATT8SCROPENG' },
-        { label: 'Open — non-GCSE', var: 'ATT8SCROPENNG' },
+        { label: 'Open element', var: 'ATT8SCROPEN' },
       ],
     },
     {
@@ -2583,21 +2554,21 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     },
     {
       heading: 'Grade 5+ English & Maths',
-      cols: 'abgd',
+      cols: 'all',
       rows: [
         { label: '% grade 5+ English & maths', var: 'PTL2BASICS_95', eng: nat4.PTL2BASICS_95 + '%' },
       ],
     },
     {
       heading: 'Grade 4+ English & Maths',
-      cols: 'abgd',
+      cols: 'all',
       rows: [
         { label: '% grade 4+ English & maths', var: 'PTL2BASICS_94', eng: nat4.PTL2BASICS_94 + '%' },
       ],
     },
     {
       heading: 'EBacc entry',
-      cols: 'abgd',
+      cols: 'all',
       rows: [
         { label: '% entering EBacc', var: 'PTEBACC_E_PTQ_EE', eng: nat4.PTEBACC_E_PTQ_EE + '%' },
       ],
@@ -2615,40 +2586,11 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     },
     {
       heading: 'EBacc achievement',
-      cols: 'abgd',
+      cols: 'all',
       rows: [
         { label: '% EBacc 5+', var: 'PTEBACC_95' },
         { label: '% EBacc 4+', var: 'PTEBACC_94', eng: nat4.PTEBACC_94 + '%' },
         { label: 'EBacc APS', var: 'EBACCAPS' },
-      ],
-    },
-    {
-      heading: 'EBacc subject achievement (% of entered pupils)',
-      cols: 'all',
-      rows: [
-        { label: 'English 9-4', var: 'PTEBACENG_94' },
-        { label: 'English 9-5', var: 'PTEBACENG_95' },
-        { label: 'Maths 9-4', var: 'PTEBACMAT_94' },
-        { label: 'Maths 9-5', var: 'PTEBACMAT_95' },
-        { label: 'Science 9-4', var: 'PTEBAC2SCI_94' },
-        { label: 'Science 9-5', var: 'PTEBAC2SCI_95' },
-        { label: 'Humanities 9-4', var: 'PTEBACHUM_94' },
-        { label: 'Humanities 9-5', var: 'PTEBACHUM_95' },
-        { label: 'Languages 9-4', var: 'PTEBACLAN_94' },
-        { label: 'Languages 9-5', var: 'PTEBACLAN_95' },
-      ],
-    },
-    {
-      heading: 'KS4 destinations (2022/23 leavers)',
-      cols: 'all',
-      rows: [
-        { label: '% sustained education or employment', var: 'OVERALL_DESTPER' },
-        { label: '% in education', var: 'EDUCATIONPER' },
-        { label: '% sixth form college', var: 'SIXTH_COLPER' },
-        { label: '% further education', var: 'FEPER' },
-        { label: '% apprenticeships', var: 'APPRENPER' },
-        { label: '% employment', var: 'EMPLOYMENTPER' },
-        { label: '% not sustained', var: 'NOT_SUSTAINEDPER' },
       ],
     },
   ];
@@ -2660,10 +2602,8 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       rows: [
         { label: 'Total 16–18 students', var: 'TALLPUP_1618' },
         { label: 'A-level students', var: 'TALLPUP_ALEV_1618' },
-        { label: 'A-level entries', var: 'ENTRIES_ALEV' },
         { label: 'Average A-level grade', var: 'TALLPPEGRD_ALEV_1618', eng: nat5.AVG_GRADE ?? 'B-' },
         { label: 'Average A-level points', var: 'TALLPPE_ALEV_1618', eng: nat5.AVG_PTS ? String(nat5.AVG_PTS) : '35' },
-        { label: 'Average grade (all academic)', var: 'TALLPPEGRD_ACAD_1618' },
         { label: 'Best 3 A-levels — grade', var: 'TB3PTSE_GRD' },
         { label: 'Best 3 A-levels — points', var: 'TB3PTSE' },
       ],
@@ -2687,44 +2627,14 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       ],
     },
     {
-      heading: 'Retention',
-      cols: 'all',
-      rows: [
-        { label: '% retained to end of course', var: 'PT_RETAINED_ALEV_RET' },
-        { label: '% retained to 2nd year', var: 'PT_RETAINED_ACAD_2NDYR' },
-        { label: '% retained (disadvantaged)', var: 'PT_RETAINED_ACAD_RET_DIS' },
-      ],
-    },
-    {
-      heading: 'Level 3 destinations (A-level cohort)',
-      cols: 'all',
-      rows: [
-        { label: '% sustained education or employment', var: 'L3_OVERALLPER' },
-        { label: '% higher education', var: 'L3_HEPER' },
-        { label: '% employment', var: 'L3_EMPLOYMENTPER' },
-        { label: '% apprenticeships', var: 'L3_APPRENPER' },
-        { label: '% further education', var: 'L3_FEPER' },
-        { label: '% not sustained', var: 'L3_NOT_SUSTAINEDPER' },
-      ],
-    },
-    {
-      heading: 'Disadvantaged progression gap',
-      cols: 'all',
-      rows: [
-        { label: '% progressed (disadvantaged)', var: 'DIS_PROGRESSED' },
-        { label: '% progressed (all)', var: 'ALL_PROGRESSED' },
-        { label: '% HE (disadvantaged)', var: 'DIS_HE' },
-        { label: '% HE (all)', var: 'ALL_HE' },
-        { label: '% top third HE (disadvantaged)', var: 'DIS_TOP3RD' },
-        { label: '% top third HE (all)', var: 'ALL_TOP3RD' },
-      ],
-    },
-    {
-      heading: 'Facilitating subjects',
+      heading: 'Facilitating subjects & destinations',
       cols: 'all',
       rows: [
         { label: '% AAB in ≥2 facilitating subjects', var: 'PTAAB_2FAC' },
         { label: '% achieving advanced maths', var: 'L3M_PER' },
+        { label: '% retained to end of course', var: 'PT_RETAINED_ALEV_RET' },
+        { label: '% to higher education', var: 'TOT_HEPER' },
+        { label: '% to any sustained destination', var: 'ALL_PROGRESSED' },
       ],
     },
   ];
@@ -2766,39 +2676,49 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
 
       const cells = [row.label];
 
-      const vars = findVar(row.var);
-      const push = (v) => cells.push(v != null ? c(v) : '—');
-
       if (showAll) {
-        let cell = c(vars.all);
+        let cell = c(val);
         if (row.ciLo && row.ciHi) {
           const lo = v(row.ciLo), hi = v(row.ciHi);
-          if (lo != null && hi != null) cell += ' (CI: ' + lo + ' to ' + hi + ')';
+          if (lo != null && hi != null) cell += ` (CI: ${lo} to ${hi})`;
         }
         cells.push(cell);
       }
-      if (showB)   push(vars.boys);
-      if (showG)   push(vars.girls);
-      if (showD)   push(vars.dis);
-      if (showEal) push(vars.eal);
-      if (showLa)  cells.push('—');
-      if (showEng) cells.push(row.eng ?? '—');
-
-      if (cells.slice(1).some(cell => cell !== '—')) {
-        lines.push('| ' + cells.join(' | ') + ' |');
+      if (showB) {
+        const bvar = row.var + '_BOYS';
+        if (!bvar || bvar === row.var + '_BOYS') cells.push(c(v(row.var.replace('_95','_95').replace('_94','_94') + '_BOYS') || v(row.var + '_BOYS')));
+      }
+      // Simpler: just show All pupils for the main metric, other columns as "—"
+      // This avoids complex suffix-mangling. For a data-driven approach, we
+      // detect gendered/FSM variants by naming convention.
+      if (showB) {
+        // Try common gender suffixes
+        const bVal = v(row.var + '_BOYS') ?? v(row.var.replace(/ALL$/, 'B')) ?? v(row.var.replace('SCR', 'SCR_BOYS'));
+        cells.push(c(bVal));
+      }
+      if (showG) {
+        const gVal = v(row.var + '_GIRLS') ?? v(row.var.replace(/ALL$/, 'G')) ?? v(row.var.replace('SCR', 'SCR_GIRLS'));
+        cells.push(c(gVal));
+      }
+      if (showD) {
+        const dVal = v(row.var + '_FSM6CLA1A') ?? v(row.var.replace('ALL', 'FSM6CLA1A'));
+        cells.push(c(dVal));
+      }
+      if (showEal) {
+        const eVal = v(row.var + '_EAL') ?? v(row.var.replace('ALL', 'EAL'));
+        cells.push(c(eVal));
+      }
+      if (showLa) {
+        // Map to laPerf key
+        cells.push('—');
+      }
+      if (showEng) {
+        cells.push(row.eng ?? '—');
       }
 
-      // Prior-year comparator
-      if (vars.prev != null && !suppressed(vars.prev)) {
-        const pyCells = [row.label + ' (prior year)'];
-        if (showAll) pyCells.push(c(vars.prev));
-        if (showB)   pyCells.push('—');
-        if (showG)   pyCells.push('—');
-        if (showD)   pyCells.push('—');
-        if (showEal) pyCells.push('—');
-        if (showLa)  pyCells.push('—');
-        if (showEng) pyCells.push('—');
-        lines.push('| ' + pyCells.join(' | ') + ' |');
+      // Only add row if it has any non-dash value beyond the label
+      if (cells.slice(1).some(cell => cell !== '—')) {
+        lines.push('| ' + cells.join(' | ') + ' |');
       }
     }
   }
@@ -3346,7 +3266,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Bundled local data (zero-latency — no HTTP)
       const schoolEthnicity = urn ? getSchoolEthnicity(urn) : null;
 
-      return { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees: feesResult };
+      return { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails };
     })
   );
 
@@ -3400,14 +3320,14 @@ export function computeFlags(school) {
   const allRows = Object.values(performance ?? {}).flat();
   const vv = (code) => allRows.find(r => r.variable === code)?.value ?? null;
 
-  // A2 — Ofsted/ISI overall grade
+  // A2 — Ofsted overall grade
   const overall = (ofsted?.overall ?? '').toLowerCase();
-  if (/outstanding|exceptional|excellent/i.test(overall))              flags['A2. Ofsted Inspection Grades'] = 'green';
-  else if (/requires improvement|inadequate|unsatisfactory|sound/i.test(overall)) flags['A2. Ofsted Inspection Grades'] = 'red';
+  if (/outstanding|exceptional/i.test(overall))              flags['A2. Ofsted Inspection Grades'] = 'green';
+  else if (/requires improvement|inadequate/i.test(overall)) flags['A2. Ofsted Inspection Grades'] = 'red';
 
-  // A3 — improvement requirements: content present = red, none + top grade = green
-  if (ofsted?.nextSteps || ofsted?.recommendations)  flags['A3. What the School Needs to Improve'] = 'red';
-  else if (/outstanding|exceptional|excellent/i.test(overall))  flags['A3. What the School Needs to Improve'] = 'green';
+  // A3 — improvement requirements: content present = red, Outstanding + none = green
+  if (ofsted?.nextSteps)                  flags['A3. What the School Needs to Improve'] = 'red';
+  else if (/outstanding/i.test(overall))  flags['A3. What the School Needs to Improve'] = 'green';
 
   // A4 — pupil census: high FSM or EHC
   const fsmPct = parseFloat(vv('PNUMFSMEVER') ?? '');
@@ -3490,13 +3410,7 @@ export function renderPartA(school, flags = {}) {
     .flatMap(([, rows]) => rows);
   const v  = (code) => allRows.find(r => r.variable === code)?.value ?? null;
   const lv = (code) => performance?.L?.find(r => r.variable === code)?.value ?? null;
-  // DfE uses 0%, 0.0%, 0.00% as suppression markers.
-  const d  = (val) => {
-    if (val == null) return '—';
-    const s = String(val).trim();
-    if (s === '0%' || s === '0.0%' || s === '0.00%') return '—';
-    return s;
-  };
+  const d  = (val)  => (val != null ? String(val) : '—');
 
   const sections = [];
 
@@ -3666,29 +3580,27 @@ export function renderPartA(school, flags = {}) {
     const senK = v('PSENELK');
     const senE = v('PSENELSE');
 
-    const sup = (val) => { const s = String(val ?? '').trim(); return s === '0%' || s === '0.0%' || s === '0.00%' || s === '0'; };
     const lines = [
       '| Metric | School | National avg |',
       '|---|---:|---:|',
     ];
-    if (nor && !sup(nor))  lines.push(`| Pupils on roll | ${nor} | ~280 primary / ~1,000 secondary |`);
-    if (fsm && !sup(fsm))  lines.push(`| Free School Meals (FSM) eligible — last 6 years | ${fsm} | ~25% primary / ~20% secondary |`);
-    if (eal && !sup(eal))  lines.push(`| English as Additional Language (EAL) pupils | ${eal} | — |`);
-    if (senK && !sup(senK)) lines.push(`| Special Educational Needs (SEN) support | ${senK} | ~13% |`);
-    if (senE && !sup(senE)) lines.push(`| Education, Health and Care (EHC) plans | ${senE} | ~4.5% |`);
+    if (nor)  lines.push(`| Pupils on roll | ${nor} | ~280 primary / ~1,000 secondary |`);
+    if (fsm)  lines.push(`| Free School Meals (FSM) eligible — last 6 years | ${fsm} | ~25% primary / ~20% secondary |`);
+    if (eal)  lines.push(`| English as Additional Language (EAL) pupils | ${eal} | — |`);
+    if (senK) lines.push(`| Special Educational Needs (SEN) support | ${senK} | ~13% |`);
+    if (senE) lines.push(`| Education, Health and Care (EHC) plans | ${senE} | ~4.5% |`);
 
-    if (schoolEthnicity && !Object.values(schoolEthnicity).every(v => v === 0 || v === '0' || v === '0%')) {
+    if (schoolEthnicity) {
       lines.push('');
       lines.push('| Ethnic group | % of pupils |');
       lines.push('|---|---:|');
-      const eth = schoolEthnicity;
-      if (eth.w  && eth.w  !== 0) lines.push(`| White | ${eth.w}% |`);
-      if (eth.m  && eth.m  !== 0) lines.push(`| Mixed | ${eth.m}% |`);
-      if (eth.a  && eth.a  !== 0) lines.push(`| Asian | ${eth.a}% |`);
-      if (eth.b  && eth.b  !== 0) lines.push(`| Black | ${eth.b}% |`);
-      if (eth.c  && eth.c  !== 0) lines.push(`| Chinese | ${eth.c}% |`);
-      if (eth.o  && eth.o  !== 0) lines.push(`| Other | ${eth.o}% |`);
-      if (eth.ns && eth.ns !== 0) lines.push(`| Not stated | ${eth.ns}% |`);
+      if (schoolEthnicity.w  != null) lines.push(`| White | ${schoolEthnicity.w}% |`);
+      if (schoolEthnicity.m  != null) lines.push(`| Mixed | ${schoolEthnicity.m}% |`);
+      if (schoolEthnicity.a  != null) lines.push(`| Asian | ${schoolEthnicity.a}% |`);
+      if (schoolEthnicity.b  != null) lines.push(`| Black | ${schoolEthnicity.b}% |`);
+      if (schoolEthnicity.c  != null) lines.push(`| Chinese | ${schoolEthnicity.c}% |`);
+      if (schoolEthnicity.o  != null) lines.push(`| Other | ${schoolEthnicity.o}% |`);
+      if (schoolEthnicity.ns != null) lines.push(`| Not stated | ${schoolEthnicity.ns}% |`);
     }
 
     sections.push({ heading: 'A4. Pupil Census', body: lines.join('\n'), flag: flags['A4. Pupil Census'] ?? 'none' });
@@ -3725,28 +3637,10 @@ export function renderPartA(school, flags = {}) {
   // ────────────────────────────────────────────────────────────────────────────
   {
     let body;
-    if (isIndependent) {
-      const f = school.fees;
-      if (f?.day) {
-        const lines = [
-          '| Metric | Value |',
-          '|---|---:|',
-        ];
-        if (f.day) {
-          const range = f.day.min === f.day.max ? `£${f.day.min.toLocaleString()}` : `£${f.day.min.toLocaleString()} — £${f.day.max.toLocaleString()}`;
-          lines.push(`| Day fees (${f.day.period}) | ${range} |`);
-        }
-        if (f.boarding) {
-          const range = f.boarding.min === f.boarding.max ? `£${f.boarding.min.toLocaleString()}` : `£${f.boarding.min.toLocaleString()} — £${f.boarding.max.toLocaleString()}`;
-          lines.push(`| Boarding fees (${f.boarding.period}) | ${range} |`);
-        }
-        if (f.source) lines.push(`| Source | ${f.source} |`);
-        body = lines.join('\n');
-      } else {
-        body = '_Fee data not retrieved from school website. Check the school site or ISC for current fees._';
-      }
-    } else if (!financial) {
-      body = '_Not retrieved — only available for state-funded schools._';
+    if (isIndependent || !financial) {
+      body = isIndependent
+        ? '_Independent school — FBIT data not published for independent schools._'
+        : '_Not retrieved — only available for state-funded schools._';
     } else {
       const lines = [
         '| Metric | School | Comparator avg |',
@@ -3810,37 +3704,9 @@ export function renderPartA(school, flags = {}) {
     sections.push({ heading: 'A8. Area Profile', body, flag: flags['A8. Area Profile'] ?? 'none' });
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // A9. Parent View
-  // ────────────────────────────────────────────────────────────────────────────
-  {
-    const pv = ofsted?.parentView;
-    if (pv && pv.totalResponses) {
-      const yr = pv.academicYear ? ` (${pv.academicYear})` : '';
-      const lines = [
-        `**Ofsted Parent View${yr} — ${pv.totalResponses} responses**`,
-        '',
-        '| Question | % agree |',
-        '|---|---:|',
-      ];
-      const row = (label, val, threshold) => {
-        if (val == null) return;
-        const flag = threshold && val < threshold ? ' ⚠️' : '';
-        lines.push(`| ${label} | ${val}%${flag} |`);
-      };
-      row('Would recommend this school',       pv.wouldRecommend,  80);
-      row('My child is happy here',            pv.childHappy,      null);
-      row('My child feels safe',               pv.childSafe,       88);
-      row('Pupils are well behaved',           pv.wellBehaved,     null);
-      row('Bullying dealt with well',          pv.bullyingHandled, 70);
-      row('School communicates well',          pv.communication,   null);
-      row('Concerns dealt with properly',      pv.concernsHandled, 75);
-      row('Acts in child\'s best interests',   pv.bestInterests,   null);
-      row('Right support to learn',            pv.rightSupport,    null);
-      row('SEND support',                      pv.sendSupport,     null);
-      sections.push({ heading: 'A9. Parent View', body: lines.join('\n'), flag: 'none' });
-    }
-  }
+  // A9. What It's Like to Be a Pupil is generated entirely by the AI
+  // (Call 2 verdict).  No server placeholder needed — interleaveVerdicts
+  // appends the AI-generated A9 section at the end of Part A.
 
   // Tag the first section with the Part A label so the UI renders the divider
   if (sections.length > 0) sections[0]._partLabel = 'Part A — Official Record';
