@@ -2569,8 +2569,8 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       heading: 'Attainment',
       cols: 'abgdnelE',
       rows: [
-        { label: '% meeting expected standard (RWM)', var: 'PTRWM_EXP', la: 'rwm.expected', eng: nat2.PTRWM_EXP + '%' },
-        { label: '% achieving higher standard (RWM)', var: 'PTRWM_HIGH', la: 'rwm.higher', eng: nat2.PTRWM_HIGH + '%' },
+        { label: '% meeting expected standard (Reading, Writing & Maths)', var: 'PTRWM_EXP', la: 'rwm.expected', eng: nat2.PTRWM_EXP + '%' },
+        { label: '% achieving higher standard (Reading, Writing & Maths)', var: 'PTRWM_HIGH', la: 'rwm.higher', eng: nat2.PTRWM_HIGH + '%' },
       ],
     },
     {
@@ -2623,8 +2623,8 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       heading: 'Disadvantage gap',
       cols: 'a',
       rows: [
-        { label: 'RWM expected — gap vs national (pp)', var: 'DIFFN_RWM_EXP' },
-        { label: 'RWM higher — gap vs national (pp)', var: 'DIFFN_RWM_HIGH' },
+        { label: 'Reading, Writing & Maths expected — gap vs national (percentage points)', var: 'DIFFN_RWM_EXP' },
+        { label: 'Reading, Writing & Maths higher — gap vs national (percentage points)', var: 'DIFFN_RWM_HIGH' },
       ],
     },
     {
@@ -3034,7 +3034,7 @@ const KS5_TOPICS = [
   if (hasKS2) {
     lines.push('**Key Stage 2 (2024/25)**');
     lines.push('');
-    lines.push('_Reading, Maths and GPS are SATs-tested. Writing and Science are Teacher Assessed._');
+    lines.push('*Reading, Maths and Grammar/Punctuation/Spelling are SATs-tested. Writing and Science are Teacher Assessed.*');
     for (const topic of KS2_TOPICS) renderTopic(topic, 'KS2');
     for (const topic of KS2_EXTRA_TOPICS) renderTopic(topic, 'KS2');
     renderProgress();

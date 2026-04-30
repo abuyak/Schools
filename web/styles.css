@@ -487,9 +487,20 @@ input[type="email"]:focus,
 .cols-2 th:last-child,
 .cols-2 td:last-child   { width: 40%; }
 
-/* 3+ column tables (C1, comparison grids): auto layout for content fit */
+/* 3-6 column tables: auto layout for content fit */
 .cols-3, .cols-4, .cols-5, .cols-6 {
   table-layout: auto;
+}
+
+/* 7+ column tables: first column needs more width for long row labels */
+.cols-7 th:first-child,
+.cols-7 td:first-child,
+.cols-8 th:first-child,
+.cols-8 td:first-child,
+.cols-9 th:first-child,
+.cols-9 td:first-child {
+  width: 32%;
+  min-width: 10rem;
 }
 
 /* Evidence Level colour badges — same palette as Quick Take scorecard */
