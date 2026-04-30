@@ -2584,12 +2584,12 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       ],
     },
     {
-      heading: 'Progress (KS1 to KS2)',
+      heading: 'Progress (KS1 to KS2) — 2022/23',
       cols: 'abgdelE',
       rows: [
-        { label: 'Reading progress', var: 'READPROG', ciLo: 'READPROG_LOWER', ciHi: 'READPROG_UPPER', eng: '0' },
-        { label: 'Writing progress', var: 'WRITPROG', ciLo: 'WRITPROG_LOWER', ciHi: 'WRITPROG_UPPER', eng: '0' },
-        { label: 'Maths progress', var: 'MATPROG', ciLo: 'MATPROG_LOWER', ciHi: 'MATPROG_UPPER', eng: '0' },
+        { label: 'Reading progress', var: 'READPROG_23', ciLo: 'READPROG_LOWER_23', ciHi: 'READPROG_UPPER_23', eng: '0' },
+        { label: 'Writing progress', var: 'WRITPROG_23', ciLo: 'WRITPROG_LOWER_23', ciHi: 'WRITPROG_UPPER_23', eng: '0' },
+        { label: 'Maths progress', var: 'MATPROG_23', ciLo: 'MATPROG_LOWER_23', ciHi: 'MATPROG_UPPER_23', eng: '0' },
       ],
     },
   ];
