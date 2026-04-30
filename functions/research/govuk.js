@@ -3400,14 +3400,14 @@ export function computeFlags(school) {
   const allRows = Object.values(performance ?? {}).flat();
   const vv = (code) => allRows.find(r => r.variable === code)?.value ?? null;
 
-  // A2 — Ofsted overall grade
+  // A2 — Ofsted/ISI overall grade
   const overall = (ofsted?.overall ?? '').toLowerCase();
-  if (/outstanding|exceptional/i.test(overall))              flags['A2. Ofsted Inspection Grades'] = 'green';
-  else if (/requires improvement|inadequate/i.test(overall)) flags['A2. Ofsted Inspection Grades'] = 'red';
+  if (/outstanding|exceptional|excellent/i.test(overall))              flags['A2. Ofsted Inspection Grades'] = 'green';
+  else if (/requires improvement|inadequate|unsatisfactory|sound/i.test(overall)) flags['A2. Ofsted Inspection Grades'] = 'red';
 
-  // A3 — improvement requirements: content present = red, Outstanding + none = green
-  if (ofsted?.nextSteps)                  flags['A3. What the School Needs to Improve'] = 'red';
-  else if (/outstanding/i.test(overall))  flags['A3. What the School Needs to Improve'] = 'green';
+  // A3 — improvement requirements: content present = red, none + top grade = green
+  if (ofsted?.nextSteps || ofsted?.recommendations)  flags['A3. What the School Needs to Improve'] = 'red';
+  else if (/outstanding|exceptional|excellent/i.test(overall))  flags['A3. What the School Needs to Improve'] = 'green';
 
   // A4 — pupil census: high FSM or EHC
   const fsmPct = parseFloat(vv('PNUMFSMEVER') ?? '');
