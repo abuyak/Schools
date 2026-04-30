@@ -80,16 +80,26 @@ function glog(event, props = {}) {
 const NATIONAL_AVG = {
   // KS2 attainment 2024/25 (provisional, published Nov 2025)
   KS2: {
-    PTRWM_EXP:              61,   // % meeting expected standard in reading, writing and maths
-    PTRWM_HIGH:              9,   // % achieving higher standard in RWM
-    PTREAD_EXP:             74,   // % meeting expected in reading
-    PTMAT_EXP:              73,   // % meeting expected in maths
+    PTRWM_EXP:              62,   // % meeting expected standard in reading, writing and maths
+    PTRWM_HIGH:              8,   // % achieving higher standard in RWM
+    PTREAD_EXP:             75,   // % meeting expected in reading
+    PTMAT_EXP:              74,   // % meeting expected in maths
     PTWRITTA_EXP:           72,   // % meeting expected in writing (teacher assessment)
-    PTGPS_EXP:              75,   // % meeting expected in grammar, punctuation and spelling
-    PTGPS_HIGH:             30,   // % achieving higher standard in GPS (2024/25 provisional)
-    PTRWM_EXP_FSM6CLA1A:   46,   // % disadvantaged meeting expected in RWM
-    PTREAD_EXP_FSM6CLA1A:  57,   // % disadvantaged meeting expected in reading
-    PTMAT_EXP_FSM6CLA1A:   56,   // % disadvantaged meeting expected in maths
+    PTGPS_EXP:              73,   // % meeting expected in grammar, punctuation and spelling
+    PTSCITA_EXP:            82,   // % meeting expected in science (teacher assessment)
+    PTREAD_HIGH:            33,   // % achieving higher standard in reading
+    PTMAT_HIGH:             26,   // % achieving higher standard in maths
+    PTWRITTA_HIGH:          13,   // % working at greater depth in writing
+    PTGPS_HIGH:             30,   // % achieving higher standard in GPS
+    PTRWM_EXP_FSM6CLA1A:   47,   // % disadvantaged meeting expected in RWM
+    PTRWM_HIGH_FSM6CLA1A:   4,   // % disadvantaged achieving higher in RWM
+    PTRWM_EXP_NFSM6CLA1A:  69,   // % non-disadvantaged meeting expected in RWM
+    PTRWM_HIGH_NFSM6CLA1A: 11,   // % non-disadvantaged achieving higher in RWM
+    PTREAD_EXP_FSM6CLA1A:  58,   // % disadvantaged meeting expected in reading (est. from 17pp gap)
+    PTMAT_EXP_FSM6CLA1A:   54,   // % disadvantaged meeting expected in maths (est. from 20pp gap)
+    PTWRITTA_EXP_FSM6CLA1A:53,   // % disadvantaged meeting expected in writing (est. from 19pp gap)
+    PTGPS_EXP_FSM6CLA1A:   54,   // % disadvantaged meeting expected in GPS (est. from 19pp gap)
+    PTSCITA_EXP_FSM6CLA1A: 65,   // % disadvantaged meeting expected in science (est. from 17pp gap)
     READPROG:               0.0,  // progress score national average = 0 by definition
     WRITPROG:               0.0,
     MATPROG:                0.0,
@@ -2467,6 +2477,27 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     if (val == null) return '—';
     const s = String(val).trim();
     return suppressed(s) ? '—' : s;
+  };
+
+  // Discover breakdown variants — tries KS2 (_B, _G) then KS4 (_BOYS, _GIRLS)
+  const findVar = (base, suffix) => {
+    if (!suffix) return v(base);
+    const val = v(base + suffix);
+    if (val != null && !suppressed(String(val).trim())) return val;
+    // KS2 vs KS4 gender suffix cross-try
+    if (suffix === '_BOYS' || suffix === '_B') {
+      for (const s of ['_B', '_BOYS']) {
+        const sv = v(base + s);
+        if (sv != null && !suppressed(String(sv).trim())) return sv;
+      }
+    }
+    if (suffix === '_GIRLS' || suffix === '_G') {
+      for (const s of ['_G', '_GIRLS']) {
+        const sv = v(base + s);
+        if (sv != null && !suppressed(String(sv).trim())) return sv;
+      }
+    }
+    return null;
   };
 
   // National averages
