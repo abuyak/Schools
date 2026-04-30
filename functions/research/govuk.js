@@ -2961,15 +2961,23 @@ const KS5_TOPICS = [
   // ── Timeseries renderer — results over time ──────────────────────────────
 
   function renderTimeseries() {
+    // England national averages 2023/2024/2025 (DfE KS2 attainment)
+    const ENG = {
+      rwmExp:    ['60', '61', String(nat2.PTRWM_EXP)],
+      rwmHigher: ['8',  '8',  String(nat2.PTRWM_HIGH)],
+      readScore: ['105','105','105'],
+      mathScore: ['104','104','104'],
+    };
+
     const groups = [
       { heading: 'Expected Standard in Reading, Writing and Maths (RWM)',
-        base: 'PTRWM_EXP', laKey: 'rwm.expected', eng: nat2.PTRWM_EXP, isPct: true },
+        base: 'PTRWM_EXP', laKey: 'rwm.expected', eng: ENG.rwmExp, isPct: true },
       { heading: 'Higher Standard in Reading, Writing and Maths (RWM)',
-        base: 'PTRWM_HIGH', laKey: 'rwm.higher', eng: nat2.PTRWM_HIGH, isPct: true },
+        base: 'PTRWM_HIGH', laKey: 'rwm.higher', eng: ENG.rwmHigher, isPct: true },
       { heading: 'Average Score in Reading',
-        base: 'READ_AVERAGE', laKey: 'reading.avgScore', eng: '105', isPct: false },
+        base: 'READ_AVERAGE', laKey: 'reading.avgScore', eng: ENG.readScore, isPct: false },
       { heading: 'Average Score in Maths',
-        base: 'MAT_AVERAGE', laKey: 'maths.avgScore', eng: '104', isPct: false },
+        base: 'MAT_AVERAGE', laKey: 'maths.avgScore', eng: ENG.mathScore, isPct: false },
     ];
 
     let hasAny = false;
@@ -2995,7 +3003,7 @@ const KS5_TOPICS = [
       out.push('|---|---:|---:|---:|');
       out.push(`| School | ${f(s23)} | ${f(s24)} | ${f(s25)} |`);
       out.push(`| Local Authority | — | — | ${la25 !== '—' ? la25 + sfx : '—'} |`);
-      out.push(`| England | — | — | ${g.eng}${sfx} |`);
+      out.push(`| England | ${g.eng[0]}${sfx} | ${g.eng[1]}${sfx} | ${g.eng[2]}${sfx} |`);
     }
 
     if (hasAny) {
