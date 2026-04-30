@@ -3479,7 +3479,13 @@ export function renderPartA(school, flags = {}) {
     .flatMap(([, rows]) => rows);
   const v  = (code) => allRows.find(r => r.variable === code)?.value ?? null;
   const lv = (code) => performance?.L?.find(r => r.variable === code)?.value ?? null;
-  const d  = (val)  => (val != null ? String(val) : '—');
+  // DfE uses 0%, 0.0%, 0.00% as suppression markers.
+  const d  = (val) => {
+    if (val == null) return '—';
+    const s = String(val).trim();
+    if (s === '0%' || s === '0.0%' || s === '0.00%') return '—';
+    return s;
+  };
 
   const sections = [];
 
