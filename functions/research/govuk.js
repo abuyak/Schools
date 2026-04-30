@@ -2497,6 +2497,12 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
         if (sv != null && !suppressed(String(sv).trim())) return sv;
       }
     }
+    if (suffix === '_NOTFSM6CLA1A' || suffix === '_NFSM6CLA1A') {
+      for (const s of ['_NOTFSM6CLA1A', '_NFSM6CLA1A']) {
+        const sv = v(base + s);
+        if (sv != null && !suppressed(String(sv).trim())) return sv;
+      }
+    }
     return null;
   };
 
@@ -2539,15 +2545,15 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
   const KS2_TOPICS = [
     {
       heading: 'Cohort',
-      cols: 'abgdelE',
+      cols: 'abgdnelE',
       rows: [
         { label: 'Eligible cohort', var: 'TELIG',
-          colVars: { '_G': 'GELIG', '_B': 'BELIG', '_FSM6CLA1A': 'TFSM6CLA1A', '_EAL': 'TEALGRP2' } },
+          colVars: { '_G': 'GELIG', '_B': 'BELIG', '_FSM6CLA1A': 'TFSM6CLA1A', '_NOTFSM6CLA1A': 'TNOTFSM6CLA1A', '_EAL': 'TEALGRP2' } },
       ],
     },
     {
       heading: 'Attainment',
-      cols: 'abgdelE',
+      cols: 'abgdnelE',
       rows: [
         { label: '% meeting expected standard (RWM)', var: 'PTRWM_EXP', la: 'rwm.expected', eng: nat2.PTRWM_EXP + '%' },
         { label: '% achieving higher standard (RWM)', var: 'PTRWM_HIGH', la: 'rwm.higher', eng: nat2.PTRWM_HIGH + '%' },
@@ -2555,7 +2561,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     },
     {
       heading: 'Scaled scores',
-      cols: 'abgdelE',
+      cols: 'abgdnelE',
       rows: [
         { label: 'Reading — average scaled score', var: 'READ_AVERAGE', la: 'reading.avgScore', eng: '105' },
         { label: 'Maths — average scaled score', var: 'MAT_AVERAGE', la: 'maths.avgScore', eng: '104' },
@@ -2564,7 +2570,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     },
     {
       heading: 'Per-subject attainment — % expected standard',
-      cols: 'abgdelE',
+      cols: 'abgdnelE',
       rows: [
         { label: 'Reading', var: 'PTREAD_EXP', la: 'reading.expected', eng: nat2.PTREAD_EXP + '%' },
         { label: 'Writing (Teacher Assessment)', var: 'PTWRITTA_EXP', la: 'writing.expected', eng: nat2.PTWRITTA_EXP + '%' },
@@ -2575,7 +2581,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     },
     {
       heading: 'Per-subject attainment — % higher standard',
-      cols: 'abgdelE',
+      cols: 'abgdnelE',
       rows: [
         { label: 'Reading', var: 'PTREAD_HIGH', la: 'reading.higher', eng: nat2.PTREAD_HIGH + '%' },
         { label: 'Writing (Teacher Assessment)', var: 'PTWRITTA_HIGH', la: 'writing.higher', eng: nat2.PTWRITTA_HIGH + '%' },
@@ -2585,9 +2591,42 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     },
   ];
 
-  // Remove the old flat rows (now in proper topics above)
-  // -- "Writing — % expected standard (TA)" and "Science — % expected standard (TA)"
-  //    were in the wrong table; now in Per-subject expected. Remove leftover:
+  const KS2_EXTRA_TOPICS = [
+    {
+      heading: 'Cohort characteristics',
+      cols: 'a',
+      rows: [
+        { label: '% disadvantaged', var: 'PTFSM6CLA1A' },
+        { label: '% not disadvantaged', var: 'PTNOTFSM6CLA1A' },
+        { label: '% EAL', var: 'PTEALGRP2' },
+        { label: '% non-mobile', var: 'PTMOBN' },
+        { label: '% SEN with EHC plan', var: 'PSENELE' },
+        { label: '% SEN support', var: 'PSENELK' },
+        { label: '% SEN total (EHC + support)', var: 'PSENELEK' },
+      ],
+    },
+    {
+      heading: 'Disadvantage gap',
+      cols: 'a',
+      rows: [
+        { label: 'RWM expected — gap vs national (pp)', var: 'DIFFN_RWM_EXP' },
+        { label: 'RWM higher — gap vs national (pp)', var: 'DIFFN_RWM_HIGH' },
+      ],
+    },
+    {
+      heading: 'Test participation',
+      cols: 'a',
+      rows: [
+        { label: 'Reading — % absent from test', var: 'PTREAD_AT' },
+        { label: 'Maths — % absent from test', var: 'PTMAT_AT' },
+        { label: 'GPS — % absent from test', var: 'PTGPS_AT' },
+        { label: 'Writing — % working towards expected', var: 'PTWRITTA_WTS' },
+        { label: 'Writing — % absent/disapplied', var: 'PTWRITTA_AD' },
+        { label: 'Science — % absent/disapplied', var: 'PTSCITA_AD' },
+      ],
+    },
+  ];
+
   const KS4_TOPICS = [
     { heading: "Attainment 8", cols: "all", rows: [
       { label: "Attainment 8 score", var: "ATT8SCR" },
@@ -2825,13 +2864,15 @@ const KS5_TOPICS = [
     lines.push(`**${topic.heading}**`);
 
     const cols = topic.cols;
-    const showAll  = cols === 'all' || cols === 'abg' || cols === 'abgd' || cols === 'abgde' || cols === 'abgdel' || cols === 'abgdelE';
-    const showB    = cols === 'abg' || cols === 'abgd' || cols === 'abgde' || cols === 'abgdel' || cols === 'abgdelE';
-    const showG    = cols === 'abg' || cols === 'abgd' || cols === 'abgde' || cols === 'abgdel' || cols === 'abgdelE';
-    const showD    = cols === 'abgd' || cols === 'abgde' || cols === 'abgdel' || cols === 'abgdelE';
-    const showEal  = cols === 'abgde' || cols === 'abgdel' || cols === 'abgdelE';
-    const showLa   = cols === 'abgdel' || cols === 'abgdelE';
-    const showEng  = cols === 'abgdelE';
+    const isAll   = cols === 'all' || cols === 'a';
+    const showAll  = isAll || cols !== 'progress';
+    const showG    = !isAll && cols.includes('g');
+    const showB    = !isAll && cols.includes('b');
+    const showD    = !isAll && cols.includes('d');
+    const showN    = !isAll && cols.includes('n');
+    const showEal  = !isAll && cols.includes('e');
+    const showLa   = !isAll && cols.includes('l');
+    const showEng  = !isAll && cols.includes('E');
 
     // Build header — Girls before Boys per wire mock
     const header = ['Category'];
@@ -2839,6 +2880,7 @@ const KS5_TOPICS = [
     if (showG)   header.push('Girls');
     if (showB)   header.push('Boys');
     if (showD)   header.push('Disadvantaged');
+    if (showN)   header.push('Not Disadv.');
     if (showEal) header.push('EAL');
     if (showLa)  header.push('Local Authority');
     if (showEng) header.push('England');
@@ -2863,6 +2905,7 @@ const KS5_TOPICS = [
       if (showG) cells.push(c(cv['_G'] ? v(cv['_G']) : findVar(row.var, '_G')));
       if (showB) cells.push(c(cv['_B'] ? v(cv['_B']) : findVar(row.var, '_B')));
       if (showD) cells.push(c(cv['_FSM6CLA1A'] ? v(cv['_FSM6CLA1A']) : findVar(row.var, '_FSM6CLA1A')));
+      if (showN) cells.push(c(cv['_NOTFSM6CLA1A'] ? v(cv['_NOTFSM6CLA1A']) : findVar(row.var, '_NOTFSM6CLA1A')));
       if (showEal) cells.push(c(cv['_EAL'] ? v(cv['_EAL']) : findVar(row.var, '_EAL')));
       if (showLa) {
         if (row.la) {
@@ -2969,6 +3012,7 @@ const KS5_TOPICS = [
     lines.push('');
     lines.push('_Reading, Maths and GPS are SATs-tested. Writing and Science are Teacher Assessed._');
     for (const topic of KS2_TOPICS) renderTopic(topic, 'KS2');
+    for (const topic of KS2_EXTRA_TOPICS) renderTopic(topic, 'KS2');
     renderProgress();
     renderTimeseries();
   }
