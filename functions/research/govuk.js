@@ -27,6 +27,17 @@ const COMPARE_PERF  = 'https://www.compare-school-performance.service.gov.uk';
 const FIN_BENCH     = 'https://financial-benchmarking-and-insights-tool.education.gov.uk';
 const POSTCODES_IO  = 'https://api.postcodes.io/postcodes';
 
+// ─── HTML entity decoder ──────────────────────────────────────────────────────
+
+function decodeHTMLEntities(str) {
+  return (str ?? '')
+    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&apos;/g, '\'').replace(/&#39;/g, '\'')
+    .replace(/&nbsp;/g, ' ');
+}
+
 // ─── Logging ──────────────────────────────────────────────────────────────────
 //
 // Two tiers:
@@ -666,7 +677,7 @@ export async function lookupSchoolURN(name, locationHints = []) {
     if (!linkMatch) continue;
 
     const urn      = linkMatch[1];
-    const tileName = linkMatch[2].trim();
+    const tileName = decodeHTMLEntities(linkMatch[2].trim());
 
     // Phase / type from the DL: <dt>Phase / type:</dt><dd>Secondary, Independent schools</dd>
     const ptMatch     = tile.match(/Phase\s*\/\s*type[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
@@ -719,7 +730,7 @@ export async function lookupSchoolURN(name, locationHints = []) {
           const tile = tileMatch[1];
           const linkMatch = tile.match(/href="\/Establishments\/Establishment\/Details\/(\d{5,7})[^"]*"[^>]*>\s*([^<]+?)\s*<\/a>/);
           if (!linkMatch) continue;
-          const urn = linkMatch[1]; const tileName = linkMatch[2].trim();
+          const urn = linkMatch[1]; const tileName = decodeHTMLEntities(linkMatch[2].trim());
           const ptMatch = tile.match(/Phase\s*\/\s*type[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
           const phaseTypeRaw = ptMatch ? ptMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
           const parts = phaseTypeRaw ? phaseTypeRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -775,7 +786,7 @@ export async function lookupSchoolURN(name, locationHints = []) {
             const urn = linkMatch[1];
             if (seenUrns.has(urn)) continue;
             seenUrns.add(urn);
-            const tileName = linkMatch[2].trim();
+            const tileName = decodeHTMLEntities(linkMatch[2].trim());
             const ptMatch = tile.match(/Phase\s*\/\s*type[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
             const phaseTypeRaw = ptMatch ? ptMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
             const parts = phaseTypeRaw ? phaseTypeRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
