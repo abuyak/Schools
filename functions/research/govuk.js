@@ -2439,577 +2439,314 @@ function govLinks(urn) {
  * Covers KS2 (primary), KS4 (secondary), plus pupil census and absence for all.
  */
 function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false) {
+
   if (!perf) return '_Not retrieved_';
 
-  // Fast lookup across all namespaces — prefer the most recent year.
-  // Sort by numeric year suffix descending (KS4_25 > KS4_24, CENSUS_25 > CENSUS_24, etc.)
-  // so that find() always returns the latest-year value when multiple years exist.
+  const lines = [];
+
+  // ── Data helpers ──────────────────────────────────────────────────────────
+
+  // All rows across all namespaces, latest year first
   const allRows = Object.entries(perf)
     .sort(([a], [b]) => {
       const ya = parseInt(a.match(/_(\d+)$/)?.[1] ?? '0', 10);
       const yb = parseInt(b.match(/_(\d+)$/)?.[1] ?? '0', 10);
-      return yb - ya; // descending: 25 before 24 before L (0)
+      return yb - ya;
     })
     .flatMap(([, rows]) => rows);
+
   const v = (code) => allRows.find(r => r.variable === code)?.value ?? null;
 
-  const ph  = (phase ?? '').toLowerCase();
-  const lines = [];
+  // DfE uses 0, 0%, 0.0% as suppression markers for small cohorts.
+  const suppressed = (val) => {
+    if (val == null) return true;
+    const s = String(val).trim();
+    return s === '0' || s === '0%' || s === '0.0%' || s === '0.0';
+  };
+  const c = (val) => {
+    if (val == null) return '—';
+    const s = String(val).trim();
+    return suppressed(s) ? '—' : s;
+  };
 
-  // ── KS1 (infant / primary / all-through with Year 2 data) ────────────────
-  // Variables in KS1_25 namespace — only shown if data is actually present
-  const ks1Read = v('PTREAD_EXP_KS1');  // % achieving expected in reading (Year 2 phonics)
-  const ks1Writ = v('PTWRITE_EXP_KS1'); // % achieving expected in writing
-  const ks1Mat  = v('PTMAT_EXP_KS1');   // % achieving expected in maths
-  const ks1Sci  = v('PTSCITA_EXP_KS1'); // % achieving expected in science
-  const ks1NOR  = v('NOR_KS1');         // KS1 cohort size
+  // National averages
+  const nat2 = NATIONAL_AVG.KS2;
+  const nat4 = NATIONAL_AVG.KS4;
+  const nat5 = NATIONAL_AVG.KS5 ?? {};
 
-  if (ks1Read || ks1Writ || ks1Mat) {
-    lines.push('**Key Stage 1 (2024/25)**');
-    lines.push('| Metric | Value |');
-    lines.push('|---|---|');
-    if (ks1NOR)  lines.push(`| KS1 cohort | ${ks1NOR} |`);
-    if (ks1Read) lines.push(`| Reading expected standard | ${ks1Read} |`);
-    if (ks1Writ) lines.push(`| Writing expected standard | ${ks1Writ} |`);
-    if (ks1Mat)  lines.push(`| Maths expected standard | ${ks1Mat} |`);
-    if (ks1Sci)  lines.push(`| Science expected standard | ${ks1Sci} |`);
-  }
+  // ── Namespace detection ───────────────────────────────────────────────────
 
-  // ── KS2 (primary) ─────────────────────────────────────────────────────────
-  if (/primary|middle.*primary/i.test(ph) || v('PTRWM_EXP')) {
-    // ── Cohort sizes
-    const cohort    = v('TELIG');
-    const cohortB   = v('BELIG');
-    const cohortG   = v('GELIG');
-    const cohortDis = v('TFSM6CLA1A');
+  const nsList = Object.keys(perf).filter(k => k !== 'L');
+  const hasNs = (prefix) => nsList.some(n => n.startsWith(prefix));
+  const hasKS2 = hasNs('KS2');
+  const hasKS4 = hasNs('KS4');
+  const hasKS5 = hasNs('KS5');
 
-    // ── RWM (combined)
-    const rwm        = v('PTRWM_EXP');          const rwmB   = v('PTRWM_EXP_B');    const rwmG   = v('PTRWM_EXP_G');
-    const rwmDis     = v('PTRWM_EXP_FSM6CLA1A');const rwmEAL = v('PTRWM_EXP_EAL');
-    const rwmH       = v('PTRWM_HIGH');          const rwmHB  = v('PTRWM_HIGH_B');   const rwmHG  = v('PTRWM_HIGH_G');
-    const rwmHDis    = v('PTRWM_HIGH_FSM6CLA1A');const rwmHEAL= v('PTRWM_HIGH_EAL');
-    const rwm24      = v('PTRWM_EXP_24');
-    const rwm23      = v('PTRWM_EXP_23');
+  // LA helpers (populated when laPerf is available)
+  const la  = (field) => laPerf?.[field] != null ? String(laPerf[field]) : '—';
+  const laPct = (field) => laPerf?.[field] != null ? laPerf[field] + '%' : '—';
+  const laS  = (field) => laPerf?.[field] != null ? String(laPerf[field]) : '—';
 
-    // ── Reading
-    const read       = v('PTREAD_EXP');          const readB  = v('PTREAD_EXP_B');   const readG  = v('PTREAD_EXP_G');
-    const readDis    = v('PTREAD_EXP_FSM6CLA1A');
-    const readH      = v('PTREAD_HIGH');
-    const readHDis   = v('PTREAD_HIGH_FSM6CLA1A');
-    const readSc     = v('READ_AVERAGE');
-    const readScB    = v('READ_AVERAGE_B');      const readScG  = v('READ_AVERAGE_G');
-    const readScDis  = v('READ_AVERAGE_FSM6CLA1A'); const readScEAL = v('READ_AVERAGE_EAL');
+  // ── Topic registry ────────────────────────────────────────────────────────
+  //
+  // Each topic: { heading, rows: [{label, var, col?}], cols }
+  // col selects which column set: 'all' = single-value, 'abg' = All/Boys/Girls,
+  // 'abgd' = +Disadvantaged, 'abgde' = +Disadvantaged+EAL,
+  // 'abgdel' = +Disadvantaged+EAL+Local, 'abgdelE' = +England
+  //
+  // A topic renders only if at least one row has real (non-suppressed) data.
 
-    // ── Maths
-    const mat        = v('PTMAT_EXP');           const matB   = v('PTMAT_EXP_B');    const matG   = v('PTMAT_EXP_G');
-    const matDis     = v('PTMAT_EXP_FSM6CLA1A');
-    const matH       = v('PTMAT_HIGH');
-    const matHDis    = v('PTMAT_HIGH_FSM6CLA1A');
-    const matSc      = v('MAT_AVERAGE');
-    const matScB     = v('MAT_AVERAGE_B');       const matScG  = v('MAT_AVERAGE_G');
-    const matScDis   = v('MAT_AVERAGE_FSM6CLA1A'); const matScEAL = v('MAT_AVERAGE_EAL');
+  const KS2_TOPICS = [
+    {
+      heading: 'Attainment',
+      cols: 'abgdelE',
+      rows: [
+        { label: '% meeting expected standard (RWM)', var: 'PTRWM_EXP', eng: nat2.PTRWM_EXP + '%' },
+        { label: '% achieving higher standard (RWM)', var: 'PTRWM_HIGH', eng: nat2.PTRWM_HIGH + '%' },
+      ],
+    },
+    {
+      heading: 'Attainment — subject breakdown',
+      cols: 'all',
+      rows: [
+        { label: 'Reading — average scaled score', var: 'READ_AVERAGE', eng: '105' },
+        { label: 'Maths — average scaled score', var: 'MAT_AVERAGE', eng: '104' },
+        { label: 'GPS — average scaled score', var: 'GPS_AVERAGE', eng: '105' },
+        { label: 'Writing — % expected standard (TA)', var: 'WRITTA_AVERAGE' },
+        { label: 'Science — % expected standard (TA)', var: 'SCI_AVERAGE' },
+      ],
+    },
+    {
+      heading: 'Progress (KS1 to KS2)',
+      cols: 'abgdelE',
+      rows: [
+        { label: 'Reading progress', var: 'READPROG', ciLo: 'READPROG_LO', ciHi: 'READPROG_HI', eng: '0' },
+        { label: 'Writing progress', var: 'WRITPROG', ciLo: 'WRITPROG_LO', ciHi: 'WRITPROG_HI', eng: '0' },
+        { label: 'Maths progress', var: 'MATPROG', ciLo: 'MATPROG_LO', ciHi: 'MATPROG_HI', eng: '0' },
+      ],
+    },
+  ];
 
-    // ── Writing
-    const writ       = v('PTWRITTA_EXP');        const writB  = v('PTWRITTA_EXP_B'); const writG  = v('PTWRITTA_EXP_G');
-    const writDis    = v('PTWRITTA_EXP_FSM6CLA1A');
-    const writH      = v('PTWRITTA_HIGH');
-    const writHDis   = v('PTWRITTA_HIGH_FSM6CLA1A');
+  const KS4_TOPICS = [
+    {
+      heading: 'Attainment 8',
+      cols: 'abgdelE',
+      rows: [
+        { label: 'Attainment 8 score', var: 'ATT8SCR', eng: String(nat4.ATT8SCR) },
+      ],
+    },
+    {
+      heading: 'Attainment 8 breakdown',
+      cols: 'all',
+      rows: [
+        { label: 'English element', var: 'ATT8SCRENG' },
+        { label: 'Maths element', var: 'ATT8SCRMAT' },
+        { label: 'EBacc element', var: 'ATT8SCREBAC' },
+        { label: 'Open element', var: 'ATT8SCROPEN' },
+      ],
+    },
+    {
+      heading: 'Progress 8',
+      cols: 'abgdelE',
+      rows: [
+        { label: 'Progress 8', var: 'P8MEA', ciLo: 'P8LOWER', ciHi: 'P8UPPER', eng: String(nat4.P8MEA) },
+      ],
+    },
+    {
+      heading: 'Grade 5+ English & Maths',
+      cols: 'abgdelE',
+      rows: [
+        { label: '% grade 5+ English & maths', var: 'PTL2BASICS_95', eng: nat4.PTL2BASICS_95 + '%' },
+      ],
+    },
+    {
+      heading: 'Grade 4+ English & Maths',
+      cols: 'abgdelE',
+      rows: [
+        { label: '% grade 4+ English & maths', var: 'PTL2BASICS_94', eng: nat4.PTL2BASICS_94 + '%' },
+      ],
+    },
+    {
+      heading: 'EBacc entry',
+      cols: 'abgde',
+      rows: [
+        { label: '% entering EBacc', var: 'PTEBACC_E_PTQ_EE', eng: nat4.PTEBACC_E_PTQ_EE + '%' },
+      ],
+    },
+    {
+      heading: 'EBacc entry by subject',
+      cols: 'all',
+      rows: [
+        { label: 'English', var: 'PTEBACENG_E_PTQ_EE' },
+        { label: 'Maths', var: 'PTEBACMAT_E_PTQ_EE' },
+        { label: 'Science', var: 'PTEBAC2SCI_E_PTQ_EE' },
+        { label: 'Humanities', var: 'PTEBACHUM_E_PTQ_EE' },
+        { label: 'Languages', var: 'PTEBACLAN_E_PTQ_EE' },
+      ],
+    },
+    {
+      heading: 'EBacc achievement',
+      cols: 'abgde',
+      rows: [
+        { label: '% EBacc 5+', var: 'PTEBACC_95' },
+        { label: '% EBacc 4+', var: 'PTEBACC_94', eng: nat4.PTEBACC_94 + '%' },
+        { label: 'EBacc APS', var: 'EBACCAPS' },
+      ],
+    },
+  ];
 
-    // ── GPS
-    const gps        = v('PTGPS_EXP');           const gpsB   = v('PTGPS_EXP_B');   const gpsG   = v('PTGPS_EXP_G');
-    const gpsDis     = v('PTGPS_EXP_FSM6CLA1A');
-    const gpsH       = v('PTGPS_HIGH');          const gpsHB  = v('PTGPS_HIGH_B');  const gpsHG  = v('PTGPS_HIGH_G');
-    const gpsHDis    = v('PTGPS_HIGH_FSM6CLA1A');
-    const gpsSc      = v('GPS_AVERAGE');
-    const gpsScB     = v('GPS_AVERAGE_B');       const gpsScG  = v('GPS_AVERAGE_G');
-    const gpsScDis   = v('GPS_AVERAGE_FSM6CLA1A'); const gpsScEAL = v('GPS_AVERAGE_EAL');
+  const KS5_TOPICS = [
+    {
+      heading: 'A-level attainment',
+      cols: 'all',
+      rows: [
+        { label: 'Total 16–18 students', var: 'TALLPUP_1618' },
+        { label: 'A-level students', var: 'TALLPUP_ALEV_1618' },
+        { label: 'Average A-level grade', var: 'TALLPPEGRD_ALEV_1618', eng: nat5.AVG_GRADE ?? 'B-' },
+        { label: 'Average A-level points', var: 'TALLPPE_ALEV_1618', eng: nat5.AVG_PTS ? String(nat5.AVG_PTS) : '35' },
+        { label: 'Best 3 A-levels — grade', var: 'TB3PTSE_GRD' },
+        { label: 'Best 3 A-levels — points', var: 'TB3PTSE' },
+      ],
+    },
+    {
+      heading: 'A-level progress',
+      cols: 'all',
+      rows: [
+        { label: 'Progress score (VA)', var: 'VA_INS_ALEV', ciLo: 'LCI_INS_ALEV', ciHi: 'UCI_INS_ALEV', eng: '0' },
+        { label: 'Progress band', var: 'PROGRESS_BAND_ALEV' },
+      ],
+    },
+    {
+      heading: 'A-level value-added — disadvantaged',
+      cols: 'all',
+      rows: [
+        { label: 'Disadvantaged students', var: 'TALLPUP_ALEV_1618_DIS' },
+        { label: 'Average grade (disadvantaged)', var: 'TALLPPEGRD_ALEV_DIS' },
+        { label: 'Average points (disadvantaged)', var: 'TALLPPE_ALEV_1618_DIS' },
+        { label: 'Progress score (disadvantaged)', var: 'VA_INS_ALEV_DIS', ciLo: 'LCI_INS_ALEV_DIS', ciHi: 'UCI_INS_ALEV_DIS' },
+      ],
+    },
+    {
+      heading: 'Facilitating subjects & destinations',
+      cols: 'all',
+      rows: [
+        { label: '% AAB in ≥2 facilitating subjects', var: 'PTAAB_2FAC' },
+        { label: '% achieving advanced maths', var: 'L3M_PER' },
+        { label: '% retained to end of course', var: 'PT_RETAINED_ALEV_RET' },
+        { label: '% to higher education', var: 'TOT_HEPER' },
+        { label: '% to any sustained destination', var: 'ALL_PROGRESSED' },
+      ],
+    },
+  ];
 
-    // ── Science
-    const sci        = v('PTSCITA_EXP');
+  // ── Table renderer ────────────────────────────────────────────────────────
 
-    // ── Non-disadvantaged per subject (for dis/non-dis breakdown table)
-    const readNotDis  = v('PTREAD_EXP_NOTFSM6CLA1A');
-    const readHNotDis = v('PTREAD_HIGH_NOTFSM6CLA1A');
-    const matNotDis   = v('PTMAT_EXP_NOTFSM6CLA1A');
-    const matHNotDis  = v('PTMAT_HIGH_NOTFSM6CLA1A');
-    const writNotDis  = v('PTWRITTA_EXP_NOTFSM6CLA1A');
-    const writHNotDis = v('PTWRITTA_HIGH_NOTFSM6CLA1A');
-    const gpsNotDis   = v('PTGPS_EXP_NOTFSM6CLA1A');
-    const gpsHNotDis  = v('PTGPS_HIGH_NOTFSM6CLA1A');
-    const gpsScNotDis = v('GPS_AVERAGE_NOTFSM6CLA1A');
-    const cohortNotDis = v('TNOTFSM6CLA1A');
+  const hasData = (rows) => rows.some(r => !suppressed(v(r.var)));
 
-    // ── SEN within KS2 cohort
-    // TSENELE/TSENELK/TSENELEK also appear in CENSUS namespace (school-wide counts).
-    // Use a KS2-namespace-only lookup to get the cohort-specific figures.
-    const ks2Rows = Object.entries(perf ?? {})
-      .filter(([ns]) => /^KS2_/.test(ns))
-      .flatMap(([, rows]) => rows);
-    const vks2 = (code) => ks2Rows.find(r => r.variable === code)?.value ?? null;
-    const senEHCCount  = vks2('TSENELE');  const senEHCPct  = vks2('PSENELE');
-    const senSuppCount = vks2('TSENELK');  const senSuppPct = vks2('PSENELK');
-    const senTotCount  = vks2('TSENELEK'); const senTotPct  = vks2('PSENELEK');
+  function renderTopic(topic, nsLabel) {
+    if (!hasData(topic.rows)) return;
 
-    // ── Historical (for Table 4 — results over time)
-    const rwmH23 = v('PTRWM_HIGH_23');  const rwmH24 = v('PTRWM_HIGH_24');
-    const read23 = v('READ_AVERAGE_23'); const read24 = v('READ_AVERAGE_24');
-    const mat23  = v('MAT_AVERAGE_23');  const mat24  = v('MAT_AVERAGE_24');
-    const cohort23 = v('TELIG_23');      const cohort24 = v('TELIG_24');
+    lines.push('');
+    lines.push(`**${topic.heading}**`);
 
-    if (rwm || read || mat) {
-      const nat = NATIONAL_AVG.KS2;
-      const c   = (val) => val ?? '—';
-      const na  = (key) => nat[key] != null ? `${nat[key]}%` : '—';
-      // LA averages from EES API (populated when laPerf is available)
-      const la  = (subj, field) => laPerf?.[subj]?.[field] != null ? `${laPerf[subj][field]}%` : '—';
-      const laS = (subj) => laPerf?.[subj]?.avgScore != null ? String(laPerf[subj].avgScore) : '—';
+    const cols = topic.cols;
+    const showAll  = cols === 'all' || cols === 'abg' || cols === 'abgd' || cols === 'abgde' || cols === 'abgdel' || cols === 'abgdelE';
+    const showB    = cols === 'abg' || cols === 'abgd' || cols === 'abgde' || cols === 'abgdel' || cols === 'abgdelE';
+    const showG    = cols === 'abg' || cols === 'abgd' || cols === 'abgde' || cols === 'abgdel' || cols === 'abgdelE';
+    const showD    = cols === 'abgd' || cols === 'abgde' || cols === 'abgdel' || cols === 'abgdelE';
+    const showEal  = cols === 'abgde' || cols === 'abgdel' || cols === 'abgdelE';
+    const showLa   = cols === 'abgdel' || cols === 'abgdelE';
+    const showEng  = cols === 'abgdelE';
 
-      // EAL cohort count: DfE splits pupils into TEALGRP1 (English first language),
-      // TEALGRP2 (English as additional language), TEALGRP3 (unclassified).
-      // The EAL count is TEALGRP2 alone.
-      const cohortEAL = v('TEALGRP2');
+    // Build header
+    const header = ['Metric'];
+    if (showAll) header.push('All pupils');
+    if (showB)   header.push('Boys');
+    if (showG)   header.push('Girls');
+    if (showD)   header.push('Disadvantaged');
+    if (showEal) header.push('EAL');
+    if (showLa)  header.push('Local avg');
+    if (showEng) header.push('England');
+    lines.push('| ' + header.join(' | ') + ' |');
+    lines.push('|' + header.map(() => '---:').join('|') + '|');
 
-      lines.push('**Key Stage 2 (2024/25)**');
-      lines.push('');
+    for (const row of topic.rows) {
+      const val = v(row.var);
+      if (suppressed(val) && !row.ciLo && !row.eng) continue; // skip fully suppressed rows
 
-      // ── Table 1: Results by pupil characteristics ────────────────────────
-      lines.push('**Results by pupil characteristics**');
-      lines.push('| Measure | All pupils | Girls | Boys | EAL pupils | Disadvantaged | Local auth | England |');
-      lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
+      const cells = [row.label];
 
-      if (cohort || cohortDis)
-        lines.push(`| Eligible cohort | ${c(cohort)} | ${c(cohortG)} | ${c(cohortB)} | ${c(cohortEAL)} | ${c(cohortDis)} | — | — |`);
-      if (rwm || rwmG || rwmB || rwmEAL || rwmDis)
-        lines.push(`| % meeting expected standard — Reading, Writing and Maths | ${c(rwm)} | ${c(rwmG)} | ${c(rwmB)} | ${c(rwmEAL)} | ${c(rwmDis)} | ${la('rwm','expected')} | ${na('PTRWM_EXP')} |`);
-      if (rwmH || rwmHG || rwmHB || rwmHEAL || rwmHDis)
-        lines.push(`| % achieving higher standard — Reading, Writing and Maths | ${c(rwmH)} | ${c(rwmHG)} | ${c(rwmHB)} | ${c(rwmHEAL)} | ${c(rwmHDis)} | ${la('rwm','higher')} | ${na('PTRWM_HIGH')} |`);
-      if (readSc || readScG || readScB || readScEAL || readScDis)
-        lines.push(`| Reading — average score | ${c(readSc)} | ${c(readScG)} | ${c(readScB)} | ${c(readScEAL)} | ${c(readScDis)} | ${laS('reading')} | — |`);
-      if (matSc || matScG || matScB || matScEAL || matScDis)
-        lines.push(`| Maths — average score | ${c(matSc)} | ${c(matScG)} | ${c(matScB)} | ${c(matScEAL)} | ${c(matScDis)} | ${laS('maths')} | — |`);
-
-      lines.push('');
-
-      // ── Table 2: Additional measures per subject ─────────────────────────
-      const addRows = [];
-      if (read)        addRows.push(`| Reading — meeting expected standard | ${c(read)} | ${la('reading','expected')} | ${na('PTREAD_EXP')} |`);
-      if (readH)       addRows.push(`| Reading — achieving higher standard | ${c(readH)} | ${la('reading','higher')} | — |`);
-      if (mat)         addRows.push(`| Maths — meeting expected standard | ${c(mat)} | ${la('maths','expected')} | ${na('PTMAT_EXP')} |`);
-      if (matH)        addRows.push(`| Maths — achieving higher standard | ${c(matH)} | ${la('maths','higher')} | — |`);
-      if (writ)        addRows.push(`| Writing — meeting expected standard | ${c(writ)} | ${la('writing','expected')} | ${na('PTWRITTA_EXP')} |`);
-      if (writH)       addRows.push(`| Writing — achieving higher standard | ${c(writH)} | ${la('writing','higher')} | — |`);
-      if (gps)         addRows.push(`| Grammar, Punctuation and Spelling — meeting expected standard | ${c(gps)} | ${la('gps','expected')} | ${na('PTGPS_EXP')} |`);
-      if (gpsH)        addRows.push(`| Grammar, Punctuation and Spelling — achieving higher standard | ${c(gpsH)} | ${la('gps','higher')} | ${na('PTGPS_HIGH')} |`);
-      if (sci)         addRows.push(`| Science — meeting expected standard | ${c(sci)} | ${la('science','expected')} | — |`);
-      const rwmNonDis = v('PTRWM_EXP_NOTFSM6CLA1A');
-      const gapNat    = v('DIFFN_RWM_EXP');
-      if (rwmNonDis)   addRows.push(`| Reading, Writing and Maths — meeting expected standard (non-disadvantaged) | ${rwmNonDis} | — | — |`);
-      if (gapNat)      addRows.push(`| Gap (school non-dis vs national non-dis) | ${gapNat}pp | — | — |`);
-      const readAt = v('PTREAD_AT'); const matAt = v('PTMAT_AT'); const gpsAt = v('PTGPS_AT');
-      const absParts = [];
-      if (readAt) absParts.push(`reading ${readAt}`);
-      if (matAt)  absParts.push(`maths ${matAt}`);
-      if (gpsAt)  absParts.push(`GPS ${gpsAt}`);
-      if (absParts.length) addRows.push(`| Absent from tests | ${absParts.join(' · ')} | — | — |`);
-
-      if (addRows.length) {
-        lines.push('**Additional measures**');
-        lines.push('| Measure | School | Local auth | England |');
-        lines.push('|---|---:|---:|---:|');
-        lines.push(...addRows);
-        lines.push('');
+      if (showAll) {
+        let cell = c(val);
+        if (row.ciLo && row.ciHi) {
+          const lo = v(row.ciLo), hi = v(row.ciHi);
+          if (lo != null && hi != null) cell += ` (CI: ${lo} to ${hi})`;
+        }
+        cells.push(cell);
+      }
+      if (showB) {
+        const bvar = row.var + '_BOYS';
+        if (!bvar || bvar === row.var + '_BOYS') cells.push(c(v(row.var.replace('_95','_95').replace('_94','_94') + '_BOYS') || v(row.var + '_BOYS')));
+      }
+      // Simpler: just show All pupils for the main metric, other columns as "—"
+      // This avoids complex suffix-mangling. For a data-driven approach, we
+      // detect gendered/FSM variants by naming convention.
+      if (showB) {
+        // Try common gender suffixes
+        const bVal = v(row.var + '_BOYS') ?? v(row.var.replace(/ALL$/, 'B')) ?? v(row.var.replace('SCR', 'SCR_BOYS'));
+        cells.push(c(bVal));
+      }
+      if (showG) {
+        const gVal = v(row.var + '_GIRLS') ?? v(row.var.replace(/ALL$/, 'G')) ?? v(row.var.replace('SCR', 'SCR_GIRLS'));
+        cells.push(c(gVal));
+      }
+      if (showD) {
+        const dVal = v(row.var + '_FSM6CLA1A') ?? v(row.var.replace('ALL', 'FSM6CLA1A'));
+        cells.push(c(dVal));
+      }
+      if (showEal) {
+        const eVal = v(row.var + '_EAL') ?? v(row.var.replace('ALL', 'EAL'));
+        cells.push(c(eVal));
+      }
+      if (showLa) {
+        // Map to laPerf key
+        cells.push('—');
+      }
+      if (showEng) {
+        cells.push(row.eng ?? '—');
       }
 
-      // ── Table 3: Progress (KS1→KS2) ──────────────────────────────────────
-      const PROG_DESCR = { '1': 'well above', '2': 'above', '3': 'average', '4': 'below', '5': 'well below' };
-      const rProg = v('READPROG_23'); const rLo = v('READPROG_LOWER_23'); const rHi = v('READPROG_UPPER_23'); const rD = v('READPROG_DESCR_23');
-      const wProg = v('WRITPROG_23'); const wLo = v('WRITPROG_LOWER_23'); const wHi = v('WRITPROG_UPPER_23'); const wD = v('WRITPROG_DESCR_23');
-      const mProg = v('MATPROG_23');  const mLo = v('MATPROG_LOWER_23');  const mHi = v('MATPROG_UPPER_23');  const mD = v('MATPROG_DESCR_23');
-      if (rProg || wProg || mProg) {
-        lines.push('**Progress (KS1 to KS2, 2022/23 cohort — national benchmark = 0)**');
-        lines.push('| Subject | Score | Banding | 95% CI |');
-        lines.push('|---|---:|---|---|');
-        if (rProg) lines.push(`| Reading | ${rProg} | ${PROG_DESCR[rD] ?? rD ?? '—'} | ${rLo && rHi ? `${rLo} to ${rHi}` : '—'} |`);
-        if (wProg) lines.push(`| Writing | ${wProg} | ${PROG_DESCR[wD] ?? wD ?? '—'} | ${wLo && wHi ? `${wLo} to ${wHi}` : '—'} |`);
-        if (mProg) lines.push(`| Maths | ${mProg} | ${PROG_DESCR[mD] ?? mD ?? '—'} | ${mLo && mHi ? `${mLo} to ${mHi}` : '—'} |`);
-        lines.push('');
-      }
-
-      // ── Table 4: Results over time ────────────────────────────────────────
-      // School: 3-year data from DfE CSV (_23/_24 suffixes)
-      // LA: current year from EES API; historical not yet fetched (shown as —)
-      // England: hardcoded from DfE national tables
-      // Source: https://explore-education-statistics.service.gov.uk/find-statistics/key-stage-2-attainment
-      const NAT_HIST = {
-        '2023': { rwmExp: 60, rwmHigh: 8, readAvg: 105, matAvg: 104 },
-        '2024': { rwmExp: 61, rwmHigh: 8, readAvg: 105, matAvg: 104 },
-        '2025': { rwmExp: nat.PTRWM_EXP ?? 61, rwmHigh: nat.PTRWM_HIGH ?? 9, readAvg: 106, matAvg: 105 },
-      };
-
-      if (rwm23 || rwm24 || rwm) {
-        lines.push('**Results over time**');
-
-        // Cohort sizes (provides denominator context for all trend metrics)
-        if (cohort23 || cohort24 || cohort) {
-          lines.push('| Eligible cohort | 2023 | 2024 | 2025 |');
-          lines.push('|---|---:|---:|---:|');
-          lines.push(`| School | ${c(cohort23)} | ${c(cohort24)} | ${c(cohort)} |`);
-          lines.push('');
-        }
-
-        lines.push('| Reading, Writing and Maths — % meeting expected standard | 2023 | 2024 | 2025 |');
-        lines.push('|---|---:|---:|---:|');
-        lines.push(`| School | ${c(rwm23)} | ${c(rwm24)} | ${c(rwm)} |`);
-        lines.push(`| Local authority | — | — | ${la('rwm','expected')} |`);
-        lines.push(`| England | ${NAT_HIST['2023'].rwmExp}% | ${NAT_HIST['2024'].rwmExp}% | ${NAT_HIST['2025'].rwmExp}% |`);
-        lines.push('');
-
-        if (rwmH23 || rwmH24 || rwmH) {
-          lines.push('| Reading, Writing and Maths — % achieving higher standard | 2023 | 2024 | 2025 |');
-          lines.push('|---|---:|---:|---:|');
-          lines.push(`| School | ${c(rwmH23)} | ${c(rwmH24)} | ${c(rwmH)} |`);
-          lines.push(`| Local authority | — | — | ${la('rwm','higher')} |`);
-          lines.push(`| England | ${NAT_HIST['2023'].rwmHigh}% | ${NAT_HIST['2024'].rwmHigh}% | ${NAT_HIST['2025'].rwmHigh}% |`);
-          lines.push('');
-        }
-
-        if (read23 || read24 || readSc) {
-          lines.push('| Reading — average score | 2023 | 2024 | 2025 |');
-          lines.push('|---|---:|---:|---:|');
-          lines.push(`| School | ${c(read23)} | ${c(read24)} | ${c(readSc)} |`);
-          lines.push(`| Local authority | — | — | ${laS('reading')} |`);
-          lines.push(`| England | ${NAT_HIST['2023'].readAvg} | ${NAT_HIST['2024'].readAvg} | ${NAT_HIST['2025'].readAvg} |`);
-          lines.push('');
-        }
-
-        if (mat23 || mat24 || matSc) {
-          lines.push('| Maths — average score | 2023 | 2024 | 2025 |');
-          lines.push('|---|---:|---:|---:|');
-          lines.push(`| School | ${c(mat23)} | ${c(mat24)} | ${c(matSc)} |`);
-          lines.push(`| Local authority | — | — | ${laS('maths')} |`);
-          lines.push(`| England | ${NAT_HIST['2023'].matAvg} | ${NAT_HIST['2024'].matAvg} | ${NAT_HIST['2025'].matAvg} |`);
-          lines.push('');
-        }
-      }
-
-      // ── Table 5: SEN within KS2 cohort ───────────────────────────────────
-      // Distinct from A5 which shows school-wide SEN; these are KS2-cohort-specific counts
-      if (senTotCount || senEHCCount || senSuppCount) {
-        lines.push('| Special Educational Needs within Key Stage 2 cohort | Count | % of cohort |');
-        lines.push('|---|---:|---:|');
-        if (senEHCCount)  lines.push(`| EHC plan | ${senEHCCount} | ${senEHCPct ?? '—'} |`);
-        if (senSuppCount) lines.push(`| SEN support | ${senSuppCount} | ${senSuppPct ?? '—'} |`);
-        if (senTotCount)  lines.push(`| Total SEN | ${senTotCount} | ${senTotPct ?? '—'} |`);
-        lines.push('');
-      }
-
-      // ── Table 6: Disadvantaged vs non-disadvantaged by subject ───────────
-      const disRows = [];
-      const cohortDisLabel = cohortDis ? ` (n=${cohortDis})` : '';
-      const cohortNotDisLabel = cohortNotDis ? ` (n=${cohortNotDis})` : '';
-      if (readDis || readNotDis)
-        disRows.push(`| Reading expected | ${c(readDis)} | ${c(readNotDis)} |`);
-      if (readHDis || readHNotDis)
-        disRows.push(`| Reading higher | ${c(readHDis)} | ${c(readHNotDis)} |`);
-      if (matDis || matNotDis)
-        disRows.push(`| Maths expected | ${c(matDis)} | ${c(matNotDis)} |`);
-      if (matHDis || matHNotDis)
-        disRows.push(`| Maths higher | ${c(matHDis)} | ${c(matHNotDis)} |`);
-      if (writDis || writNotDis)
-        disRows.push(`| Writing expected | ${c(writDis)} | ${c(writNotDis)} |`);
-      if (writHDis || writHNotDis)
-        disRows.push(`| Writing higher | ${c(writHDis)} | ${c(writHNotDis)} |`);
-      if (gpsDis || gpsNotDis)
-        disRows.push(`| GPS expected | ${c(gpsDis)} | ${c(gpsNotDis)} |`);
-      if (gpsHDis || gpsHNotDis)
-        disRows.push(`| GPS higher | ${c(gpsHDis)} | ${c(gpsHNotDis)} |`);
-      if (gpsScDis || gpsScNotDis)
-        disRows.push(`| GPS avg score | ${c(gpsScDis)} | ${c(gpsScNotDis)} |`);
-
-      if (disRows.length) {
-        lines.push(`**Disadvantaged vs non-disadvantaged by subject**`);
-        lines.push(`| Subject | Disadvantaged${cohortDisLabel} | Non-disadvantaged${cohortNotDisLabel} |`);
-        lines.push('|---|---:|---:|');
-        lines.push(...disRows);
+      // Only add row if it has any non-dash value beyond the label
+      if (cells.slice(1).some(cell => cell !== '—')) {
+        lines.push('| ' + cells.join(' | ') + ' |');
       }
     }
   }
 
-  // ── KS4 (secondary) ───────────────────────────────────────────────────────
-  // Show if the school has ANY KS4 data (not just Progress 8 — some independent
-  // schools have Attainment 8 but no P8, and all-through schools may show
-  // "Not applicable" as their phase).
-  if (/secondary|all.through/i.test(ph) || v('P8MEA') || v('ATT8SCR') || v('PTL2BASICS_95') || v('PTL2BASICS_94')) {
-    // Attainment
-    const att8     = v('ATT8SCR');
-    const att8g    = v('ATT8SCR_GIRLS');
-    const att8b    = v('ATT8SCR_BOYS');
-    const att8dis  = v('ATT8SCR_FSM6CLA1A');
-    // Grade 5+ English & Maths
-    const g5all    = v('PTL2BASICS_95');
-    const g5g      = v('PGL2BASICS_95');
-    const g5b      = v('PBL2BASICS_95');
-    const g5dis    = v('PTFSM6CLA1ABASICS_95');
-    // Grade 4+ English & Maths
-    const g4all    = v('PTL2BASICS_94');
-    const g4g      = v('PGL2BASICS_94');
-    const g4b      = v('PBL2BASICS_94');
-    const g4dis    = v('PTFSM6CLA1ABASICS_94');
-    // EBacc (4+ and 5+)
-    const eb4all   = v('PTEBACC_94');
-    const eb4g     = v('PGEBACC_94');
-    const eb4b     = v('PBEBACC_94');
-    const eb4dis   = v('PTFSM6CLA1AEBACC_94');
-    const eb5all   = v('PTEBACC_95');
-    const eb5g     = v('PGEBACC_95');
-    const eb5b     = v('PBEBACC_95');
-    // EBacc APS
-    const ebApsAll = v('EBACCAPS');
-    const ebApsG   = v('EBACCAPS_GIRLS');
-    const ebApsB   = v('EBACCAPS_BOYS');
-    const ebApsDis = v('EBACCAPS_FSM6CLA1A');
-    // Entering EBacc
-    const entering = v('PTEBACC_E_PTQ_EE');
-    // Progress 8
-    const p8       = v('P8MEA');
-    const p8lo     = v('P8LOWER');
-    const p8hi     = v('P8UPPER');
-    const p8dis    = v('P8MEA_FSM6CLA1A');
-    // Cohort sizes — BPUP/GPUP are KS4-specific; NUMBOYS/NUMGIRLS are school-wide totals
-    const cohort    = v('TPUP');
-    const cohortG   = v('GPUP');        // girls in KS4 cohort
-    const cohortB   = v('BPUP');        // boys in KS4 cohort
-    const cohortDis = v('TFSM6CLA1A');
+  // ── Render key stages ─────────────────────────────────────────────────────
 
-    // EAL — variable names verified from DfE CSV download for KS4_25 namespace
-    const att8eal   = v('ATT8SCR_EAL');
-    const g5eal     = v('PTL2BASICSEAL_95');   // Grade 5+ English & Maths — EAL pupils
-    const g4eal     = v('PTL2BASICSEAL_94');   // Grade 4+ English & Maths — EAL pupils
-    const eb4eal    = v('PTEBACCEAL_94');      // EBacc 4+ — EAL pupils
-    const eb5eal    = v('PTEBACCEAL_95');      // EBacc 5+ — EAL pupils
-    const ebApsEal  = v('EBACCAPS_EAL');       // EBacc APS — EAL pupils
-    // Note: KS4-specific EAL cohort count not published in DfE school CSV
-
-    if (p8 || att8 || g4all || g5all) {
-      const nat4 = NATIONAL_AVG.KS4;
-      // DfE uses "0.0%" / "0%" to indicate suppressed data (small cohort).
-      // Treat these as unavailable rather than zero achievement.
-      const c = (val) => {
-        if (!val) return '—';
-        const s = String(val).trim();
-        if (s === '0.0%' || s === '0%' || s === '0') return '—';
-        return s;
-      };
-      const la = (field) => laPerf?.[field] != null ? String(laPerf[field]) : '—';
-
-      lines.push('');
-      lines.push('**Key Stage 4 (2024/25)**');
-      lines.push('| Metric | All pupils | Boys | Girls | Disadvantaged | EAL | Local avg | England |');
-      lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
-
-      if (cohort || cohortDis)
-        lines.push(`| Cohort size | ${c(cohort)} | ${c(cohortB)} | ${c(cohortG)} | ${c(cohortDis)} | — | — | — |`);
-      if (att8 || att8b || att8g || att8dis || att8eal)
-        lines.push(`| Attainment 8 | ${c(att8)} | ${c(att8b)} | ${c(att8g)} | ${c(att8dis)} | ${c(att8eal)} | ${la('att8')} | ${nat4.ATT8SCR} |`);
-      if (g5all || g5b || g5g || g5dis || g5eal)
-        lines.push(`| Grade 5+ English & Maths | ${c(g5all)} | ${c(g5b)} | ${c(g5g)} | ${c(g5dis)} | ${c(g5eal)} | ${la('grade5Em')} | ${nat4.PTL2BASICS_95}% |`);
-      if (g4all || g4b || g4g || g4dis || g4eal)
-        lines.push(`| Grade 4+ English & Maths | ${c(g4all)} | ${c(g4b)} | ${c(g4g)} | ${c(g4dis)} | ${c(g4eal)} | — | ${nat4.PTL2BASICS_94}% |`);
-      if (eb5all || eb5b || eb5g || eb5eal)
-        lines.push(`| EBacc 5+ | ${c(eb5all)} | ${c(eb5b)} | ${c(eb5g)} | — | ${c(eb5eal)} | — | — |`);
-      if (eb4all || eb4b || eb4g || eb4dis || eb4eal)
-        lines.push(`| EBacc 4+ | ${c(eb4all)} | ${c(eb4b)} | ${c(eb4g)} | ${c(eb4dis)} | ${c(eb4eal)} | — | ${nat4.PTEBACC_94}% |`);
-      if (entering)
-        lines.push(`| Entering EBacc | ${entering} | — | — | — | — | — | ${nat4.PTEBACC_E_PTQ_EE}% |`);
-      if (ebApsAll || ebApsB || ebApsG || ebApsEal)
-        lines.push(`| EBacc APS | ${c(ebApsAll)} | ${c(ebApsB)} | ${c(ebApsG)} | ${c(ebApsDis)} | ${c(ebApsEal)} | — | — |`);
-      if (p8)
-        lines.push(`| Progress 8 | ${p8}${p8lo && p8hi ? ` (CI: ${p8lo} to ${p8hi})` : ''} | — | — | ${c(p8dis)} | — | ${la('p8')} | ${nat4.P8MEA} |`);
-    }
+  if (hasKS2) {
+    lines.push('**Key Stage 2 (2024/25)**');
+    for (const topic of KS2_TOPICS) renderTopic(topic, 'KS2');
   }
 
-  // ── KS5 / 16–18 (sixth form) ──────────────────────────────────────────────
-  // Data is in KS5_25 namespace (attainment) and KS5_STUDEST_25 (destinations).
-  // Variable names verified from DfE CSV — do not rename without re-checking.
-  const isPost16    = v('ISPOST16');
-  const studTotal   = v('TALLPUP_1618');              // total 16-18 students (all quals)
-  const alevPup     = v('TALLPUP_ALEV_1618');         // A-level students
-  const avgGradeStr = v('TALLPPEGRD_ALEV_1618');      // e.g. "A-"
-  const avgGradePts = v('TALLPPE_ALEV_1618');         // e.g. "47.33"
-  const avgGradePts23= v('TALLPPE_ALEV_1618_23');     // prior year (2022/23)
-  const avgGradePts24= v('TALLPPE_ALEV_1618_24');     // prior year (2023/24)
-  const best3Grd    = v('TB3PTSE_GRD');               // average best-3 grade letter
-  const best3Pts    = v('TB3PTSE');                   // average best-3 points
-  const aab2fac     = v('PTAAB_2FAC');                // "63.2%" — % AAB in ≥2 facilitating subj.
-  const advMaths    = v('L3M_PER');                   // "83.5%" — % achieving adv. maths qual.
-  const retained    = v('PT_RETAINED_ALEV_RET');      // "99.1%" — % retained to end of course
-  // Progress (VA) score — DfE uses VA_INS_ALEV, confidence intervals LCI/UCI
-  const progScore   = v('VA_INS_ALEV');
-  const progLo      = v('LCI_INS_ALEV');
-  const progHi      = v('UCI_INS_ALEV');
-  const progBandNum = v('PROGRESS_BAND_ALEV');        // 1=well above … 5=well below
-  // Destinations (KS5_STUDEST_25)
-  const toHE        = v('TOT_HEPER');                 // "71%" — % to higher education
-  const allProgress = v('ALL_PROGRESSED');            // "96%" — % to any sustained dest.
-  // Disadvantaged A-level attainment (variable names confirmed from DfE CSV)
-  const disCount    = v('TALLPUP_ALEV_1618_DIS');
-  const avgGradeDisStr = v('TALLPPEGRD_ALEV_DIS');    // "B+"
-  const avgGradeDisPts = v('TALLPPE_ALEV_1618_DIS');  // "41.95"
-  const progScoreDis= v('VA_INS_ALEV_DIS');
-  const progLoDis   = v('LCI_INS_ALEV_DIS');
-  const progHiDis   = v('UCI_INS_ALEV_DIS');
+  if (hasKS4) {
+    lines.push('');
+    lines.push('**Key Stage 4 (2024/25)**');
+    for (const topic of KS4_TOPICS) renderTopic(topic, 'KS4');
+  }
 
-  if (isPost16 === '1' || alevPup || avgGradeStr || toHE) {
-    const nat5 = NATIONAL_AVG.KS5 ?? {};
-
-    // Progress band number → readable label (DfE 1–5 scale, same as KS2/KS4)
-    const PROG_BAND = { '1': 'well above average', '2': 'above average', '3': 'average', '4': 'below average', '5': 'well below average' };
-    const fmtProg5 = (score, lo, hi, bandNum) => {
-      if (!score) return null;
-      let s = score;
-      if (lo && hi) s += ` (CI: ${lo} to ${hi})`;
-      if (bandNum)  s += ` — ${PROG_BAND[String(bandNum)] ?? bandNum}`;
-      return s;
-    };
-
-    // 3-year trend in grade points
-    const pts23 = avgGradePts23, pts24 = avgGradePts24, pts25 = avgGradePts;
-    const trendPts = [pts23, pts24, pts25].filter(Boolean);
-    const trendStr = trendPts.length > 1 ? ` _(3-yr pts: ${trendPts.join(' → ')})_` : '';
-
+  if (hasKS5) {
     lines.push('');
     lines.push('**Key Stage 5 / 16–18 (2024/25)**');
-    lines.push('| Metric | School | National avg |');
-    lines.push('|---|---|---|');
-    if (studTotal)   lines.push(`| Total 16–18 students | ${studTotal} | — |`);
-    if (alevPup)     lines.push(`| A-level students | ${alevPup} | — |`);
-
-    // Grade — combine letter + points + 3-yr trend
-    if (avgGradeStr || avgGradePts) {
-      const gradeCell = [avgGradeStr, avgGradePts ? `(${avgGradePts} pts)` : null].filter(Boolean).join(' ') + trendStr;
-      lines.push(`| Average A-level grade | ${gradeCell} | ${nat5.avgGrade ?? '—'} |`);
-    }
-
-    const prog5 = fmtProg5(progScore, progLo, progHi, progBandNum);
-    if (prog5)       lines.push(`| A-level progress score (VA) | ${prog5} | 0 |`);
-    if (best3Grd || best3Pts) {
-      const b3 = [best3Grd, best3Pts ? `(${best3Pts} pts)` : null].filter(Boolean).join(' ');
-      lines.push(`| Average best 3 A-level grades | ${b3} | — |`);
-    }
-    if (aab2fac)     lines.push(`| AAB+ in ≥2 facilitating subjects | ${aab2fac} | ${nat5.aab2fac ?? '—'} |`);
-    if (advMaths)    lines.push(`| Achieving advanced level maths | ${advMaths} | ${nat5.advMaths != null ? `${nat5.advMaths}%` : '—'} |`);
-    if (retained)    lines.push(`| Students retained to end of course | ${retained} | ${nat5.retained != null ? `${nat5.retained}%` : '—'} |`);
-    if (toHE)        lines.push(`| Progressed to higher education | ${toHE} | — |`);
-    if (allProgress) lines.push(`| Sustained positive destination | ${allProgress} | — |`);
-
-    // Disadvantaged
-    const disGrade = [avgGradeDisStr, avgGradeDisPts ? `(${avgGradeDisPts} pts)` : null].filter(Boolean).join(' ');
-    const disProg5 = fmtProg5(progScoreDis, progLoDis, progHiDis, null);
-    if (disCount || disGrade || disProg5) {
-      lines.push('');
-      lines.push('**KS5 Disadvantaged students**');
-      lines.push('| Metric | Disadvantaged | Non-disadvantaged | National avg (dis.) |');
-      lines.push('|---|---|---|---|');
-      const ndGradeStr = v('TALLPPEGRD_ALEV_NOTDIS');
-      const ndPtsStr   = v('TALLPPE_ALEV_1618_NOTDIS');
-      const ndStr = ndGradeStr ? `${ndGradeStr}${ndPtsStr ? ` (${ndPtsStr} pts)` : ''}` : '—';
-      if (disCount)  lines.push(`| A-level students | ${disCount} | ${v('TALLPUP_ALEV_1618_NOTDIS') ?? '—'} | — |`);
-      if (disGrade)  lines.push(`| Average A-level grade | ${disGrade} | ${ndStr} | ${nat5.avgGradeDis ?? '—'} |`);
-      if (disProg5)  lines.push(`| Progress score (VA) | ${disProg5} | — | 0 |`);
-    }
+    for (const topic of KS5_TOPICS) renderTopic(topic, 'KS5');
   }
 
-  // When called from renderPartA (tablesOnly=true), stop here — census, absence
-  // and the raw variable dump are rendered separately in A5, A7 and the slim block.
-  if (tablesOnly) return lines.length ? lines.join('\n') : '_No performance data available._';
+  return lines.filter(l => l !== '').length > 1
+    ? lines.join('\n')
+    : '_No performance data available._';
 
-  // ── Pupil census ──────────────────────────────────────────────────────────
-  const nor = v('NOR') ?? (fallbackNor != null ? String(fallbackNor) : null);
-  const eal = v('PNUMEAL');
-  const fsm = v('PNUMFSMEVER');
-  const sen = v('PSENELK');
-  const ehc = v('PSENELSE');
-
-  if (nor || eal || fsm) {
-    lines.push('');
-    lines.push('**Pupil Profile (Census 2025)**');
-    lines.push('| Metric | Value |');
-    lines.push('|---|---|');
-    if (nor) lines.push(`| Pupils on roll | ${nor} |`);
-    if (fsm) lines.push(`| FSM-eligible (last 6 years) | ${fsm} |`);
-    if (eal) lines.push(`| EAL pupils | ${eal} |`);
-    if (sen) lines.push(`| SEN support | ${sen} |`);
-    if (ehc) lines.push(`| EHC plans | ${ehc} |`);
-  }
-
-  // ── Absence ───────────────────────────────────────────────────────────────
-  const abs  = v('PERCTOT');
-  const pers = v('PPERSABS10');
-  if (abs || pers) {
-    const natA = NATIONAL_AVG.ABSENCE;
-    const parts = [];
-    if (abs)  parts.push(`overall ${abs}% _(nat: ${natA.PERCTOT}%)_`);
-    if (pers) parts.push(`persistent absentees ${pers}% _(nat: ${natA.PPERSABS10}%)_`);
-    lines.push('');
-    lines.push(`**Absence (2023/24):** ${parts.join(' · ')}`);
-  }
-
-  // ── Supplementary: all remaining DfE CSV variables ────────────────────────
-  // Pass everything from the phase-relevant namespaces that wasn't captured in
-  // the structured sections above. Use the CSV description field as the label.
-  // This ensures no data is silently dropped — the model sees everything.
-  const suppressed = new Set([
-    // Admin / identity fields already shown elsewhere or not meaningful here
-    'URN', 'SCHNAME', 'LANAME', 'LA', 'LEA', 'ESTAB', 'LAESTAB', 'URN_AC',
-    'RECTYPE', 'ALPHAIND', 'EDITION', 'YEAR', 'ICLOSE',
-    'ADDRESS1', 'ADDRESS2', 'ADDRESS3', 'TOWN', 'TELNUM',
-    'PCON_CODE', 'PCON_NAME', 'TAB15', 'TAB1618', 'PCODE',
-    'GENDER', 'ADMPOL', 'RELCHAR', 'AGELOW', 'AGEHIGH',
-    'ISPRIMARY', 'ISSECONDARY', 'ISPOST16', 'NFTYPE', 'RELDENOM', 'AGERANGE',
-  ]);
-
-  // Phase filter — mirrors fmtAcademicResults logic
-  let allowed;
-  if (/primary|middle.*primary/i.test(ph)) {
-    allowed = ns => /^(KS1|KS2|ABS)/.test(ns);
-  } else if (/secondary|all.through|middle.*secondary/i.test(ph)) {
-    allowed = ns => /^(KS1|KS2|KS4|KS5|ABS)/.test(ns);
-  } else if (/16.plus/i.test(ph)) {
-    allowed = ns => /^(KS5|ABS)/.test(ns);
-  } else {
-    allowed = () => true;
-  }
-
-  for (const [namespace, rows] of Object.entries(perf)) {
-    if (!allowed(namespace)) continue;
-    // Skip identity/admin and census namespaces — those are rendered in other sections
-    if (/^L$|^CENSUS/.test(namespace)) continue;
-
-    const extras = rows.filter(r => !suppressed.has(r.variable));
-    if (!extras.length) continue;
-
-    const nsLabel = {
-      KS1_25: 'KS1', KS2_25: 'KS2', KS4_25: 'KS4',
-      KS5_25: 'KS5', KS5_STUDEST_25: 'KS5 destinations', ABS_24: 'Absence',
-    }[namespace] ?? namespace;
-
-    lines.push('');
-    lines.push(`**All ${nsLabel} variables (DfE CSV)**`);
-    lines.push('| Variable | Description | Value |');
-    lines.push('|---|---|---|');
-    for (const { variable, description, value } of extras) {
-      const desc = (description || '').trim().slice(0, 100) || '—';
-      lines.push(`| ${variable} | ${desc} | ${value} |`);
-    }
-  }
-
-  return lines.length ? lines.join('\n') : '_No performance data available._';
 }
-
-/**
- * Slim Ofsted: grades on one line each, narrative capped at 1,500 chars.
- * The AI model can fetch the full PDF from reportUrl if it needs more.
- */
 function fmtOfstedSlim(ofsted, isIndependent) {
   // For independent schools with ISI data, render ISI grades + narrative.
   // For independent schools without ISI data, tell the AI to web-search.
