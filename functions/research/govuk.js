@@ -2460,7 +2460,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
   // Variant finder — discovers gendered/FSM/EAL/prior-year breakdowns
   const findVar = (base) => {
     const r = { all: v(base) };
-    for (const [s, k] of [['_BOYS','boys'],['_GIRLS','girls'],['_FSM6CLA1A','dis'],['_NFSM6CLA1A','ndis'],['_EAL','eal'],['_PREV','prev'],['_PREV2','prev2']]) {
+    for (const [s, k] of [['_BOYS','boys'],['_GIRLS','girls'],['_FSM6CLA1A','dis'],['_NFSM6CLA1A','ndis'],['_EAL','eal'],['_PREV','prev'],['_PREV2','prev2'],['_24','py24'],['_23','py23']]) {
       const val = v(base + s); if (val != null) r[k] = val;
     }
     if (base.startsWith('PT')) {
@@ -2609,6 +2609,22 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
         { label: 'EBacc APS', var: 'EBACCAPS' },
       ],
     },
+    {
+      heading: 'EBacc subject achievement (% of entered pupils)',
+      cols: 'all',
+      rows: [
+        { label: 'English 9-4', var: 'PTEBACENG_94' },
+        { label: 'English 9-5', var: 'PTEBACENG_95' },
+        { label: 'Maths 9-4', var: 'PTEBACMAT_94' },
+        { label: 'Maths 9-5', var: 'PTEBACMAT_95' },
+        { label: 'Science 9-4', var: 'PTEBAC2SCI_94' },
+        { label: 'Science 9-5', var: 'PTEBAC2SCI_95' },
+        { label: 'Humanities 9-4', var: 'PTEBACHUM_94' },
+        { label: 'Humanities 9-5', var: 'PTEBACHUM_95' },
+        { label: 'Languages 9-4', var: 'PTEBACLAN_94' },
+        { label: 'Languages 9-5', var: 'PTEBACLAN_95' },
+      ],
+    },
   ];
 
   const KS5_TOPICS = [
@@ -2643,12 +2659,19 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       ],
     },
     {
+      heading: 'Retention',
+      cols: 'all',
+      rows: [
+        { label: '% retained to end of course', var: 'PT_RETAINED_ALEV_RET' },
+        { label: '% retained to 2nd year', var: 'PT_RETAINED_ACAD_2NDYR' },
+      ],
+    },
+    {
       heading: 'Facilitating subjects & destinations',
       cols: 'all',
       rows: [
         { label: '% AAB in ≥2 facilitating subjects', var: 'PTAAB_2FAC' },
         { label: '% achieving advanced maths', var: 'L3M_PER' },
-        { label: '% retained to end of course', var: 'PT_RETAINED_ALEV_RET' },
         { label: '% to higher education', var: 'TOT_HEPER' },
         { label: '% to any sustained destination', var: 'ALL_PROGRESSED' },
       ],
