@@ -2517,6 +2517,27 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       ],
     },
     {
+      heading: 'Per-subject attainment — % expected standard',
+      cols: 'all',
+      rows: [
+        { label: 'Reading', var: 'PTREAD_EXP' },
+        { label: 'Writing (TA)', var: 'PTWRITTA_EXP' },
+        { label: 'Maths', var: 'PTMAT_EXP' },
+        { label: 'GPS', var: 'PTGPS_EXP' },
+        { label: 'Science (TA)', var: 'PTSCITA_EXP' },
+      ],
+    },
+    {
+      heading: 'Per-subject attainment — % higher standard',
+      cols: 'all',
+      rows: [
+        { label: 'Reading', var: 'PTREAD_HIGH' },
+        { label: 'Writing (TA)', var: 'PTWRITTA_HIGH' },
+        { label: 'Maths', var: 'PTMAT_HIGH' },
+        { label: 'GPS', var: 'PTGPS_HIGH' },
+      ],
+    },
+    {
       heading: 'Progress (KS1 to KS2)',
       cols: 'all',
       rows: [
@@ -2635,6 +2656,57 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
         { label: '% retained to end of course', var: 'PT_RETAINED_ALEV_RET' },
         { label: '% to higher education', var: 'TOT_HEPER' },
         { label: '% to any sustained destination', var: 'ALL_PROGRESSED' },
+      ],
+    },
+    {
+      heading: 'KS5 prior years — A-level grade trend',
+      cols: 'all',
+      rows: [
+        { label: 'Average grade 2025', var: 'TALLPPEGRD_ALEV_1618' },
+        { label: 'Average grade 2024', var: 'TALLPPEGRD_ALEV_1618_24' },
+        { label: 'Average grade 2023', var: 'TALLPPEGRD_ALEV_1618_23' },
+        { label: 'Average grade 2022', var: 'TALLPPEGRD_ALEV_1618_22' },
+      ],
+    },
+    {
+      heading: 'KS5 prior years — A-level points trend',
+      cols: 'all',
+      rows: [
+        { label: 'Average points 2025', var: 'TALLPPE_ALEV_1618' },
+        { label: 'Average points 2024', var: 'TALLPPE_ALEV_1618_24' },
+        { label: 'Average points 2023', var: 'TALLPPE_ALEV_1618_23' },
+        { label: 'Average points 2022', var: 'TALLPPE_ALEV_1618_22' },
+      ],
+    },
+    {
+      heading: 'KS5 prior years — progress trend',
+      cols: 'all',
+      rows: [
+        { label: 'VA score 2025', var: 'VA_INS_ALEV' },
+        { label: 'VA score 2024', var: 'VA_INS_ALEV_24' },
+        { label: 'VA score 2023', var: 'VA_INS_ALEV_23' },
+        { label: 'VA score 2022', var: 'VA_INS_ALEV_22' },
+      ],
+    },
+    {
+      heading: 'Tech levels & T-levels',
+      cols: 'all',
+      rows: [
+        { label: 'Tech cert students', var: 'TALLPUP_TECHCERT' },
+        { label: 'Tech cert average grade', var: 'TALLPPEGRD_TECHCERT' },
+        { label: 'Tech cert average points', var: 'TALLPPE_TECHCERT' },
+        { label: 'T-level students', var: 'TALLPUP_TLEV' },
+        { label: 'T-level average grade', var: 'TALLPPEGRD_TLEV' },
+        { label: 'T-level average points', var: 'TALLPPE_TLEV' },
+      ],
+    },
+    {
+      heading: 'Applied general',
+      cols: 'all',
+      rows: [
+        { label: 'Applied general students', var: 'TALLPUP_AGEN' },
+        { label: 'Applied general average grade', var: 'TALLPPEGRD_AGEN' },
+        { label: 'Applied general average points', var: 'TALLPPE_AGEN' },
       ],
     },
   ];
