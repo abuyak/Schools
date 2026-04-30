@@ -3792,12 +3792,8 @@ export function renderPartA(school, flags = {}) {
     sections.push({ heading: 'A8. Area Profile', body, flag: flags['A8. Area Profile'] ?? 'none' });
   }
 
-  // A9. What It's Like to Be a Pupil is generated entirely by the AI
-  // (Call 2 verdict).  No server placeholder needed — interleaveVerdicts
-  // appends the AI-generated A9 section at the end of Part A.
-
   // ────────────────────────────────────────────────────────────────────────────
-  // A10. Parent View
+  // A9. Parent View
   // ────────────────────────────────────────────────────────────────────────────
   {
     const pv = ofsted?.parentView;
@@ -3824,7 +3820,7 @@ export function renderPartA(school, flags = {}) {
       row('Acts in child\'s best interests',   pv.bestInterests,   null);
       row('Right support to learn',            pv.rightSupport,    null);
       row('SEND support',                      pv.sendSupport,     null);
-      sections.push({ heading: 'A10. Parent View', body: lines.join('\n'), flag: flags['A10. Parent View'] ?? 'none' });
+      sections.push({ heading: 'A9. Parent View', body: lines.join('\n'), flag: 'none' });
     }
   }
 
