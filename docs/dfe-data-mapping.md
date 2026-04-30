@@ -1,187 +1,274 @@
-# DfE Performance Data — Variable Mapping & Render Rules
+# DfE Performance Data — Variable-to-Section Mapping
 
-## School types and available namespaces
+Every variable available in the DfE school performance CSV download, mapped to its render section.
+Variables not listed are either admin/metadata (PCODE, SCHNAME, URN, etc.) or not present in the 2024/25 publication.
 
-| Phase | DfE namespaces | Example |
-|---|---|---|
-| **Infant** (KS1 only) | L, CENSUS_25, ABS_24 | Earlswood Infant |
-| **Junior** (KS2) | L, CENSUS_25, ABS_24, KS2_25 | Earlswood Junior |
-| **Primary** (KS1+KS2) | L, CENSUS_25, ABS_24, KS2_25 | Redriff Primary |
-| **Secondary** (KS4) | L, CENSUS_25, ABS_24, KS4_25, KS4_PUPDEST_25 | Reigate School |
-| **Sixth Form** (KS5) | L, KS5_25, KS5_STUDEST_25 | Reigate College |
-| **Secondary+Sixth** | L, CENSUS_25, ABS_24, KS4_25, KS4_PUPDEST_25, KS5_25, KS5_STUDEST_25 | Latymer School |
-| **Ind. Primary** | L, CENSUS_25 (percentages suppressed) | Micklefield School |
-| **Ind. Secondary** | L, CENSUS_25, KS4_25, KS5_25 (percentages suppressed) | Caterham School |
-| **Ind. All-through** | L, CENSUS_25, KS4_25, KS5_25 (percentages suppressed) | UCS |
+## School types → namespaces
 
-## Section mapping
+| School type | L | CENSUS_25 | ABS_24 | KS2_25 | KS4_25 | KS4_PUPDEST_25 | KS5_25 | KS5_STUDEST_25 |
+|---|---|---|---|---|---|---|---|---|
+| Infant | ✓ | ✓ | ✓ | | | | | |
+| Junior | ✓ | ✓ | ✓ | ✓ | | | | |
+| Primary | ✓ | ✓ | ✓ | ✓ | | | | |
+| Secondary | ✓ | ✓ | ✓ | | ✓ | ✓ | | |
+| Sixth form | ✓ | | | | | | ✓ | ✓ |
+| Sec+Sixth | ✓ | ✓ | ✓ | | ✓ | ✓ | ✓ | ✓ |
+| Ind. primary | ✓ | ✓* | | | | | | |
+| Ind. secondary | ✓ | ✓* | | | ✓ | | ✓ | |
+| Ind. all-through | ✓ | ✓* | | | ✓ | | ✓ | |
 
-### A1 — School Identity
-*Source: L + GIAS detail*
+\* Percentages suppressed (0%/0.0%) — rendered as `—`
 
-| Variable | Render Rule |
+---
+
+## A4 — Pupil Census (CENSUS_25)
+
+| DfE variable | Rendered as |
 |---|---|
-| `officialName` (GIAS) | Always show |
-| `urn` (GIAS) | Always show |
-| `type` (GIAS) | Always show |
-| `phase` (GIAS) | Always show |
-| `AGELOW` / `AGEHIGH` (L) | Show as "ages X–Y" |
-| `la` (GIAS) | Always show |
-| `GENDER` (L) | Show as "Mixed / Boys only / Girls only" |
-| `RELCHAR` (L) | Show unless "Does not apply" |
-| `ADMPOL` (L) | Show unless "Not applicable" |
-| `headteacher` (GIAS detail) | Show if available |
-| `address` (GIAS tile) | Show if available |
-| `capacity` (GIAS detail) | Show if available |
-| `NOR` (CENSUS_25) | Show if available |
+| `NOR` | Pupils on roll |
+| `PNUMFSMEVER` | % FSM eligible (last 6 years) |
+| `PNUMEAL` | % EAL pupils |
+| `PSENELK` | % SEN support |
+| `PSENELSE` | % EHC plans |
 
-### A2 — Ofsted / ISI Inspection Grades
-*Source: Ofsted HTML scrape (state) or ISI PDF parse (independent)*
+**Rule:** Row hidden if value is DfE suppression (0%, 0.0%, 0.00%).
+National averages shown for comparison.
+Ethnicity from bundled DfE index — hidden if ALL groups are 0%.
 
-| State schools | Independent schools |
+**NOT shown from CENSUS_25:** `NORG`, `NORB`, `PNORG`, `PNORB` (counts of boys/girls — in A1 instead). `NUMFSM`, `NUMEAL`, `NUMENGFL` (raw counts — percentages preferred). `TSENELK`, `TSENELSE` (pupil counts — percentages preferred).
+
+---
+
+## A5 — Academic Performance
+
+### Detection rules
+
+- KS2 section shown if `KS2_25` namespace exists in the data
+- KS4 section shown if `KS4_25` exists AND any of `P8MEA`, `ATT8SCR`, `PTL2BASICS_95`, `PTL2BASICS_94` is present
+- KS5 section shown if `KS5_25` exists AND `TALLPUP_1618` or `TALLPUP_ALEV_1618` is present
+- Each sub-table shown only if at least one row has non-suppressed data
+
+### KS2 tables (from KS2_25 namespace)
+
+#### Table 1 — Cohort
+
+| DfE variable | Rendered as |
 |---|---|
-| Overall grade + sub-grades (Quality of Education, Behaviour, Personal Development, Leadership) | ISI overall + academic/personal judgments |
-| Inspection date | Inspection date |
-| Framework marker | ISI framework marker |
-| Safeguarding status | Safeguarding status |
+| `TELIG` | Eligible cohort |
+| `BELIG` | Boys |
+| `GELIG` | Girls |
 
-**Render rules:**
-- If independent + ISI data → show ISI grades table
-- If independent + no ISI data → "ISI report not retrieved"
-- If state + Ofsted → show full grades table
-- If state + no Ofsted → "Not retrieved"
-- Flag: green for Outstanding/Exceptional/Excellent, red for RI/Inadequate/Unsatisfactory/Sound
+#### Table 2 — Attainment (timeseries)
 
-### A3 — Improvement Requirements
-*Source: Ofsted PDF nextSteps or ISI PDF recommendations*
-
-**Render rules:**
-- If nextSteps/recommendations present → show content, flag red
-- If Outstanding/Excellent with none → "No improvement requirements.", flag green
-- Independent + no data → "No recommendations available"
-- State + no data → "Not retrieved"
-
-### A4 — Pupil Census
-*Source: CENSUS_25 + bundled DfE ethnicity index*
-
-| Variable | Render Rule |
-|---|---|
-| `NOR` (NOR) | Always show |
-| `PNUMFSMEVER` (FSM %) | Show unless suppressed (0%, 0.0%, 0.00%) |
-| `PNUMEAL` (EAL %) | Show unless suppressed |
-| `PSENELK` (SEN support %) | Show unless suppressed |
-| `PSENELSE` (EHC plans %) | Show unless suppressed |
-| Ethnicity index (bundled) | Show unless ALL values are 0 (DfE suppression) |
-| National averages | Show for comparison where available |
-
-### A5 — Academic Performance
-*Source: KS2_25, KS4_25, KS5_25*
-
-**Detection rule:** Show each KS stage section ONLY if that namespace exists in the data (data-driven, not phase-driven).
-
-#### KS2 (primary)
-
-**Table 1 — Cohort**
-Show if `TELIG` or `BELIG` or `GELIG` is present and not suppressed.
-
-**Table 2 — Attainment**  
-Format: timeseries (2023 | 2024 | 2025) with LA and England comparator rows.
-| Row | Variable (2025) | Variable (2024) | Variable (2023) | LA key |
+| DfE variable (2025) | DfE variable (2024) | DfE variable (2023) | Rendered as | LA key |
 |---|---|---|---|---|
-| % expected standard (RWM) | `PTRWM_EXP` | `PTRWM_EXP_24` | `PTRWM_EXP_23` | `rwm.expected` |
-| % higher standard (RWM) | `PTRWM_HIGH` | `PTRWM_HIGH_24` | `PTRWM_HIGH_23` | `rwm.higher` |
-Show if at least one year has non-suppressed data.
+| `PTRWM_EXP` | `PTRWM_EXP_24` | `PTRWM_EXP_23` | % meeting expected standard (RWM) | `rwm.expected` |
+| `PTRWM_HIGH` | `PTRWM_HIGH_24` | `PTRWM_HIGH_23` | % achieving higher standard (RWM) | `rwm.higher` |
 
-**Table 3 — Scaled scores**
-Same timeseries format.
-| Row | Variable (2025) | Variable (2024) | Variable (2023) |
+Each row has School / LA / England sub-rows. LA data from EES API (`getLAPerformanceKS2`). England from `NATIONAL_AVG.KS2`.
+
+#### Table 3 — Scaled scores (timeseries)
+
+| DfE variable (2025) | DfE variable (2024) | DfE variable (2023) | Rendered as | LA key |
+|---|---|---|---|---|
+| `READ_AVERAGE` | `READ_AVERAGE_24` | `READ_AVERAGE_23` | Reading — average scaled score | `reading.avgScore` |
+| `MAT_AVERAGE` | `MAT_AVERAGE_24` | `MAT_AVERAGE_23` | Maths — average scaled score | `maths.avgScore` |
+| `GPS_AVERAGE` | | | GPS — average scaled score | `gps.avgScore` |
+
+Note: GPS prior years not available in DfE CSV for all schools — show `—` if missing.
+
+#### Table 4 — Progress
+
+| DfE variable | CI low | CI high | Rendered as |
 |---|---|---|---|
-| Reading | `READ_AVERAGE` | `READ_AVERAGE_24` | `READ_AVERAGE_23` |
-| Maths | `MAT_AVERAGE` | `MAT_AVERAGE_24` | `MAT_AVERAGE_23` |
-| GPS | `GPS_AVERAGE` | `GPS_AVERAGE_24` | `GPS_AVERAGE_23` |
+| `READPROG` | `READPROG_LOWER` | `READPROG_UPPER` | Reading progress |
+| `WRITPROG` | `WRITPROG_LOWER` | `WRITPROG_UPPER` | Writing progress |
+| `MATPROG` | `MATPROG_LOWER` | `MATPROG_UPPER` | Maths progress |
 
-**Table 4 — Progress**
-Format: progress (Subject | Score | Banding | CI)
-| Row | Variable | CI Low | CI High |
-|---|---|---|---|
-| Reading | `READPROG` | `READPROG_LO` | `READPROG_HI` |
-| Writing | `WRITPROG` | `WRITPROG_LO` | `WRITPROG_HI` |
-| Maths | `MATPROG` | `MATPROG_LO` | `MATPROG_HI` |
-Banding: derived from PROGRESS_BAND (1=Well below … 5=Well above)
+Banding derived from `PROGRESS_BAND` (1=Well below average … 5=Well above average).
 
-#### KS4 (secondary)
+**NOT shown from KS2_25:** 
+- Gender/FSM/EAL variant suffixes (e.g. `_BOYS`, `_GIRLS`, `_FSM6CLA1A`, `_EAL`) — 49 vars, would be handled by variant finder but not currently rendered in timeseries tables
+- Subject-level attainment for reading/writing/maths/GPS separately (`PTREAD_EXP`, `PTMAT_EXP`, etc.) — redundant with RWM combined + scaled scores
+- Teacher assessment variables (`PTWRITTA_EXP`, `PTSCITA_EXP`) — less reliable than test scores
+- Raw pupil counts (`T*` prefix) — percentages preferred
+- Prior-year progress (`READPROG_23`, `MATPROG_24` etc.) — not currently in timeseries but available
 
-**Detection rule:** Show KS4 section if `P8MEA` OR `ATT8SCR` OR `PTL2BASICS_95` OR `PTL2BASICS_94` is present.
+### KS4 tables (from KS4_25 + KS4_PUPDEST_25)
 
-Tables currently rendered (from the restored pre-refactor code):
-- Cohort size (with gender breakdown if available)
-- Attainment 8 (All / Boys / Girls / Disadvantaged / EAL / Local avg / England)
-- Attainment 8 element breakdown (English, Maths, EBacc, Open — GCSE/non-GCSE)
-- Progress 8 (with CI)
-- Grade 5+ / 4+ English & Maths
-- EBacc entry / achievement / subject detail
-- KS4 destinations
+#### Attainment 8
 
-#### KS5 (post-16)
-
-**Detection rule:** Show KS5 section if `TALLPUP_1618` or `TALLPUP_ALEV_1618` is present.
-
-Current tables:
-- A-level attainment (students, entries, grades, best 3)
-- A-level progress (VA score, band, disadvantaged breakdown)
-- Retention
-- Destinations (L3 breakdown, disadvantaged gap)
-- Facilitating subjects
-
-### A6 — Absence
-*Source: ABS_24*
-
-| Variable | Render Rule |
+| DfE variable | Rendered as |
 |---|---|
-| `PERCTOT` | Always show |
-| `PPERSABS10` | Always show |
-| National averages | Show for comparison |
-| Flag: green if below 5%/15%, red if above 8.6%/23.3% |
+| `ATT8SCR` | Attainment 8 score |
+| Gender/FSM/EAL variants via `findVar` | Boys, Girls, Disadvantaged, EAL columns |
 
-### A7 — Financial Position
-*Source: FBIT (state) or school website scrape (independent)*
+England: `NATIONAL_AVG.KS4.ATT8SCR`. LA: from `getLAPerformanceKS4`.
 
-| State schools | Independent schools |
+#### Attainment 8 breakdown
+
+| DfE variable | Rendered as |
 |---|---|
-| Spend per pupil | Day/boarding fee ranges |
-| In-year balance | Source URL |
-| Revenue reserves | |
-| QTS % | |
-| Pupil:teacher ratio | |
+| `ATT8SCRENG` | English element |
+| `ATT8SCRMAT` | Maths element |
+| `ATT8SCREBAC` | EBacc element |
+| `ATT8SCROPEN` | Open element (total) |
+| `ATT8SCROPENG` | Open — GCSE only |
+| `ATT8SCROPENNG` | Open — non-GCSE |
 
-**Render rules:**
-- Independent → show fees if available, else "not retrieved"
-- State → show FBIT data if available, else "not retrieved"
+#### Progress 8
 
-### A8 — Area Profile
-*Source: postcodes.io + Nomis + ONS + IMD + Crystal Roof*
+| DfE variable | Rendered as |
+|---|---|
+| `P8MEA` | Progress 8 score |
+| `P8LOWER` / `P8UPPER` | CI |
 
-| Variable | Source | Render Rule |
+#### Grade thresholds
+
+| DfE variable | Rendered as |
+|---|---|
+| `PTL2BASICS_95` | % grade 5+ English & maths |
+| `PTL2BASICS_94` | % grade 4+ English & maths |
+
+#### EBacc entry
+
+| DfE variable | Rendered as |
+|---|---|
+| `PTEBACC_E_PTQ_EE` | % entering EBacc |
+| `PTEBACENG_E_PTQ_EE` | English |
+| `PTEBACMAT_E_PTQ_EE` | Maths |
+| `PTEBAC2SCI_E_PTQ_EE` | Science |
+| `PTEBACHUM_E_PTQ_EE` | Humanities |
+| `PTEBACLAN_E_PTQ_EE` | Languages |
+
+#### EBacc achievement
+
+| DfE variable | Rendered as |
+|---|---|
+| `PTEBACC_95` | % EBacc 5+ |
+| `PTEBACC_94` | % EBacc 4+ |
+| `EBACCAPS` | EBacc APS |
+
+#### EBacc subject achievement
+
+| DfE variable | Rendered as |
+|---|---|
+| `PTEBACENG_94` / `_95` | English 9-4 / 9-5 |
+| `PTEBACMAT_94` / `_95` | Maths 9-4 / 9-5 |
+| `PTEBAC2SCI_94` / `_95` | Science 9-4 / 9-5 |
+| `PTEBACHUM_94` / `_95` | Humanities 9-4 / 9-5 |
+| `PTEBACLAN_94` / `_95` | Languages 9-4 / 9-5 |
+
+#### KS4 destinations (from KS4_PUPDEST_25)
+
+| DfE variable | Rendered as |
+|---|---|
+| `OVERALL_DESTPER` | % sustained education or employment |
+| `EDUCATIONPER` | % in education |
+| `SIXTH_COLPER` | % sixth form college |
+| `FEPER` | % further education |
+| `APPRENPER` | % apprenticeships |
+| `EMPLOYMENTPER` | % employment |
+| `NOT_SUSTAINEDPER` | % not sustained |
+
+### KS5 tables (from KS5_25 + KS5_STUDEST_25)
+
+#### A-level attainment
+
+| DfE variable | Rendered as |
+|---|---|
+| `TALLPUP_1618` | Total 16–18 students |
+| `TALLPUP_ALEV_1618` | A-level students |
+| `ENTRIES_ALEV` | A-level entries |
+| `TALLPPEGRD_ALEV_1618` | Average A-level grade |
+| `TALLPPE_ALEV_1618` | Average A-level points |
+| `TALLPPEGRD_ACAD_1618` | Average grade (all academic) |
+| `TB3PTSE_GRD` | Best 3 A-levels — grade |
+| `TB3PTSE` | Best 3 A-levels — points |
+
+#### A-level progress
+
+| DfE variable | Rendered as |
+|---|---|
+| `VA_INS_ALEV` | Progress score (VA) |
+| `LCI_INS_ALEV` / `UCI_INS_ALEV` | CI |
+| `PROGRESS_BAND_ALEV` | Progress band |
+
+#### A-level disadvantaged
+
+| DfE variable | Rendered as |
+|---|---|
+| `TALLPUP_ALEV_1618_DIS` | Disadvantaged students |
+| `TALLPPEGRD_ALEV_DIS` | Average grade (disadvantaged) |
+| `TALLPPE_ALEV_1618_DIS` | Average points (disadvantaged) |
+| `VA_INS_ALEV_DIS` | Progress score (disadvantaged) |
+
+#### Retention
+
+| DfE variable | Rendered as |
+|---|---|
+| `PT_RETAINED_ALEV_RET` | % retained to end of course |
+| `PT_RETAINED_ACAD_2NDYR` | % retained to 2nd year |
+| `PT_RETAINED_ACAD_RET_DIS` | % retained (disadvantaged) |
+
+#### L3 destinations (from KS5_STUDEST_25)
+
+| DfE variable | Rendered as |
+|---|---|
+| `L3_OVERALLPER` | % sustained education or employment |
+| `L3_HEPER` | % higher education |
+| `L3_EMPLOYMENTPER` | % employment |
+| `L3_APPRENPER` | % apprenticeships |
+| `L3_FEPER` | % further education |
+| `L3_NOT_SUSTAINEDPER` | % not sustained |
+
+#### Disadvantaged progression gap (from KS5_STUDEST_25)
+
+| DfE variable | Rendered as |
+|---|---|
+| `DIS_PROGRESSED` | % progressed (disadvantaged) |
+| `ALL_PROGRESSED` | % progressed (all) |
+| `DIS_HE` | % HE (disadvantaged) |
+| `ALL_HE` | % HE (all) |
+| `DIS_TOP3RD` | % top third HE (disadvantaged) |
+| `ALL_TOP3RD` | % top third HE (all) |
+
+#### Facilitating subjects
+
+| DfE variable | Rendered as |
+|---|---|
+| `PTAAB_2FAC` | % AAB in ≥2 facilitating subjects |
+| `L3M_PER` | % achieving advanced maths |
+
+---
+
+## A6 — Absence (ABS_24)
+
+| DfE variable | Rendered as |
+|---|---|
+| `PERCTOT` | Overall absence % |
+| `PPERSABS10` | Persistent absence % |
+
+National averages from `NATIONAL_AVG.ABSENCE`.
+
+---
+
+## Suppression rules (universal)
+
+DfE uses `0`, `0%`, `0.0%`, `0.00%` as suppression markers.
+- `c()` and `d()` helpers MUST convert these to `—`
+- Rows with ALL columns suppressed MUST be hidden
+- Entire sub-tables with NO non-suppressed rows MUST be hidden
+- Exception: raw counts (NOR, TELIG) — `0` may be genuine, but show as `—` to be safe since a school with genuinely 0 pupils wouldn't appear in DfE data
+
+## Traffic light flags
+
+| Section | Green condition | Red condition |
 |---|---|---|
-| Postcode, district, region | postcodes.io | Always show |
-| IMD decile + sub-domains | findthatpostcode.uk | Always show |
-| Household income | Crystal Roof + ONS | Show if available |
-| House prices | Land Registry | Show if available |
-| Ethnicity (LSOA) | Nomis Census 2021 | Show if available |
-| Qualifications | Crystal Roof | Show if available (TEMP) |
-| Flag: red if IMD decile ≤3 or income <£35k |
-
-### A9 — Parent View
-*Source: Ofsted Parent View print page (state only)*
-
-Table: Question | % agree, with ⚠️ flags for low scores.
-
-**Render rules:**
-- Show only if Parent View data was retrieved
-- Skip if independent school (no Parent View for independent schools)
-
-## Suppression rules (applied everywhere)
-
-DfE uses `0`, `0%`, `0.0%`, `0.00%` as suppression markers for small cohorts. These values MUST be rendered as `—` (not as genuine zero). Exception: raw counts like NOR (pupil headcount) where `0` would mean genuinely zero pupils — but this is a theoretical case.
-
-**Implementation:** Every `c()` / `d()` formatting helper must check suppressed values and convert to `—`. Rows with ALL columns suppressed should be HIDDEN.
+| A2 | Outstanding / Exceptional / Excellent | RI / Inadequate / Unsatisfactory / Sound |
+| A3 | No improvements + grade Outstanding/Exceptional/Excellent | Improvements present |
+| A4 | — | FSM >35% (primary) / >30% (secondary) OR EHC >6% |
+| A5 | Attainment >10pp above national OR Progress >0.5 | Attainment >10pp below national OR Progress <-0.5 |
+| A6 | Absence <5% AND persistent <15% | Absence >8.6% OR persistent >23.3% |
+| A7 | Reserves >3 months spend AND QTS above comparator | Deficit OR QTS below comparator |
+| A8 | — | IMD decile ≤3 OR income <£35k |
