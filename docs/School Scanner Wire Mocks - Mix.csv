@@ -21,142 +21,142 @@ No,Namespace,Variable,Description,Render Section,Category,Value
 20,CENSUS_25,NUMFSMEVER,Number of pupils eligible for FSM at any time during the past 6 years,A4-Census,KS1 + KS2 Ages 3 to 11 Mixed sex,109
 21,CENSUS_25,NORFSMEVER,Total pupils for FSMEver,A4-Census,KS1 + KS2 Ages 3 to 11 Mixed sex,431
 22,CENSUS_25,PNUMFSMEVER,Percentage of pupils eligible for FSM at any time during the past 6 years,A4-Census,KS1 + KS2 Ages 3 to 11 Mixed sex,25.29%
-23,KS2_25,PCODE,School postcode,A5-KS2,KS1 + KS2 Ages 3 to 11 Mixed sex,SE16 5LQ
-24,KS2_25,NFTYPE,School type,A5-KS2,KS1 + KS2 Ages 3 to 11 Mixed sex,ACC
-25,KS2_25,RELDENOM,Religious denomination,A5-KS2,KS1 + KS2 Ages 3 to 11 Mixed sex,Does not apply
-26,KS2_25,AGERANGE,Age range,A5-KS2,KS1 + KS2 Ages 3 to 11 Mixed sex,3 to 11
-27,KS2_25,TOTPUPS,Total number of pupils (including part-time pupils),A5-KS2,KS1 + KS2 Ages 3 to 11 Mixed sex,478
-28,KS2_25,TPUPYEAR,Number of pupils aged 11,A5-KS2,KS1 + KS2 Ages 3 to 11 Mixed sex,76
-29,KS2_25,TELIG,Published eligible pupil number,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,74
-30,KS2_25,BELIG,Eligible boys on school roll at time of tests,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,47
-31,KS2_25,GELIG,Eligible girls on school roll at time of tests,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,27
-32,KS2_25,PBELIG,Percentage of eligible boys on school roll at time of tests,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,64%
-33,KS2_25,PGELIG,Percentage of eligible girls on school roll at time of tests,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,36%
-34,KS2_25,TFSM6CLA1A,Number of key stage 2 disadvantaged pupils (those who were eligible for free school meals in last 6 years or are looked after by the LA for a day or more or who have been adopted from care),A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,20
-35,KS2_25,PTFSM6CLA1A,Percentage of key stage 2 disadvantaged pupils,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,27%
-36,KS2_25,TNOTFSM6CLA1A,Number of key stage 2 pupils who are not disadvantaged,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,54
-37,KS2_25,PTNOTFSM6CLA1A,Percentage of key stage 2 pupils who are not disadvantaged,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,73%
-38,KS2_25,TEALGRP2,Number of eligible pupils with English as additional language (EAL),A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,47
-39,KS2_25,PTEALGRP2,Percentage of eligible pupils with English as additional language (EAL),A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,64%
-40,KS2_25,TMOBN,Number of eligible pupils classified as non-mobile,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,73
-41,KS2_25,PTMOBN,Percentage of eligible pupils classified as non-mobile,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,99%
-42,KS2_25,PTRWM_EXP,"Percentage of pupils reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,89%
-43,KS2_25,PTRWM_HIGH,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,28%
-44,KS2_25,PTREAD_EXP,Percentage of pupils reaching the expected standard in reading,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,92%
-45,KS2_25,PTREAD_HIGH,Percentage of pupils achieving a high score in reading,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,65%
-46,KS2_25,PTREAD_AT,Percentage of pupils absent from or not able to access the test in reading,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,1%
-47,KS2_25,READ_AVERAGE,Average scaled score in reading,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,110
-48,KS2_25,PTGPS_EXP,"Percentage of pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,89%
-49,KS2_25,PTGPS_HIGH,"Percentage of pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,68%
-50,KS2_25,PTGPS_AT,"Percentage of pupils absent from or not able to access the test in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,1%
-51,KS2_25,GPS_AVERAGE,"Average scaled score in grammar, punctuation and spelling",A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,112
-52,KS2_25,PTMAT_EXP,Percentage of pupils reaching the expected standard in maths,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,91%
-53,KS2_25,PTMAT_HIGH,Percentage of pupils achieving a high score in maths,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,49%
-54,KS2_25,PTMAT_AT,Percentage of pupils absent from or not able to access the test in maths,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,1%
-55,KS2_25,MAT_AVERAGE,Average scaled score in maths,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,109
-56,KS2_25,PTWRITTA_EXP,Percentage of pupils reaching the expected standard in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,91%
-57,KS2_25,PTWRITTA_HIGH,Percentage of pupils working at greater depth within the expected standard in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,43%
-58,KS2_25,PTWRITTA_WTS,Percentage of pupils working towards the expected standard in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,7%
-59,KS2_25,PTWRITTA_AD,Percentage of pupils absent or disapplied in writing TA,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,0%
-60,KS2_25,PTSCITA_EXP,Percentage of pupils reaching the expected standard in science TA,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,91%
-61,KS2_25,PTSCITA_AD,Percentage of pupils absent or disapplied in science TA,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,0%
-62,KS2_25,PTRWM_EXP_B,"Percentage of boys reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,87%
-63,KS2_25,PTRWM_EXP_G,"Percentage of girls reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,93%
-64,KS2_25,PTRWM_EXP_FSM6CLA1A,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,75%
-65,KS2_25,PTRWM_EXP_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,94%
-66,KS2_25,DIFFN_RWM_EXP,"Difference between school percentage of disavantaged pupils and national percentage of other pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,6
-67,KS2_25,PTRWM_EXP_EAL,"Percentage of EAL pupils reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,89%
-68,KS2_25,PTRWM_EXP_MOBN,"Percentage of non-mobile pupils reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,89%
-69,KS2_25,PTRWM_HIGH_B,Percentage of boys achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,34%
-70,KS2_25,PTRWM_HIGH_G,"Percentage of girls reaching the HIGHected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,19%
-71,KS2_25,PTRWM_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,10%
-72,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,35%
-73,KS2_25,DIFFN_RWM_HIGH,"Difference between school percentage of disavantaged pupils and national percentage of other pupils achieving a high score in reading, writing and maths",A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,-1
-74,KS2_25,PTRWM_HIGH_EAL,Percentage of EAL pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,38%
-75,KS2_25,PTRWM_HIGH_MOBN,Percentage of non-mobile pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,29%
-76,KS2_25,READ_AVERAGE_B,Average scaled score in reading for boys,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,110
-77,KS2_25,READ_AVERAGE_G,Average scaled score in reading for girls,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,110
-78,KS2_25,READ_AVERAGE_FSM6CLA1A,Average scaled score in reading for disadvantaged pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,106
-79,KS2_25,READ_AVERAGE_NOTFSM6CLA1A,Average scaled score in reading for non-disadvantaged pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,111
-80,KS2_25,READ_AVERAGE_EAL,Average scaled score in reading for EAL pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,109
-81,KS2_25,READ_AVERAGE_MOBN,Average scaled score in reading for MOBN pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,110
-82,KS2_25,MAT_AVERAGE_B,Average scaled score in maths for boys,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,109
-83,KS2_25,MAT_AVERAGE_G,Average scaled score in maths for girls,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,107
-84,KS2_25,MAT_AVERAGE_FSM6CLA1A,Average scaled score in maths for disadvantaged pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,104
-85,KS2_25,MAT_AVERAGE_NOTFSM6CLA1A,Average scaled score in maths for non-disadvantaged pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,110
-86,KS2_25,MAT_AVERAGE_EAL,Average scaled score in maths for EAL pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,110
-87,KS2_25,MAT_AVERAGE_MOBN,Average scaled score in maths for MOBN pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,109
-88,KS2_25,GPS_AVERAGE_B,Average scaled score in GPS for boys,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,112
-89,KS2_25,GPS_AVERAGE_G,Average scaled score in GPS for girls,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,112
-90,KS2_25,GPS_AVERAGE_FSM6CLA1A,Average scaled score in GPS for disadvantaged pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,107
-91,KS2_25,GPS_AVERAGE_NOTFSM6CLA1A,Average scaled score in GPS for non-disadvantaged pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,114
-92,KS2_25,GPS_AVERAGE_EAL,Average scaled score in GPS for EAL pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,113
-93,KS2_25,GPS_AVERAGE_MOBN,Average scaled score in GPS for MOBN pupils,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,112
-94,KS2_25,PTREAD_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in reading,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,85%
-95,KS2_25,PTREAD_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in reading,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,94%
-96,KS2_25,PTGPS_EXP_FSM6CLA1A,"Percentage of disadvantaged pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,80%
-97,KS2_25,PTGPS_EXP_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,93%
-98,KS2_25,PTMAT_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in maths,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,80%
-99,KS2_25,PTMAT_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in maths,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,94%
-100,KS2_25,PTWRITTA_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,75%
-101,KS2_25,PTWRITTA_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,96%
-102,KS2_25,PTREAD_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in reading,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,45%
-103,KS2_25,PTREAD_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in reading,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,72%
-104,KS2_25,PTGPS_HIGH_FSM6CLA1A,"Percentage of disadvantaged pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,40%
-105,KS2_25,PTGPS_HIGH_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,78%
-106,KS2_25,PTMAT_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in maths,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,30%
-107,KS2_25,PTMAT_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in maths,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,56%
-108,KS2_25,PTWRITTA_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils working at greater depth in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,25%
-109,KS2_25,PTWRITTA_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils working at greater depth in writing,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,50%
-110,KS2_25,TEALGRP1,Number of eligible pupils with English as first language,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,27
-111,KS2_25,PTEALGRP1,Percentage of eligible pupils with English as first language,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,36%
-112,KS2_25,TEALGRP3,Number of eligible pupils with unclassified language,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,0
-113,KS2_25,PTEALGRP3,Percentage of eligible pupils with unclassified language,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,0%
-114,KS2_25,TSENELE,Number of eligible pupils with EHC plan,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,8
-115,KS2_25,PSENELE,Percentage of eligible pupils with EHC plan,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,11%
-116,KS2_25,TSENELK,Number of eligible pupils with SEN support,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,10
-117,KS2_25,PSENELK,Percentage of eligible pupils with SEN support,A5-KS2,KS1 + KS2 Ages 3 to 11 Mixed sex,14%
-118,KS2_25,TSENELEK,Number of eligible pupils with SEN (EHC plan or SEN support),A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,18
-119,KS2_25,PSENELEK,Percentage of eligible pupils with SEN  (EHC plan or SEN support),A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,24%
-120,KS2_25,TELIG_24,Number of eligible pupils 2024,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,76
-121,KS2_25,PTFSM6CLA1A_24,Percentage of key stage 2 disadvantaged pupils one year prior,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,26%
-122,KS2_25,PTNOTFSM6CLA1A_24,Percentage of key stage 2 pupils who are not disadvantaged one year prior,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,74%
-123,KS2_25,PTRWM_EXP_24,"Percentage of pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,87%
-124,KS2_25,PTRWM_HIGH_24,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing  one year prior,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,34%
-125,KS2_25,PTRWM_EXP_FSM6CLA1A_24,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,75%
-126,KS2_25,PTRWM_HIGH_FSM6CLA1A_24,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing one year prior,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,15%
-127,KS2_25,PTRWM_EXP_NOTFSM6CLA1A_24,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,91%
-128,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A_24,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing one year prior,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,41%
-129,KS2_25,READ_AVERAGE_24,Average scaled score in reading - one year prior,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,111
-130,KS2_25,MAT_AVERAGE_24,Average scaled score in maths - one year prior,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,110
-131,KS2_25,TELIG_23,Number of eligible pupils 2023,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,77
-132,KS2_25,PTFSM6CLA1A_23,Percentage of key stage 2 disadvantaged pupils - two years prior,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,23%
-133,KS2_25,PTNOTFSM6CLA1A_23,Percentage of key stage 2 pupils who are not disadvantaged - two years prior,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,77%
-134,KS2_25,PTRWM_EXP_23,"Percentage of pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,73%
-135,KS2_25,PTRWM_HIGH_23,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,19%
-136,KS2_25,PTRWM_EXP_FSM6CLA1A_23,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,39%
-137,KS2_25,PTRWM_HIGH_FSM6CLA1A_23,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,11%
-138,KS2_25,PTRWM_EXP_NOTFSM6CLA1A_23,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,83%
-139,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A_23,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,22%
-140,KS2_25,READPROG_23,Reading progress measure - two years prior,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,1.0
-141,KS2_25,READPROG_LOWER_23,Reading progress measure - lower confidence limit - two years prior,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,-0.4
-142,KS2_25,READPROG_UPPER_23,Reading progress measure - upper confidence limit - two years prior,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,2.4
-143,KS2_25,WRITPROG_23,Writing progress measure - two years prior,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,3.3
-144,KS2_25,WRITPROG_LOWER_23,Writing progress measure - lower confidence limit - two years prior,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,1.9
-145,KS2_25,WRITPROG_UPPER_23,Writing progress measure - upper confidence limit -  two years prior,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,4.7
-146,KS2_25,MATPROG_23,Maths progress measure - two years prior,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,3.8
-147,KS2_25,MATPROG_LOWER_23,Maths progress measure - lower confidence limit - two years prior,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,2.4
-148,KS2_25,MATPROG_UPPER_23,Maths progress measure - upper confidence limit  - two years prior,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,5.1
-149,KS2_25,READ_AVERAGE_23,Average scaled score in reading - two years prior,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,107
-150,KS2_25,MAT_AVERAGE_23,Average scaled score in maths - two years prior,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,108
-151,KS2_25,TELIG_3YR,Total number of pupils at the end of Key Stage 2 over the past three years,A5-KS2-T1-Cohort,KS1 + KS2 Ages 3 to 11 Mixed sex,227
-152,KS2_25,PTRWM_EXP_3YR,"Percentage of pupils reaching the expected standard in reading, writing and maths  - 3 year total",A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,83%
-153,KS2_25,PTRWM_HIGH_3YR,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing  - 3 year total,A5-KS2-T2-Attainment,KS1 + KS2 Ages 3 to 11 Mixed sex,27%
-154,KS2_25,READ_AVERAGE_3YR,Average scaled score in reading - 3 year average,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,109
-155,KS2_25,MAT_AVERAGE_3YR,Average scaled score in maths - 3 year average,A5-KS2-T3-Scores,KS1 + KS2 Ages 3 to 11 Mixed sex,109
-156,KS2_25,READPROG_DESCR_23,,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,3
-157,KS2_25,WRITPROG_DESCR_23,,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,1
-158,KS2_25,MATPROG_DESCR_23,,A5-KS2-T4-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,1
+23,KS2_25,PCODE,School postcode,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,SE16 5LQ
+24,KS2_25,NFTYPE,School type,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,ACC
+25,KS2_25,RELDENOM,Religious denomination,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,Does not apply
+26,KS2_25,AGERANGE,Age range,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,3 to 11
+27,KS2_25,TOTPUPS,Total number of pupils (including part-time pupils),A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,478
+28,KS2_25,TPUPYEAR,Number of pupils aged 11,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,76
+29,KS2_25,TELIG,Published eligible pupil number,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,74
+30,KS2_25,BELIG,Eligible boys on school roll at time of tests,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,47
+31,KS2_25,GELIG,Eligible girls on school roll at time of tests,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,27
+32,KS2_25,PBELIG,Percentage of eligible boys on school roll at time of tests,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,64%
+33,KS2_25,PGELIG,Percentage of eligible girls on school roll at time of tests,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,36%
+34,KS2_25,TFSM6CLA1A,Number of key stage 2 disadvantaged pupils (those who were eligible for free school meals in last 6 years or are looked after by the LA for a day or more or who have been adopted from care),A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,20
+35,KS2_25,PTFSM6CLA1A,Percentage of key stage 2 disadvantaged pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,27%
+36,KS2_25,TNOTFSM6CLA1A,Number of key stage 2 pupils who are not disadvantaged,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,54
+37,KS2_25,PTNOTFSM6CLA1A,Percentage of key stage 2 pupils who are not disadvantaged,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,73%
+38,KS2_25,TEALGRP2,Number of eligible pupils with English as additional language (EAL),A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,47
+39,KS2_25,PTEALGRP2,Percentage of eligible pupils with English as additional language (EAL),A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,64%
+40,KS2_25,TMOBN,Number of eligible pupils classified as non-mobile,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,73
+41,KS2_25,PTMOBN,Percentage of eligible pupils classified as non-mobile,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,99%
+42,KS2_25,PTRWM_EXP,"Percentage of pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,89%
+43,KS2_25,PTRWM_HIGH,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,28%
+44,KS2_25,PTREAD_EXP,Percentage of pupils reaching the expected standard in reading,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,92%
+45,KS2_25,PTREAD_HIGH,Percentage of pupils achieving a high score in reading,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,65%
+46,KS2_25,PTREAD_AT,Percentage of pupils absent from or not able to access the test in reading,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,1%
+47,KS2_25,READ_AVERAGE,Average scaled score in reading,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,110
+48,KS2_25,PTGPS_EXP,"Percentage of pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,89%
+49,KS2_25,PTGPS_HIGH,"Percentage of pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,68%
+50,KS2_25,PTGPS_AT,"Percentage of pupils absent from or not able to access the test in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,1%
+51,KS2_25,GPS_AVERAGE,"Average scaled score in grammar, punctuation and spelling",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,112
+52,KS2_25,PTMAT_EXP,Percentage of pupils reaching the expected standard in maths,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,91%
+53,KS2_25,PTMAT_HIGH,Percentage of pupils achieving a high score in maths,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,49%
+54,KS2_25,PTMAT_AT,Percentage of pupils absent from or not able to access the test in maths,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,1%
+55,KS2_25,MAT_AVERAGE,Average scaled score in maths,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,109
+56,KS2_25,PTWRITTA_EXP,Percentage of pupils reaching the expected standard in writing,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,91%
+57,KS2_25,PTWRITTA_HIGH,Percentage of pupils working at greater depth within the expected standard in writing,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,43%
+58,KS2_25,PTWRITTA_WTS,Percentage of pupils working towards the expected standard in writing,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,7%
+59,KS2_25,PTWRITTA_AD,Percentage of pupils absent or disapplied in writing TA,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,0%
+60,KS2_25,PTSCITA_EXP,Percentage of pupils reaching the expected standard in science TA,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,91%
+61,KS2_25,PTSCITA_AD,Percentage of pupils absent or disapplied in science TA,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,0%
+62,KS2_25,PTRWM_EXP_B,"Percentage of boys reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,87%
+63,KS2_25,PTRWM_EXP_G,"Percentage of girls reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,93%
+64,KS2_25,PTRWM_EXP_FSM6CLA1A,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,75%
+65,KS2_25,PTRWM_EXP_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,94%
+66,KS2_25,DIFFN_RWM_EXP,"Difference between school percentage of disavantaged pupils and national percentage of other pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,6
+67,KS2_25,PTRWM_EXP_EAL,"Percentage of EAL pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,89%
+68,KS2_25,PTRWM_EXP_MOBN,"Percentage of non-mobile pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,89%
+69,KS2_25,PTRWM_HIGH_B,Percentage of boys achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,34%
+70,KS2_25,PTRWM_HIGH_G,"Percentage of girls reaching the HIGHected standard in reading, writing and maths",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,19%
+71,KS2_25,PTRWM_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,10%
+72,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,35%
+73,KS2_25,DIFFN_RWM_HIGH,"Difference between school percentage of disavantaged pupils and national percentage of other pupils achieving a high score in reading, writing and maths",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,-1
+74,KS2_25,PTRWM_HIGH_EAL,Percentage of EAL pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,38%
+75,KS2_25,PTRWM_HIGH_MOBN,Percentage of non-mobile pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,29%
+76,KS2_25,READ_AVERAGE_B,Average scaled score in reading for boys,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,110
+77,KS2_25,READ_AVERAGE_G,Average scaled score in reading for girls,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,110
+78,KS2_25,READ_AVERAGE_FSM6CLA1A,Average scaled score in reading for disadvantaged pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,106
+79,KS2_25,READ_AVERAGE_NOTFSM6CLA1A,Average scaled score in reading for non-disadvantaged pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,111
+80,KS2_25,READ_AVERAGE_EAL,Average scaled score in reading for EAL pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,109
+81,KS2_25,READ_AVERAGE_MOBN,Average scaled score in reading for MOBN pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,110
+82,KS2_25,MAT_AVERAGE_B,Average scaled score in maths for boys,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,109
+83,KS2_25,MAT_AVERAGE_G,Average scaled score in maths for girls,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,107
+84,KS2_25,MAT_AVERAGE_FSM6CLA1A,Average scaled score in maths for disadvantaged pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,104
+85,KS2_25,MAT_AVERAGE_NOTFSM6CLA1A,Average scaled score in maths for non-disadvantaged pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,110
+86,KS2_25,MAT_AVERAGE_EAL,Average scaled score in maths for EAL pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,110
+87,KS2_25,MAT_AVERAGE_MOBN,Average scaled score in maths for MOBN pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,109
+88,KS2_25,GPS_AVERAGE_B,Average scaled score in GPS for boys,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,112
+89,KS2_25,GPS_AVERAGE_G,Average scaled score in GPS for girls,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,112
+90,KS2_25,GPS_AVERAGE_FSM6CLA1A,Average scaled score in GPS for disadvantaged pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,107
+91,KS2_25,GPS_AVERAGE_NOTFSM6CLA1A,Average scaled score in GPS for non-disadvantaged pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,114
+92,KS2_25,GPS_AVERAGE_EAL,Average scaled score in GPS for EAL pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,113
+93,KS2_25,GPS_AVERAGE_MOBN,Average scaled score in GPS for MOBN pupils,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,112
+94,KS2_25,PTREAD_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in reading,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,85%
+95,KS2_25,PTREAD_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in reading,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,94%
+96,KS2_25,PTGPS_EXP_FSM6CLA1A,"Percentage of disadvantaged pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,80%
+97,KS2_25,PTGPS_EXP_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,93%
+98,KS2_25,PTMAT_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in maths,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,80%
+99,KS2_25,PTMAT_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in maths,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,94%
+100,KS2_25,PTWRITTA_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in writing,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,75%
+101,KS2_25,PTWRITTA_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in writing,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,96%
+102,KS2_25,PTREAD_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in reading,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,45%
+103,KS2_25,PTREAD_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in reading,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,72%
+104,KS2_25,PTGPS_HIGH_FSM6CLA1A,"Percentage of disadvantaged pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,40%
+105,KS2_25,PTGPS_HIGH_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,78%
+106,KS2_25,PTMAT_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in maths,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,30%
+107,KS2_25,PTMAT_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in maths,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,56%
+108,KS2_25,PTWRITTA_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils working at greater depth in writing,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,25%
+109,KS2_25,PTWRITTA_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils working at greater depth in writing,A5-KS2-T2-PerSubject,KS1 + KS2 Ages 3 to 11 Mixed sex,50%
+110,KS2_25,TEALGRP1,Number of eligible pupils with English as first language,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,27
+111,KS2_25,PTEALGRP1,Percentage of eligible pupils with English as first language,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,36%
+112,KS2_25,TEALGRP3,Number of eligible pupils with unclassified language,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,0
+113,KS2_25,PTEALGRP3,Percentage of eligible pupils with unclassified language,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,0%
+114,KS2_25,TSENELE,Number of eligible pupils with EHC plan,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,8
+115,KS2_25,PSENELE,Percentage of eligible pupils with EHC plan,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,11%
+116,KS2_25,TSENELK,Number of eligible pupils with SEN support,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,10
+117,KS2_25,PSENELK,Percentage of eligible pupils with SEN support,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,14%
+118,KS2_25,TSENELEK,Number of eligible pupils with SEN (EHC plan or SEN support),A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,18
+119,KS2_25,PSENELEK,Percentage of eligible pupils with SEN  (EHC plan or SEN support),A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,24%
+120,KS2_25,TELIG_24,Number of eligible pupils 2024,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,76
+121,KS2_25,PTFSM6CLA1A_24,Percentage of key stage 2 disadvantaged pupils one year prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,26%
+122,KS2_25,PTNOTFSM6CLA1A_24,Percentage of key stage 2 pupils who are not disadvantaged one year prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,74%
+123,KS2_25,PTRWM_EXP_24,"Percentage of pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,87%
+124,KS2_25,PTRWM_HIGH_24,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing  one year prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,34%
+125,KS2_25,PTRWM_EXP_FSM6CLA1A_24,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,75%
+126,KS2_25,PTRWM_HIGH_FSM6CLA1A_24,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing one year prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,15%
+127,KS2_25,PTRWM_EXP_NOTFSM6CLA1A_24,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,91%
+128,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A_24,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing one year prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,41%
+129,KS2_25,READ_AVERAGE_24,Average scaled score in reading - one year prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,111
+130,KS2_25,MAT_AVERAGE_24,Average scaled score in maths - one year prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,110
+131,KS2_25,TELIG_23,Number of eligible pupils 2023,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,77
+132,KS2_25,PTFSM6CLA1A_23,Percentage of key stage 2 disadvantaged pupils - two years prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,23%
+133,KS2_25,PTNOTFSM6CLA1A_23,Percentage of key stage 2 pupils who are not disadvantaged - two years prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,77%
+134,KS2_25,PTRWM_EXP_23,"Percentage of pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,73%
+135,KS2_25,PTRWM_HIGH_23,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,19%
+136,KS2_25,PTRWM_EXP_FSM6CLA1A_23,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,39%
+137,KS2_25,PTRWM_HIGH_FSM6CLA1A_23,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,11%
+138,KS2_25,PTRWM_EXP_NOTFSM6CLA1A_23,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,83%
+139,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A_23,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,22%
+140,KS2_25,READPROG_23,Reading progress measure - two years prior,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,1.0
+141,KS2_25,READPROG_LOWER_23,Reading progress measure - lower confidence limit - two years prior,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,-0.4
+142,KS2_25,READPROG_UPPER_23,Reading progress measure - upper confidence limit - two years prior,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,2.4
+143,KS2_25,WRITPROG_23,Writing progress measure - two years prior,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,3.3
+144,KS2_25,WRITPROG_LOWER_23,Writing progress measure - lower confidence limit - two years prior,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,1.9
+145,KS2_25,WRITPROG_UPPER_23,Writing progress measure - upper confidence limit -  two years prior,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,4.7
+146,KS2_25,MATPROG_23,Maths progress measure - two years prior,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,3.8
+147,KS2_25,MATPROG_LOWER_23,Maths progress measure - lower confidence limit - two years prior,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,2.4
+148,KS2_25,MATPROG_UPPER_23,Maths progress measure - upper confidence limit  - two years prior,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,5.1
+149,KS2_25,READ_AVERAGE_23,Average scaled score in reading - two years prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,107
+150,KS2_25,MAT_AVERAGE_23,Average scaled score in maths - two years prior,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,108
+151,KS2_25,TELIG_3YR,Total number of pupils at the end of Key Stage 2 over the past three years,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,227
+152,KS2_25,PTRWM_EXP_3YR,"Percentage of pupils reaching the expected standard in reading, writing and maths  - 3 year total",A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,83%
+153,KS2_25,PTRWM_HIGH_3YR,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing  - 3 year total,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,27%
+154,KS2_25,READ_AVERAGE_3YR,Average scaled score in reading - 3 year average,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,109
+155,KS2_25,MAT_AVERAGE_3YR,Average scaled score in maths - 3 year average,A5-KS2-T1-Summary,KS1 + KS2 Ages 3 to 11 Mixed sex,109
+156,KS2_25,READPROG_DESCR_23,,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,3
+157,KS2_25,WRITPROG_DESCR_23,,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,1
+158,KS2_25,MATPROG_DESCR_23,,A5-KS2-T3-Progress,KS1 + KS2 Ages 3 to 11 Mixed sex,1
 159,L,ISPRIMARY,"Does the school provide primary education? ( 0 = No, 1 = Yes)",A1-Identity,KS1 + KS2 Ages 3 to 11 Mixed sex,1
 160,L,ISSECONDARY,"Does the school provide secondary education? ( 0 = No, 1 = Yes)",A1-Identity,KS1 + KS2 Ages 3 to 11 Mixed sex,0
 161,L,ISPOST16,"Does the school provide post 16 education? (  0 = No, 1 = Yes)",A1-Identity,KS1 + KS2 Ages 3 to 11 Mixed sex,0
@@ -217,142 +217,142 @@ No,Namespace,Variable,Description,Render Section,Category,Value
 216,CENSUS_25,NUMFSMEVER,Number of pupils eligible for FSM at any time during the past 6 years,A4-Census,KS2 Ages 7 to 11 Mixed sex,100
 217,CENSUS_25,NORFSMEVER,Total pupils for FSMEver,A4-Census,KS2 Ages 7 to 11 Mixed sex,392
 218,CENSUS_25,PNUMFSMEVER,Percentage of pupils eligible for FSM at any time during the past 6 years,A4-Census,KS2 Ages 7 to 11 Mixed sex,25.51%
-219,KS2_25,PCODE,School postcode,A5-KS2,KS2 Ages 7 to 11 Mixed sex,RH1 6JX
-220,KS2_25,NFTYPE,School type,A5-KS2,KS2 Ages 7 to 11 Mixed sex,CY
-221,KS2_25,RELDENOM,Religious denomination,A5-KS2,KS2 Ages 7 to 11 Mixed sex,Does not apply
-222,KS2_25,AGERANGE,Age range,A5-KS2,KS2 Ages 7 to 11 Mixed sex,7 to 11
-223,KS2_25,TOTPUPS,Total number of pupils (including part-time pupils),A5-KS2,KS2 Ages 7 to 11 Mixed sex,392
-224,KS2_25,TPUPYEAR,Number of pupils aged 11,A5-KS2,KS2 Ages 7 to 11 Mixed sex,106
-225,KS2_25,TELIG,Published eligible pupil number,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,105
-226,KS2_25,BELIG,Eligible boys on school roll at time of tests,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,51
-227,KS2_25,GELIG,Eligible girls on school roll at time of tests,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,54
-228,KS2_25,PBELIG,Percentage of eligible boys on school roll at time of tests,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,49%
-229,KS2_25,PGELIG,Percentage of eligible girls on school roll at time of tests,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,51%
-230,KS2_25,TFSM6CLA1A,Number of key stage 2 disadvantaged pupils (those who were eligible for free school meals in last 6 years or are looked after by the LA for a day or more or who have been adopted from care),A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,32
-231,KS2_25,PTFSM6CLA1A,Percentage of key stage 2 disadvantaged pupils,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,30%
-232,KS2_25,TNOTFSM6CLA1A,Number of key stage 2 pupils who are not disadvantaged,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,73
-233,KS2_25,PTNOTFSM6CLA1A,Percentage of key stage 2 pupils who are not disadvantaged,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,70%
-234,KS2_25,TEALGRP2,Number of eligible pupils with English as additional language (EAL),A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,30
-235,KS2_25,PTEALGRP2,Percentage of eligible pupils with English as additional language (EAL),A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,29%
-236,KS2_25,TMOBN,Number of eligible pupils classified as non-mobile,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,100
-237,KS2_25,PTMOBN,Percentage of eligible pupils classified as non-mobile,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,95%
-238,KS2_25,PTRWM_EXP,"Percentage of pupils reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,74%
-239,KS2_25,PTRWM_HIGH,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,15%
-240,KS2_25,PTREAD_EXP,Percentage of pupils reaching the expected standard in reading,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,88%
-241,KS2_25,PTREAD_HIGH,Percentage of pupils achieving a high score in reading,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,51%
-242,KS2_25,PTREAD_AT,Percentage of pupils absent from or not able to access the test in reading,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,0%
-243,KS2_25,READ_AVERAGE,Average scaled score in reading,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,109
-244,KS2_25,PTGPS_EXP,"Percentage of pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,79%
-245,KS2_25,PTGPS_HIGH,"Percentage of pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,28%
-246,KS2_25,PTGPS_AT,"Percentage of pupils absent from or not able to access the test in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,0%
-247,KS2_25,GPS_AVERAGE,"Average scaled score in grammar, punctuation and spelling",A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,105
-248,KS2_25,PTMAT_EXP,Percentage of pupils reaching the expected standard in maths,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,89%
-249,KS2_25,PTMAT_HIGH,Percentage of pupils achieving a high score in maths,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,30%
-250,KS2_25,PTMAT_AT,Percentage of pupils absent from or not able to access the test in maths,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,0%
-251,KS2_25,MAT_AVERAGE,Average scaled score in maths,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,106
-252,KS2_25,PTWRITTA_EXP,Percentage of pupils reaching the expected standard in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,76%
-253,KS2_25,PTWRITTA_HIGH,Percentage of pupils working at greater depth within the expected standard in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,20%
-254,KS2_25,PTWRITTA_WTS,Percentage of pupils working towards the expected standard in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,11%
-255,KS2_25,PTWRITTA_AD,Percentage of pupils absent or disapplied in writing TA,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,0%
-256,KS2_25,PTSCITA_EXP,Percentage of pupils reaching the expected standard in science TA,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,91%
-257,KS2_25,PTSCITA_AD,Percentage of pupils absent or disapplied in science TA,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,0%
-258,KS2_25,PTRWM_EXP_B,"Percentage of boys reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,69%
-259,KS2_25,PTRWM_EXP_G,"Percentage of girls reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,80%
-260,KS2_25,PTRWM_EXP_FSM6CLA1A,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,63%
-261,KS2_25,PTRWM_EXP_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,79%
-262,KS2_25,DIFFN_RWM_EXP,"Difference between school percentage of disavantaged pupils and national percentage of other pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,-6
-263,KS2_25,PTRWM_EXP_EAL,"Percentage of EAL pupils reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,90%
-264,KS2_25,PTRWM_EXP_MOBN,"Percentage of non-mobile pupils reaching the expected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,74%
-265,KS2_25,PTRWM_HIGH_B,Percentage of boys achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,18%
-266,KS2_25,PTRWM_HIGH_G,"Percentage of girls reaching the HIGHected standard in reading, writing and maths",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,13%
-267,KS2_25,PTRWM_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,9%
-268,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,18%
-269,KS2_25,DIFFN_RWM_HIGH,"Difference between school percentage of disavantaged pupils and national percentage of other pupils achieving a high score in reading, writing and maths",A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,-2
-270,KS2_25,PTRWM_HIGH_EAL,Percentage of EAL pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,23%
-271,KS2_25,PTRWM_HIGH_MOBN,Percentage of non-mobile pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,14%
-272,KS2_25,READ_AVERAGE_B,Average scaled score in reading for boys,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,107
-273,KS2_25,READ_AVERAGE_G,Average scaled score in reading for girls,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,111
-274,KS2_25,READ_AVERAGE_FSM6CLA1A,Average scaled score in reading for disadvantaged pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,106
-275,KS2_25,READ_AVERAGE_NOTFSM6CLA1A,Average scaled score in reading for non-disadvantaged pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,110
-276,KS2_25,READ_AVERAGE_EAL,Average scaled score in reading for EAL pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,112
-277,KS2_25,READ_AVERAGE_MOBN,Average scaled score in reading for MOBN pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,109
-278,KS2_25,MAT_AVERAGE_B,Average scaled score in maths for boys,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,106
-279,KS2_25,MAT_AVERAGE_G,Average scaled score in maths for girls,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,106
-280,KS2_25,MAT_AVERAGE_FSM6CLA1A,Average scaled score in maths for disadvantaged pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,104
-281,KS2_25,MAT_AVERAGE_NOTFSM6CLA1A,Average scaled score in maths for non-disadvantaged pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,107
-282,KS2_25,MAT_AVERAGE_EAL,Average scaled score in maths for EAL pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,109
-283,KS2_25,MAT_AVERAGE_MOBN,Average scaled score in maths for MOBN pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,106
-284,KS2_25,GPS_AVERAGE_B,Average scaled score in GPS for boys,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,105
-285,KS2_25,GPS_AVERAGE_G,Average scaled score in GPS for girls,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,106
-286,KS2_25,GPS_AVERAGE_FSM6CLA1A,Average scaled score in GPS for disadvantaged pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,103
-287,KS2_25,GPS_AVERAGE_NOTFSM6CLA1A,Average scaled score in GPS for non-disadvantaged pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,106
-288,KS2_25,GPS_AVERAGE_EAL,Average scaled score in GPS for EAL pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,109
-289,KS2_25,GPS_AVERAGE_MOBN,Average scaled score in GPS for MOBN pupils,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,105
-290,KS2_25,PTREAD_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in reading,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,75%
-291,KS2_25,PTREAD_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in reading,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,93%
-292,KS2_25,PTGPS_EXP_FSM6CLA1A,"Percentage of disadvantaged pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,69%
-293,KS2_25,PTGPS_EXP_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,84%
-294,KS2_25,PTMAT_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in maths,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,81%
-295,KS2_25,PTMAT_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in maths,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,92%
-296,KS2_25,PTWRITTA_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,66%
-297,KS2_25,PTWRITTA_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,81%
-298,KS2_25,PTREAD_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in reading,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,34%
-299,KS2_25,PTREAD_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in reading,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,59%
-300,KS2_25,PTGPS_HIGH_FSM6CLA1A,"Percentage of disadvantaged pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,19%
-301,KS2_25,PTGPS_HIGH_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,32%
-302,KS2_25,PTMAT_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in maths,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,22%
-303,KS2_25,PTMAT_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in maths,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,33%
-304,KS2_25,PTWRITTA_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils working at greater depth in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,9%
-305,KS2_25,PTWRITTA_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils working at greater depth in writing,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,25%
-306,KS2_25,TEALGRP1,Number of eligible pupils with English as first language,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,73
-307,KS2_25,PTEALGRP1,Percentage of eligible pupils with English as first language,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,70%
-308,KS2_25,TEALGRP3,Number of eligible pupils with unclassified language,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,2
-309,KS2_25,PTEALGRP3,Percentage of eligible pupils with unclassified language,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,2%
-310,KS2_25,TSENELE,Number of eligible pupils with EHC plan,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,7
-311,KS2_25,PSENELE,Percentage of eligible pupils with EHC plan,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,7%
-312,KS2_25,TSENELK,Number of eligible pupils with SEN support,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,25
-313,KS2_25,PSENELK,Percentage of eligible pupils with SEN support,A5-KS2,KS2 Ages 7 to 11 Mixed sex,24%
-314,KS2_25,TSENELEK,Number of eligible pupils with SEN (EHC plan or SEN support),A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,32
-315,KS2_25,PSENELEK,Percentage of eligible pupils with SEN  (EHC plan or SEN support),A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,30%
-316,KS2_25,TELIG_24,Number of eligible pupils 2024,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,110
-317,KS2_25,PTFSM6CLA1A_24,Percentage of key stage 2 disadvantaged pupils one year prior,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,24%
-318,KS2_25,PTNOTFSM6CLA1A_24,Percentage of key stage 2 pupils who are not disadvantaged one year prior,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,76%
-319,KS2_25,PTRWM_EXP_24,"Percentage of pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,66%
-320,KS2_25,PTRWM_HIGH_24,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing  one year prior,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,12%
-321,KS2_25,PTRWM_EXP_FSM6CLA1A_24,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,42%
-322,KS2_25,PTRWM_HIGH_FSM6CLA1A_24,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing one year prior,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,12%
-323,KS2_25,PTRWM_EXP_NOTFSM6CLA1A_24,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,74%
-324,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A_24,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing one year prior,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,12%
-325,KS2_25,READ_AVERAGE_24,Average scaled score in reading - one year prior,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,108
-326,KS2_25,MAT_AVERAGE_24,Average scaled score in maths - one year prior,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,105
-327,KS2_25,TELIG_23,Number of eligible pupils 2023,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,118
-328,KS2_25,PTFSM6CLA1A_23,Percentage of key stage 2 disadvantaged pupils - two years prior,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,26%
-329,KS2_25,PTNOTFSM6CLA1A_23,Percentage of key stage 2 pupils who are not disadvantaged - two years prior,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,74%
-330,KS2_25,PTRWM_EXP_23,"Percentage of pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,73%
-331,KS2_25,PTRWM_HIGH_23,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,10%
-332,KS2_25,PTRWM_EXP_FSM6CLA1A_23,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,58%
-333,KS2_25,PTRWM_HIGH_FSM6CLA1A_23,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,0%
-334,KS2_25,PTRWM_EXP_NOTFSM6CLA1A_23,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,78%
-335,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A_23,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,14%
-336,KS2_25,READPROG_23,Reading progress measure - two years prior,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,1.1
-337,KS2_25,READPROG_LOWER_23,Reading progress measure - lower confidence limit - two years prior,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,-0.1
-338,KS2_25,READPROG_UPPER_23,Reading progress measure - upper confidence limit - two years prior,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,2.2
-339,KS2_25,WRITPROG_23,Writing progress measure - two years prior,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,-0.7
-340,KS2_25,WRITPROG_LOWER_23,Writing progress measure - lower confidence limit - two years prior,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,-1.8
-341,KS2_25,WRITPROG_UPPER_23,Writing progress measure - upper confidence limit -  two years prior,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,0.4
-342,KS2_25,MATPROG_23,Maths progress measure - two years prior,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,0.0
-343,KS2_25,MATPROG_LOWER_23,Maths progress measure - lower confidence limit - two years prior,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,-1.1
-344,KS2_25,MATPROG_UPPER_23,Maths progress measure - upper confidence limit  - two years prior,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,1.1
-345,KS2_25,READ_AVERAGE_23,Average scaled score in reading - two years prior,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,108
-346,KS2_25,MAT_AVERAGE_23,Average scaled score in maths - two years prior,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,106
-347,KS2_25,TELIG_3YR,Total number of pupils at the end of Key Stage 2 over the past three years,A5-KS2-T1-Cohort,KS2 Ages 7 to 11 Mixed sex,333
-348,KS2_25,PTRWM_EXP_3YR,"Percentage of pupils reaching the expected standard in reading, writing and maths  - 3 year total",A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,71%
-349,KS2_25,PTRWM_HIGH_3YR,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing  - 3 year total,A5-KS2-T2-Attainment,KS2 Ages 7 to 11 Mixed sex,12%
-350,KS2_25,READ_AVERAGE_3YR,Average scaled score in reading - 3 year average,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,108
-351,KS2_25,MAT_AVERAGE_3YR,Average scaled score in maths - 3 year average,A5-KS2-T3-Scores,KS2 Ages 7 to 11 Mixed sex,106
-352,KS2_25,READPROG_DESCR_23,,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,3
-353,KS2_25,WRITPROG_DESCR_23,,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,3
-354,KS2_25,MATPROG_DESCR_23,,A5-KS2-T4-Progress,KS2 Ages 7 to 11 Mixed sex,3
+219,KS2_25,PCODE,School postcode,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,RH1 6JX
+220,KS2_25,NFTYPE,School type,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,CY
+221,KS2_25,RELDENOM,Religious denomination,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,Does not apply
+222,KS2_25,AGERANGE,Age range,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,7 to 11
+223,KS2_25,TOTPUPS,Total number of pupils (including part-time pupils),A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,392
+224,KS2_25,TPUPYEAR,Number of pupils aged 11,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,106
+225,KS2_25,TELIG,Published eligible pupil number,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,105
+226,KS2_25,BELIG,Eligible boys on school roll at time of tests,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,51
+227,KS2_25,GELIG,Eligible girls on school roll at time of tests,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,54
+228,KS2_25,PBELIG,Percentage of eligible boys on school roll at time of tests,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,49%
+229,KS2_25,PGELIG,Percentage of eligible girls on school roll at time of tests,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,51%
+230,KS2_25,TFSM6CLA1A,Number of key stage 2 disadvantaged pupils (those who were eligible for free school meals in last 6 years or are looked after by the LA for a day or more or who have been adopted from care),A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,32
+231,KS2_25,PTFSM6CLA1A,Percentage of key stage 2 disadvantaged pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,30%
+232,KS2_25,TNOTFSM6CLA1A,Number of key stage 2 pupils who are not disadvantaged,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,73
+233,KS2_25,PTNOTFSM6CLA1A,Percentage of key stage 2 pupils who are not disadvantaged,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,70%
+234,KS2_25,TEALGRP2,Number of eligible pupils with English as additional language (EAL),A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,30
+235,KS2_25,PTEALGRP2,Percentage of eligible pupils with English as additional language (EAL),A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,29%
+236,KS2_25,TMOBN,Number of eligible pupils classified as non-mobile,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,100
+237,KS2_25,PTMOBN,Percentage of eligible pupils classified as non-mobile,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,95%
+238,KS2_25,PTRWM_EXP,"Percentage of pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,74%
+239,KS2_25,PTRWM_HIGH,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,15%
+240,KS2_25,PTREAD_EXP,Percentage of pupils reaching the expected standard in reading,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,88%
+241,KS2_25,PTREAD_HIGH,Percentage of pupils achieving a high score in reading,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,51%
+242,KS2_25,PTREAD_AT,Percentage of pupils absent from or not able to access the test in reading,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,0%
+243,KS2_25,READ_AVERAGE,Average scaled score in reading,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,109
+244,KS2_25,PTGPS_EXP,"Percentage of pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,79%
+245,KS2_25,PTGPS_HIGH,"Percentage of pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,28%
+246,KS2_25,PTGPS_AT,"Percentage of pupils absent from or not able to access the test in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,0%
+247,KS2_25,GPS_AVERAGE,"Average scaled score in grammar, punctuation and spelling",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,105
+248,KS2_25,PTMAT_EXP,Percentage of pupils reaching the expected standard in maths,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,89%
+249,KS2_25,PTMAT_HIGH,Percentage of pupils achieving a high score in maths,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,30%
+250,KS2_25,PTMAT_AT,Percentage of pupils absent from or not able to access the test in maths,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,0%
+251,KS2_25,MAT_AVERAGE,Average scaled score in maths,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,106
+252,KS2_25,PTWRITTA_EXP,Percentage of pupils reaching the expected standard in writing,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,76%
+253,KS2_25,PTWRITTA_HIGH,Percentage of pupils working at greater depth within the expected standard in writing,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,20%
+254,KS2_25,PTWRITTA_WTS,Percentage of pupils working towards the expected standard in writing,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,11%
+255,KS2_25,PTWRITTA_AD,Percentage of pupils absent or disapplied in writing TA,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,0%
+256,KS2_25,PTSCITA_EXP,Percentage of pupils reaching the expected standard in science TA,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,91%
+257,KS2_25,PTSCITA_AD,Percentage of pupils absent or disapplied in science TA,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,0%
+258,KS2_25,PTRWM_EXP_B,"Percentage of boys reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,69%
+259,KS2_25,PTRWM_EXP_G,"Percentage of girls reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,80%
+260,KS2_25,PTRWM_EXP_FSM6CLA1A,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,63%
+261,KS2_25,PTRWM_EXP_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,79%
+262,KS2_25,DIFFN_RWM_EXP,"Difference between school percentage of disavantaged pupils and national percentage of other pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,-6
+263,KS2_25,PTRWM_EXP_EAL,"Percentage of EAL pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,90%
+264,KS2_25,PTRWM_EXP_MOBN,"Percentage of non-mobile pupils reaching the expected standard in reading, writing and maths",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,74%
+265,KS2_25,PTRWM_HIGH_B,Percentage of boys achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,18%
+266,KS2_25,PTRWM_HIGH_G,"Percentage of girls reaching the HIGHected standard in reading, writing and maths",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,13%
+267,KS2_25,PTRWM_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,9%
+268,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,18%
+269,KS2_25,DIFFN_RWM_HIGH,"Difference between school percentage of disavantaged pupils and national percentage of other pupils achieving a high score in reading, writing and maths",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,-2
+270,KS2_25,PTRWM_HIGH_EAL,Percentage of EAL pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,23%
+271,KS2_25,PTRWM_HIGH_MOBN,Percentage of non-mobile pupils achieving a high score in reading and maths and working at greater depth in writing,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,14%
+272,KS2_25,READ_AVERAGE_B,Average scaled score in reading for boys,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,107
+273,KS2_25,READ_AVERAGE_G,Average scaled score in reading for girls,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,111
+274,KS2_25,READ_AVERAGE_FSM6CLA1A,Average scaled score in reading for disadvantaged pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,106
+275,KS2_25,READ_AVERAGE_NOTFSM6CLA1A,Average scaled score in reading for non-disadvantaged pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,110
+276,KS2_25,READ_AVERAGE_EAL,Average scaled score in reading for EAL pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,112
+277,KS2_25,READ_AVERAGE_MOBN,Average scaled score in reading for MOBN pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,109
+278,KS2_25,MAT_AVERAGE_B,Average scaled score in maths for boys,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,106
+279,KS2_25,MAT_AVERAGE_G,Average scaled score in maths for girls,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,106
+280,KS2_25,MAT_AVERAGE_FSM6CLA1A,Average scaled score in maths for disadvantaged pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,104
+281,KS2_25,MAT_AVERAGE_NOTFSM6CLA1A,Average scaled score in maths for non-disadvantaged pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,107
+282,KS2_25,MAT_AVERAGE_EAL,Average scaled score in maths for EAL pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,109
+283,KS2_25,MAT_AVERAGE_MOBN,Average scaled score in maths for MOBN pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,106
+284,KS2_25,GPS_AVERAGE_B,Average scaled score in GPS for boys,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,105
+285,KS2_25,GPS_AVERAGE_G,Average scaled score in GPS for girls,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,106
+286,KS2_25,GPS_AVERAGE_FSM6CLA1A,Average scaled score in GPS for disadvantaged pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,103
+287,KS2_25,GPS_AVERAGE_NOTFSM6CLA1A,Average scaled score in GPS for non-disadvantaged pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,106
+288,KS2_25,GPS_AVERAGE_EAL,Average scaled score in GPS for EAL pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,109
+289,KS2_25,GPS_AVERAGE_MOBN,Average scaled score in GPS for MOBN pupils,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,105
+290,KS2_25,PTREAD_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in reading,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,75%
+291,KS2_25,PTREAD_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in reading,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,93%
+292,KS2_25,PTGPS_EXP_FSM6CLA1A,"Percentage of disadvantaged pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,69%
+293,KS2_25,PTGPS_EXP_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils reaching the expected standard in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,84%
+294,KS2_25,PTMAT_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in maths,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,81%
+295,KS2_25,PTMAT_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in maths,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,92%
+296,KS2_25,PTWRITTA_EXP_FSM6CLA1A,Percentage of disadvantaged pupils reaching the expected standard in writing,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,66%
+297,KS2_25,PTWRITTA_EXP_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils reaching the expected standard in writing,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,81%
+298,KS2_25,PTREAD_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in reading,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,34%
+299,KS2_25,PTREAD_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in reading,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,59%
+300,KS2_25,PTGPS_HIGH_FSM6CLA1A,"Percentage of disadvantaged pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,19%
+301,KS2_25,PTGPS_HIGH_NOTFSM6CLA1A,"Percentage of non-disadvantaged pupils achieving a high score in grammar, punctuation and spelling",A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,32%
+302,KS2_25,PTMAT_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils achieving a high score in maths,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,22%
+303,KS2_25,PTMAT_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils achieving a high score in maths,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,33%
+304,KS2_25,PTWRITTA_HIGH_FSM6CLA1A,Percentage of disadvantaged pupils working at greater depth in writing,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,9%
+305,KS2_25,PTWRITTA_HIGH_NOTFSM6CLA1A,Percentage of non-disadvantaged pupils working at greater depth in writing,A5-KS2-T2-PerSubject,KS2 Ages 7 to 11 Mixed sex,25%
+306,KS2_25,TEALGRP1,Number of eligible pupils with English as first language,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,73
+307,KS2_25,PTEALGRP1,Percentage of eligible pupils with English as first language,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,70%
+308,KS2_25,TEALGRP3,Number of eligible pupils with unclassified language,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,2
+309,KS2_25,PTEALGRP3,Percentage of eligible pupils with unclassified language,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,2%
+310,KS2_25,TSENELE,Number of eligible pupils with EHC plan,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,7
+311,KS2_25,PSENELE,Percentage of eligible pupils with EHC plan,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,7%
+312,KS2_25,TSENELK,Number of eligible pupils with SEN support,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,25
+313,KS2_25,PSENELK,Percentage of eligible pupils with SEN support,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,24%
+314,KS2_25,TSENELEK,Number of eligible pupils with SEN (EHC plan or SEN support),A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,32
+315,KS2_25,PSENELEK,Percentage of eligible pupils with SEN  (EHC plan or SEN support),A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,30%
+316,KS2_25,TELIG_24,Number of eligible pupils 2024,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,110
+317,KS2_25,PTFSM6CLA1A_24,Percentage of key stage 2 disadvantaged pupils one year prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,24%
+318,KS2_25,PTNOTFSM6CLA1A_24,Percentage of key stage 2 pupils who are not disadvantaged one year prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,76%
+319,KS2_25,PTRWM_EXP_24,"Percentage of pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,66%
+320,KS2_25,PTRWM_HIGH_24,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing  one year prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,12%
+321,KS2_25,PTRWM_EXP_FSM6CLA1A_24,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,42%
+322,KS2_25,PTRWM_HIGH_FSM6CLA1A_24,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing one year prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,12%
+323,KS2_25,PTRWM_EXP_NOTFSM6CLA1A_24,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths one year prior",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,74%
+324,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A_24,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing one year prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,12%
+325,KS2_25,READ_AVERAGE_24,Average scaled score in reading - one year prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,108
+326,KS2_25,MAT_AVERAGE_24,Average scaled score in maths - one year prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,105
+327,KS2_25,TELIG_23,Number of eligible pupils 2023,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,118
+328,KS2_25,PTFSM6CLA1A_23,Percentage of key stage 2 disadvantaged pupils - two years prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,26%
+329,KS2_25,PTNOTFSM6CLA1A_23,Percentage of key stage 2 pupils who are not disadvantaged - two years prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,74%
+330,KS2_25,PTRWM_EXP_23,"Percentage of pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,73%
+331,KS2_25,PTRWM_HIGH_23,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,10%
+332,KS2_25,PTRWM_EXP_FSM6CLA1A_23,"Percentage of disadvantaged pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,58%
+333,KS2_25,PTRWM_HIGH_FSM6CLA1A_23,Percentage of disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,0%
+334,KS2_25,PTRWM_EXP_NOTFSM6CLA1A_23,"Percentage of non-disadvantaged pupils reaching the expected standard in reading, writing and maths - two years prior",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,78%
+335,KS2_25,PTRWM_HIGH_NOTFSM6CLA1A_23,Percentage of non-disadvantaged pupils achieving a high score in reading and maths and working at greater depth in writing - two years prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,14%
+336,KS2_25,READPROG_23,Reading progress measure - two years prior,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,1.1
+337,KS2_25,READPROG_LOWER_23,Reading progress measure - lower confidence limit - two years prior,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,-0.1
+338,KS2_25,READPROG_UPPER_23,Reading progress measure - upper confidence limit - two years prior,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,2.2
+339,KS2_25,WRITPROG_23,Writing progress measure - two years prior,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,-0.7
+340,KS2_25,WRITPROG_LOWER_23,Writing progress measure - lower confidence limit - two years prior,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,-1.8
+341,KS2_25,WRITPROG_UPPER_23,Writing progress measure - upper confidence limit -  two years prior,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,0.4
+342,KS2_25,MATPROG_23,Maths progress measure - two years prior,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,0.0
+343,KS2_25,MATPROG_LOWER_23,Maths progress measure - lower confidence limit - two years prior,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,-1.1
+344,KS2_25,MATPROG_UPPER_23,Maths progress measure - upper confidence limit  - two years prior,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,1.1
+345,KS2_25,READ_AVERAGE_23,Average scaled score in reading - two years prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,108
+346,KS2_25,MAT_AVERAGE_23,Average scaled score in maths - two years prior,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,106
+347,KS2_25,TELIG_3YR,Total number of pupils at the end of Key Stage 2 over the past three years,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,333
+348,KS2_25,PTRWM_EXP_3YR,"Percentage of pupils reaching the expected standard in reading, writing and maths  - 3 year total",A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,71%
+349,KS2_25,PTRWM_HIGH_3YR,Percentage of pupils achieving a high score in reading and maths and working at greater depth in writing  - 3 year total,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,12%
+350,KS2_25,READ_AVERAGE_3YR,Average scaled score in reading - 3 year average,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,108
+351,KS2_25,MAT_AVERAGE_3YR,Average scaled score in maths - 3 year average,A5-KS2-T1-Summary,KS2 Ages 7 to 11 Mixed sex,106
+352,KS2_25,READPROG_DESCR_23,,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,3
+353,KS2_25,WRITPROG_DESCR_23,,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,3
+354,KS2_25,MATPROG_DESCR_23,,A5-KS2-T3-Progress,KS2 Ages 7 to 11 Mixed sex,3
 355,L,ISPRIMARY,"Does the school provide primary education? ( 0 = No, 1 = Yes)",A1-Identity,KS2 Ages 7 to 11 Mixed sex,1
 356,L,ISSECONDARY,"Does the school provide secondary education? ( 0 = No, 1 = Yes)",A1-Identity,KS2 Ages 7 to 11 Mixed sex,0
 357,L,ISPOST16,"Does the school provide post 16 education? (  0 = No, 1 = Yes)",A1-Identity,KS2 Ages 7 to 11 Mixed sex,0
