@@ -2529,6 +2529,13 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
 
   const KS2_TOPICS = [
     {
+      heading: 'Cohort',
+      cols: 'abgdelE',
+      rows: [
+        { label: 'Eligible cohort', var: 'TELIG' },
+      ],
+    },
+    {
       heading: 'Attainment',
       cols: 'abgdelE',
       rows: [
@@ -2537,48 +2544,49 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       ],
     },
     {
-      heading: 'Attainment — subject breakdown',
-      cols: 'all',
+      heading: 'Scaled scores',
+      cols: 'abgdelE',
       rows: [
         { label: 'Reading — average scaled score', var: 'READ_AVERAGE', eng: '105' },
         { label: 'Maths — average scaled score', var: 'MAT_AVERAGE', eng: '104' },
         { label: 'GPS — average scaled score', var: 'GPS_AVERAGE', eng: '105' },
-        { label: 'Writing — % expected standard (TA)', var: 'WRITTA_AVERAGE' },
-        { label: 'Science — % expected standard (TA)', var: 'SCI_AVERAGE' },
       ],
     },
     {
       heading: 'Per-subject attainment — % expected standard',
-      cols: 'all',
+      cols: 'abgdelE',
       rows: [
-        { label: 'Reading', var: 'PTREAD_EXP' },
-        { label: 'Writing (TA)', var: 'PTWRITTA_EXP' },
-        { label: 'Maths', var: 'PTMAT_EXP' },
-        { label: 'GPS', var: 'PTGPS_EXP' },
-        { label: 'Science (TA)', var: 'PTSCITA_EXP' },
+        { label: 'Reading', var: 'PTREAD_EXP', eng: nat2.PTREAD_EXP + '%' },
+        { label: 'Writing (TA)', var: 'PTWRITTA_EXP', eng: nat2.PTWRITTA_EXP + '%' },
+        { label: 'Maths', var: 'PTMAT_EXP', eng: nat2.PTMAT_EXP + '%' },
+        { label: 'GPS', var: 'PTGPS_EXP', eng: nat2.PTGPS_EXP + '%' },
+        { label: 'Science (TA)', var: 'PTSCITA_EXP', eng: nat2.PTSCITA_EXP + '%' },
       ],
     },
     {
       heading: 'Per-subject attainment — % higher standard',
-      cols: 'all',
+      cols: 'abgdelE',
       rows: [
-        { label: 'Reading', var: 'PTREAD_HIGH' },
-        { label: 'Writing (TA)', var: 'PTWRITTA_HIGH' },
-        { label: 'Maths', var: 'PTMAT_HIGH' },
-        { label: 'GPS', var: 'PTGPS_HIGH' },
+        { label: 'Reading', var: 'PTREAD_HIGH', eng: nat2.PTREAD_HIGH + '%' },
+        { label: 'Writing (TA)', var: 'PTWRITTA_HIGH', eng: nat2.PTWRITTA_HIGH + '%' },
+        { label: 'Maths', var: 'PTMAT_HIGH', eng: nat2.PTMAT_HIGH + '%' },
+        { label: 'GPS', var: 'PTGPS_HIGH', eng: nat2.PTGPS_HIGH + '%' },
       ],
     },
     {
       heading: 'Progress (KS1 to KS2)',
-      cols: 'all',
+      cols: 'abgdelE',
       rows: [
-        { label: 'Reading progress', var: 'READPROG', ciLo: 'READPROG_LO', ciHi: 'READPROG_HI', eng: '0' },
-        { label: 'Writing progress', var: 'WRITPROG', ciLo: 'WRITPROG_LO', ciHi: 'WRITPROG_HI', eng: '0' },
-        { label: 'Maths progress', var: 'MATPROG', ciLo: 'MATPROG_LO', ciHi: 'MATPROG_HI', eng: '0' },
+        { label: 'Reading progress', var: 'READPROG', ciLo: 'READPROG_LOWER', ciHi: 'READPROG_UPPER', eng: '0' },
+        { label: 'Writing progress', var: 'WRITPROG', ciLo: 'WRITPROG_LOWER', ciHi: 'WRITPROG_UPPER', eng: '0' },
+        { label: 'Maths progress', var: 'MATPROG', ciLo: 'MATPROG_LOWER', ciHi: 'MATPROG_UPPER', eng: '0' },
       ],
     },
   ];
 
+  // Remove the old flat rows (now in proper topics above)
+  // -- "Writing — % expected standard (TA)" and "Science — % expected standard (TA)"
+  //    were in the wrong table; now in Per-subject expected. Remove leftover:
   const KS4_TOPICS = [
     { heading: "Attainment 8", cols: "all", rows: [
       { label: "Attainment 8 score", var: "ATT8SCR" },
@@ -2824,21 +2832,21 @@ const KS5_TOPICS = [
     const showLa   = cols === 'abgdel' || cols === 'abgdelE';
     const showEng  = cols === 'abgdelE';
 
-    // Build header
-    const header = ['Metric'];
+    // Build header — Girls before Boys per wire mock
+    const header = ['Category'];
     if (showAll) header.push('All pupils');
-    if (showB)   header.push('Boys');
     if (showG)   header.push('Girls');
+    if (showB)   header.push('Boys');
     if (showD)   header.push('Disadvantaged');
     if (showEal) header.push('EAL');
-    if (showLa)  header.push('Local avg');
+    if (showLa)  header.push('Local Authority');
     if (showEng) header.push('England');
     lines.push('| ' + header.join(' | ') + ' |');
     lines.push('|' + header.map(() => '---:').join('|') + '|');
 
     for (const row of topic.rows) {
       const val = v(row.var);
-      if (suppressed(val) && !row.ciLo && !row.eng) continue; // skip fully suppressed rows
+      if (suppressed(val) && !row.ciLo && !row.eng) continue;
 
       const cells = [row.label];
 
@@ -2850,39 +2858,17 @@ const KS5_TOPICS = [
         }
         cells.push(cell);
       }
-      if (showB) {
-        const bvar = row.var + '_BOYS';
-        if (!bvar || bvar === row.var + '_BOYS') cells.push(c(v(row.var.replace('_95','_95').replace('_94','_94') + '_BOYS') || v(row.var + '_BOYS')));
-      }
-      // Simpler: just show All pupils for the main metric, other columns as "—"
-      // This avoids complex suffix-mangling. For a data-driven approach, we
-      // detect gendered/FSM variants by naming convention.
-      if (showB) {
-        // Try common gender suffixes
-        const bVal = v(row.var + '_BOYS') ?? v(row.var.replace(/ALL$/, 'B')) ?? v(row.var.replace('SCR', 'SCR_BOYS'));
-        cells.push(c(bVal));
-      }
-      if (showG) {
-        const gVal = v(row.var + '_GIRLS') ?? v(row.var.replace(/ALL$/, 'G')) ?? v(row.var.replace('SCR', 'SCR_GIRLS'));
-        cells.push(c(gVal));
-      }
-      if (showD) {
-        const dVal = v(row.var + '_FSM6CLA1A') ?? v(row.var.replace('ALL', 'FSM6CLA1A'));
-        cells.push(c(dVal));
-      }
-      if (showEal) {
-        const eVal = v(row.var + '_EAL') ?? v(row.var.replace('ALL', 'EAL'));
-        cells.push(c(eVal));
-      }
+      if (showG) cells.push(c(findVar(row.var, '_G')));
+      if (showB) cells.push(c(findVar(row.var, '_B')));
+      if (showD) cells.push(c(findVar(row.var, '_FSM6CLA1A')));
+      if (showEal) cells.push(c(findVar(row.var, '_EAL')));
       if (showLa) {
-        // Map to laPerf key
         cells.push('—');
       }
       if (showEng) {
         cells.push(row.eng ?? '—');
       }
 
-      // Only add row if it has any non-dash value beyond the label
       if (cells.slice(1).some(cell => cell !== '—')) {
         lines.push('| ' + cells.join(' | ') + ' |');
       }
