@@ -2518,7 +2518,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     },
     {
       heading: 'Progress (KS1 to KS2)',
-      cols: 'abgdelE',
+      cols: 'all',
       rows: [
         { label: 'Reading progress', var: 'READPROG', ciLo: 'READPROG_LO', ciHi: 'READPROG_HI', eng: '0' },
         { label: 'Writing progress', var: 'WRITPROG', ciLo: 'WRITPROG_LO', ciHi: 'WRITPROG_HI', eng: '0' },
@@ -2530,7 +2530,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
   const KS4_TOPICS = [
     {
       heading: 'Attainment 8',
-      cols: 'abgdelE',
+      cols: 'all',
       rows: [
         { label: 'Attainment 8 score', var: 'ATT8SCR', eng: String(nat4.ATT8SCR) },
       ],
@@ -2547,28 +2547,28 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     },
     {
       heading: 'Progress 8',
-      cols: 'abgdelE',
+      cols: 'all',
       rows: [
         { label: 'Progress 8', var: 'P8MEA', ciLo: 'P8LOWER', ciHi: 'P8UPPER', eng: String(nat4.P8MEA) },
       ],
     },
     {
       heading: 'Grade 5+ English & Maths',
-      cols: 'abgdelE',
+      cols: 'all',
       rows: [
         { label: '% grade 5+ English & maths', var: 'PTL2BASICS_95', eng: nat4.PTL2BASICS_95 + '%' },
       ],
     },
     {
       heading: 'Grade 4+ English & Maths',
-      cols: 'abgdelE',
+      cols: 'all',
       rows: [
         { label: '% grade 4+ English & maths', var: 'PTL2BASICS_94', eng: nat4.PTL2BASICS_94 + '%' },
       ],
     },
     {
       heading: 'EBacc entry',
-      cols: 'abgde',
+      cols: 'all',
       rows: [
         { label: '% entering EBacc', var: 'PTEBACC_E_PTQ_EE', eng: nat4.PTEBACC_E_PTQ_EE + '%' },
       ],
@@ -2586,7 +2586,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     },
     {
       heading: 'EBacc achievement',
-      cols: 'abgde',
+      cols: 'all',
       rows: [
         { label: '% EBacc 5+', var: 'PTEBACC_95' },
         { label: '% EBacc 4+', var: 'PTEBACC_94', eng: nat4.PTEBACC_94 + '%' },
