@@ -2319,8 +2319,11 @@ function fmtAcademicResults(perf, phase) {
   return blocks.length ? blocks.join('\n\n') : '_No performance data available._';
 }
 
-function fmtFinancial(fin) {
-  if (!fin) return '- _Not retrieved_';
+function fmtFinancial(fin, isIndependent) {
+  if (!fin) {
+    if (isIndependent) return '- _Not available for independent schools._';
+    return '- _Not retrieved — data may not be published for this school on the financial benchmarking service. Check https://financial-benchmarking-and-insights-tool.education.gov.uk by URN._';
+  }
   const lines = [];
 
   // Headline balance figures
@@ -3370,7 +3373,7 @@ export function buildSlimBlock(school) {
 ${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null)}
 
 ### Financial Benchmarking (FBIT)
-${fmtFinancial(financial)}
+${fmtFinancial(financial, identity?.isIndependent ?? false)}
 
 ### Inspection Outcomes (Ofsted)
 ${fmtOfstedSlim(ofsted, identity?.isIndependent ?? false)}
