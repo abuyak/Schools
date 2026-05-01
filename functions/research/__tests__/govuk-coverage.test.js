@@ -32,12 +32,12 @@ const EXPECTED = {
   'state-infant':             ['Academic Results', 'Pupil Census', 'Absence', 'Financial Benchmarking', 'Inspection Outcomes', 'Surrounding Area'],
   'state-junior':             ['Key Stage 2', 'Cohort', 'Attainment', 'Scaled scores', 'Per-subject attainment', 'Cohort characteristics', 'Disadvantage gap', 'Test participation', 'Progress (KS1 to KS2)', 'Results over time', 'Pupil Census', 'Absence'],
   'state-primary':            ['Key Stage 2', 'Cohort', 'Attainment', 'Scaled scores', 'Per-subject attainment', 'Cohort characteristics', 'Disadvantage gap', 'Test participation', 'Progress (KS1 to KS2)', 'Results over time', 'Pupil Census', 'Absence'],
-  'state-secondary':          ['Key Stage 4', 'Attainment 8', 'Grade 5+', 'Grade 4+', 'EBacc entry', 'EBacc achievement', 'EBacc subject achievement', 'Pupil Census', 'Absence'],
-  'state-sixth-form':         ['Key Stage 5', 'A-level attainment', 'A-level progress', 'Absence'],
-  'state-secondary-sixth':    ['Key Stage 4', 'Attainment 8', 'Key Stage 5', 'A-level attainment', 'EBacc', 'Pupil Census', 'Absence'],
+  'state-secondary':          ['Key Stage 4', 'Attainment 8', 'Cohort characteristics', 'Grade 5+', 'Grade 4+', 'EBacc entry by subject', 'EBacc subject achievement', 'Post-16 destinations', 'Entry volumes', 'Results over time', 'Pupil Census', 'Absence'],
+  'state-sixth-form':         ['Key Stage 5', 'A-level attainment', 'A-level progress', 'Facilitating subjects', 'Results over time', 'Absence'],
+  'state-secondary-sixth':    ['Key Stage 4', 'Attainment 8', 'Cohort characteristics', 'Key Stage 5', 'A-level attainment', 'A-level progress', 'Facilitating subjects', 'Results over time', 'Pupil Census', 'Absence'],
   'independent-primary':      ['Academic Results', 'Pupil Census', 'Surrounding Area'],
-  'independent-secondary':    ['Key Stage 4', 'Attainment 8', 'Key Stage 5', 'EBacc', 'Pupil Census', 'Absence'],
-  'independent-all-through':  ['Key Stage 4', 'Attainment 8', 'Key Stage 5', 'EBacc', 'Pupil Census', 'Absence'],
+  'independent-secondary':    ['Key Stage 4', 'Attainment 8', 'Cohort characteristics', 'EBacc entry by subject', 'Entry volumes', 'EBacc subject achievement', 'Results over time', 'Key Stage 5', 'A-level attainment', 'A-level progress', 'Facilitating subjects', 'Pupil Census', 'Absence'],
+  'independent-all-through':  ['Key Stage 4', 'Attainment 8', 'Cohort characteristics', 'EBacc entry by subject', 'Entry volumes', 'EBacc subject achievement', 'Results over time', 'Key Stage 5', 'A-level attainment', 'A-level progress', 'Facilitating subjects', 'Pupil Census', 'Absence'],
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
