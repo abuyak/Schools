@@ -365,8 +365,8 @@ function extractISINumberedSection(text, startPattern, maxChars = 6000) {
  * Extracts the Key Findings paragraph (3.1–3.2) from the EQI section.
  */
 function extractISIKeyFindings(text) {
-  // Key findings start at "Key findings\n3.1" in the EQI section
-  const kfStart = text.search(/Key findings\s*\n\s*3\.1/);
+  // Key findings start at "Key findings\nX.1" — older reports use 3.1, 2023+ use 4.1
+  const kfStart = text.search(/Key findings\s*\n\s*\d+\.1\s/);
   if (kfStart < 0) return null;
 
   // End at Recommendation(s) or the next major section
@@ -388,41 +388,34 @@ function extractISIKeyFindings(text) {
  * Extracts the Recommendations section (3.3) from the EQI section.
  */
 function extractISIRecommendations(text) {
-  const recStart = text.search(/Recommendations?\s*\n\s*3\.\d/);
+  // Find the QUALITY recommendation (not "material change" compliance one).
+  // Older reports use "Recommendation\n3.3", 2023+ use different numbering.
+  let recStart = -1;
+  for (const m of text.matchAll(/(?:^|\n)Recommendation\s*\n\s*(\d+\.\d+)/g)) {
+    const after = text.slice(m.index, m.index + 150);
+    if (!/material change/i.test(after)) { recStart = m.index; break; }
+  }
   if (recStart < 0) return null;
 
-  // End at "The quality of the pupils'" (first detailed section)
-  const recEnd = text.indexOf('The quality of the pupils', recStart + 20);
-  const raw = recEnd < 0 ? text.slice(recStart, recStart + 2000) : text.slice(recStart, recEnd);
+  // Stop at the next numbered section heading, or cap at 250 chars
+  const boundaryRe = /\n?[0-9]+\.[0-9]+\s*The quality of the pupils/;
+  const nextSection = text.slice(recStart + 1).search(boundaryRe);
+  let recEnd = nextSection > 0 ? recStart + 1 + nextSection : -1;
+  if (recEnd < 0 || recEnd - recStart > 250) recEnd = recStart + 250;
+  const raw = text.slice(recStart, recEnd);
 
   return raw
     .replace(/^Recommendation\s*\n?/im, '')  // Strip "Recommendation" heading
-    .replace(/\b\d+\.\d+\s*/g, '')            // Strip paragraph numbers like "3.3"
-    .replace(/[-]/g, '')                   // Strip PDF Private Use Area bullet glyphs
-    .replace(/\n{3,}/g, '\n\n')               // Collapse multiple blank lines
+    .replace(/\b\d+\.\d+\s*/g, '')            // Strip paragraph numbers
+    .replace(/[-]/g, '')                   // Strip PDF bullet glyphs
+    .replace(/\n{3,}/g, '\n\n')               // Collapse blank lines
     .replace(/[ \t]+$/gm, '')                 // Trim trailing whitespace per line
-    .replace(/([^\n])\n([^\n])/g, '$1 $2')    // Rejoin broken lines within paragraphs
-    .replace(/[ \t ]{2,}/g, ' ')         // Collapse multiple spaces (incl. non-breaking)
+    .replace(/([^\n])\n([^\n])/g, '$1 $2')    // Rejoin broken lines
+    .replace(/[ \t]{2,}/g, ' ')               // Collapse multiple spaces
     .trim();
 }
 
-/**
- * Downloads and parses an ISI inspection report PDF.
- *
- * Returns an object with the same shape as getOfstedData() +
- * fetchAndParseOfstedPdf() combined, so formatters work unchanged:
- *   { overall, date, reportUrl, safeguarding, pupilExperience,
- *     qualityOfEducation, behaviour, personalDevelopment, leadership,
- *     achievement, nextSteps, recommendations }
- */
-/**
- * Parses a Regulatory Compliance (ROU) report.
- * These are compliance-only — no quality judgments.  Structure:
- *   SUMMARY OF INSPECTION FINDINGS  →  brief overview
- *   THE EXTENT TO WHICH THE SCHOOL MEETS THE STANDARDS  →  compliance summary
- *   RECOMMENDED NEXT STEPS  →  actionable improvements
- *   SECTIONS 1-4  →  detailed compliance findings by area
- */
+
 function parseROUReport(text) {
   // Summary findings
   const summaryMatch = text.match(
