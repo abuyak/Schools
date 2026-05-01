@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 102055,
     "label": "state-secondary-sixth",
-    "capturedAt": "2026-05-01T10:01:18.013Z",
+    "capturedAt": "2026-05-01T10:12:13.115Z",
     "note": "KS4 + KS5 — grammar with sixth form"
   },
   "input": "The Latymer School",
@@ -3686,12 +3686,12 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 159,
+      "totalTransactions": 92,
       "postcodesQueried": 100,
-      "medianAllTypes": "£421,000",
+      "medianAllTypes": "£429,000",
       "byType": {
-        "Terraced": "£436,000",
-        "Flat / Maisonette": "£240,000",
+        "Terraced": "£430,000",
+        "Flat / Maisonette": "£220,000",
         "Semi-detached": "£465,000"
       },
       "source": "HM Land Registry Price Paid Data"
