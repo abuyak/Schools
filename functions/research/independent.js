@@ -371,9 +371,14 @@ function extractISIKeyFindings(text) {
 
   // End at Recommendation(s) or the next major section
   const kfEnd = text.indexOf('Recommendation', kfStart);
-  if (kfEnd < 0) return text.slice(kfStart, kfStart + 1500);
+  const raw = kfEnd < 0 ? text.slice(kfStart, kfStart + 1500) : text.slice(kfStart, kfEnd);
 
-  return text.slice(kfStart, kfEnd).trim();
+  return raw
+    .replace(/^Key findings\s*\n?/im, '')   // Strip "Key findings" heading
+    .replace(/\b\d+\.\d+\s*/g, '')          // Strip paragraph numbers like "3.1"
+    .replace(/[-]/g, '- ')               // Strip PDF Private Use Area bullet glyphs
+    .replace(/\n{3,}/g, '\n\n')             // Collapse multiple blank lines
+    .trim();
 }
 
 /**
@@ -385,9 +390,14 @@ function extractISIRecommendations(text) {
 
   // End at "The quality of the pupils'" (first detailed section)
   const recEnd = text.indexOf('The quality of the pupils', recStart + 20);
-  if (recEnd < 0) return text.slice(recStart, recStart + 2000);
+  const raw = recEnd < 0 ? text.slice(recStart, recStart + 2000) : text.slice(recStart, recEnd);
 
-  return text.slice(recStart, recEnd).trim();
+  return raw
+    .replace(/^Recommendation\s*\n?/im, '')  // Strip "Recommendation" heading
+    .replace(/\b\d+\.\d+\s*/g, '')            // Strip paragraph numbers like "3.3"
+    .replace(/[-]/g, '- ')                 // Strip PDF Private Use Area bullet glyphs
+    .replace(/\n{3,}/g, '\n\n')               // Collapse multiple blank lines
+    .trim();
 }
 
 /**
