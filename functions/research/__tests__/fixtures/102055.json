@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 102055,
     "label": "state-secondary-sixth",
-    "capturedAt": "2026-05-01T10:29:23.407Z",
+    "capturedAt": "2026-05-01T11:22:27.040Z",
     "note": "KS4 + KS5 — grammar with sixth form"
   },
   "input": "The Latymer School",
@@ -3686,7 +3686,7 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 167,
+      "totalTransactions": 168,
       "postcodesQueried": 100,
       "medianAllTypes": "£425,000",
       "byType": {
@@ -3768,6 +3768,8 @@
   "giasDetails": {
     "la": "Enfield (308)",
     "admissionsPolicy": "Selective",
+    "website": "http://www.latymer.co.uk/ (opens in new tab)",
     "religiousCharacter": "None"
-  }
+  },
+  "fees": null
 }

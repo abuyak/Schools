@@ -30,7 +30,7 @@ import {
 } from '../govuk.js';
 
 import { getSchoolEthnicity } from '../local-data.js';
-import { getISIInspection } from '../independent.js';
+import { getISIInspection, getIndependentFees } from '../independent.js';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const FIXTURES_DIR  = join(__dir, 'fixtures');
@@ -137,6 +137,14 @@ async function captureOne(school) {
   if (giasDetails) ok(`GIAS: capacity ${giasDetails.capacity ?? '—'}`);
   else nil('GIAS detail not retrieved');
 
+  // 2b. Independent school fees
+  let fees = null;
+  if (identity.isIndependent && giasDetails?.website) {
+    fees = await getIndependentFees(identity.officialName, giasDetails.website).catch(() => null);
+    if (fees) ok(`Fees: ${fees.annual ?? fees.day ?? '?'} `);
+    else nil('Fees not retrieved');
+  }
+
   // 3. Inspection data — Ofsted for state, ISI for independent
   let ofstedBase = null;
   if (identity.isIndependent) {
@@ -207,7 +215,7 @@ async function captureOne(school) {
     ? ofstedBase  // ISI data is self-contained (enriched inside getISIInspection)
     : ofstedBase; // Ofsted data is already enriched with PDFs inside getOfstedData
 
-  const schoolObj = { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails };
+  const schoolObj = { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees };
 
   // 10. Render slim block
   const slim = buildSlimBlock(schoolObj);
@@ -230,6 +238,7 @@ async function captureOne(school) {
     laPerf,
     schoolEthnicity,
     giasDetails,
+    fees,
   };
 
   writeFileSync(

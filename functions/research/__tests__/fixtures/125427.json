@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125427,
     "label": "independent-secondary",
-    "capturedAt": "2026-05-01T10:29:31.423Z",
+    "capturedAt": "2026-05-01T11:22:34.770Z",
     "note": "Independent secondary — fees, ISI, no DfE data"
   },
   "input": "Caterham School",
@@ -1110,14 +1110,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 104,
+      "totalTransactions": 95,
       "postcodesQueried": 74,
-      "medianAllTypes": "£703,000",
+      "medianAllTypes": "£699,950",
       "byType": {
-        "Flat / Maisonette": "£300,000",
-        "Detached": "£985,000",
+        "Flat / Maisonette": "£375,000",
+        "Detached": "£980,000",
         "Semi-detached": "£699,950",
-        "Terraced": "£672,500"
+        "Terraced": "£625,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -1189,6 +1189,8 @@
   "giasDetails": {
     "la": "Surrey (936)",
     "admissionsPolicy": "Selective",
+    "website": "http://www.caterhamschool.co.uk (opens in new tab)",
     "religiousCharacter": "Christian"
-  }
+  },
+  "fees": null
 }

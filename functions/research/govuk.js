@@ -930,6 +930,8 @@ export async function getGIASDetails(urn) {
     'ofsted rating':                    'ofstedRating',
     'last changed / inspected':         'ofstedDate',
     'type of establishment':            'establishmentType',
+    'school website':                   'website',
+    'website':                          'website',
   };
 
   const result = {};
@@ -3336,7 +3338,7 @@ function fmtSchoolEthnicitySlim(e) {
 }
 
 export function buildSlimBlock(school) {
-  const { input, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails } = school;
+  const { input, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
 
@@ -3387,7 +3389,17 @@ ${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ??
 
 ### Financial Benchmarking (FBIT)
 ${fmtFinancial(financial, identity?.isIndependent ?? false)}
-
+${fees ? `### School Fees\n- ${Object.entries(fees).filter(([k]) => k !== 'source' && k !== 'raw').map(([k,v]) => {
+  if (typeof v === 'object' && v !== null) {
+    const parts = [];
+    if (v.min != null && v.max != null) parts.push(`£${v.min}–£${v.max}`);
+    else if (v.amount != null) parts.push(`£${v.amount}`);
+    if (v.period) parts.push(v.period);
+    if (v.note) parts.push(`(${v.note})`);
+    return `${k}: ${parts.join(' ')}`;
+  }
+  return `${k}: ${v}`;
+}).join('\n- ')}` : ''}
 ### Inspection Outcomes (Ofsted)
 ${fmtOfstedSlim(ofsted, identity?.isIndependent ?? false)}
 
@@ -3439,17 +3451,20 @@ function fmtCensusSlim(performance, schoolEthnicity) {
 
   if (schoolEthnicity) {
     const eth = schoolEthnicity;
-    lines.push('');
-    lines.push('**Ethnicity**');
-    lines.push('| Ethnic group | % of pupils |');
-    lines.push('|---|---:|');
-    if (eth.w  != null) lines.push(`| White | ${eth.w}% |`);
-    if (eth.m  != null) lines.push(`| Mixed | ${eth.m}% |`);
-    if (eth.a  != null) lines.push(`| Asian | ${eth.a}% |`);
-    if (eth.b  != null) lines.push(`| Black | ${eth.b}% |`);
-    if (eth.c  != null) lines.push(`| Chinese | ${eth.c}% |`);
-    if (eth.o  != null) lines.push(`| Other | ${eth.o}% |`);
-    if (eth.ns != null) lines.push(`| Not stated | ${eth.ns}% |`);
+    const totalPct = (eth.w || 0) + (eth.m || 0) + (eth.a || 0) + (eth.b || 0) + (eth.c || 0) + (eth.o || 0) + (eth.ns || 0);
+    if (totalPct > 0) {
+      lines.push('');
+      lines.push('**Ethnicity**');
+      lines.push('| Ethnic group | % of pupils |');
+      lines.push('|---|---:|');
+      if (eth.w  != null) lines.push(`| White | ${eth.w}% |`);
+      if (eth.m  != null) lines.push(`| Mixed | ${eth.m}% |`);
+      if (eth.a  != null) lines.push(`| Asian | ${eth.a}% |`);
+      if (eth.b  != null) lines.push(`| Black | ${eth.b}% |`);
+      if (eth.c  != null) lines.push(`| Chinese | ${eth.c}% |`);
+      if (eth.o  != null) lines.push(`| Other | ${eth.o}% |`);
+      if (eth.ns != null) lines.push(`| Not stated | ${eth.ns}% |`);
+    }
   }
 
   return lines.join('\n');
@@ -3469,7 +3484,7 @@ function fmtAbsenceSlim(performance) {
   const pers  = anyNsField('PPERSABS10');
   const nat   = NATIONAL_AVG.ABSENCE;
 
-  if (!abs && !pers) return '_No absence data available._';
+  if (!abs && !pers) return '_No absence data available — independent schools do not report absence to DfE._';
 
   const lines = [
     '| Category | School | National avg |',
@@ -4046,16 +4061,20 @@ export function renderPartA(school, flags = {}) {
     if (senE) lines.push(`| Education, Health and Care (EHC) plans | ${senE} | ~4.5% |`);
 
     if (schoolEthnicity) {
-      lines.push('');
-      lines.push('| Ethnic group | % of pupils |');
-      lines.push('|---|---:|');
-      if (schoolEthnicity.w  != null) lines.push(`| White | ${schoolEthnicity.w}% |`);
-      if (schoolEthnicity.m  != null) lines.push(`| Mixed | ${schoolEthnicity.m}% |`);
-      if (schoolEthnicity.a  != null) lines.push(`| Asian | ${schoolEthnicity.a}% |`);
-      if (schoolEthnicity.b  != null) lines.push(`| Black | ${schoolEthnicity.b}% |`);
-      if (schoolEthnicity.c  != null) lines.push(`| Chinese | ${schoolEthnicity.c}% |`);
-      if (schoolEthnicity.o  != null) lines.push(`| Other | ${schoolEthnicity.o}% |`);
-      if (schoolEthnicity.ns != null) lines.push(`| Not stated | ${schoolEthnicity.ns}% |`);
+      const eth = schoolEthnicity;
+      const totalPct = (eth.w || 0) + (eth.m || 0) + (eth.a || 0) + (eth.b || 0) + (eth.c || 0) + (eth.o || 0) + (eth.ns || 0);
+      if (totalPct > 0) {
+        lines.push('');
+        lines.push('| Ethnic group | % of pupils |');
+        lines.push('|---|---:|');
+        if (eth.w  != null) lines.push(`| White | ${eth.w}% |`);
+        if (eth.m  != null) lines.push(`| Mixed | ${eth.m}% |`);
+        if (eth.a  != null) lines.push(`| Asian | ${eth.a}% |`);
+        if (eth.b  != null) lines.push(`| Black | ${eth.b}% |`);
+        if (eth.c  != null) lines.push(`| Chinese | ${eth.c}% |`);
+        if (eth.o  != null) lines.push(`| Other | ${eth.o}% |`);
+        if (eth.ns != null) lines.push(`| Not stated | ${eth.ns}% |`);
+      }
     }
 
     sections.push({ heading: 'A4. Pupil Census', body: lines.join('\n'), flag: flags['A4. Pupil Census'] ?? 'none' });

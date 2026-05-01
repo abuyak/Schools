@@ -369,8 +369,8 @@ function extractISIKeyFindings(text) {
   const kfStart = text.search(/Key findings\s*\n\s*3\.1/);
   if (kfStart < 0) return null;
 
-  // End at Recommendations or the next major section
-  const kfEnd = text.indexOf('Recommendations', kfStart);
+  // End at Recommendation(s) or the next major section
+  const kfEnd = text.indexOf('Recommendation', kfStart);
   if (kfEnd < 0) return text.slice(kfStart, kfStart + 1500);
 
   return text.slice(kfStart, kfEnd).trim();
