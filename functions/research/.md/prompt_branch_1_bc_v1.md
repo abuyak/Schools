@@ -75,9 +75,9 @@ Required searches (run all now):
 - 🟢 Green: clearly positive (e.g. Outstanding/Excellent grades, absence well below national, strong finances)
 - 🟡 None/neutral: mixed picture, typical, or no clear signal either way
 - 🔴 Red: genuine concern (e.g. Inadequate/RI grades, absence > national, deficit, high FSM without strong support)
-- Do NOT flag A4 red for low FSM (affluent intake is not a problem)
-- Do NOT flag A4 red for low EHC (below-average SEND prevalence is not a problem)
-- A4 red only if: FSM is notably high without strong attainment, OR EHC % far above national (~4.5%), OR SEN support % is significantly above national (~13%) combined with weak outcomes
+- **Independent schools:** FSM is always near 0% (fee-paying intake) — ignore FSM entirely for independent schools. Never flag A4 red based on FSM or EHC for an independent school. The only relevant A4 metric for independents is SEN support %.
+- **State schools:** Do NOT flag A4 red for low FSM (affluent intake is not a problem). Do NOT flag A4 red for low EHC (below-average SEND prevalence is not a problem).
+- A4 red only if (state schools): FSM is notably high without strong attainment, OR EHC % far above national (~4.5%), OR SEN support % significantly above national (~13%) combined with weak outcomes
 - A3 red only for substantive Ofsted action points, not for ISI "might wish" suggestions in Excellent reports
 
 **Emphasis:** Use bold (`**text**`) or bullets for emphasis. Never use `_underscores_` for italics in your output — they may render as literal characters.
