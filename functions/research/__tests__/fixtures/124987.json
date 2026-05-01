@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 124987,
     "label": "state-infant",
-    "capturedAt": "2026-04-30T22:12:12.132Z",
+    "capturedAt": "2026-04-30T23:06:07.090Z",
     "note": "KS1 only — no KS2/KS4/KS5 data expected"
   },
   "input": "Earlswood Infant and Nursery School",
@@ -12,7 +12,7 @@
     "type": "Community school",
     "phase": "Primary",
     "la": "Surrey",
-    "address": "St John&#39;s Road, Redhill, Surrey, RH1 6DZ",
+    "address": "St John's Road, Redhill, Surrey, RH1 6DZ",
     "postcode": "rh16dz",
     "outward": "rh1",
     "isIndependent": false,
@@ -24,7 +24,7 @@
     "qualityOfEducation": null,
     "behaviour": null,
     "personalDevelopment": null,
-    "leadership": null,
+    "leadership": "Good",
     "sixthForm": null,
     "achievement": null,
     "attendance": null,
@@ -298,14 +298,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 246,
+      "totalTransactions": 278,
       "postcodesQueried": 100,
-      "medianAllTypes": "£426,000",
+      "medianAllTypes": "£423,000",
       "byType": {
-        "Semi-detached": "£496,500",
-        "Terraced": "£410,000",
-        "Flat / Maisonette": "£244,000",
-        "Detached": "£550,000"
+        "Semi-detached": "£485,000",
+        "Terraced": "£420,000",
+        "Flat / Maisonette": "£265,000",
+        "Detached": "£540,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },

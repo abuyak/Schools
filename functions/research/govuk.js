@@ -304,7 +304,8 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
         || label === 'quality of teaching learning and assessment')
       pdfSubGrades.qualityOfEducation = grade;
     if (label === 'behaviour and attitudes'
-        || label === 'attendance and behaviour')
+        || label === 'attendance and behaviour'
+        || label === 'behaviour and safety of pupils')
       pdfSubGrades.behaviour = grade;
     if (label === 'personal development'
         || label === 'personal development and wellbeing'
@@ -313,6 +314,13 @@ export async function fetchAndParseOfstedPdf(reportUrl) {
       if (label === 'personal development behaviour and welfare')
         pdfSubGrades.behaviour = grade;  // old framework merged these two
     }
+    // Old framework (pre-2019): catch all sub-grades
+    if (label === 'outcomes for children and learners'
+        || label === 'outcomes for pupils')
+      pdfSubGrades.achievement = grade;
+    if (label === 'quality of teaching'
+        || label === 'quality of teaching learning and assessment')
+      pdfSubGrades.qualityOfEducation = grade;
     if (label === 'leadership and management'
         || label === 'leadership and governance'
         || label === 'effectiveness of leadership and management')
@@ -723,7 +731,10 @@ export async function lookupSchoolURN(name, locationHints = []) {
     // schools share the same name. GIAS tiles show address inline; postcode is
     // typically the last token.
     const addrMatch = tile.match(/Address[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
-    const address   = addrMatch ? addrMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : null;
+    const address   = addrMatch
+      ? addrMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+          .replace(/&#39;/gi, "'").replace(/&amp;/gi, '&').replace(/&quot;/gi, '"')
+      : null;
 
     // Also try to pull a postcode-shaped token directly from the raw tile text.
     // GIAS renders the postcode visibly on every card (e.g. "SE16 4PS").
@@ -764,7 +775,10 @@ export async function lookupSchoolURN(name, locationHints = []) {
           const laMatch = tile.match(/Local\s+authority[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
           const la = laMatch ? laMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
           const addrMatch = tile.match(/Address[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
-          const address = addrMatch ? addrMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : null;
+          const address = addrMatch
+            ? addrMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+                .replace(/&#39;/gi, "'").replace(/&amp;/gi, '&').replace(/&quot;/gi, '"')
+            : null;
           const tileText = tile.replace(/<[^>]+>/g, ' ');
           const pcMatch = tileText.match(/\b([A-Z]{1,2}\d{1,2}[A-Z]?)\s*(\d[A-Z]{2})\b/);
           const postcode = pcMatch ? `${pcMatch[1]}${pcMatch[2]}`.toLowerCase() : null;
@@ -820,7 +834,10 @@ export async function lookupSchoolURN(name, locationHints = []) {
             const laMatch = tile.match(/Local\s+authority[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
             const la = laMatch ? laMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
             const addrMatch = tile.match(/Address[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
-            const address = addrMatch ? addrMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : null;
+            const address = addrMatch
+              ? addrMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+                  .replace(/&#39;/gi, "'").replace(/&amp;/gi, '&').replace(/&quot;/gi, '"')
+              : null;
             const tileText = tile.replace(/<[^>]+>/g, ' ');
             const pcMatch = tileText.match(/\b([A-Z]{1,2}\d{1,2}[A-Z]?)\s*(\d[A-Z]{2})\b/);
             const postcode = pcMatch ? `${pcMatch[1]}${pcMatch[2]}`.toLowerCase() : null;

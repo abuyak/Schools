@@ -149,11 +149,14 @@ async function captureOne(school) {
     else nil('Ofsted not retrieved');
   }
 
-  // 4. PDF + performance + financial — in parallel
+  // 4. PDF + graded PDF (for sub-grade fallback) + performance + financial — in parallel
   // Independent schools: ISI PDF already parsed by getISIInspection (narrative is in ofstedBase)
-  const [pdfSections, performance, financial] = await Promise.all([
+  const [pdfSections, gradedPdfSections, performance, financial] = await Promise.all([
     (!identity.isIndependent && ofstedBase?.reportUrl)
       ? fetchAndParseOfstedPdf(ofstedBase.reportUrl).catch(() => null)
+      : Promise.resolve(null),
+    (!identity.isIndependent && ofstedBase?.gradedReportUrl)
+      ? fetchAndParseOfstedPdf(ofstedBase.gradedReportUrl).catch(() => null)
       : Promise.resolve(null),
     getPerformanceData(urn).catch(() => null),
     identity.isIndependent ? Promise.resolve(null) : getFinancialData(urn).catch(() => null),
@@ -205,11 +208,23 @@ async function captureOne(school) {
 
   // 8. Assemble ofsted object (mirrors fetchGovDataForPrompt)
   // For independent schools, ISI data already includes narrative fields.
-  // For state schools, merge the Ofsted PDF sections.
+  // For state schools, merge the Ofsted PDF sections and graded PDF sub-grades.
+  const pdfSg  = pdfSections?.pdfSubGrades ?? null;
+  const gpdfSg = gradedPdfSections?.pdfSubGrades ?? null;
+  const bestSg = gpdfSg ?? pdfSg;  // graded PDF sub-grades are most complete
+
   const ofsted = identity.isIndependent
     ? ofstedBase  // ISI data is self-contained
     : ofstedBase ? {
         ...ofstedBase,
+        // Sub-grades: HTML first, graded PDF second, main PDF last
+        qualityOfEducation:            ofstedBase.qualityOfEducation          ?? bestSg?.qualityOfEducation   ?? null,
+        behaviour:                     ofstedBase.behaviour                   ?? bestSg?.behaviour            ?? null,
+        personalDevelopment:           ofstedBase.personalDevelopment         ?? bestSg?.personalDevelopment  ?? null,
+        leadership:                    ofstedBase.leadership                  ?? bestSg?.leadership           ?? null,
+        sixthForm:                     ofstedBase.sixthForm                   ?? bestSg?.sixthForm            ?? null,
+        achievement:                   ofstedBase.achievement                 ?? bestSg?.achievement          ?? null,
+        // PDF narrative sections
         pupilExperience:               pdfSections?.pupilExperience         ?? null,
         qualityOfEducationDetail:      pdfSections?.qualityOfEducation      ?? null,
         behaviourAndAttitudesDetail:   pdfSections?.behaviourAndAttitudes   ?? null,
