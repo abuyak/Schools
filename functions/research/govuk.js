@@ -1524,90 +1524,56 @@ export async function getLAPerformanceKS4(laCode) {
   if (!laCode) return null;
 
   const EES_BASE = 'https://api.education.gov.uk/statistics/v1';
-  const params = new URLSearchParams({
+  // Build base params (everything except time period)
+  const baseParams = new URLSearchParams({
     'locations.in':  `LA|code|${laCode}`,
-    'timePeriods.in':'2024/2025|AY',
     'pageSize':      '10',
   });
-  // Filter: Disadvantaged status = Total (all pupils)
-  params.append('filters.in', 'uRBo4');   // Filter group: Disadvantaged status
-  params.append('filters.in', 'bVOtT');   // Filter option: Total
-  // Indicators — mapped from DfE compare-school-performance website
-  params.append('indicators', 'S9YVx');  // Average Attainment 8 score
-  params.append('indicators', 'OvpCL');  // Average Progress 8 score
-  params.append('indicators', 'kxGhs');  // % grade 5+ English and maths
-  params.append('indicators', 'HPhzL');  // % grade 4+ English and maths
-  params.append('indicators', 'UZ5RF');  // % entering EBacc
-  params.append('indicators', '4c9UZ');  // EBacc average points score
-  params.append('indicators', 'u2bo4');  // % achieving EBacc at grade 5+
-  params.append('indicators', 'CpmId');  // % achieving EBacc at grade 4+
-  params.append('indicators', 'R8uka');  // Attainment 8: English element
-  params.append('indicators', 'bBrtT');  // Attainment 8: Maths element
-  params.append('indicators', 'yxmaB');  // Attainment 8: EBacc element
-  params.append('indicators', 'DOiQe');  // Attainment 8: Open element
-  params.append('indicators', 'ea0uS');  // Attainment 8: Open GCSE only
-  params.append('indicators', '5USdi');  // Attainment 8: Open non-GCSE
-  // Per-subject EBacc achievement — grade 5+
-  params.append('indicators', 'XdlfK');  // English at grade 5+
-  params.append('indicators', '5kQdi');  // Maths at grade 5+
-  params.append('indicators', 'tfREm');  // Science at grade 5+
-  params.append('indicators', 'TawPJ');  // Humanities at grade 5+
-  params.append('indicators', 'cDF31');  // Languages at grade 5+
-  // Per-subject EBacc achievement — grade 4+
-  params.append('indicators', 'YTyHK');  // English at grade 4+
-  params.append('indicators', 'BVh7J');  // Maths at grade 4+
-  params.append('indicators', 'zecFQ');  // Science at grade 4+
-  params.append('indicators', 'qHPjG');  // Humanities at grade 4+
-  params.append('indicators', 'a1GLP');  // Languages at grade 4+
+  baseParams.append('filters.in', 'uRBo4');
+  baseParams.append('filters.in', 'bVOtT');
+  const INDICATORS = [
+    'S9YVx','OvpCL','kxGhs','HPhzL','UZ5RF','4c9UZ','u2bo4','CpmId',
+    'R8uka','bBrtT','yxmaB','DOiQe','ea0uS','5USdi',
+    'XdlfK','5kQdi','tfREm','TawPJ','cDF31',
+    'YTyHK','BVh7J','zecFQ','qHPjG','a1GLP',
+  ];
+  for (const ind of INDICATORS) baseParams.append('indicators', ind);
 
-  const url = `${EES_BASE}/data-sets/${EES_KS4_LA_DATASET}/query?${params}`;
-  const data = await safeFetchJson(url);
-
-  if (!data?.results?.length) {
-    glog('govuk_ks4_la_fail', { laCode, status: data ? 'empty' : 'null' });
-    return null;
-  }
-
-  const row = data.results[0];
-  const vals = row.values ?? {};
   const clean = (v) => (v && v !== 'z' && v !== 'x' && v !== 'c') ? String(v) : null;
+  const KEYS = ['att8','p8','grade5Em','grade4Em','ebaccEntry','ebaccAPS','ebacc5','ebacc4',
+    'att8Eng','att8Mat','att8Ebacc','att8Open','att8OpenG','att8OpenNg',
+    'eng95','mat95','sci95','hum95','lan95',
+    'eng94','mat94','sci94','hum94','lan94'];
 
-  const result = {
-    att8:      clean(vals['S9YVx']),
-    p8:        clean(vals['OvpCL']),
-    grade5Em:  clean(vals['kxGhs']),
-    grade4Em:  clean(vals['HPhzL']),
-    ebaccEntry: clean(vals['UZ5RF']),
-    ebaccAPS:  clean(vals['4c9UZ']),
-    ebacc5:    clean(vals['u2bo4']),
-    ebacc4:    clean(vals['CpmId']),
-    att8Eng:   clean(vals['R8uka']),
-    att8Mat:   clean(vals['bBrtT']),
-    att8Ebacc: clean(vals['yxmaB']),
-    att8Open:  clean(vals['DOiQe']),
-    att8OpenG: clean(vals['ea0uS']),
-    att8OpenNg:clean(vals['5USdi']),
-    // Per-subject EBacc grade 5+
-    eng95:    clean(vals['XdlfK']),
-    mat95:    clean(vals['5kQdi']),
-    sci95:    clean(vals['tfREm']),
-    hum95:    clean(vals['TawPJ']),
-    lan95:    clean(vals['cDF31']),
-    // Per-subject EBacc grade 4+
-    eng94:    clean(vals['YTyHK']),
-    mat94:    clean(vals['BVh7J']),
-    sci94:    clean(vals['zecFQ']),
-    hum94:    clean(vals['qHPjG']),
-    lan94:    clean(vals['a1GLP']),
-  };
+  // Fetch 3 years: 2022/23, 2023/24, 2024/25
+  const YEARS = ['2022/2023|AY', '2023/2024|AY', '2024/2025|AY'];
+  const YEAR_KEYS = ['yr23', 'yr24', 'yr25'];
 
-  if (!result.att8 && !result.p8 && !result.grade5Em) {
-    glog('govuk_ks4_la_no_match', { laCode });
+  const allResults = {};
+  for (let yi = 0; yi < YEARS.length; yi++) {
+    const params = new URLSearchParams(baseParams);
+    params.set('timePeriods.in', YEARS[yi]);
+    const url = `${EES_BASE}/data-sets/${EES_KS4_LA_DATASET}/query?${params}`;
+    const data = await safeFetchJson(url).catch(() => null);
+    if (!data?.results?.length) continue;
+    const vals = data.results[0].values ?? {};
+    const yrKey = YEAR_KEYS[yi];
+    for (let ki = 0; ki < KEYS.length; ki++) {
+      const val = clean(vals[INDICATORS[ki]]);
+      if (val != null) {
+        allResults[KEYS[ki]] = allResults[KEYS[ki]] || {};
+        allResults[KEYS[ki]][yrKey] = val;
+      }
+    }
+  }
+
+  if (!Object.keys(allResults).length) {
+    glog('govuk_ks4_la_fail', { laCode });
     return null;
   }
 
-  glog('govuk_ks4_la_ok', { laCode, ...result });
-  return result;
+  glog('govuk_ks4_la_ok', { laCode, metrics: Object.keys(allResults).length, years: Object.values(allResults)[0] ? Object.keys(Object.values(allResults)[0]).length : 0 });
+  return allResults;
 }
 
 export async function getOfstedData(urn) {
@@ -2706,14 +2672,19 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
   const hasKS5 = hasNs('KS5');
 
   // LA helpers (populated when laPerf is available)
-  // Supports nested paths like 'rwm.yr25.expected' or 'rwm.expected' (yr25 default)
+  // Supports nested paths like 'rwm.yr25.expected' or 'att8' (auto-defaults to yr25)
   const la = (path) => {
     if (!laPerf) return '—';
-    // Auto-insert yr25 for backward compatibility (e.g. 'rwm.expected' → 'rwm.yr25.expected')
     const parts = path.split('.');
+    // KS2: 'rwm.expected' → auto-insert yr25 → 'rwm.yr25.expected'
     if (parts.length === 2 && !parts[1].startsWith('yr')) parts.splice(1, 0, 'yr25');
     let v = laPerf;
-    for (const p of parts) { v = v?.[p]; if (v == null) return '—'; }
+    for (const p of parts) {
+      v = v?.[p];
+      // Auto-default: if value is a {yr23, yr24, yr25} object, pick yr25
+      if (v && typeof v === 'object' && v.yr25 != null && !Array.isArray(v)) v = v.yr25;
+      if (v == null) return '—';
+    }
     return String(v);
   };
   const laPct = (path) => {
@@ -3071,11 +3042,11 @@ const KS5_TOPICS = [
 
   function renderKS4Timeseries() {
     const groups = [
-      { label: 'Attainment 8 Score', base: 'ATT8SCR', isPct: false },
-      { label: 'Progress 8 Score', base: 'P8MEA', isPct: false },
-      { label: 'Grade 5+ English & Maths', base: 'PTL2BASICS_95', isPct: true },
-      { label: 'Grade 4+ English & Maths', base: 'PTL2BASICS_94', isPct: true },
-      { label: 'EBacc Entry', base: 'PTEBACC_E_PTQ_EE', isPct: true },
+      { label: 'Attainment 8 Score', base: 'ATT8SCR', laKey: 'att8', isPct: false },
+      { label: 'Progress 8 Score', base: 'P8MEA', laKey: 'p8', isPct: false },
+      { label: 'Grade 5+ English & Maths', base: 'PTL2BASICS_95', laKey: 'grade5Em', isPct: true },
+      { label: 'Grade 4+ English & Maths', base: 'PTL2BASICS_94', laKey: 'grade4Em', isPct: true },
+      { label: 'EBacc Entry', base: 'PTEBACC_E_PTQ_EE', laKey: 'ebaccEntry', isPct: true },
     ];
 
     const fmt = (val, isPct) => {
@@ -3090,7 +3061,18 @@ const KS5_TOPICS = [
       const s24 = v(g.base + '_PREV');
       const s23 = v(g.base + '_PREV2');
       if (suppressed(s25) && suppressed(s24) && suppressed(s23)) continue;
+
+      // Get LA values for each year
+      const laVal = (yr) => {
+        if (!laPerf || !g.laKey) return '—';
+        const v = laPerf[g.laKey];
+        if (!v || typeof v !== 'object') return '—';
+        const yrVal = v[yr];
+        return yrVal != null ? (g.isPct ? yrVal + '%' : yrVal) : '—';
+      };
+
       rows.push(`| ${g.label} | ${fmt(s23, g.isPct)} | ${fmt(s24, g.isPct)} | ${fmt(s25, g.isPct)} |`);
+      rows.push(`| _Local Authority_ | ${laVal('yr23')} | ${laVal('yr24')} | ${laVal('yr25')} |`);
     }
 
     if (rows.length) {

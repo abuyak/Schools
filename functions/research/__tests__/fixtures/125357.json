@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125357,
     "label": "independent-primary",
-    "capturedAt": "2026-05-01T20:53:04.270Z",
+    "capturedAt": "2026-05-01T21:04:36.573Z",
     "note": "Independent — no Ofsted, no DfE performance; ISI expected"
   },
   "input": "Micklefield School",
@@ -170,7 +170,7 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 233,
+      "totalTransactions": 232,
       "postcodesQueried": 100,
       "medianAllTypes": "£360,000",
       "byType": {
