@@ -127,6 +127,13 @@ const NATIONAL_AVG = {
     EBACC_SCI_94:      65.8,   // Science at grade 4+
     EBACC_HUM_94:      63.5,   // Humanities at grade 4+
     EBACC_LAN_94:      73.1,   // Languages at grade 4+
+    // Attainment 8 element breakdowns (England state-funded)
+    ATT8_ENG:           9.8,   // English element
+    ATT8_MAT:           9.1,   // Maths element
+    ATT8_EBACC:        13.5,   // EBacc element
+    ATT8_OPEN:         13.6,   // Open element
+    ATT8_OPENG:        11.5,   // Open — GCSE only
+    ATT8_OPENNG:        2.2,   // Open — non-GCSE
   },
   // KS5 / 16–18 attainment 2024/25 — England state-funded schools/colleges
   // Source: https://www.compare-school-performance.service.gov.uk/download-data (16 to 18 tab)
@@ -1534,6 +1541,12 @@ export async function getLAPerformanceKS4(laCode) {
   params.append('indicators', '4c9UZ');  // EBacc average points score
   params.append('indicators', 'u2bo4');  // % achieving EBacc at grade 5+
   params.append('indicators', 'CpmId');  // % achieving EBacc at grade 4+
+  params.append('indicators', 'R8uka');  // Attainment 8: English element
+  params.append('indicators', 'bBrtT');  // Attainment 8: Maths element
+  params.append('indicators', 'yxmaB');  // Attainment 8: EBacc element
+  params.append('indicators', 'DOiQe');  // Attainment 8: Open element
+  params.append('indicators', 'ea0uS');  // Attainment 8: Open GCSE only
+  params.append('indicators', '5USdi');  // Attainment 8: Open non-GCSE
 
   const url = `${EES_BASE}/data-sets/${EES_KS4_LA_DATASET}/query?${params}`;
   const data = await safeFetchJson(url);
@@ -1556,6 +1569,12 @@ export async function getLAPerformanceKS4(laCode) {
     ebaccAPS:  clean(vals['4c9UZ']),
     ebacc5:    clean(vals['u2bo4']),
     ebacc4:    clean(vals['CpmId']),
+    att8Eng:   clean(vals['R8uka']),
+    att8Mat:   clean(vals['bBrtT']),
+    att8Ebacc: clean(vals['yxmaB']),
+    att8Open:  clean(vals['DOiQe']),
+    att8OpenG: clean(vals['ea0uS']),
+    att8OpenNg:clean(vals['5USdi']),
   };
 
   if (!result.att8 && !result.p8 && !result.grade5Em) {
@@ -2775,12 +2794,12 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
   const KS4_TOPICS = [
     { heading: "Attainment 8", cols: "abgdnelE", rows: [
       { label: "Attainment 8 score", var: "ATT8SCR", la: "att8", eng: String(nat4.ATT8SCR) },
-      { label: "English element", var: "ATT8SCRENG" },
-      { label: "Maths element", var: "ATT8SCRMAT" },
-      { label: "EBacc element", var: "ATT8SCREBAC" },
-      { label: "Open element", var: "ATT8SCROPEN" },
-      { label: "Open — GCSE only", var: "ATT8SCROPENG" },
-      { label: "Open — non-GCSE", var: "ATT8SCROPENNG" },
+      { label: "English element", var: "ATT8SCRENG", la: "att8Eng", eng: String(nat4.ATT8_ENG) },
+      { label: "Maths element", var: "ATT8SCRMAT", la: "att8Mat", eng: String(nat4.ATT8_MAT) },
+      { label: "EBacc element", var: "ATT8SCREBAC", la: "att8Ebacc", eng: String(nat4.ATT8_EBACC) },
+      { label: "Open element", var: "ATT8SCROPEN", la: "att8Open", eng: String(nat4.ATT8_OPEN) },
+      { label: "Open — GCSE only", var: "ATT8SCROPENG", la: "att8OpenG", eng: String(nat4.ATT8_OPENG) },
+      { label: "Open — non-GCSE", var: "ATT8SCROPENNG", la: "att8OpenNg", eng: String(nat4.ATT8_OPENNG) },
     ]},
     { heading: "Progress 8", cols: "abgdnelE", rows: [
       { label: "Progress 8 score", var: "P8MEA", la: "p8", eng: '0.00' },
@@ -2952,7 +2971,7 @@ const KS5_TOPICS = [
       if (showLa) {
         if (row.la) {
           const laVal = la(row.la);
-          const isPlain = row.la.includes('Score') || row.la === 'att8' || row.la === 'p8' || row.la === 'ebaccAPS';
+          const isPlain = row.la.includes('Score') || /^(att8|p8|ebaccAPS|att8Eng|att8Mat|att8Ebacc|att8Open|att8OpenG|att8OpenNg)$/.test(row.la);
           cells.push(isPlain ? laVal : laPct(row.la));
         } else {
           cells.push('—');
