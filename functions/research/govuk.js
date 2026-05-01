@@ -2856,36 +2856,6 @@ const KS5_TOPICS = [
       ],
     },
     {
-      heading: 'KS5 prior years — A-level grade trend',
-      cols: 'all',
-      rows: [
-        { label: 'Average grade 2025', var: 'TALLPPEGRD_ALEV_1618' },
-        { label: 'Average grade 2024', var: 'TALLPPEGRD_ALEV_1618_24' },
-        { label: 'Average grade 2023', var: 'TALLPPEGRD_ALEV_1618_23' },
-        { label: 'Average grade 2022', var: 'TALLPPEGRD_ALEV_1618_22' },
-      ],
-    },
-    {
-      heading: 'KS5 prior years — A-level points trend',
-      cols: 'all',
-      rows: [
-        { label: 'Average points 2025', var: 'TALLPPE_ALEV_1618' },
-        { label: 'Average points 2024', var: 'TALLPPE_ALEV_1618_24' },
-        { label: 'Average points 2023', var: 'TALLPPE_ALEV_1618_23' },
-        { label: 'Average points 2022', var: 'TALLPPE_ALEV_1618_22' },
-      ],
-    },
-    {
-      heading: 'KS5 prior years — progress trend',
-      cols: 'all',
-      rows: [
-        { label: 'VA score 2025', var: 'VA_INS_ALEV' },
-        { label: 'VA score 2024', var: 'VA_INS_ALEV_24' },
-        { label: 'VA score 2023', var: 'VA_INS_ALEV_23' },
-        { label: 'VA score 2022', var: 'VA_INS_ALEV_22' },
-      ],
-    },
-    {
       heading: 'Tech levels & T-levels',
       cols: 'all',
       rows: [
@@ -3128,6 +3098,31 @@ const KS5_TOPICS = [
     }
   }
 
+  // ── KS5 timeseries — results over time ──────────────────────────────────
+
+  function renderKS5Timeseries() {
+    const groups = [
+      { label: 'Average grade', var25: 'TALLPPEGRD_ALEV_1618', var24: 'TALLPPEGRD_ALEV_1618_24', var23: 'TALLPPEGRD_ALEV_1618_23', var22: 'TALLPPEGRD_ALEV_1618_22' },
+      { label: 'Average points', var25: 'TALLPPE_ALEV_1618', var24: 'TALLPPE_ALEV_1618_24', var23: 'TALLPPE_ALEV_1618_23', var22: 'TALLPPE_ALEV_1618_22' },
+      { label: 'VA score', var25: 'VA_INS_ALEV', var24: 'VA_INS_ALEV_24', var23: 'VA_INS_ALEV_23', var22: 'VA_INS_ALEV_22' },
+    ];
+
+    const rows = [];
+    for (const g of groups) {
+      const vals = [v(g.var22), v(g.var23), v(g.var24), v(g.var25)];
+      if (vals.every(x => x == null || suppressed(String(x)))) continue;
+      rows.push(`| ${g.label} | ${vals.map(x => x != null && !suppressed(String(x)) ? String(x).trim() : '—').join(' | ')} |`);
+    }
+
+    if (rows.length) {
+      lines.push('');
+      lines.push('**Results over time**');
+      lines.push('| | 2022 final | 2023 final | 2024 final | 2025 final |');
+      lines.push('|---|---:|---:|---:|---:|');
+      lines.push(...rows);
+    }
+  }
+
   // ── Render key stages ─────────────────────────────────────────────────────
 
   if (hasKS2) {
@@ -3152,6 +3147,7 @@ const KS5_TOPICS = [
     lines.push('');
     lines.push('**Key Stage 5 / 16–18 (2024/25)**');
     for (const topic of KS5_TOPICS) renderTopic(topic, 'KS5');
+    renderKS5Timeseries();
   }
 
   return lines.filter(l => l !== '').length > 1
