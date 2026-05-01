@@ -1547,6 +1547,18 @@ export async function getLAPerformanceKS4(laCode) {
   params.append('indicators', 'DOiQe');  // Attainment 8: Open element
   params.append('indicators', 'ea0uS');  // Attainment 8: Open GCSE only
   params.append('indicators', '5USdi');  // Attainment 8: Open non-GCSE
+  // Per-subject EBacc achievement — grade 5+
+  params.append('indicators', 'XdlfK');  // English at grade 5+
+  params.append('indicators', '5kQdi');  // Maths at grade 5+
+  params.append('indicators', 'tfREm');  // Science at grade 5+
+  params.append('indicators', 'TawPJ');  // Humanities at grade 5+
+  params.append('indicators', 'cDF31');  // Languages at grade 5+
+  // Per-subject EBacc achievement — grade 4+
+  params.append('indicators', 'YTyHK');  // English at grade 4+
+  params.append('indicators', 'BVh7J');  // Maths at grade 4+
+  params.append('indicators', 'zecFQ');  // Science at grade 4+
+  params.append('indicators', 'qHPjG');  // Humanities at grade 4+
+  params.append('indicators', 'a1GLP');  // Languages at grade 4+
 
   const url = `${EES_BASE}/data-sets/${EES_KS4_LA_DATASET}/query?${params}`;
   const data = await safeFetchJson(url);
@@ -1575,6 +1587,18 @@ export async function getLAPerformanceKS4(laCode) {
     att8Open:  clean(vals['DOiQe']),
     att8OpenG: clean(vals['ea0uS']),
     att8OpenNg:clean(vals['5USdi']),
+    // Per-subject EBacc grade 5+
+    eng95:    clean(vals['XdlfK']),
+    mat95:    clean(vals['5kQdi']),
+    sci95:    clean(vals['tfREm']),
+    hum95:    clean(vals['TawPJ']),
+    lan95:    clean(vals['cDF31']),
+    // Per-subject EBacc grade 4+
+    eng94:    clean(vals['YTyHK']),
+    mat94:    clean(vals['BVh7J']),
+    sci94:    clean(vals['zecFQ']),
+    hum94:    clean(vals['qHPjG']),
+    lan94:    clean(vals['a1GLP']),
   };
 
   if (!result.att8 && !result.p8 && !result.grade5Em) {
@@ -3023,22 +3047,23 @@ const KS5_TOPICS = [
   // ── EBacc subject achievement (9-4 and 9-5 combined table) ─────────────
 
   function renderEBaccSubjects() {
-    const subjects = [
-      { label: 'English',    v94: 'PTEBACENG_94',  v95: 'PTEBACENG_95' },
-      { label: 'Maths',      v94: 'PTEBACMAT_94',  v95: 'PTEBACMAT_95' },
-      { label: 'Science',    v94: 'PTEBAC2SCI_94', v95: 'PTEBAC2SCI_95' },
-      { label: 'Humanities', v94: 'PTEBACHUM_94',  v95: 'PTEBACHUM_95' },
-      { label: 'Languages',  v94: 'PTEBACLAN_94',  v95: 'PTEBACLAN_95' },
+    const laKeys = [
+      { label: 'English',    v94: 'PTEBACENG_94',  v95: 'PTEBACENG_95',  la94: 'eng94', la95: 'eng95', eng94: String(nat4.EBACC_ENG_94), eng95: String(nat4.EBACC_ENG_95) },
+      { label: 'Maths',      v94: 'PTEBACMAT_94',  v95: 'PTEBACMAT_95',  la94: 'mat94', la95: 'mat95', eng94: String(nat4.EBACC_MAT_94), eng95: String(nat4.EBACC_MAT_95) },
+      { label: 'Science',    v94: 'PTEBAC2SCI_94', v95: 'PTEBAC2SCI_95', la94: 'sci94', la95: 'sci95', eng94: String(nat4.EBACC_SCI_94), eng95: String(nat4.EBACC_SCI_95) },
+      { label: 'Humanities', v94: 'PTEBACHUM_94',  v95: 'PTEBACHUM_95',  la94: 'hum94', la95: 'hum95', eng94: String(nat4.EBACC_HUM_94), eng95: String(nat4.EBACC_HUM_95) },
+      { label: 'Languages',  v94: 'PTEBACLAN_94',  v95: 'PTEBACLAN_95',  la94: 'lan94', la95: 'lan95', eng94: String(nat4.EBACC_LAN_94), eng95: String(nat4.EBACC_LAN_95) },
     ];
-    const rows = subjects.filter(s => !suppressed(v(s.v94)) || !suppressed(v(s.v95)));
+    const rows = laKeys.filter(s => !suppressed(v(s.v94)) || !suppressed(v(s.v95)));
     if (!rows.length) return;
 
     lines.push('');
     lines.push('**EBacc subject achievement**');
-    lines.push('| Category | 9-4 | 9-5 |');
-    lines.push('|---|---:|---:|');
+    lines.push('| Category | School 9-4 | LA 9-4 | England 9-4 | School 9-5 | LA 9-5 | England 9-5 |');
+    lines.push('|---|---:|---:|---:|---:|---:|---:|');
     for (const s of rows) {
-      lines.push(`| ${s.label} | ${c(v(s.v94))} | ${c(v(s.v95))} |`);
+      const la94 = la(s.la94); const la95 = la(s.la95);
+      lines.push(`| ${s.label} | ${c(v(s.v94))} | ${la94 !== '—' ? la94 + '%' : '—'} | ${s.eng94}% | ${c(v(s.v95))} | ${la95 !== '—' ? la95 + '%' : '—'} | ${s.eng95}% |`);
     }
   }
 
