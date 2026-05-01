@@ -1586,6 +1586,7 @@ export async function getOfstedData(urn) {
     html = null; // JS shell — force fallback to provider 21
   }
   if (!html) html = await safeFetchText(`https://reports.ofsted.gov.uk/provider/21/${urn}`);
+  if (!html) html = await safeFetchText(`https://reports.ofsted.gov.uk/provider/ELS/${urn}`);
   if (!html) { glog('govuk_ofsted_fail', { urn }); return null; }
 
   // ── Overall grade ─────────────────────────────────────────────────────────
