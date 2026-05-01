@@ -29,15 +29,15 @@ const SCHOOLS = [
 // Expected rendered content per school type — the contract
 // Format: { label: [text strings that MUST appear in slim block] }
 const EXPECTED = {
-  'state-infant':             ['Academic Results', 'School Pupil Ethnicity', 'Surrounding Area', 'Financial Benchmarking', 'Inspection Outcomes'],
-  'state-junior':             ['Key Stage 2', 'Attainment', 'Attainment — subject breakdown', 'Per-subject attainment'],
-  'state-primary':            ['Key Stage 2', 'Attainment', 'Attainment — subject breakdown', 'Per-subject attainment'],
-  'state-secondary':          ['Key Stage 4', 'Attainment 8', 'Grade 5+', 'Grade 4+', 'EBacc entry', 'EBacc achievement', 'EBacc subject achievement'],
-  'state-sixth-form':         ['Key Stage 5', 'A-level attainment', 'A-level progress'],
-  'state-secondary-sixth':    ['Key Stage 4', 'Attainment 8', 'Key Stage 5', 'A-level attainment', 'EBacc'],
-  'independent-primary':      ['Academic Results'],
-  'independent-secondary':    ['Key Stage 4', 'Attainment 8', 'Key Stage 5', 'EBacc'],
-  'independent-all-through':  ['Key Stage 4', 'Attainment 8', 'Key Stage 5', 'EBacc'],
+  'state-infant':             ['Academic Results', 'Pupil Census', 'Absence', 'Financial Benchmarking', 'Inspection Outcomes', 'Surrounding Area'],
+  'state-junior':             ['Key Stage 2', 'Cohort', 'Attainment', 'Scaled scores', 'Per-subject attainment', 'Cohort characteristics', 'Disadvantage gap', 'Test participation', 'Progress (KS1 to KS2)', 'Results over time', 'Pupil Census', 'Absence'],
+  'state-primary':            ['Key Stage 2', 'Cohort', 'Attainment', 'Scaled scores', 'Per-subject attainment', 'Cohort characteristics', 'Disadvantage gap', 'Test participation', 'Progress (KS1 to KS2)', 'Results over time', 'Pupil Census', 'Absence'],
+  'state-secondary':          ['Key Stage 4', 'Attainment 8', 'Grade 5+', 'Grade 4+', 'EBacc entry', 'EBacc achievement', 'EBacc subject achievement', 'Pupil Census', 'Absence'],
+  'state-sixth-form':         ['Key Stage 5', 'A-level attainment', 'A-level progress', 'Absence'],
+  'state-secondary-sixth':    ['Key Stage 4', 'Attainment 8', 'Key Stage 5', 'A-level attainment', 'EBacc', 'Pupil Census', 'Absence'],
+  'independent-primary':      ['Academic Results', 'Pupil Census', 'Surrounding Area'],
+  'independent-secondary':    ['Key Stage 4', 'Attainment 8', 'Key Stage 5', 'EBacc', 'Pupil Census', 'Absence'],
+  'independent-all-through':  ['Key Stage 4', 'Attainment 8', 'Key Stage 5', 'EBacc', 'Pupil Census', 'Absence'],
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

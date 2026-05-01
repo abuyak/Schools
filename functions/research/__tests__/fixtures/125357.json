@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125357,
     "label": "independent-primary",
-    "capturedAt": "2026-05-01T06:38:29.422Z",
+    "capturedAt": "2026-05-01T06:56:49.676Z",
     "note": "Independent — no Ofsted, no DfE performance; ISI expected"
   },
   "input": "Micklefield School",
@@ -170,14 +170,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 198,
+      "totalTransactions": 159,
       "postcodesQueried": 100,
-      "medianAllTypes": "£350,000",
+      "medianAllTypes": "£450,000",
       "byType": {
         "Flat / Maisonette": "£290,000",
-        "Terraced": "£585,000",
-        "Detached": "£968,000",
-        "Semi-detached": "£840,000"
+        "Terraced": "£580,000",
+        "Detached": "£1,150,000",
+        "Semi-detached": "£780,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
