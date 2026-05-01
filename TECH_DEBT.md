@@ -237,3 +237,83 @@ The A9 section ("What it's like to be a pupil") is the most-read section by pare
 4. Add an `extractAllNarrative()` fallback that extracts the full inspection findings text when per-section extraction yields too little content
 
 **Done when:** A9 section consistently contains 500+ chars of pupil-experience narrative for Ofsted reports that include it, and pre-2019 reports are parsed correctly.
+
+---
+
+## TD-011 · Area dynamics — Prompt 3 should surface multi-year deprivation trends
+**Severity:** Medium — parents relocating to an area benefit from knowing whether it's improving or declining  
+**File:** `functions/research/govuk.js` → `getAreaData()` and branch 3 prompt
+
+**Problem:**  
+`getAreaData()` fetches the latest IMD year (2025 preferred, 2019 fallback) and returns a single decile snapshot. But `findthatpostcode.uk` returns IMD data for 2015, 2019, and 2025 — all three years are available. For SE16 7LP, the area shifted from decile 9 (2015/2019) to decile 10 (2025), with crime improving from decile 5 to 7 and housing from 5 to 7. This trajectory is valuable context for a parent considering a move.
+
+Prompt 3 (area/postcode search) currently has no concept of area dynamics. A parent asking "should we move to SE16?" gets a static snapshot when the trend is the more useful signal.
+
+**Fix:**
+1. `getAreaData()` should return `imdHistory`: an array of `{ year, decile, score, rank, subDomains }` for all available years
+2. `fmtAreaDataSlim()` should include a one-line trend summary: "IMD trajectory: improving (decile 9 → 10 since 2015)" or "stable at decile 10"
+3. Branch 3 prompt should include a section on area trajectory — is the area improving, stable, or declining across deprivation, crime, and housing sub-domains?
+4. Consider adding house-price trajectory too (Land Registry data already has 5 years of transactions — could show median price trend)
+
+**Done when:** Prompt 3 output includes an area trajectory section with multi-year IMD comparison, and the slim block shows the trend direction.
+
+---
+
+## TD-012 · University admissions data by school — Oxford source unclear, no automated refresh
+
+**Severity:** Medium — data will stale without periodic refresh, Oxford source URL unknown  
+**Files:** `sources/Oxford/oxford_admissions_merged.csv`, `sources/Cambridge/cambridge_admissions_merged.csv`  
+**Used by:** `web/evidence-data.js` (bundled inline), branch prompts (referenced as local file)
+
+**Problem:**
+School Scanner has per-school Oxford and Cambridge admissions data (applications, offers,
+accepts) covering 2006–2023. Cambridge publishes this data publicly at
+`undergraduate.study.cam.ac.uk/apply/statistics`. The Oxford source URL is unknown —
+the data format (UCAS School IDs, not DfE URNs) suggests it came from a FOI request or
+a UCAS data feed rather than Oxford's public spreadsheets. Oxford's public spreadsheets
+use DfE URNs and are at `ox.ac.uk/about/facts-and-figures/admissions-statistics` but
+the old `sites/files/oxford/` URLs are dead and the new site blocks automated requests
+(403).
+
+**Other universities:**
+| University | Source |
+|---|---|
+| Imperial | imperial.ac.uk/study/undergraduate/apply/admissions-statistics |
+| LSE | info.lse.ac.uk/staff/divisions/planning-division/undergraduate-admissions-statistics |
+| UCL | ucl.ac.uk/srs/governance-and-reporting/student-statistics |
+| Durham | durham.ac.uk/about/student-facts/undergraduate-admissions-statistics |
+| Warwick | warwick.ac.uk/services/aro/statistics/admissions |
+
+**Done when:**
+1. Oxford data source is identified and a URL/FOI reference is documented
+2. A `scripts/build-admissions-index.mjs` script fetches/converts the latest data from
+   each university and produces a bundled JSON file (like `build-isi-index.mjs` does for ISI)
+3. The bundled file replaces the CSV+inline-JS approach in `evidence-data.js`
+4. Annual refresh reminder is added to the June GitHub Issue (alongside DfE ethnicity update)
+
+---
+
+## TD-013 · Ingest EES subject-level exam data for per-subject entry tables
+
+**Severity:** Medium — adds per-subject entry lists to A5, currently missing  
+**File:** `functions/research/govuk.js` — new `getSubjectEntries(urn)` function  
+**Dataset:** `1ae39901-b462-df76-b108-640a078d7944` (Subject school level exam data)  
+**Publication:** Key stage 4 performance (`c8756008-ed50-4632-9b96-01b5ca002a43`)
+
+**Problem:**
+The DfE compare-school-performance website shows a "Subjects entered at key stage 4" table
+listing every subject and qualification type with entry counts. This data is in the EES
+dataset above but we don't fetch it. The dataset is at school level (SCH), not LA level —
+so it provides per-subject entry counts without LA/England comparators. Applies to ALL
+schools (state and independent).
+
+**EES dataset details:**
+- Dataset: `1ae39901-b462-df76-b108-640a078d7944`
+- Allowed location levels: EDA, INST, LA, LAD, LEP, LSIP, MAT, MCA, NAT, OA, PA, PCON, PFA, PROV, REG, RSC, SCH, SPON, WARD
+- Includes per-subject entry counts by qualification type (GCSE, other)
+- School identified by SCH code (not URN directly — needs mapping)
+
+**Done when:**
+1. School location code is mapped from URN
+2. Per-subject entry counts are rendered as a table in the A5 KS4 section
+3. Table shows: Subject | Qualification | Total entries
