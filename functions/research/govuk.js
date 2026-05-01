@@ -2760,14 +2760,9 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     { heading: "Progress 8", cols: "abgdnelE", rows: [
       { label: "Progress 8 score", var: "P8MEA", la: "p8", eng: '0.00' },
     ]},
-    { heading: "Grade 5+ English & Maths", cols: "abgdnelE", rows: [
+    { heading: "Grade 5+ and 4+ English & Maths", cols: "abgdnelE", rows: [
       { label: "% grade 5+ English & maths", var: "PTL2BASICS_95", la: "grade5Em", eng: String(nat4.PTL2BASICS_95) },
-    ]},
-    { heading: "Grade 4+ English & Maths", cols: "abgdnelE", rows: [
       { label: "% grade 4+ English & maths", var: "PTL2BASICS_94", eng: String(nat4.PTL2BASICS_94) },
-    ]},
-    { heading: "EBacc entry", cols: "abgdnelE", rows: [
-      { label: "% entering EBacc", var: "PTEBACC_E_PTQ_EE", eng: String(nat4.PTEBACC_E_PTQ_EE) },
     ]},
     { heading: "EBacc entry by subject", cols: "a", rows: [
       { label: "English", var: "PTEBACENG_E_PTQ_EE" },
@@ -2776,13 +2771,10 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       { label: "Humanities", var: "PTEBACHUM_E_PTQ_EE" },
       { label: "Languages", var: "PTEBACLAN_E_PTQ_EE" },
     ]},
-    { heading: "EBacc achievement (9-5)", cols: "abgdnelE", rows: [
+    { heading: "EBacc entry, achievement and APS", cols: "abgdnelE", rows: [
+      { label: "% entering EBacc", var: "PTEBACC_E_PTQ_EE", eng: String(nat4.PTEBACC_E_PTQ_EE) },
       { label: "% EBacc 5+", var: "PTEBACC_95" },
-    ]},
-    { heading: "EBacc achievement (9-4)", cols: "abgdnelE", rows: [
       { label: "% EBacc 4+", var: "PTEBACC_94", eng: String(nat4.PTEBACC_94) },
-    ]},
-    { heading: "EBacc average points score", cols: "abgdnelE", rows: [
       { label: "EBacc APS", var: "EBACCAPS" },
     ]},
     { heading: "Cohort characteristics", cols: "a", rows: [
