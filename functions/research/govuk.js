@@ -105,15 +105,28 @@ const NATIONAL_AVG = {
     MATPROG:                0.0,
   },
   // KS4 attainment 2024/25 (provisional, published Oct 2025)
-  // Source: https://explore-education-statistics.service.gov.uk/find-statistics/key-stage-4-attainment
+  // Source: https://www.compare-school-performance.service.gov.uk — verified May 2026
   KS4: {
     P8MEA:              0.00,  // Progress 8 — national average = 0 by definition
-    ATT8SCR:           46.4,   // Attainment 8 score
-    PTL2BASICS_95:     45.9,   // % achieving grade 5+ in English and maths
-    PTL2BASICS_94:     68.8,   // % achieving grade 4+ in English and maths
-    PTEBACC_E_PTQ_EE:  24.7,  // % entering EBacc
-    PTEBACC_94:        28.6,   // % achieving EBacc at grade 4+
+    ATT8SCR:           46.1,   // Attainment 8 score (was 46.4 — now 46.1)
+    PTL2BASICS_95:     45.4,   // % achieving grade 5+ in English and maths (was 45.9)
+    PTL2BASICS_94:     64.8,   // % achieving grade 4+ in English and maths (was 68.8)
+    PTEBACC_E_PTQ_EE:  40.5,   // % entering EBacc (was 24.7)
+    PTEBACC_94:        25.8,   // % achieving EBacc at grade 4+ (was 28.6)
     P8MEA_FSM6CLA1A:  -0.58,  // Progress 8 for disadvantaged pupils
+    PTEBACC_95:        18.7,   // % achieving EBacc at grade 5+ (was missing)
+    // Per-subject grade 5+ (England state-funded)
+    EBACC_ENG_95:      60.4,   // English at grade 5+
+    EBACC_MAT_95:      51.2,   // Maths at grade 5+
+    EBACC_SCI_95:      47.9,   // Science at grade 5+
+    EBACC_HUM_95:      51.3,   // Humanities at grade 5+
+    EBACC_LAN_95:      60.7,   // Languages at grade 5+
+    // Per-subject grade 4+ (England state-funded)
+    EBACC_ENG_94:      74.3,   // English at grade 4+
+    EBACC_MAT_94:      69.8,   // Maths at grade 4+
+    EBACC_SCI_94:      65.8,   // Science at grade 4+
+    EBACC_HUM_94:      63.5,   // Humanities at grade 4+
+    EBACC_LAN_94:      73.1,   // Languages at grade 4+
   },
   // KS5 / 16–18 attainment 2024/25 — England state-funded schools/colleges
   // Source: https://www.compare-school-performance.service.gov.uk/download-data (16 to 18 tab)
@@ -1519,6 +1532,8 @@ export async function getLAPerformanceKS4(laCode) {
   params.append('indicators', 'HPhzL');  // % grade 4+ English and maths
   params.append('indicators', 'UZ5RF');  // % entering EBacc
   params.append('indicators', '4c9UZ');  // EBacc average points score
+  params.append('indicators', 'u2bo4');  // % achieving EBacc at grade 5+
+  params.append('indicators', 'CpmId');  // % achieving EBacc at grade 4+
 
   const url = `${EES_BASE}/data-sets/${EES_KS4_LA_DATASET}/query?${params}`;
   const data = await safeFetchJson(url);
@@ -1539,6 +1554,8 @@ export async function getLAPerformanceKS4(laCode) {
     grade4Em:  clean(vals['HPhzL']),
     ebaccEntry: clean(vals['UZ5RF']),
     ebaccAPS:  clean(vals['4c9UZ']),
+    ebacc5:    clean(vals['u2bo4']),
+    ebacc4:    clean(vals['CpmId']),
   };
 
   if (!result.att8 && !result.p8 && !result.grade5Em) {
@@ -2783,8 +2800,8 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     ]},
     { heading: "EBacc entry, achievement and APS", cols: "abgdnelE", rows: [
       { label: "% entering EBacc", var: "PTEBACC_E_PTQ_EE", la: "ebaccEntry", eng: String(nat4.PTEBACC_E_PTQ_EE) },
-      { label: "% EBacc 5+", var: "PTEBACC_95" },
-      { label: "% EBacc 4+", var: "PTEBACC_94", eng: String(nat4.PTEBACC_94) },
+      { label: "% EBacc 5+", var: "PTEBACC_95", la: "ebacc5", eng: String(nat4.PTEBACC_95) },
+      { label: "% EBacc 4+", var: "PTEBACC_94", la: "ebacc4", eng: String(nat4.PTEBACC_94) },
       { label: "EBacc APS", var: "EBACCAPS", la: "ebaccAPS" },
     ]},
     { heading: "Post-16 destinations (2023 leavers)", cols: "a", rows: [
