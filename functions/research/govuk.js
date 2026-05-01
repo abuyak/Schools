@@ -3710,14 +3710,14 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       const area = detailed && postcode ? await getAreaData(postcode) : null;
 
       // Phase 4: LA-level performance averages from EES API
-      // Uses ONS LA code captured from postcodes.io → area.laCode.
-      // Primary: KS2 averages. Secondary/all-through: KS4 averages.
-      const isPrimary = /primary|junior|infant|middle.*primary/i.test(identity?.phase ?? '');
-      const isSecondary = /secondary|all.through/i.test(identity?.phase ?? '');
+      // Determined by what data the school actually has, not the phase label
+      // (independent schools often have KS4 data but phase is "Not applicable")
+      const hasKS2 = Object.keys(performance ?? {}).some(k => k.startsWith('KS2'));
+      const hasKS4 = Object.keys(performance ?? {}).some(k => k.startsWith('KS4'));
       const laPerf = detailed && area?.laCode
-        ? (isPrimary
+        ? (hasKS2
             ? await getLAPerformanceKS2(area.laCode).catch(() => null)
-            : isSecondary
+            : hasKS4
               ? await getLAPerformanceKS4(area.laCode).catch(() => null)
               : null)
         : null;

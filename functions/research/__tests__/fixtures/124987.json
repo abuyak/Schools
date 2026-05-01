@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 124987,
     "label": "state-infant",
-    "capturedAt": "2026-05-01T13:42:00.622Z",
+    "capturedAt": "2026-05-01T15:39:41.515Z",
     "note": "KS1 only — no KS2/KS4/KS5 data expected"
   },
   "input": "Earlswood Infant and Nursery School",
@@ -297,13 +297,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 293,
+      "totalTransactions": 244,
       "postcodesQueried": 100,
-      "medianAllTypes": "£440,000",
+      "medianAllTypes": "£425,000",
       "byType": {
-        "Semi-detached": "£487,500",
-        "Terraced": "£420,000",
-        "Flat / Maisonette": "£255,000",
+        "Semi-detached": "£485,500",
+        "Terraced": "£405,000",
+        "Flat / Maisonette": "£275,000",
         "Detached": "£546,500"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -362,50 +362,7 @@
       }
     }
   },
-  "laPerf": {
-    "rwm": {
-      "yr25": {
-        "expected": "65",
-        "higher": "11",
-        "avgScore": null
-      }
-    },
-    "reading": {
-      "yr25": {
-        "expected": null,
-        "higher": null,
-        "avgScore": "107"
-      }
-    },
-    "writing": {
-      "yr25": {
-        "expected": null,
-        "higher": null,
-        "avgScore": null
-      }
-    },
-    "maths": {
-      "yr25": {
-        "expected": null,
-        "higher": null,
-        "avgScore": "105"
-      }
-    },
-    "gps": {
-      "yr25": {
-        "expected": "77",
-        "higher": "35",
-        "avgScore": "107"
-      }
-    },
-    "science": {
-      "yr25": {
-        "expected": "85",
-        "higher": null,
-        "avgScore": null
-      }
-    }
-  },
+  "laPerf": null,
   "schoolEthnicity": {
     "w": 62,
     "m": 8,
