@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 145217,
     "label": "state-secondary",
-    "capturedAt": "2026-05-01T21:04:16.356Z",
+    "capturedAt": "2026-05-01T22:03:46.499Z",
     "note": "KS4 only — Attainment 8, Progress 8, EBacc"
   },
   "input": "Reigate School",
@@ -1926,14 +1926,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 214,
+      "totalTransactions": 273,
       "postcodesQueried": 100,
-      "medianAllTypes": "£465,000",
+      "medianAllTypes": "£445,000",
       "byType": {
-        "Semi-detached": "£482,000",
-        "Terraced": "£445,000",
-        "Flat / Maisonette": "£240,000",
-        "Detached": "£850,000"
+        "Semi-detached": "£480,000",
+        "Terraced": "£430,000",
+        "Flat / Maisonette": "£255,000",
+        "Detached": "£805,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },

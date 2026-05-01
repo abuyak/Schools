@@ -3072,7 +3072,7 @@ const KS5_TOPICS = [
       };
 
       rows.push(`| ${g.label} | ${fmt(s23, g.isPct)} | ${fmt(s24, g.isPct)} | ${fmt(s25, g.isPct)} |`);
-      rows.push(`| _Local Authority_ | ${laVal('yr23')} | ${laVal('yr24')} | ${laVal('yr25')} |`);
+      rows.push(`| Local Authority | ${laVal('yr23')} | ${laVal('yr24')} | ${laVal('yr25')} |`);
     }
 
     if (rows.length) {
