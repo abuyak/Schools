@@ -1512,10 +1512,13 @@ export async function getLAPerformanceKS4(laCode) {
   // Filter: Disadvantaged status = Total (all pupils)
   params.append('filters.in', 'uRBo4');   // Filter group: Disadvantaged status
   params.append('filters.in', 'bVOtT');   // Filter option: Total
-  // Indicators: Attainment 8, Progress 8, grade 5+ EM
+  // Indicators — mapped from DfE compare-school-performance website
   params.append('indicators', 'S9YVx');  // Average Attainment 8 score
   params.append('indicators', 'OvpCL');  // Average Progress 8 score
   params.append('indicators', 'kxGhs');  // % grade 5+ English and maths
+  params.append('indicators', 'HPhzL');  // % grade 4+ English and maths
+  params.append('indicators', 'UZ5RF');  // % entering EBacc
+  params.append('indicators', '4c9UZ');  // EBacc average points score
 
   const url = `${EES_BASE}/data-sets/${EES_KS4_LA_DATASET}/query?${params}`;
   const data = await safeFetchJson(url);
@@ -1530,9 +1533,12 @@ export async function getLAPerformanceKS4(laCode) {
   const clean = (v) => (v && v !== 'z' && v !== 'x' && v !== 'c') ? String(v) : null;
 
   const result = {
-    att8:    clean(vals['S9YVx']),
-    p8:      clean(vals['OvpCL']),
-    grade5Em: clean(vals['kxGhs']),
+    att8:      clean(vals['S9YVx']),
+    p8:        clean(vals['OvpCL']),
+    grade5Em:  clean(vals['kxGhs']),
+    grade4Em:  clean(vals['HPhzL']),
+    ebaccEntry: clean(vals['UZ5RF']),
+    ebaccAPS:  clean(vals['4c9UZ']),
   };
 
   if (!result.att8 && !result.p8 && !result.grade5Em) {
@@ -2765,7 +2771,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     { heading: "Grade 5+ and 4+ English & Maths", cols: "abgdnelE", rows: [
       { label: "% grade 5+ English & maths", var: "PTL2BASICS_95", la: "grade5Em", eng: String(nat4.PTL2BASICS_95),
         colVars: { '_FSM6CLA1A': 'PTFSM6CLA1ABASICS_95', '_NOTFSM6CLA1A': 'PTNOTFSM6CLA1ABASICS_95', '_EAL': 'PTL2BASICSEAL_95' } },
-      { label: "% grade 4+ English & maths", var: "PTL2BASICS_94", eng: String(nat4.PTL2BASICS_94),
+      { label: "% grade 4+ English & maths", var: "PTL2BASICS_94", la: "grade4Em", eng: String(nat4.PTL2BASICS_94),
         colVars: { '_FSM6CLA1A': 'PTFSM6CLA1ABASICS_94', '_NOTFSM6CLA1A': 'PTNOTFSM6CLA1ABASICS_94', '_EAL': 'PTL2BASICSEAL_94' } },
     ]},
     { heading: "EBacc entry by subject", cols: "a", rows: [
@@ -2776,10 +2782,10 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       { label: "Languages", var: "PTEBACLAN_E_PTQ_EE" },
     ]},
     { heading: "EBacc entry, achievement and APS", cols: "abgdnelE", rows: [
-      { label: "% entering EBacc", var: "PTEBACC_E_PTQ_EE", eng: String(nat4.PTEBACC_E_PTQ_EE) },
+      { label: "% entering EBacc", var: "PTEBACC_E_PTQ_EE", la: "ebaccEntry", eng: String(nat4.PTEBACC_E_PTQ_EE) },
       { label: "% EBacc 5+", var: "PTEBACC_95" },
       { label: "% EBacc 4+", var: "PTEBACC_94", eng: String(nat4.PTEBACC_94) },
-      { label: "EBacc APS", var: "EBACCAPS" },
+      { label: "EBacc APS", var: "EBACCAPS", la: "ebaccAPS" },
     ]},
     { heading: "Post-16 destinations (2023 leavers)", cols: "a", rows: [
       { label: "% sustained education or employment", var: "OVERALL_DESTPER" },
@@ -2935,7 +2941,7 @@ const KS5_TOPICS = [
       if (showLa) {
         if (row.la) {
           const laVal = la(row.la);
-          const isPlain = row.la.includes('Score') || row.la === 'att8' || row.la === 'p8';
+          const isPlain = row.la.includes('Score') || row.la === 'att8' || row.la === 'p8' || row.la === 'ebaccAPS';
           cells.push(isPlain ? laVal : laPct(row.la));
         } else {
           cells.push('—');
