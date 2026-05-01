@@ -187,22 +187,22 @@ async function captureOne(school) {
   if (area) ok(`Area: IMD ${area.imd?.imdDecile ?? '—'}/10 · income £${area.crystalRoof?.income?.meanAnnualHouseholdIncome ?? '—'}`);
   else nil(`Area not retrieved (postcode: ${csvPostcode ?? 'not in CSV'})`);
 
-  // 6. LA performance KS2 (primary schools only)
-  const isPrimary = /primary|junior|infant|middle.*primary/i.test(identity.phase ?? '');
-  const isSecondary = /secondary|all.through/i.test(identity.phase ?? '');
+  // 6. LA performance data — based on what data the school has, not phase label
+  const hasKS2 = Object.keys(performance ?? {}).some(k => k.startsWith('KS2'));
+  const hasKS4 = Object.keys(performance ?? {}).some(k => k.startsWith('KS4'));
   const laCode = area?.laCode ?? null;
-  const laPerf = isPrimary && laCode
+  const laPerf = hasKS2 && laCode
     ? await getLAPerformanceKS2(laCode).catch(() => null)
-    : isSecondary && laCode
+    : hasKS4 && laCode
       ? await getLAPerformanceKS4(laCode).catch(() => null)
       : null;
   if (laPerf) {
     if (laPerf.att8 !== undefined) ok(`LA KS4: att8 ${laPerf.att8 ?? '—'}  p8 ${laPerf.p8 ?? '—'}  grade5Em ${laPerf.grade5Em ?? '—'}`);
     else if (laPerf.rwm) ok(`LA KS2: RWM exp ${laPerf.rwm?.expected ?? '—'}%  higher ${laPerf.rwm?.higher ?? '—'}%`);
-  } else if (isPrimary || isSecondary) {
-    nil(`LA ${isPrimary ? 'KS2' : 'KS4'}: not retrieved (laCode: ${laCode ?? 'missing'})`);
+  } else if ((hasKS2 || hasKS4) && laCode) {
+    nil(`LA ${hasKS2 ? 'KS2' : 'KS4'}: not retrieved (laCode: ${laCode})`);
   } else {
-    nil('LA: not a primary or secondary school');
+    nil(`LA: not available (no KS data or no laCode)`);
   }
 
   // 9. Local ethnicity index
