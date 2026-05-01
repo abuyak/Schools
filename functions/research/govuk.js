@@ -3795,9 +3795,12 @@ export function computeFlags(school) {
   if (/outstanding|exceptional/i.test(overall))              flags['A2. Ofsted Inspection Grades'] = 'green';
   else if (/requires improvement|inadequate/i.test(overall)) flags['A2. Ofsted Inspection Grades'] = 'red';
 
-  // A3 — improvement requirements: content present = red, Outstanding + none = green
-  if (ofsted?.nextSteps)                  flags['A3. What the School Needs to Improve'] = 'red';
-  else if (/outstanding/i.test(overall))  flags['A3. What the School Needs to Improve'] = 'green';
+  // A3 — improvement requirements: content present = red, Outstanding/none = green
+  // ISI "recommendations" in Excellent reports are minor suggestions ("might wish"),
+  // not formal improvement requirements — treat as green
+  const nextStepsMinor = ofsted?.nextSteps && /might wish/i.test(ofsted.nextSteps);
+  if (ofsted?.nextSteps && !nextStepsMinor) flags['A3. What the School Needs to Improve'] = 'red';
+  else if (/outstanding|exceptional/i.test(overall) || nextStepsMinor) flags['A3. What the School Needs to Improve'] = 'green';
 
   // A4 — pupil census: high FSM or EHC
   const fsmPct = parseFloat(vv('PNUMFSMEVER') ?? '');
