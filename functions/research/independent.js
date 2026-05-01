@@ -376,8 +376,11 @@ function extractISIKeyFindings(text) {
   return raw
     .replace(/^Key findings\s*\n?/im, '')   // Strip "Key findings" heading
     .replace(/\b\d+\.\d+\s*/g, '')          // Strip paragraph numbers like "3.1"
-    .replace(/[-]/g, '- ')               // Strip PDF Private Use Area bullet glyphs
+    .replace(/[-]/g, '')                 // Strip PDF Private Use Area bullet glyphs
     .replace(/\n{3,}/g, '\n\n')             // Collapse multiple blank lines
+    .replace(/[ \t]+$/gm, '')               // Trim trailing whitespace per line
+    .replace(/([^\n])\n([^\n])/g, '$1 $2')  // Rejoin broken lines within paragraphs
+    .replace(/[ \t]{2,}/g, ' ')             // Collapse multiple spaces
     .trim();
 }
 
@@ -395,8 +398,11 @@ function extractISIRecommendations(text) {
   return raw
     .replace(/^Recommendation\s*\n?/im, '')  // Strip "Recommendation" heading
     .replace(/\b\d+\.\d+\s*/g, '')            // Strip paragraph numbers like "3.3"
-    .replace(/[-]/g, '- ')                 // Strip PDF Private Use Area bullet glyphs
+    .replace(/[-]/g, '')                   // Strip PDF Private Use Area bullet glyphs
     .replace(/\n{3,}/g, '\n\n')               // Collapse multiple blank lines
+    .replace(/[ \t]+$/gm, '')                 // Trim trailing whitespace per line
+    .replace(/([^\n])\n([^\n])/g, '$1 $2')    // Rejoin broken lines within paragraphs
+    .replace(/[ \t ]{2,}/g, ' ')         // Collapse multiple spaces (incl. non-breaking)
     .trim();
 }
 
