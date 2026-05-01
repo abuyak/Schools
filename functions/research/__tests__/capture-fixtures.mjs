@@ -21,7 +21,6 @@ import {
   extractLocationHints,
   getGIASDetails,
   getOfstedData,
-  fetchAndParseOfstedPdf,
   getPerformanceData,
   getFinancialData,
   getAreaData,
@@ -149,15 +148,9 @@ async function captureOne(school) {
     else nil('Ofsted not retrieved');
   }
 
-  // 4. PDF + graded PDF (for sub-grade fallback) + performance + financial — in parallel
-  // Independent schools: ISI PDF already parsed by getISIInspection (narrative is in ofstedBase)
-  const [pdfSections, gradedPdfSections, performance, financial] = await Promise.all([
-    (!identity.isIndependent && ofstedBase?.reportUrl)
-      ? fetchAndParseOfstedPdf(ofstedBase.reportUrl).catch(() => null)
-      : Promise.resolve(null),
-    (!identity.isIndependent && ofstedBase?.gradedReportUrl)
-      ? fetchAndParseOfstedPdf(ofstedBase.gradedReportUrl).catch(() => null)
-      : Promise.resolve(null),
+  // 4. Performance + financial — in parallel
+  // Ofsted PDF fetch and sub-grade merge is now handled inside getOfstedData/getISIInspection.
+  const [performance, financial] = await Promise.all([
     getPerformanceData(urn).catch(() => null),
     identity.isIndependent ? Promise.resolve(null) : getFinancialData(urn).catch(() => null),
   ]);
@@ -165,9 +158,8 @@ async function captureOne(school) {
   if (identity.isIndependent) {
     if (ofstedBase?.keyFindings) ok(`ISI key findings: ${ofstedBase.keyFindings.length} chars`);
     else nil('ISI key findings not extracted');
-    nil('PDF: ISI narrative already in ofstedBase (not separate pdfSections)');
-  } else if (pdfSections) {
-    ok(`PDF: pupilExperience ${pdfSections.pupilExperience?.length ?? 0} chars`);
+  } else if (ofstedBase?.pupilExperience) {
+    ok(`PDF: pupilExperience ${ofstedBase.pupilExperience.length} chars`);
   } else {
     nil('PDF not parsed');
   }
@@ -206,35 +198,10 @@ async function captureOne(school) {
   if (schoolEthnicity) ok(`Ethnicity index: W${schoolEthnicity.w}% A${schoolEthnicity.a}% B${schoolEthnicity.b}%`);
   else nil('Ethnicity index: URN not in bundle');
 
-  // 8. Assemble ofsted object (mirrors fetchGovDataForPrompt)
-  // For independent schools, ISI data already includes narrative fields.
-  // For state schools, merge the Ofsted PDF sections and graded PDF sub-grades.
-  const pdfSg  = pdfSections?.pdfSubGrades ?? null;
-  const gpdfSg = gradedPdfSections?.pdfSubGrades ?? null;
-  const bestSg = gpdfSg ?? pdfSg;  // graded PDF sub-grades are most complete
-
+  // 8. Ofsted object is now fully enriched by getOfstedData/getISIInspection.
   const ofsted = identity.isIndependent
-    ? ofstedBase  // ISI data is self-contained
-    : ofstedBase ? {
-        ...ofstedBase,
-        // Sub-grades: HTML first, graded PDF second, main PDF last
-        qualityOfEducation:            ofstedBase.qualityOfEducation          ?? bestSg?.qualityOfEducation   ?? null,
-        behaviour:                     ofstedBase.behaviour                   ?? bestSg?.behaviour            ?? null,
-        personalDevelopment:           ofstedBase.personalDevelopment         ?? bestSg?.personalDevelopment  ?? null,
-        leadership:                    ofstedBase.leadership                  ?? bestSg?.leadership           ?? null,
-        sixthForm:                     ofstedBase.sixthForm                   ?? bestSg?.sixthForm            ?? null,
-        achievement:                   ofstedBase.achievement                 ?? bestSg?.achievement          ?? null,
-        // PDF narrative sections
-        pupilExperience:               pdfSections?.pupilExperience         ?? null,
-        qualityOfEducationDetail:      pdfSections?.qualityOfEducation      ?? null,
-        behaviourAndAttitudesDetail:   pdfSections?.behaviourAndAttitudes   ?? null,
-        personalDevelopmentDetail:     pdfSections?.personalDevelopment     ?? null,
-        leadershipAndManagementDetail: pdfSections?.leadershipAndManagement ?? null,
-        achievementDetail:             pdfSections?.achievement             ?? null,
-        inclusionDetail:               pdfSections?.inclusion               ?? null,
-        nextSteps:                     pdfSections?.nextSteps               ?? null,
-        parentView:                    null,
-      } : null;
+    ? ofstedBase  // ISI data is self-contained (enriched inside getISIInspection)
+    : ofstedBase; // Ofsted data is already enriched with PDFs inside getOfstedData
 
   const schoolObj = { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails };
 
