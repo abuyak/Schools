@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 100065,
     "label": "independent-all-through",
-    "capturedAt": "2026-05-01T08:02:32.275Z",
+    "capturedAt": "2026-05-01T09:01:58.833Z",
     "note": "Independent all-through — broadest independent case"
   },
   "input": "University College School",
@@ -1123,11 +1123,11 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 172,
+      "totalTransactions": 176,
       "postcodesQueried": 100,
-      "medianAllTypes": "£1,230,000",
+      "medianAllTypes": "£1,110,000",
       "byType": {
-        "Flat / Maisonette": "£1,090,000",
+        "Flat / Maisonette": "£950,000",
         "Semi-detached": "£6,050,000",
         "Detached": "£4,850,000",
         "Terraced": "£2,625,000"
