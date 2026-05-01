@@ -25,6 +25,7 @@ import {
   getFinancialData,
   getAreaData,
   getLAPerformanceKS2,
+  getLAPerformanceKS4,
   buildSlimBlock,
 } from '../govuk.js';
 
@@ -180,17 +181,20 @@ async function captureOne(school) {
 
   // 6. LA performance KS2 (primary schools only)
   const isPrimary = /primary|junior|infant|middle.*primary/i.test(identity.phase ?? '');
+  const isSecondary = /secondary|all.through/i.test(identity.phase ?? '');
   const laCode = area?.laCode ?? null;
   const laPerf = isPrimary && laCode
     ? await getLAPerformanceKS2(laCode).catch(() => null)
-    : null;
+    : isSecondary && laCode
+      ? await getLAPerformanceKS4(laCode).catch(() => null)
+      : null;
   if (laPerf) {
-    const rwm = laPerf.rwm;
-    ok(`LA KS2: RWM exp ${rwm?.expected ?? '—'}%  higher ${rwm?.higher ?? '—'}%  (laCode: ${laCode})`);
-  } else if (!isPrimary) {
-    nil('LA KS2: not a primary school');
+    if (laPerf.att8 !== undefined) ok(`LA KS4: att8 ${laPerf.att8 ?? '—'}  p8 ${laPerf.p8 ?? '—'}  grade5Em ${laPerf.grade5Em ?? '—'}`);
+    else if (laPerf.rwm) ok(`LA KS2: RWM exp ${laPerf.rwm?.expected ?? '—'}%  higher ${laPerf.rwm?.higher ?? '—'}%`);
+  } else if (isPrimary || isSecondary) {
+    nil(`LA ${isPrimary ? 'KS2' : 'KS4'}: not retrieved (laCode: ${laCode ?? 'missing'})`);
   } else {
-    nil(`LA KS2: not retrieved (laCode: ${laCode ?? 'missing'})`);
+    nil('LA: not a primary or secondary school');
   }
 
   // 9. Local ethnicity index
