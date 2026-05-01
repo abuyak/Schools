@@ -2847,7 +2847,7 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
 const KS5_TOPICS = [
     {
       heading: 'A-level attainment',
-      cols: 'all',
+      cols: 'aE',
       rows: [
         { label: 'Total 16–18 students', var: 'TALLPUP_1618' },
         { label: 'A-level students', var: 'TALLPUP_ALEV_1618' },
@@ -2859,7 +2859,7 @@ const KS5_TOPICS = [
     },
     {
       heading: 'A-level progress',
-      cols: 'all',
+      cols: 'aE',
       rows: [
         { label: 'Progress score (VA)', var: 'VA_INS_ALEV', ciLo: 'LCI_INS_ALEV', ciHi: 'UCI_INS_ALEV', eng: '0' },
         { label: 'Progress band', var: 'PROGRESS_BAND_ALEV' },
@@ -2867,7 +2867,7 @@ const KS5_TOPICS = [
     },
     {
       heading: 'A-level value-added — disadvantaged',
-      cols: 'all',
+      cols: 'a',
       rows: [
         { label: 'Disadvantaged students', var: 'TALLPUP_ALEV_1618_DIS' },
         { label: 'Average grade (disadvantaged)', var: 'TALLPPEGRD_ALEV_DIS' },
@@ -2877,11 +2877,11 @@ const KS5_TOPICS = [
     },
     {
       heading: 'Facilitating subjects & destinations',
-      cols: 'all',
+      cols: 'aE',
       rows: [
         { label: '% AAB in ≥2 facilitating subjects', var: 'PTAAB_2FAC' },
-        { label: '% achieving advanced maths', var: 'L3M_PER' },
-        { label: '% retained to end of course', var: 'PT_RETAINED_ALEV_RET' },
+        { label: '% achieving advanced maths', var: 'L3M_PER', eng: String(nat5.advMaths) },
+        { label: '% retained to end of course', var: 'PT_RETAINED_ALEV_RET', eng: String(nat5.retained) },
         { label: '% to higher education', var: 'TOT_HEPER' },
         { label: '% to any sustained destination', var: 'ALL_PROGRESSED' },
       ],

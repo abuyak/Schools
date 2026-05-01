@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 137648,
     "label": "state-primary",
-    "capturedAt": "2026-05-01T22:03:39.909Z",
+    "capturedAt": "2026-05-01T22:15:29.676Z",
     "note": "KS1 + KS2 — largest data set for primary"
   },
   "input": "Redriff Primary",
@@ -980,11 +980,11 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 328,
+      "totalTransactions": 213,
       "postcodesQueried": 100,
-      "medianAllTypes": "£520,000",
+      "medianAllTypes": "£499,950",
       "byType": {
-        "Flat / Maisonette": "£457,000",
+        "Flat / Maisonette": "£450,000",
         "Terraced": "£690,000",
         "Semi-detached": "£675,000"
       },
