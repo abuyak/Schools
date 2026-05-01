@@ -3038,11 +3038,11 @@ const KS5_TOPICS = [
 
   function renderKS4Timeseries() {
     const groups = [
-      { heading: 'Attainment 8 Score', base: 'ATT8SCR', isPct: false },
-      { heading: 'Progress 8 Score', base: 'P8MEA', isPct: false },
-      { heading: 'Grade 5+ English & Maths', base: 'PTL2BASICS_95', isPct: true },
-      { heading: 'Grade 4+ English & Maths', base: 'PTL2BASICS_94', isPct: true },
-      { heading: 'EBacc Entry', base: 'PTEBACC_E_PTQ_EE', isPct: true },
+      { label: 'Attainment 8 Score', base: 'ATT8SCR', isPct: false },
+      { label: 'Progress 8 Score', base: 'P8MEA', isPct: false },
+      { label: 'Grade 5+ English & Maths', base: 'PTL2BASICS_95', isPct: true },
+      { label: 'Grade 4+ English & Maths', base: 'PTL2BASICS_94', isPct: true },
+      { label: 'EBacc Entry', base: 'PTEBACC_E_PTQ_EE', isPct: true },
     ];
 
     const fmt = (val, isPct) => {
@@ -3051,26 +3051,21 @@ const KS5_TOPICS = [
       return suppressed(s) ? '—' : s + (isPct ? '%' : '');
     };
 
-    let hasAny = false;
-    const out = [];
-
+    const rows = [];
     for (const g of groups) {
       const s25 = v(g.base);
       const s24 = v(g.base + '_PREV');
       const s23 = v(g.base + '_PREV2');
       if (suppressed(s25) && suppressed(s24) && suppressed(s23)) continue;
-      hasAny = true;
-      out.push('');
-      out.push(`**${g.heading}**`);
-      out.push('| | 2023 final | 2024 final | 2025 final |');
-      out.push('|---|---:|---:|---:|');
-      out.push(`| School | ${fmt(s23, g.isPct)} | ${fmt(s24, g.isPct)} | ${fmt(s25, g.isPct)} |`);
+      rows.push(`| ${g.label} | ${fmt(s23, g.isPct)} | ${fmt(s24, g.isPct)} | ${fmt(s25, g.isPct)} |`);
     }
 
-    if (hasAny) {
+    if (rows.length) {
       lines.push('');
       lines.push('**Results over time**');
-      lines.push(...out);
+      lines.push('| | 2023 final | 2024 final | 2025 final |');
+      lines.push('|---|---:|---:|---:|');
+      lines.push(...rows);
     }
   }
 
