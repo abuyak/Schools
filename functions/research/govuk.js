@@ -2785,20 +2785,6 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
     { heading: "EBacc average points score", cols: "abgdnelE", rows: [
       { label: "EBacc APS", var: "EBACCAPS" },
     ]},
-    { heading: "EBacc subject achievement (9-4)", cols: "a", rows: [
-      { label: "English 9-4", var: "PTEBACENG_94" },
-      { label: "Maths 9-4", var: "PTEBACMAT_94" },
-      { label: "Science 9-4", var: "PTEBAC2SCI_94" },
-      { label: "Humanities 9-4", var: "PTEBACHUM_94" },
-      { label: "Languages 9-4", var: "PTEBACLAN_94" },
-    ]},
-    { heading: "EBacc subject achievement (9-5)", cols: "a", rows: [
-      { label: "English 9-5", var: "PTEBACENG_95" },
-      { label: "Maths 9-5", var: "PTEBACMAT_95" },
-      { label: "Science 9-5", var: "PTEBAC2SCI_95" },
-      { label: "Humanities 9-5", var: "PTEBACHUM_95" },
-      { label: "Languages 9-5", var: "PTEBACLAN_95" },
-    ]},
     { heading: "Cohort characteristics", cols: "a", rows: [
       { label: "Pupils at end of KS4", var: "TPUP" },
       { label: "% boys", var: "PBPUP" },
@@ -3023,6 +3009,68 @@ const KS5_TOPICS = [
     }
   }
 
+  // ── EBacc subject achievement (9-4 and 9-5 combined table) ─────────────
+
+  function renderEBaccSubjects() {
+    const subjects = [
+      { label: 'English',    v94: 'PTEBACENG_94',  v95: 'PTEBACENG_95' },
+      { label: 'Maths',      v94: 'PTEBACMAT_94',  v95: 'PTEBACMAT_95' },
+      { label: 'Science',    v94: 'PTEBAC2SCI_94', v95: 'PTEBAC2SCI_95' },
+      { label: 'Humanities', v94: 'PTEBACHUM_94',  v95: 'PTEBACHUM_95' },
+      { label: 'Languages',  v94: 'PTEBACLAN_94',  v95: 'PTEBACLAN_95' },
+    ];
+    const rows = subjects.filter(s => !suppressed(v(s.v94)) || !suppressed(v(s.v95)));
+    if (!rows.length) return;
+
+    lines.push('');
+    lines.push('**EBacc subject achievement**');
+    lines.push('| Category | 9-4 | 9-5 |');
+    lines.push('|---|---:|---:|');
+    for (const s of rows) {
+      lines.push(`| ${s.label} | ${c(v(s.v94))} | ${c(v(s.v95))} |`);
+    }
+  }
+
+  // ── KS4 timeseries — results over time ──────────────────────────────────
+
+  function renderKS4Timeseries() {
+    const groups = [
+      { heading: 'Attainment 8 Score', base: 'ATT8SCR', isPct: false },
+      { heading: 'Progress 8 Score', base: 'P8MEA', isPct: false },
+      { heading: 'Grade 5+ English & Maths', base: 'PTL2BASICS_95', isPct: true },
+      { heading: 'Grade 4+ English & Maths', base: 'PTL2BASICS_94', isPct: true },
+      { heading: 'EBacc Entry', base: 'PTEBACC_E_PTQ_EE', isPct: true },
+    ];
+
+    const fmt = (val, isPct) => {
+      if (val == null) return '—';
+      const s = String(val).trim().replace(/%$/, '');
+      return suppressed(s) ? '—' : s + (isPct ? '%' : '');
+    };
+
+    let hasAny = false;
+    const out = [];
+
+    for (const g of groups) {
+      const s25 = v(g.base);
+      const s24 = v(g.base + '_PREV');
+      const s23 = v(g.base + '_PREV2');
+      if (suppressed(s25) && suppressed(s24) && suppressed(s23)) continue;
+      hasAny = true;
+      out.push('');
+      out.push(`**${g.heading}**`);
+      out.push('| | 2023 final | 2024 final | 2025 final |');
+      out.push('|---|---:|---:|---:|');
+      out.push(`| School | ${fmt(s23, g.isPct)} | ${fmt(s24, g.isPct)} | ${fmt(s25, g.isPct)} |`);
+    }
+
+    if (hasAny) {
+      lines.push('');
+      lines.push('**Results over time**');
+      lines.push(...out);
+    }
+  }
+
   // ── Timeseries renderer — results over time ──────────────────────────────
 
   function renderTimeseries() {
@@ -3096,6 +3144,8 @@ const KS5_TOPICS = [
     lines.push('');
     lines.push('**Key Stage 4 (2024/25)**');
     for (const topic of KS4_TOPICS) renderTopic(topic, 'KS4');
+    renderEBaccSubjects();
+    renderKS4Timeseries();
   }
 
   if (hasKS5) {
