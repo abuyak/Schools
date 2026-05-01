@@ -2572,7 +2572,7 @@ function govLinks(urn) {
  * Picks ~15 high-signal variables by code rather than dumping all rows.
  * Covers KS2 (primary), KS4 (secondary), plus pupil census and absence for all.
  */
-function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false) {
+function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false, isIndependent = false) {
 
   if (!perf) return '_Not retrieved_';
 
@@ -3148,12 +3148,20 @@ const KS5_TOPICS = [
 
   // ── Render key stages ─────────────────────────────────────────────────────
 
+  // Independent schools: strip Disadv/Not Disadv/EAL columns (always —)
+  const indCols = (topic) => {
+    if (!isIndependent) return topic;
+    if (topic.cols === 'a' || topic.cols === 'all') return topic;
+    const stripped = topic.cols.replace(/[dne]/g, '');
+    return stripped === topic.cols ? topic : { ...topic, cols: stripped };
+  };
+
   if (hasKS2) {
     lines.push('**Key Stage 2 (2024/25)**');
     lines.push('');
     lines.push('*Reading, Maths and Grammar/Punctuation/Spelling are SATs-tested. Writing and Science are Teacher Assessed.*');
-    for (const topic of KS2_TOPICS) renderTopic(topic, 'KS2');
-    for (const topic of KS2_EXTRA_TOPICS) renderTopic(topic, 'KS2');
+    for (const topic of KS2_TOPICS) renderTopic(indCols(topic), 'KS2');
+    for (const topic of KS2_EXTRA_TOPICS) renderTopic(indCols(topic), 'KS2');
     renderProgress();
     renderTimeseries();
   }
@@ -3161,7 +3169,7 @@ const KS5_TOPICS = [
   if (hasKS4) {
     lines.push('');
     lines.push('**Key Stage 4 (2024/25)**');
-    for (const topic of KS4_TOPICS) renderTopic(topic, 'KS4');
+    for (const topic of KS4_TOPICS) renderTopic(indCols(topic), 'KS4');
     renderEBaccSubjects();
     renderKS4Timeseries();
   }
@@ -3169,7 +3177,7 @@ const KS5_TOPICS = [
   if (hasKS5) {
     lines.push('');
     lines.push('**Key Stage 5 / 16–18 (2024/25)**');
-    for (const topic of KS5_TOPICS) renderTopic(topic, 'KS5');
+    for (const topic of KS5_TOPICS) renderTopic(indCols(topic), 'KS5');
     renderKS5Timeseries();
   }
 
@@ -3404,7 +3412,7 @@ export function buildSlimBlock(school) {
 **Links:** ${links}
 
 ### Academic Results (DfE)
-${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null)}
+${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null, false, identity?.isIndependent ?? false)}
 
 ### Financial Benchmarking (FBIT)
 ${fmtFinancial(financial, identity?.isIndependent ?? false)}
@@ -4111,7 +4119,7 @@ export function renderPartA(school, flags = {}) {
   {
     // tablesOnly=true: stop before the census/absence/raw-variable dump —
     // those sections are already rendered in A4, A6, and the slim block.
-    const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null, true);
+    const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null, true, identity?.isIndependent ?? false);
     sections.push({ heading: 'A5. Academic Performance', body, flag: flags['A5. Academic Performance'] ?? 'none' });
   }
 
