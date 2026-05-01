@@ -1587,6 +1587,7 @@ export async function getOfstedData(urn) {
   }
   if (!html) html = await safeFetchText(`https://reports.ofsted.gov.uk/provider/21/${urn}`);
   if (!html) html = await safeFetchText(`https://reports.ofsted.gov.uk/provider/ELS/${urn}`);
+  if (!html) html = await safeFetchText(`https://reports.ofsted.gov.uk/provider/46/${urn}`);
   if (!html) { glog('govuk_ofsted_fail', { urn }); return null; }
 
   // ── Overall grade ─────────────────────────────────────────────────────────
@@ -1629,6 +1630,10 @@ export async function getOfstedData(urn) {
   const personalDevelopment = g('personal development');
   const leadership          = g('leadership and management');
   const sixthForm           = g('sixth form provision');
+
+  // FE/Sixth-form college specific labels (provider ELS/46)
+  const eduProgrammes  = g('education programmes for young people');
+  const highNeeds      = g('provision for learners with high needs');
 
   // New Nov-2025 report card areas
   const achievement   = g('achievement');
@@ -1704,6 +1709,7 @@ export async function getOfstedData(urn) {
   const result = {
     overall: finalOverall, date: finalDate,
     qualityOfEducation, behaviour, personalDevelopment, leadership, sixthForm,
+    eduProgrammes, highNeeds,
     achievement, attendance, curriculum, inclusion, leadershipGov, wellbeing, post16,
     safeguarding, reportUrl: finalReport,
     gradedReportUrl: needsGradedPdf ? timelineUrl : null,  // for sub-grade extraction
@@ -2264,7 +2270,11 @@ function fmtOfsted(ofsted, isIndependent) {
     if (ofsted.behaviour)           lines.push(`- Behaviour and Attitudes: ${ofsted.behaviour}`);
     if (ofsted.personalDevelopment) lines.push(`- Personal Development: ${ofsted.personalDevelopment}`);
     if (ofsted.leadership)          lines.push(`- Leadership and Management: ${ofsted.leadership}`);
+    if (ofsted.sixthForm)           lines.push(`- Sixth Form Provision: ${ofsted.sixthForm}`);
   }
+  // FE/Sixth-form college sub-grades
+  if (ofsted.eduProgrammes) lines.push(`- Education programmes for young people: ${ofsted.eduProgrammes}`);
+  if (ofsted.highNeeds)     lines.push(`- Provision for learners with high needs: ${ofsted.highNeeds}`);
   if (ofsted.safeguarding) lines.push(`- Safeguarding: ${ofsted.safeguarding}`);
   if (ofsted.framework)    lines.push(`- Framework: ${ofsted.framework}`);
 
@@ -3079,7 +3089,7 @@ const KS5_TOPICS = [
     if (rows.length) {
       lines.push('');
       lines.push('**Results over time**');
-      lines.push('| | 2023 final | 2024 final | 2025 final |');
+      lines.push('| Category | 2023 final | 2024 final | 2025 final |');
       lines.push('|---|---:|---:|---:|');
       lines.push(...rows);
     }
@@ -3128,7 +3138,7 @@ const KS5_TOPICS = [
       };
       out.push('');
       out.push(`**${g.heading}**`);
-      out.push('| | 2023 final | 2024 final | 2025 final |');
+      out.push('| Category | 2023 final | 2024 final | 2025 final |');
       out.push('|---|---:|---:|---:|');
       out.push(`| School | ${f(s23)} | ${f(s24)} | ${f(s25)} |`);
       out.push(`| Local Authority | ${la23 !== '—' ? la23 + sfx : '—'} | ${la24 !== '—' ? la24 + sfx : '—'} | ${la25 !== '—' ? la25 + sfx : '—'} |`);
@@ -3161,7 +3171,7 @@ const KS5_TOPICS = [
     if (rows.length) {
       lines.push('');
       lines.push('**Results over time**');
-      lines.push('| | 2022 final | 2023 final | 2024 final | 2025 final |');
+      lines.push('| Category | 2022 final | 2023 final | 2024 final | 2025 final |');
       lines.push('|---|---:|---:|---:|---:|');
       lines.push(...rows);
     }
@@ -3236,6 +3246,8 @@ function fmtOfstedSlim(ofsted, isIndependent) {
   addGrade('Behaviour and Attitudes',       ofsted.behaviour);
   addGrade('Personal Development',          ofsted.personalDevelopment);
   addGrade('Leadership and Management',     ofsted.leadership);
+  addGrade('Education programmes for young people', ofsted.eduProgrammes);
+  addGrade('Provision for learners with high needs', ofsted.highNeeds);
   addGrade('Achievement',                   ofsted.achievement);
   addGrade('Attendance and Behaviour',      ofsted.attendance);
   addGrade('Curriculum and Teaching',       ofsted.curriculum);
@@ -3845,12 +3857,15 @@ export function computeFlags(school) {
 
   // A3 — improvement requirements
   // ISI recommendations in independent schools are suggestions, not mandates → never red
-  // State schools: red for formal Ofsted action points only
+  // State schools: red for formal Ofsted action points OR any sub-grade requiring improvement
   const isISI = /ISI/.test(overall);
   const ofstedNextSteps = ofsted?.nextSteps;
-  if (ofstedNextSteps && !isISI)
+  const hasRIGrade = ofsted && Object.entries(ofsted).some(
+    ([k, v]) => k !== 'overall' && typeof v === 'string' && /requires improvement|inadequate/i.test(v)
+  );
+  if ((ofstedNextSteps || hasRIGrade) && !isISI)
     flags['A3. What the School Needs to Improve'] = 'red';
-  else if (isISI || /outstanding|exceptional/i.test(overall) || !ofstedNextSteps)
+  else if (isISI || /outstanding|exceptional/i.test(overall) || (!ofstedNextSteps && !hasRIGrade))
     flags['A3. What the School Needs to Improve'] = 'green';
 
   // A4 — pupil census: high FSM or EHC
@@ -4044,6 +4059,10 @@ export function renderPartA(school, flags = {}) {
         lines.push(`| Leadership and Management | ${ofsted.leadership} |`);
       if (ofsted.sixthForm)
         lines.push(`| Sixth Form | ${ofsted.sixthForm} |`);
+      if (ofsted.eduProgrammes)
+        lines.push(`| Education programmes for young people | ${ofsted.eduProgrammes} |`);
+      if (ofsted.highNeeds)
+        lines.push(`| Provision for learners with high needs | ${ofsted.highNeeds} |`);
       // Pre-2019 "Outcomes for pupils" — shown as Achievement when no newer
       // framework grades are present
       if (ofsted.achievement && !hasNewGrades)
