@@ -2761,8 +2761,10 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       { label: "Progress 8 score", var: "P8MEA", la: "p8", eng: '0.00' },
     ]},
     { heading: "Grade 5+ and 4+ English & Maths", cols: "abgdnelE", rows: [
-      { label: "% grade 5+ English & maths", var: "PTL2BASICS_95", la: "grade5Em", eng: String(nat4.PTL2BASICS_95) },
-      { label: "% grade 4+ English & maths", var: "PTL2BASICS_94", eng: String(nat4.PTL2BASICS_94) },
+      { label: "% grade 5+ English & maths", var: "PTL2BASICS_95", la: "grade5Em", eng: String(nat4.PTL2BASICS_95),
+        colVars: { '_FSM6CLA1A': 'PTFSM6CLA1ABASICS_95', '_NOTFSM6CLA1A': 'PTNOTFSM6CLA1ABASICS_95', '_EAL': 'PTL2BASICSEAL_95' } },
+      { label: "% grade 4+ English & maths", var: "PTL2BASICS_94", eng: String(nat4.PTL2BASICS_94),
+        colVars: { '_FSM6CLA1A': 'PTFSM6CLA1ABASICS_94', '_NOTFSM6CLA1A': 'PTNOTFSM6CLA1ABASICS_94', '_EAL': 'PTL2BASICSEAL_94' } },
     ]},
     { heading: "EBacc entry by subject", cols: "a", rows: [
       { label: "English", var: "PTEBACENG_E_PTQ_EE" },
