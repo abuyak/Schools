@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 137648,
     "label": "state-primary",
-    "capturedAt": "2026-05-01T10:29:02.718Z",
+    "capturedAt": "2026-05-01T11:22:06.541Z",
     "note": "KS1 + KS2 — largest data set for primary"
   },
   "input": "Redriff Primary",
@@ -980,13 +980,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 303,
+      "totalTransactions": 234,
       "postcodesQueried": 100,
-      "medianAllTypes": "£520,000",
+      "medianAllTypes": "£525,000",
       "byType": {
-        "Flat / Maisonette": "£450,000",
-        "Terraced": "£700,000",
-        "Semi-detached": "£675,000"
+        "Flat / Maisonette": "£475,000",
+        "Terraced": "£685,000",
+        "Semi-detached": "£650,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -1100,6 +1100,8 @@
   },
   "giasDetails": {
     "la": "Southwark (210)",
+    "website": "https://redriff.cola.org.uk (opens in new tab)",
     "religiousCharacter": "Does not apply"
-  }
+  },
+  "fees": null
 }

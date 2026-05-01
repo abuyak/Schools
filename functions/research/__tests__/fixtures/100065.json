@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 100065,
     "label": "independent-all-through",
-    "capturedAt": "2026-05-01T10:29:35.351Z",
+    "capturedAt": "2026-05-01T11:22:40.050Z",
     "note": "Independent all-through — broadest independent case"
   },
   "input": "University College School",
@@ -32,7 +32,7 @@
     "achievement": "Pupils develop excellent knowledge, skills and understanding   and achieve outstanding \nexamination results at GCSE and A level.\nPupils have excellent communication skills and collaborate successfully on group projects.\nPupils are highly skilled learners, with a   strong spirit of inquiry.\nPupils are ambitious to extend their achievements beyond the classroom.\nPupils have a   highly positive approach to their work and to other activities in school.\n3.2The quality of the pupils’ personal development is    excellent.\nPupils take responsibility for their  academic attainment and progress, and for their  broader \nintellectual development.\nPupils’ communication is    highly effective, and they are respectful of one another’s views.\nPupils have a   well-developed social awareness.\nPupils have a   strong moral sense and are passionate about defending what they regard as right.\nPupils believe strongly in equality of treatment for all and behave accordingly.",
     "nextSteps": "Recommendation\n3.3In the context of the excellent outcomes, the school might wish \nto consider further ways of  promoting excellent  behaviour,  social cohesion and well-being for \npupils in Years 7   and 8.",
     "isIndependent": true,
-    "keyFindings": "Key findings\n3.1The quality of the pupils’ academic and other achievements is    excellent.\nPupils develop excellent knowledge, skills and understanding   and achieve outstanding \nexamination results at GCSE and A level.\nPupils have excellent communication skills and collaborate successfully on group projects.\nPupils are highly skilled learners, with a   strong spirit of inquiry.\nPupils are ambitious to extend their achievements beyond the classroom.\nPupils have a   highly positive approach to their work and to other activities in school.\n3.2The quality of the pupils’ personal development is    excellent.\nPupils take responsibility for their  academic attainment and progress, and for their  broader \nintellectual development.\nPupils’ communication is    highly effective, and they are respectful of one another’s views.\nPupils have a   well-developed social awareness.\nPupils have a   strong moral sense and are passionate about defending what they regard as right.\nPupils believe strongly in equality of treatment for all and behave accordingly.\n\nEducational Quality Inspection9\n© Independent Schools Inspectorate 2021University College School –   November 2021\nRecommendation\n3.3In the context of the excellent outcomes, the school might wish \nto consider further ways of  promoting excellent  behaviour,  social cohesion and well-being for \npupils in Years 7   and 8.\nThe quality of the pupils’ academic and other achievements\n3.4The quality of the pupils’ academic and other a",
+    "keyFindings": "Key findings\n3.1The quality of the pupils’ academic and other achievements is    excellent.\nPupils develop excellent knowledge, skills and understanding   and achieve outstanding \nexamination results at GCSE and A level.\nPupils have excellent communication skills and collaborate successfully on group projects.\nPupils are highly skilled learners, with a   strong spirit of inquiry.\nPupils are ambitious to extend their achievements beyond the classroom.\nPupils have a   highly positive approach to their work and to other activities in school.\n3.2The quality of the pupils’ personal development is    excellent.\nPupils take responsibility for their  academic attainment and progress, and for their  broader \nintellectual development.\nPupils’ communication is    highly effective, and they are respectful of one another’s views.\nPupils have a   well-developed social awareness.\nPupils have a   strong moral sense and are passionate about defending what they regard as right.\nPupils believe strongly in equality of treatment for all and behave accordingly.\n\nEducational Quality Inspection9\n© Independent Schools Inspectorate 2021University College School –   November 2021",
     "recommendations": "Recommendation\n3.3In the context of the excellent outcomes, the school might wish \nto consider further ways of  promoting excellent  behaviour,  social cohesion and well-being for \npupils in Years 7   and 8.",
     "academicJudgment": "Excellent",
     "personalJudgment": "Excellent"
@@ -1123,14 +1123,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 111,
+      "totalTransactions": 210,
       "postcodesQueried": 100,
-      "medianAllTypes": "£1,320,000",
+      "medianAllTypes": "£1,215,000",
       "byType": {
-        "Flat / Maisonette": "£1,110,000",
+        "Flat / Maisonette": "£1,000,000",
         "Semi-detached": "£6,050,000",
-        "Detached": "£4,850,000",
-        "Terraced": "£3,500,000"
+        "Detached": "£4,300,000",
+        "Terraced": "£2,625,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -1201,6 +1201,15 @@
   },
   "giasDetails": {
     "la": "Camden (202)",
+    "website": "http://www.ucs.org.uk/ (opens in new tab)",
     "religiousCharacter": "None"
+  },
+  "fees": {
+    "day": {
+      "min": 210,
+      "max": 10971,
+      "period": "per term"
+    },
+    "source": "http://www.ucs.org.uk/ (opens in new tab)/fees"
   }
 }
