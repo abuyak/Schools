@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 102055,
     "label": "state-secondary-sixth",
-    "capturedAt": "2026-05-01T22:41:09.712Z",
+    "capturedAt": "2026-05-02T11:19:52.939Z",
     "note": "KS4 + KS5 — grammar with sixth form"
   },
   "input": "The Latymer School",
@@ -3688,13 +3688,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 116,
+      "totalTransactions": 129,
       "postcodesQueried": 100,
-      "medianAllTypes": "£435,000",
+      "medianAllTypes": "£425,000",
       "byType": {
-        "Terraced": "£435,000",
-        "Flat / Maisonette": "£240,000",
-        "Semi-detached": "£475,000"
+        "Terraced": "£430,000",
+        "Flat / Maisonette": "£247,500",
+        "Semi-detached": "£461,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -3871,6 +3871,66 @@
       "yr23": "71.9",
       "yr24": "71.2",
       "yr25": "72.1"
+    },
+    "eng1": {
+      "yr23": "94",
+      "yr24": "93.8",
+      "yr25": "93.7"
+    },
+    "mat1": {
+      "yr23": "93.3",
+      "yr24": "93.4",
+      "yr25": "92.7"
+    },
+    "sci1": {
+      "yr23": "96.3",
+      "yr24": "96.2",
+      "yr25": "95.2"
+    },
+    "hum1": {
+      "yr23": "96.6",
+      "yr24": "96.4",
+      "yr25": "95.8"
+    },
+    "lan1": {
+      "yr23": "95.9",
+      "yr24": "97.4",
+      "yr25": "97.5"
+    },
+    "destOver": {
+      "yr23": "95.1",
+      "yr24": "94.7",
+      "yr25": "94.5"
+    },
+    "destEdu": {
+      "yr23": "95.9",
+      "yr24": "95.7",
+      "yr25": "95.6"
+    },
+    "ebEeng": {
+      "yr23": "95.7",
+      "yr24": "95.9",
+      "yr25": "96"
+    },
+    "ebEmat": {
+      "yr23": "95.6",
+      "yr24": "95.1",
+      "yr25": "95"
+    },
+    "ebEsci": {
+      "yr23": "96.4",
+      "yr24": "96.6",
+      "yr25": "96.3"
+    },
+    "ebEhum": {
+      "yr23": "64.3",
+      "yr24": "62.9",
+      "yr25": "65.2"
+    },
+    "ebElan": {
+      "yr23": "83.4",
+      "yr24": "85.4",
+      "yr25": "83.2"
     }
   },
   "schoolEthnicity": {

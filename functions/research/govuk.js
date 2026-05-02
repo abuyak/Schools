@@ -134,6 +134,12 @@ const NATIONAL_AVG = {
     ATT8_OPEN:         13.6,   // Open element
     ATT8_OPENG:        11.5,   // Open — GCSE only
     ATT8_OPENNG:        2.2,   // Open — non-GCSE
+    // Per-subject grade 1+ (England state-funded)
+    EBACC_ENG_1:        93.0,   // English at grade 1+
+    EBACC_MAT_1:        94.5,   // Maths at grade 1+
+    EBACC_SCI_1:        98.2,   // Science at grade 1+
+    EBACC_HUM_1:        97.0,   // Humanities at grade 1+
+    EBACC_LAN_1:        98.6,   // Languages at grade 1+
   },
   // KS5 / 16–18 attainment 2024/25 — England state-funded schools/colleges
   // Source: https://www.compare-school-performance.service.gov.uk/download-data (16 to 18 tab)
@@ -1536,6 +1542,8 @@ export async function getLAPerformanceKS4(laCode) {
     'R8uka','bBrtT','yxmaB','DOiQe','ea0uS','5USdi',
     'XdlfK','5kQdi','tfREm','TawPJ','cDF31',
     'YTyHK','BVh7J','zecFQ','qHPjG','a1GLP',
+    'ISTBz','6gYrf','0yZT5','iG76X','LibWj',
+    'olpmX','dh70Z','75TXo','SUzVx','VRg5X','GJQgr','rO8Nj',
   ];
   for (const ind of INDICATORS) baseParams.append('indicators', ind);
 
@@ -1543,7 +1551,9 @@ export async function getLAPerformanceKS4(laCode) {
   const KEYS = ['att8','p8','grade5Em','grade4Em','ebaccEntry','ebaccAPS','ebacc5','ebacc4',
     'att8Eng','att8Mat','att8Ebacc','att8Open','att8OpenG','att8OpenNg',
     'eng95','mat95','sci95','hum95','lan95',
-    'eng94','mat94','sci94','hum94','lan94'];
+    'eng94','mat94','sci94','hum94','lan94',
+    'eng1','mat1','sci1','hum1','lan1',
+    'destOver','destEdu','ebEeng','ebEmat','ebEsci','ebEhum','ebElan'];
 
   // Fetch 3 years: 2022/23, 2023/24, 2024/25
   const YEARS = ['2022/2023|AY', '2023/2024|AY', '2024/2025|AY'];
@@ -2190,6 +2200,86 @@ async function fetchFBITCensus(urn) {
  *
  * Both fetches run in parallel. Either can succeed independently.
  */
+// ─── KS4 Subject entries (EES Subject school level exam data) ────────────
+
+const EES_SUBJECT_DATASET = '1ae39901-b462-df76-b108-640a078d7944';
+
+// Subject code → name (cross-referenced from DfE website, Reigate School 145217)
+const SUBJECT_NAMES = {
+  'XZGfK':'English Language','3pE8u':'Mathematics','TEpPJ':'English Literature',
+  '9Cq4v':'Religious Studies','PjReb':'History','ogGmX':'Spanish',
+  'fs7YF':'Geography','qhMjG':'Design & Technology','9OO4v':'Biology',
+  '78xXo':'Chemistry','mOD9K':'Physics','tRQEm':'French',
+  '9CC4v':'Drama & Theatre Studies','O2cCL':'Business Studies:Single',
+  '0tIT5':'Art & Design (Textiles)','Ol3CL':'Computer Studies/Computing',
+  'YxtHK':'D&T Food Technology','5wndi':'Dance','bRntT':'Music',
+  'wU9bx':'Hospitality / Catering',
+  // Additional codes seen in data (exact match pending):
+  'ALBGK':'Computer Appreciation','bUvtT':'Sports Studies',
+  'Pqweb':'Science: Double Award','fZBYF':'Health Studies',
+  'VQe5X':'Small Business Management','ujpo4':'Sociology',
+  'C2iId':'Tourism','TtnPJ':'Art & Design','kBThs':'Physical Education',
+};
+
+// Qualification code → name
+const QUAL_NAMES = {
+  'wIKLb':'GCSE','qfrwj':'GCSE','oWVfm':'GCSE','t76OE':'GCSE',
+  'LK9oW':'GCSE','jYDXA':'GCSE','7SjQX':'GCSE','S9YZV':'GCSE',
+  '9ldB4':'GCSE','bB1Pt':'GCSE','eapwu':'GCSE','5UFud':'GCSE',
+  'OJbiC':'GCSE','2iUpl':'GCSE','crhx3':'GCSE','W14z2':'GCSE',
+  'DOx0Q':'GCSE','QCMUw':'GCSE','dRFI0':'GCSE','kZekh':'GCSE',
+  'f5gpY':'Technical Award','0kJbT':'Technical Award',
+  'ThnhP':'Technical Award','zTCHF':'Technical Award',
+  'm2dc9':'Technical Award','6A83r':'Technical Award','ij326':'Technical Award',
+};
+
+/**
+ * Fetches KS4 subject entries for a school from the EES subject-level dataset.
+ * Returns an array of { subject, qualification, entries } sorted by entries descending.
+ */
+export async function fetchSubjectEntries(urn) {
+  if (!urn) return null;
+  const EES_BASE = 'https://api.education.gov.uk/statistics/v1';
+  const allResults = [];
+
+  // Fetch all pages (typically 1-2 pages for a single school)
+  for (let page = 1; page <= 5; page++) {
+    const params = new URLSearchParams({
+      'locations.in': `SCH|urn|${urn}`,
+      'timePeriods.in': '2024/2025|AY',
+      'pageSize': '200',
+      'page': String(page),
+    });
+    const url = `${EES_BASE}/data-sets/${EES_SUBJECT_DATASET}/query?${params}`;
+    const data = await safeFetchJson(url).catch(() => null);
+    if (!data?.results?.length) break;
+    allResults.push(...data.results);
+  }
+
+  if (!allResults.length) return null;
+
+  // Filter to yM9aB=AHDJG (Total pupils) and 1wmi3=mgN9K (total row)
+  const totals = allResults.filter(r =>
+    r.filters?.yM9aB === 'AHDJG' && r.filters?.['1wmi3'] === 'mgN9K'
+  );
+
+  // Build subject entries
+  const entries = [];
+  for (const r of totals) {
+    const subjCode = r.filters?.dmG0Z;
+    const qualCode = r.filters?.b7NtT;
+    const count = parseInt(r.values?.TEpPJ || '0', 10);
+    if (!count) continue;
+    entries.push({
+      subject: SUBJECT_NAMES[subjCode] || subjCode,
+      qualification: QUAL_NAMES[qualCode] || qualCode,
+      entries: count,
+    });
+  }
+
+  return entries.sort((a, b) => b.entries - a.entries);
+}
+
 export async function getFinancialData(urn) {
   const [spendRes, censusRes] = await Promise.allSettled([
     fetchFBITSpending(urn),
@@ -2828,16 +2918,16 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       { label: "% grade 4+ English & maths", var: "PTL2BASICS_94", la: "grade4Em", eng: String(nat4.PTL2BASICS_94),
         colVars: { '_FSM6CLA1A': 'PTFSM6CLA1ABASICS_94', '_NOTFSM6CLA1A': 'PTNOTFSM6CLA1ABASICS_94', '_EAL': 'PTL2BASICSEAL_94' } },
     ]},
-    { heading: "EBacc entry by subject", cols: "a", rows: [
-      { label: "English", var: "PTEBACENG_E_PTQ_EE" },
-      { label: "Maths", var: "PTEBACMAT_E_PTQ_EE" },
-      { label: "Science", var: "PTEBAC2SCI_E_PTQ_EE" },
-      { label: "Humanities", var: "PTEBACHUM_E_PTQ_EE" },
-      { label: "Languages", var: "PTEBACLAN_E_PTQ_EE" },
+    { heading: "EBacc entry by subject", cols: "al", rows: [
+      { label: "English", var: "PTEBACENG_E_PTQ_EE", la: "ebEeng" },
+      { label: "Maths", var: "PTEBACMAT_E_PTQ_EE", la: "ebEmat" },
+      { label: "Science", var: "PTEBAC2SCI_E_PTQ_EE", la: "ebEsci" },
+      { label: "Humanities", var: "PTEBACHUM_E_PTQ_EE", la: "ebEhum" },
+      { label: "Languages", var: "PTEBACLAN_E_PTQ_EE", la: "ebElan" },
     ]},
-    { heading: "Post-16 destinations (2023 leavers)", cols: "a", rows: [
-      { label: "% sustained education or employment", var: "OVERALL_DESTPER" },
-      { label: "% in education", var: "EDUCATIONPER" },
+    { heading: "Post-16 destinations (2023 leavers)", cols: "al", rows: [
+      { label: "% sustained education or employment", var: "OVERALL_DESTPER", la: "destOver" },
+      { label: "% in education", var: "EDUCATIONPER", la: "destEdu" },
       { label: "% sixth form college", var: "SIXTH_COLPER" },
       { label: "% further education", var: "FEPER" },
       { label: "% apprenticeships", var: "APPRENPER" },
@@ -3029,23 +3119,24 @@ const KS5_TOPICS = [
   // ── EBacc subject achievement (9-4 and 9-5 combined table) ─────────────
 
   function renderEBaccSubjects() {
-    const laKeys = [
-      { label: 'English',    v94: 'PTEBACENG_94',  v95: 'PTEBACENG_95',  la94: 'eng94', la95: 'eng95', eng94: String(nat4.EBACC_ENG_94), eng95: String(nat4.EBACC_ENG_95) },
-      { label: 'Maths',      v94: 'PTEBACMAT_94',  v95: 'PTEBACMAT_95',  la94: 'mat94', la95: 'mat95', eng94: String(nat4.EBACC_MAT_94), eng95: String(nat4.EBACC_MAT_95) },
-      { label: 'Science',    v94: 'PTEBAC2SCI_94', v95: 'PTEBAC2SCI_95', la94: 'sci94', la95: 'sci95', eng94: String(nat4.EBACC_SCI_94), eng95: String(nat4.EBACC_SCI_95) },
-      { label: 'Humanities', v94: 'PTEBACHUM_94',  v95: 'PTEBACHUM_95',  la94: 'hum94', la95: 'hum95', eng94: String(nat4.EBACC_HUM_94), eng95: String(nat4.EBACC_HUM_95) },
-      { label: 'Languages',  v94: 'PTEBACLAN_94',  v95: 'PTEBACLAN_95',  la94: 'lan94', la95: 'lan95', eng94: String(nat4.EBACC_LAN_94), eng95: String(nat4.EBACC_LAN_95) },
+    const subjects = [
+      { label: 'English',    v94: 'PTEBACENG_94',  v95: 'PTEBACENG_95',  v1: 'PTEBACENG91',  la94: 'eng94', la95: 'eng95', la1: 'eng1', eng94: String(nat4.EBACC_ENG_94), eng95: String(nat4.EBACC_ENG_95), eng1: String(nat4.EBACC_ENG_1) },
+      { label: 'Maths',      v94: 'PTEBACMAT_94',  v95: 'PTEBACMAT_95',  v1: 'PTEBACMAT91',  la94: 'mat94', la95: 'mat95', la1: 'mat1', eng94: String(nat4.EBACC_MAT_94), eng95: String(nat4.EBACC_MAT_95), eng1: String(nat4.EBACC_MAT_1) },
+      { label: 'Science',    v94: 'PTEBAC2SCI_94', v95: 'PTEBAC2SCI_95', v1: 'PTEBAC2SCI91', la94: 'sci94', la95: 'sci95', la1: 'sci1', eng94: String(nat4.EBACC_SCI_94), eng95: String(nat4.EBACC_SCI_95), eng1: String(nat4.EBACC_SCI_1) },
+      { label: 'Humanities', v94: 'PTEBACHUM_94',  v95: 'PTEBACHUM_95',  v1: 'PTEBACHUM91',  la94: 'hum94', la95: 'hum95', la1: 'hum1', eng94: String(nat4.EBACC_HUM_94), eng95: String(nat4.EBACC_HUM_95), eng1: String(nat4.EBACC_HUM_1) },
+      { label: 'Languages',  v94: 'PTEBACLAN_94',  v95: 'PTEBACLAN_95',  v1: 'PTEBACLAN91',  la94: 'lan94', la95: 'lan95', la1: 'lan1', eng94: String(nat4.EBACC_LAN_94), eng95: String(nat4.EBACC_LAN_95), eng1: String(nat4.EBACC_LAN_1) },
     ];
-    const rows = laKeys.filter(s => !suppressed(v(s.v94)) || !suppressed(v(s.v95)));
+    const rows = subjects.filter(s => !suppressed(v(s.v94)) || !suppressed(v(s.v95)) || !suppressed(v(s.v1)));
     if (!rows.length) return;
 
     lines.push('');
     lines.push('**EBacc subject achievement**');
-    lines.push('| Category | School 9-4 | LA 9-4 | England 9-4 | School 9-5 | LA 9-5 | England 9-5 |');
-    lines.push('|---|---:|---:|---:|---:|---:|---:|');
+    lines.push('| Category | School | LA | England | School | LA | England | School | LA | England |');
+    lines.push('| | 9-4 | 9-4 | 9-4 | 9-5 | 9-5 | 9-5 | 1+ | 1+ | 1+ |');
+    lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|');
     for (const s of rows) {
-      const la94 = la(s.la94); const la95 = la(s.la95);
-      lines.push(`| ${s.label} | ${c(v(s.v94))} | ${la94 !== '—' ? la94 + '%' : '—'} | ${s.eng94}% | ${c(v(s.v95))} | ${la95 !== '—' ? la95 + '%' : '—'} | ${s.eng95}% |`);
+      const la94 = la(s.la94); const la95 = la(s.la95); const la1 = la(s.la1);
+      lines.push(`| ${s.label} | ${c(v(s.v94))} | ${la94 !== '—' ? la94 + '%' : '—'} | ${s.eng94}% | ${c(v(s.v95))} | ${la95 !== '—' ? la95 + '%' : '—'} | ${s.eng95}% | ${c(v(s.v1))} | ${la1 !== '—' ? la1 + '%' : '—'} | ${s.eng1}% |`);
     }
   }
 

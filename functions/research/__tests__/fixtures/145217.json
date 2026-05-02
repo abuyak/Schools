@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 145217,
     "label": "state-secondary",
-    "capturedAt": "2026-05-01T22:40:53.907Z",
+    "capturedAt": "2026-05-02T11:19:34.369Z",
     "note": "KS4 only — Attainment 8, Progress 8, EBacc"
   },
   "input": "Reigate School",
@@ -1928,11 +1928,11 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 268,
+      "totalTransactions": 284,
       "postcodesQueried": 100,
-      "medianAllTypes": "£455,000",
+      "medianAllTypes": "£450,000",
       "byType": {
-        "Semi-detached": "£485,000",
+        "Semi-detached": "£480,000",
         "Terraced": "£440,000",
         "Flat / Maisonette": "£255,000",
         "Detached": "£805,000"
@@ -2112,6 +2112,66 @@
       "yr23": "75.5",
       "yr24": "78.3",
       "yr25": "76.8"
+    },
+    "eng1": {
+      "yr23": "94.6",
+      "yr24": "94.9",
+      "yr25": "93.8"
+    },
+    "mat1": {
+      "yr23": "96.1",
+      "yr24": "96.2",
+      "yr25": "95.8"
+    },
+    "sci1": {
+      "yr23": "98.9",
+      "yr24": "98.9",
+      "yr25": "98.7"
+    },
+    "hum1": {
+      "yr23": "98.1",
+      "yr24": "98.4",
+      "yr25": "98.1"
+    },
+    "lan1": {
+      "yr23": "98.9",
+      "yr24": "98.3",
+      "yr25": "98.2"
+    },
+    "destOver": {
+      "yr23": "94.9",
+      "yr24": "95.1",
+      "yr25": "94.1"
+    },
+    "destEdu": {
+      "yr23": "96.4",
+      "yr24": "96.7",
+      "yr25": "96.3"
+    },
+    "ebEeng": {
+      "yr23": "97.4",
+      "yr24": "97.4",
+      "yr25": "97"
+    },
+    "ebEmat": {
+      "yr23": "95.3",
+      "yr24": "95.3",
+      "yr25": "94.5"
+    },
+    "ebEsci": {
+      "yr23": "97.6",
+      "yr24": "97.6",
+      "yr25": "97.3"
+    },
+    "ebEhum": {
+      "yr23": "45.1",
+      "yr24": "45.5",
+      "yr25": "48.8"
+    },
+    "ebElan": {
+      "yr23": "84.3",
+      "yr24": "84.2",
+      "yr25": "84.3"
     }
   },
   "schoolEthnicity": {
