@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 145217,
     "label": "state-secondary",
-    "capturedAt": "2026-05-02T11:19:34.369Z",
+    "capturedAt": "2026-05-05T20:47:04.496Z",
     "note": "KS4 only — Attainment 8, Progress 8, EBacc"
   },
   "input": "Reigate School",
@@ -1928,12 +1928,12 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 284,
+      "totalTransactions": 244,
       "postcodesQueried": 100,
       "medianAllTypes": "£450,000",
       "byType": {
         "Semi-detached": "£480,000",
-        "Terraced": "£440,000",
+        "Terraced": "£445,000",
         "Flat / Maisonette": "£255,000",
         "Detached": "£805,000"
       },
@@ -2190,5 +2190,112 @@
     "website": "http://www.reigate-school.surrey.sch.uk (opens in new tab)",
     "religiousCharacter": "Does not apply"
   },
-  "fees": null
+  "fees": null,
+  "subjectEntries": [
+    {
+      "subject": "English Language",
+      "qualification": "GCSE",
+      "entries": 252
+    },
+    {
+      "subject": "Mathematics",
+      "qualification": "GCSE",
+      "entries": 252
+    },
+    {
+      "subject": "English Literature",
+      "qualification": "GCSE",
+      "entries": 245
+    },
+    {
+      "subject": "Religious Studies",
+      "qualification": "GCSE",
+      "entries": 243
+    },
+    {
+      "subject": "History",
+      "qualification": "GCSE",
+      "entries": 176
+    },
+    {
+      "subject": "Spanish",
+      "qualification": "GCSE",
+      "entries": 149
+    },
+    {
+      "subject": "Geography",
+      "qualification": "GCSE",
+      "entries": 78
+    },
+    {
+      "subject": "Science: Double Award",
+      "qualification": "GCSE",
+      "entries": 76
+    },
+    {
+      "subject": "Design & Technology",
+      "qualification": "GCSE",
+      "entries": 61
+    },
+    {
+      "subject": "Biology",
+      "qualification": "GCSE",
+      "entries": 57
+    },
+    {
+      "subject": "Chemistry",
+      "qualification": "GCSE",
+      "entries": 57
+    },
+    {
+      "subject": "Physics",
+      "qualification": "GCSE",
+      "entries": 57
+    },
+    {
+      "subject": "French",
+      "qualification": "GCSE",
+      "entries": 54
+    },
+    {
+      "subject": "Drama & Theatre Studies",
+      "qualification": "GCSE",
+      "entries": 34
+    },
+    {
+      "subject": "Computer Studies/Computing",
+      "qualification": "GCSE",
+      "entries": 32
+    },
+    {
+      "subject": "Business Studies:Single",
+      "qualification": "GCSE",
+      "entries": 31
+    },
+    {
+      "subject": "Art & Design (Textiles)",
+      "qualification": "GCSE",
+      "entries": 30
+    },
+    {
+      "subject": "Hospitality / Catering",
+      "qualification": "Technical Award",
+      "entries": 22
+    },
+    {
+      "subject": "D&T Food Technology",
+      "qualification": "GCSE",
+      "entries": 17
+    },
+    {
+      "subject": "Dance",
+      "qualification": "GCSE",
+      "entries": 17
+    },
+    {
+      "subject": "Music",
+      "qualification": "GCSE",
+      "entries": 10
+    }
+  ]
 }

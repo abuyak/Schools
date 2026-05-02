@@ -142,12 +142,13 @@ const NATIONAL_AVG = {
     EBACC_LAN_1:        98.6,   // Languages at grade 1+
   },
   // KS5 / 16–18 attainment 2024/25 — England state-funded schools/colleges
-  // Source: https://www.compare-school-performance.service.gov.uk/download-data (16 to 18 tab)
+  // Source: https://www.compare-school-performance.service.gov.uk — verified May 2026
   KS5: {
-    avgGrade:      'B- (35 pts)',   // England state-funded average A-level grade (all students)
+    AVG_GRADE:     'B-',            // England state-funded average A-level grade
+    AVG_PTS:       36.1,            // England state-funded average A-level points per entry
     avgGradeDis:   'C+ (32 pts)',   // England state-funded average A-level grade (disadvantaged)
     avgGradeNonDis:'B- (36 pts)',   // England state-funded average A-level grade (non-disadvantaged)
-    retained:      92.5,            // % retained to end of course
+    retained:      93.1,            // % retained to end of course (was 92.5)
     advMaths:      30.0,            // % achieving advanced maths
     aab2fac:       null,            // % AAB in 2 facilitating subjects — national not published inline
   },
@@ -2200,6 +2201,68 @@ async function fetchFBITCensus(urn) {
  *
  * Both fetches run in parallel. Either can succeed independently.
  */
+// ─── KS5 LA performance (EES A-level datasets) ──────────────────────────
+
+const EES_KS5_REGION_DS = '019d913a-eae0-7043-b196-875639ce5402';
+const EES_KS5_RETENTION_DS = '019d9139-4416-70c8-9275-ed2def6c2eb9';
+
+/**
+ * Fetches KS5 LA-level averages from EES datasets.
+ * Returns { avgPoints, retention } or null.
+ */
+export async function getLAPerformanceKS5(laCode) {
+  if (!laCode) return null;
+  const EES_BASE = 'https://api.education.gov.uk/statistics/v1';
+  const result = {};
+
+  // 1. A-level region/subject dataset — average points per entry
+  try {
+    const params = new URLSearchParams({
+      'locations.in': `LA|code|${laCode}`,
+      'timePeriods.in': '2024/2025|AY',
+      'pageSize': '50',
+    });
+    const url = `${EES_BASE}/data-sets/${EES_KS5_REGION_DS}/query?${params}`;
+    const data = await safeFetchJson(url);
+    if (data?.results?.length) {
+      // Find aggregate row: institution type = state-funded, metric = avg points
+      for (const r of data.results) {
+        if (r.filters?.['41LUZ'] === '0hvJT' && r.filters?.['mMa9K'] === 'eL5au' && r.filters?.['52udi'] === '43TGU') {
+          const pts = parseFloat(r.values?.tjcGE);
+          if (!isNaN(pts) && pts > 20 && pts < 60) result.avgPoints = String(pts);
+        }
+        // VA score
+        if (r.filters?.['41LUZ'] === 'WiUz2' && r.filters?.['mMa9K'] === 'fdCSY' && r.filters?.['52udi'] === '43TGU') {
+          const va = parseFloat(r.values?.tjcGE);
+          if (!isNaN(va) && va > -3 && va < 3) result.vaScore = String(va);
+        }
+      }
+    }
+  } catch (_) {}
+
+  // 2. Retention dataset
+  try {
+    const params = new URLSearchParams({
+      'locations.in': `LA|code|${laCode}`,
+      'timePeriods.in': '2024/2025|AY',
+      'pageSize': '10',
+    });
+    const url = `${EES_BASE}/data-sets/${EES_KS5_RETENTION_DS}/query?${params}`;
+    const data = await safeFetchJson(url);
+    if (data?.results?.length) {
+      // TcBPJ=9cnB4 = All pupils, hrSyW=IpD1B = Total
+      for (const r of data.results) {
+        if (r.filters?.['TcBPJ'] === '9cnB4' && r.filters?.['hrSyW'] === 'IpD1B') {
+          const ret = parseFloat(r.values?.wEWyb);
+          if (!isNaN(ret) && ret > 50 && ret < 100) result.retention = String(ret);
+        }
+      }
+    }
+  } catch (_) {}
+
+  return Object.keys(result).length ? result : null;
+}
+
 // ─── KS4 Subject entries (EES Subject school level exam data) ────────────
 
 const EES_SUBJECT_DATASET = '1ae39901-b462-df76-b108-640a078d7944';
@@ -2682,7 +2745,7 @@ function govLinks(urn) {
  * Picks ~15 high-signal variables by code rather than dumping all rows.
  * Covers KS2 (primary), KS4 (secondary), plus pupil census and absence for all.
  */
-function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false, isIndependent = false) {
+function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false, isIndependent = false, laPerfKS5 = null) {
 
   if (!perf) return '_Not retrieved_';
 
@@ -2953,7 +3016,7 @@ const KS5_TOPICS = [
         { label: 'Total 16–18 students', var: 'TALLPUP_1618' },
         { label: 'A-level students', var: 'TALLPUP_ALEV_1618' },
         { label: 'Average A-level grade', var: 'TALLPPEGRD_ALEV_1618', eng: nat5.AVG_GRADE ?? 'B-' },
-        { label: 'Average A-level points', var: 'TALLPPE_ALEV_1618', eng: nat5.AVG_PTS ? String(nat5.AVG_PTS) : '35' },
+        { label: 'Average A-level points', var: 'TALLPPE_ALEV_1618', eng: String(nat5.AVG_PTS) },
         { label: 'Best 3 A-levels — grade', var: 'TB3PTSE_GRD' },
         { label: 'Best 3 A-levels — points', var: 'TB3PTSE' },
       ],
@@ -3489,7 +3552,7 @@ function fmtSchoolEthnicitySlim(e) {
 }
 
 export function buildSlimBlock(school) {
-  const { input, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees } = school;
+  const { input, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees, subjectEntries } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
 
@@ -3537,7 +3600,7 @@ export function buildSlimBlock(school) {
 
 ### Academic Results (DfE)
 ${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null, false, identity?.isIndependent ?? false)}
-
+${subjectEntries?.length ? '\n### Subjects entered (KS4)\n\n| Subject | Qualification | Entries |\n|---|---:|---:|\n' + subjectEntries.map(e => '| ' + e.subject + ' | ' + e.qualification + ' | ' + e.entries + ' |').join('\n') : ''}
 ### Financial Benchmarking (FBIT)
 ${fmtFinancial(financial, identity?.isIndependent ?? false)}
 ${fees ? `### School Fees\n- ${Object.entries(fees).filter(([k]) => k !== 'source' && k !== 'raw').map(([k,v]) => {
@@ -3856,6 +3919,12 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
           : null;
       }
 
+      // Phase 2c: KS4 subject entries for all schools with KS4 data
+      const hasKS4 = Object.keys(performance ?? {}).some(k => k.startsWith('KS4'));
+      const subjectEntries = (detailed && hasKS4)
+        ? await fetchSubjectEntries(urn).catch(() => null)
+        : null;
+
       // Phase 3: area data — postcode comes from DfE CSV (PCODE in phase-specific namespace, e.g. KS2_25).
       // Fall back to identity.postcode (from GIAS search tile — always present when URN resolves)
       // for infant/nursery schools that have no KS2/KS4 namespace and thus no PCODE in the CSV.
@@ -3868,13 +3937,18 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Determined by what data the school actually has, not the phase label
       // (independent schools often have KS4 data but phase is "Not applicable")
       const hasKS2 = Object.keys(performance ?? {}).some(k => k.startsWith('KS2'));
-      const hasKS4 = Object.keys(performance ?? {}).some(k => k.startsWith('KS4'));
       const laPerf = detailed && area?.laCode
         ? (hasKS2
             ? await getLAPerformanceKS2(area.laCode).catch(() => null)
             : hasKS4
               ? await getLAPerformanceKS4(area.laCode).catch(() => null)
               : null)
+        : null;
+
+      // Phase 4b: KS5 LA averages (separate EES datasets)
+      const hasKS5 = Object.keys(performance ?? {}).some(k => k.startsWith('KS5'));
+      const laPerfKS5 = (detailed && hasKS5 && area?.laCode)
+        ? await getLAPerformanceKS5(area.laCode).catch(() => null)
         : null;
 
       // Ofsted object is now fully enriched by getOfstedData/getISIInspection.
@@ -3887,7 +3961,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Bundled local data (zero-latency — no HTTP)
       const schoolEthnicity = urn ? getSchoolEthnicity(urn) : null;
 
-      return { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails };
+      return { input: name, identity, ofsted, performance, financial, area, laPerf, laPerfKS5, schoolEthnicity, giasDetails, subjectEntries };
     })
   );
 

@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125427,
     "label": "independent-secondary",
-    "capturedAt": "2026-05-02T11:20:05.270Z",
+    "capturedAt": "2026-05-05T20:47:33.285Z",
     "note": "Independent secondary — fees, ISI, no DfE data"
   },
   "input": "Caterham School",
@@ -1110,13 +1110,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 193,
+      "totalTransactions": 148,
       "postcodesQueried": 74,
-      "medianAllTypes": "£650,000",
+      "medianAllTypes": "£610,000",
       "byType": {
-        "Flat / Maisonette": "£317,500",
-        "Detached": "£989,668",
-        "Semi-detached": "£679,950",
+        "Flat / Maisonette": "£312,500",
+        "Detached": "£950,000",
+        "Semi-detached": "£699,950",
         "Terraced": "£625,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -1372,5 +1372,72 @@
     "website": "http://www.caterhamschool.co.uk (opens in new tab)",
     "religiousCharacter": "Christian"
   },
-  "fees": null
+  "fees": null,
+  "subjectEntries": [
+    {
+      "subject": "Spanish",
+      "qualification": "GCSE",
+      "entries": 65
+    },
+    {
+      "subject": "Religious Studies",
+      "qualification": "GCSE",
+      "entries": 52
+    },
+    {
+      "subject": "UBZRF",
+      "qualification": "CvtqI",
+      "entries": 38
+    },
+    {
+      "subject": "French",
+      "qualification": "GCSE",
+      "entries": 36
+    },
+    {
+      "subject": "Science: Double Award",
+      "qualification": "GCSE",
+      "entries": 32
+    },
+    {
+      "subject": "Computer Studies/Computing",
+      "qualification": "GCSE",
+      "entries": 32
+    },
+    {
+      "subject": "Art & Design (Textiles)",
+      "qualification": "GCSE",
+      "entries": 25
+    },
+    {
+      "subject": "Design & Technology",
+      "qualification": "GCSE",
+      "entries": 20
+    },
+    {
+      "subject": "Music",
+      "qualification": "GCSE",
+      "entries": 13
+    },
+    {
+      "subject": "mOR9K",
+      "qualification": "m25A9",
+      "entries": 5
+    },
+    {
+      "subject": "IcxBz",
+      "qualification": "XVGHf",
+      "entries": 5
+    },
+    {
+      "subject": "dtU0Z",
+      "qualification": "XVGHf",
+      "entries": 5
+    },
+    {
+      "subject": "Pjbeb",
+      "qualification": "XVGHf",
+      "entries": 1
+    }
+  ]
 }

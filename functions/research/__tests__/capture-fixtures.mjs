@@ -26,6 +26,7 @@ import {
   getAreaData,
   getLAPerformanceKS2,
   getLAPerformanceKS4,
+  fetchSubjectEntries,
   buildSlimBlock,
 } from '../govuk.js';
 
@@ -205,6 +206,14 @@ async function captureOne(school) {
     nil(`LA: not available (no KS data or no laCode)`);
   }
 
+  // 7. KS4 subject entries
+  let subjectEntries = null;
+  if (hasKS4) {
+    subjectEntries = await fetchSubjectEntries(urn).catch(() => null);
+    if (subjectEntries) ok(`Subject entries: ${subjectEntries.length} subjects`);
+    else nil('Subject entries not retrieved');
+  }
+
   // 9. Local ethnicity index
   const schoolEthnicity = getSchoolEthnicity(urn);
   if (schoolEthnicity) ok(`Ethnicity index: W${schoolEthnicity.w}% A${schoolEthnicity.a}% B${schoolEthnicity.b}%`);
@@ -215,7 +224,7 @@ async function captureOne(school) {
     ? ofstedBase  // ISI data is self-contained (enriched inside getISIInspection)
     : ofstedBase; // Ofsted data is already enriched with PDFs inside getOfstedData
 
-  const schoolObj = { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees };
+  const schoolObj = { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees, subjectEntries };
 
   // 10. Render slim block
   const slim = buildSlimBlock(schoolObj);
@@ -239,6 +248,7 @@ async function captureOne(school) {
     schoolEthnicity,
     giasDetails,
     fees,
+    subjectEntries,
   };
 
   writeFileSync(

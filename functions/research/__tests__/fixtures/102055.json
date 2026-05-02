@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 102055,
     "label": "state-secondary-sixth",
-    "capturedAt": "2026-05-02T11:19:52.939Z",
+    "capturedAt": "2026-05-05T20:47:21.664Z",
     "note": "KS4 + KS5 — grammar with sixth form"
   },
   "input": "The Latymer School",
@@ -3688,13 +3688,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 129,
+      "totalTransactions": 118,
       "postcodesQueried": 100,
-      "medianAllTypes": "£425,000",
+      "medianAllTypes": "£421,000",
       "byType": {
         "Terraced": "£430,000",
-        "Flat / Maisonette": "£247,500",
-        "Semi-detached": "£461,000"
+        "Flat / Maisonette": "£225,000",
+        "Semi-detached": "£475,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -3949,5 +3949,142 @@
     "website": "http://www.latymer.co.uk/ (opens in new tab)",
     "religiousCharacter": "None"
   },
-  "fees": null
+  "fees": null,
+  "subjectEntries": [
+    {
+      "subject": "English Language",
+      "qualification": "GCSE",
+      "entries": 190
+    },
+    {
+      "subject": "Mathematics",
+      "qualification": "GCSE",
+      "entries": 190
+    },
+    {
+      "subject": "Biology",
+      "qualification": "GCSE",
+      "entries": 189
+    },
+    {
+      "subject": "Chemistry",
+      "qualification": "GCSE",
+      "entries": 189
+    },
+    {
+      "subject": "English Literature",
+      "qualification": "GCSE",
+      "entries": 189
+    },
+    {
+      "subject": "Physics",
+      "qualification": "GCSE",
+      "entries": 189
+    },
+    {
+      "subject": "Geography",
+      "qualification": "GCSE",
+      "entries": 142
+    },
+    {
+      "subject": "French",
+      "qualification": "GCSE",
+      "entries": 115
+    },
+    {
+      "subject": "Design & Technology",
+      "qualification": "GCSE",
+      "entries": 78
+    },
+    {
+      "subject": "ejeuS",
+      "qualification": "pmfCS",
+      "entries": 63
+    },
+    {
+      "subject": "Art & Design (Textiles)",
+      "qualification": "GCSE",
+      "entries": 60
+    },
+    {
+      "subject": "History",
+      "qualification": "GCSE",
+      "entries": 59
+    },
+    {
+      "subject": "Business Studies:Single",
+      "qualification": "GCSE",
+      "entries": 51
+    },
+    {
+      "subject": "Music",
+      "qualification": "GCSE",
+      "entries": 31
+    },
+    {
+      "subject": "Computer Studies/Computing",
+      "qualification": "GCSE",
+      "entries": 29
+    },
+    {
+      "subject": "Science: Double Award",
+      "qualification": "GCSE",
+      "entries": 26
+    },
+    {
+      "subject": "Drama & Theatre Studies",
+      "qualification": "GCSE",
+      "entries": 23
+    },
+    {
+      "subject": "SQaVx",
+      "qualification": "BpqC7",
+      "entries": 22
+    },
+    {
+      "subject": "Pjbeb",
+      "qualification": "XVGHf",
+      "entries": 22
+    },
+    {
+      "subject": "Religious Studies",
+      "qualification": "GCSE",
+      "entries": 19
+    },
+    {
+      "subject": "UBZRF",
+      "qualification": "CvtqI",
+      "entries": 16
+    },
+    {
+      "subject": "uGLo4",
+      "qualification": "XVGHf",
+      "entries": 4
+    },
+    {
+      "subject": "hfLyW",
+      "qualification": "XVGHf",
+      "entries": 3
+    },
+    {
+      "subject": "IcxBz",
+      "qualification": "XVGHf",
+      "entries": 2
+    },
+    {
+      "subject": "0E1T5",
+      "qualification": "XVGHf",
+      "entries": 1
+    },
+    {
+      "subject": "Vwu5X",
+      "qualification": "XVGHf",
+      "entries": 1
+    },
+    {
+      "subject": "ieU6X",
+      "qualification": "XVGHf",
+      "entries": 1
+    }
+  ]
 }

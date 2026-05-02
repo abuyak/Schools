@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 100065,
     "label": "independent-all-through",
-    "capturedAt": "2026-05-02T11:20:14.083Z",
+    "capturedAt": "2026-05-05T20:47:41.860Z",
     "note": "Independent all-through — broadest independent case"
   },
   "input": "University College School",
@@ -1123,14 +1123,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 222,
+      "totalTransactions": 190,
       "postcodesQueried": 100,
-      "medianAllTypes": "£1,150,000",
+      "medianAllTypes": "£1,145,000",
       "byType": {
-        "Flat / Maisonette": "£1,050,000",
+        "Flat / Maisonette": "£945,000",
         "Semi-detached": "£5,775,000",
-        "Detached": "£4,850,000",
-        "Terraced": "£2,625,000"
+        "Detached": "£4,227,000",
+        "Terraced": "£2,500,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -1391,5 +1391,97 @@
       "period": "per term"
     },
     "source": "http://www.ucs.org.uk/ (opens in new tab)/fees"
-  }
+  },
+  "subjectEntries": [
+    {
+      "subject": "Art & Design (Textiles)",
+      "qualification": "GCSE",
+      "entries": 49
+    },
+    {
+      "subject": "French",
+      "qualification": "GCSE",
+      "entries": 42
+    },
+    {
+      "subject": "Drama & Theatre Studies",
+      "qualification": "GCSE",
+      "entries": 39
+    },
+    {
+      "subject": "Spanish",
+      "qualification": "GCSE",
+      "entries": 39
+    },
+    {
+      "subject": "Design & Technology",
+      "qualification": "GCSE",
+      "entries": 29
+    },
+    {
+      "subject": "UBZRF",
+      "qualification": "CvtqI",
+      "entries": 25
+    },
+    {
+      "subject": "Science: Double Award",
+      "qualification": "GCSE",
+      "entries": 22
+    },
+    {
+      "subject": "Computer Studies/Computing",
+      "qualification": "GCSE",
+      "entries": 20
+    },
+    {
+      "subject": "ejeuS",
+      "qualification": "pmfCS",
+      "entries": 15
+    },
+    {
+      "subject": "Music",
+      "qualification": "GCSE",
+      "entries": 15
+    },
+    {
+      "subject": "mOR9K",
+      "qualification": "m25A9",
+      "entries": 12
+    },
+    {
+      "subject": "dtU0Z",
+      "qualification": "XVGHf",
+      "entries": 10
+    },
+    {
+      "subject": "IcxBz",
+      "qualification": "XVGHf",
+      "entries": 7
+    },
+    {
+      "subject": "Religious Studies",
+      "qualification": "GCSE",
+      "entries": 7
+    },
+    {
+      "subject": "Pjbeb",
+      "qualification": "XVGHf",
+      "entries": 4
+    },
+    {
+      "subject": "Mathematics",
+      "qualification": "GCSE",
+      "entries": 1
+    },
+    {
+      "subject": "hfLyW",
+      "qualification": "XVGHf",
+      "entries": 1
+    },
+    {
+      "subject": "Vwu5X",
+      "qualification": "XVGHf",
+      "entries": 1
+    }
+  ]
 }
