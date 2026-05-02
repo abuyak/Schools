@@ -134,6 +134,12 @@ const NATIONAL_AVG = {
     ATT8_OPEN:         13.6,   // Open element
     ATT8_OPENG:        11.5,   // Open — GCSE only
     ATT8_OPENNG:        2.2,   // Open — non-GCSE
+    // Per-subject grade 1+ (England state-funded)
+    EBACC_ENG_1:        93.0,   // English at grade 1+
+    EBACC_MAT_1:        94.5,   // Maths at grade 1+
+    EBACC_SCI_1:        98.2,   // Science at grade 1+
+    EBACC_HUM_1:        97.0,   // Humanities at grade 1+
+    EBACC_LAN_1:        98.6,   // Languages at grade 1+
   },
   // KS5 / 16–18 attainment 2024/25 — England state-funded schools/colleges
   // Source: https://www.compare-school-performance.service.gov.uk/download-data (16 to 18 tab)
@@ -1536,6 +1542,8 @@ export async function getLAPerformanceKS4(laCode) {
     'R8uka','bBrtT','yxmaB','DOiQe','ea0uS','5USdi',
     'XdlfK','5kQdi','tfREm','TawPJ','cDF31',
     'YTyHK','BVh7J','zecFQ','qHPjG','a1GLP',
+    'ISTBz','6gYrf','0yZT5','iG76X','LibWj',
+    'olpmX','dh70Z','75TXo','SUzVx','VRg5X','GJQgr','rO8Nj',
   ];
   for (const ind of INDICATORS) baseParams.append('indicators', ind);
 
@@ -1543,7 +1551,9 @@ export async function getLAPerformanceKS4(laCode) {
   const KEYS = ['att8','p8','grade5Em','grade4Em','ebaccEntry','ebaccAPS','ebacc5','ebacc4',
     'att8Eng','att8Mat','att8Ebacc','att8Open','att8OpenG','att8OpenNg',
     'eng95','mat95','sci95','hum95','lan95',
-    'eng94','mat94','sci94','hum94','lan94'];
+    'eng94','mat94','sci94','hum94','lan94',
+    'eng1','mat1','sci1','hum1','lan1',
+    'destOver','destEdu','ebEeng','ebEmat','ebEsci','ebEhum','ebElan'];
 
   // Fetch 3 years: 2022/23, 2023/24, 2024/25
   const YEARS = ['2022/2023|AY', '2023/2024|AY', '2024/2025|AY'];
