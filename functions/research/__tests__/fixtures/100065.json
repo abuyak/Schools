@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 100065,
     "label": "independent-all-through",
-    "capturedAt": "2026-05-01T22:41:24.670Z",
+    "capturedAt": "2026-05-02T07:23:49.536Z",
     "note": "Independent all-through — broadest independent case"
   },
   "input": "University College School",
@@ -1123,13 +1123,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 220,
+      "totalTransactions": 187,
       "postcodesQueried": 100,
-      "medianAllTypes": "£1,180,000",
+      "medianAllTypes": "£1,230,000",
       "byType": {
-        "Flat / Maisonette": "£1,000,000",
-        "Semi-detached": "£6,050,000",
-        "Detached": "£4,300,000",
+        "Flat / Maisonette": "£1,070,000",
+        "Semi-detached": "£5,775,000",
+        "Detached": "£4,850,000",
         "Terraced": "£2,745,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -1307,6 +1307,66 @@
       "yr23": "72.3",
       "yr24": "75.4",
       "yr25": "77.1"
+    },
+    "eng1": {
+      "yr23": "92.2",
+      "yr24": "93.7",
+      "yr25": "92.3"
+    },
+    "mat1": {
+      "yr23": "94",
+      "yr24": "94.7",
+      "yr25": "92.7"
+    },
+    "sci1": {
+      "yr23": "98.5",
+      "yr24": "98.4",
+      "yr25": "97.8"
+    },
+    "hum1": {
+      "yr23": "97.7",
+      "yr24": "99",
+      "yr25": "97.2"
+    },
+    "lan1": {
+      "yr23": "99",
+      "yr24": "99.1",
+      "yr25": "99.2"
+    },
+    "destOver": {
+      "yr23": "92.8",
+      "yr24": "93.9",
+      "yr25": "92.6"
+    },
+    "destEdu": {
+      "yr23": "94.8",
+      "yr24": "95.3",
+      "yr25": "93.9"
+    },
+    "ebEeng": {
+      "yr23": "96.1",
+      "yr24": "96.8",
+      "yr25": "96.1"
+    },
+    "ebEmat": {
+      "yr23": "93.1",
+      "yr24": "93.7",
+      "yr25": "92.3"
+    },
+    "ebEsci": {
+      "yr23": "96.8",
+      "yr24": "97.3",
+      "yr25": "96.5"
+    },
+    "ebEhum": {
+      "yr23": "60.6",
+      "yr24": "57.3",
+      "yr25": "56.8"
+    },
+    "ebElan": {
+      "yr23": "75",
+      "yr24": "71.5",
+      "yr25": "77.8"
     }
   },
   "schoolEthnicity": {
