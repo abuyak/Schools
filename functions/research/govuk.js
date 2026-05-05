@@ -4114,7 +4114,7 @@ export function computeFlags(school) {
 // Exported so the Lambda handler can call it after fetchGovDataForPrompt resolves.
 
 export function renderPartA(school, flags = {}) {
-  const { identity, ofsted, performance, financial, area, schoolEthnicity, laPerf, giasDetails } = school;
+  const { identity, ofsted, performance, financial, area, schoolEthnicity, laPerf, giasDetails, subjectEntries } = school;
   const isIndependent = identity?.isIndependent ?? false;
 
   // ── Lookup helpers ─────────────────────────────────────────────────────────
@@ -4333,7 +4333,7 @@ export function renderPartA(school, flags = {}) {
   {
     // tablesOnly=true: stop before the census/absence/raw-variable dump —
     // those sections are already rendered in A4, A6, and the slim block.
-    const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null, true, identity?.isIndependent ?? false);
+    const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null, true, identity?.isIndependent ?? false, null, subjectEntries);
     sections.push({ heading: 'A5. Academic Performance', body, flag: flags['A5. Academic Performance'] ?? 'none' });
   }
 
