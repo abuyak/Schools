@@ -2745,7 +2745,7 @@ function govLinks(urn) {
  * Picks ~15 high-signal variables by code rather than dumping all rows.
  * Covers KS2 (primary), KS4 (secondary), plus pupil census and absence for all.
  */
-function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false, isIndependent = false, laPerfKS5 = null) {
+function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false, isIndependent = false, laPerfKS5 = null, subjectEntries = null) {
 
   if (!perf) return '_Not retrieved_';
 
@@ -3357,6 +3357,16 @@ const KS5_TOPICS = [
     for (const topic of KS4_TOPICS) renderTopic(indCols(topic), 'KS4');
     renderEBaccSubjects();
     renderKS4Timeseries();
+    // Subject entries table
+    if (subjectEntries?.length) {
+      lines.push('');
+      lines.push('**Subjects entered (KS4)**');
+      lines.push('| Subject | Qualification | Entries |');
+      lines.push('|---|---:|---:|');
+      for (const e of subjectEntries) {
+        lines.push(`| ${e.subject} | ${e.qualification} | ${e.entries} |`);
+      }
+    }
   }
 
   if (hasKS5) {
@@ -3599,8 +3609,7 @@ export function buildSlimBlock(school) {
 **Links:** ${links}
 
 ### Academic Results (DfE)
-${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null, false, identity?.isIndependent ?? false)}
-${subjectEntries?.length ? '\n### Subjects entered (KS4)\n\n| Subject | Qualification | Entries |\n|---|---:|---:|\n' + subjectEntries.map(e => '| ' + e.subject + ' | ' + e.qualification + ' | ' + e.entries + ' |').join('\n') : ''}
+${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null, false, identity?.isIndependent ?? false, null, subjectEntries)}
 ### Financial Benchmarking (FBIT)
 ${fmtFinancial(financial, identity?.isIndependent ?? false)}
 ${fees ? `### School Fees\n- ${Object.entries(fees).filter(([k]) => k !== 'source' && k !== 'raw').map(([k,v]) => {
