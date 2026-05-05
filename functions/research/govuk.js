@@ -3921,7 +3921,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
 
       // Phase 2c: KS4 subject entries for all schools with KS4 data
       const hasKS4 = Object.keys(performance ?? {}).some(k => k.startsWith('KS4'));
-      const subjectEntries = (detailed && hasKS4)
+      const subjectEntries = hasKS4
         ? await fetchSubjectEntries(urn).catch(() => null)
         : null;
 
