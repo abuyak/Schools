@@ -325,6 +325,112 @@ function log(event, props = {}) {
   console.log(JSON.stringify({ event, ts: new Date().toISOString(), ...props }));
 }
 
+// Normalises the C1 table when the AI outputs it without markdown pipes.
+// The AI often strips pipes and appends the summary paragraph to the last
+// table row, creating a phantom 4th column. This rewrites the body into
+// proper pipe-delimited markdown with the summary separated.
+function normaliseC1Table(sections) {
+  for (const s of sections) {
+    if (!s.heading?.startsWith('C1.')) continue;
+    const body = s.body || '';
+    const lines = body.split('\n');
+
+    // Detect: header row contains "Dimension" and "Evidence level"
+    const hasC1Header = lines.some(l => /\bDimension\b/i.test(l) && /\bEvidence\s*level\b/i.test(l));
+    if (!hasC1Header) continue;
+
+    const out = [];
+    let summaryPara = null;
+    let inTable = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) { out.push(''); continue; }
+
+      // Detect the C1 table header row
+      if (/\bDimension\b/i.test(trimmed) && /\bEvidence\s*level\b/i.test(trimmed)) {
+        inTable = true;
+        out.push('| Dimension | Evidence level | Notes |');
+        out.push('|---|---|---|');
+        continue;
+      }
+
+      // Separator row — skip (we add our own)
+      if (/^\|?\s*[-:| ]+\s*\|?$/.test(trimmed)) continue;
+
+      if (inTable) {
+        // Check if this row looks like a C1 dimension row (has an evidence level keyword)
+        const evidenceMatch = trimmed.match(/\b(Strong|Present|Not\s*evident|Mixed|Weak)\b/i);
+        if (evidenceMatch) {
+          const evidenceLevel = evidenceMatch[1];
+          const idx = evidenceMatch.index;
+
+          // Everything before the evidence level = dimension name
+          let dimension = trimmed.slice(0, idx).trim();
+          // Clean up dimension: remove leading "Faith / values-driven" → keep as-is
+          // Remove trailing separator characters
+          dimension = dimension.replace(/[|\s]+$/, '');
+
+          // Everything after the evidence level = notes
+          let notes = trimmed.slice(idx + evidenceLevel.length).trim();
+          // Strip leading pipe or whitespace separators
+          notes = notes.replace(/^[\s|]+/, '');
+
+          // If notes is too long (>200 chars) or contains sentence-like text
+          // that looks like a summary paragraph, split it off
+          const sentences = notes.match(/[^.!?]+[.!?]+/g) || [];
+          if (sentences.length >= 2) {
+            // Last sentence(s) might be the summary — check if the first
+            // sentence looks like an evidence note and the rest is summary
+            const firstSentence = sentences[0] || '';
+            const rest = sentences.slice(1).join(' ').trim();
+            if (rest.length > 100 && /\b(child|pupil|student|family|parent|school|thrive|struggle|fit|suits)\b/i.test(rest)) {
+              notes = firstSentence.trim();
+              summaryPara = rest;
+            }
+          }
+
+          // Also detect when notes clearly runs into a summary (no sentence boundary)
+          if (!summaryPara && notes.length > 250) {
+            // Look for "A child who..." or similar summary patterns
+            const summaryMatch = notes.match(/\b(A child|This school suits|Pupils who|Children who|Overall,|In summary,)/i);
+            if (summaryMatch) {
+              summaryPara = notes.slice(summaryMatch.index).trim();
+              notes = notes.slice(0, summaryMatch.index).trim();
+            }
+          }
+
+          out.push(`| ${dimension} | ${evidenceLevel} | ${notes} |`);
+        } else if (summaryPara) {
+          // Non-table line after table — treat as summary
+          summaryPara = (summaryPara || '') + ' ' + trimmed;
+        } else {
+          // Check if this is a summary paragraph that was appended to the last row
+          if (/\b(child|pupil|student|family|parent|thrive|struggle|fit|suits|school)\b/i.test(trimmed) && trimmed.length > 100) {
+            summaryPara = trimmed;
+          }
+        }
+      } else {
+        out.push(trimmed);
+      }
+    }
+
+    // End the table
+    out.push('');
+
+    // Append the summary paragraph if extracted
+    if (summaryPara) {
+      out.push(summaryPara.trim());
+    } else {
+      // Fallback: if no summary was extracted, add a placeholder note
+      out.push('_Summary not extracted — see Pros and Cons below._');
+    }
+
+    s.body = out.join('\n');
+  }
+  return sections;
+}
+
 // Adds _partLabel to the first section of each part (A1, B1, C1).
 // The UI uses this to render a divider row directly above the section.
 function tagPartLabels(sections) {
@@ -658,7 +764,7 @@ export const handler = async (event) => {
 
     // ── Step 5: Assemble and return ───────────────────────────────────────────
     // Part A sections already have _partLabel on A1; tag B1 and C1 from Call 2.
-    let finalSections = tagPartLabels(interleaveVerdicts(partASections, bcSections));
+    let finalSections = normaliseC1Table(tagPartLabels(interleaveVerdicts(partASections, bcSections)));
 
     // Apply deterministic flag overrides to AI-generated verdict sections.
     // partAFlags keys are like 'A5. Academic Performance'; verdict headings
