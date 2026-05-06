@@ -587,7 +587,7 @@ const REGEX_STOP_WORDS = new Set([
   // question / request words
   'what','which','who','whom','whose','when','where','how','why',
   'please','tell','told','ask','asked','asking','know','think','thought',
-  'wonder','wondering','check','find','looking','want','need','like','liked',
+  'wonder','wondering','check','find','look','looking','want','need','like','liked',
   // prepositions / conjunctions
   'a','an','the','in','on','at','to','for','of','or','and','but','nor',
   'with','from','by','about','into','onto','upon','near','nearby',
@@ -687,6 +687,36 @@ async function extractNamesAI(question, branch, apiKey, baseUrl, model) {
  * Tries regex first; falls back to AI when regex misses or finds too few
  * names for a comparison query.
  */
+/**
+ * Builds a search phrase from the distinctive words in a question — words that
+ * are neither stop-words nor school-type descriptors. Used as a fallback when
+ * regex name extraction finds nothing, so GIAS token-based search can match
+ * reordered/fragmented names like "latymer godolphin" → "Godolphin and Latymer".
+ */
+function extractSearchPhrase(question) {
+  const SCHOOL_WORDS = new Set([
+    'school','college','academy','grammar','primary','secondary','prep',
+    'preparatory','infant','junior','senior','high','upper','lower','middle',
+    'foundation','nursery','convent','sixth','form','free','state',
+    'independent','private','maintained','voluntary','community','trust',
+    'co-ed','coeducational','mixed','boys','girls','single','selective',
+    'non-selective','toddler','sen','send','ehc','fsm','eal','pupil','pupils','ofsted',
+  ]);
+
+  return question
+    .split(/[^a-z0-9'-]+/i)
+    .filter(w => {
+      const lw = w.toLowerCase();
+      if (lw.length < 3) return false;
+      if (REGEX_STOP_WORDS.has(lw)) return false;
+      if (SCHOOL_WORDS.has(lw)) return false;
+      // Skip words that look like postcodes
+      if (/^[a-z]{1,2}\d{1,2}[a-z]?$/i.test(w)) return false;
+      return true;
+    })
+    .join(' ');
+}
+
 async function extractSchoolNames(question, branch, apiKey, baseUrl, model) {
   const regexNames = extractNamesRegex(question);
   const isComparison = branch === 'prompt_branch_2';
@@ -695,6 +725,13 @@ async function extractSchoolNames(question, branch, apiKey, baseUrl, model) {
   if (regexNames.length >= 1 && !isComparison) return regexNames;
   // For comparisons we want ≥2; fall through to AI if we have fewer
   if (regexNames.length >= 2 && isComparison) return regexNames;
+
+  // Build a keyword search phrase from distinctive question words.
+  // GIAS does token-based matching, so "latymer godolphin" finds
+  // "Godolphin and Latymer School" without needing AI.
+  // Require ≥2 words — a single word is too likely to be a false match.
+  const phrase = extractSearchPhrase(question);
+  if (phrase && regexNames.length === 0 && phrase.split(/\s+/).length >= 2) return [phrase];
 
   const aiNames = await extractNamesAI(question, branch, apiKey, baseUrl, model);
   // Return whichever set is larger / non-empty
