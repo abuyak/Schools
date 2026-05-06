@@ -15,6 +15,7 @@
  * the AI knows to fetch it via web search rather than silently omitting it.
  */
 
+import { readFileSync } from 'fs';
 import { getSchoolEthnicity } from './local-data.js';
 import { getISIInspection, getIndependentFees } from './independent.js';
 
@@ -2263,84 +2264,40 @@ export async function getLAPerformanceKS5(laCode) {
   return Object.keys(result).length ? result : null;
 }
 
-// ─── KS4 Subject entries (EES Subject school level exam data) ────────────
+// ─── KS4 Subject entries (bundled EES CSV lookup) ─────────────────────────
 
-const EES_SUBJECT_DATASET = '1ae39901-b462-df76-b108-640a078d7944';
+let _subjectEntriesIndex = null;
 
-// Subject code → name (cross-referenced from DfE website, Reigate School 145217)
-const SUBJECT_NAMES = {
-  'XZGfK':'English Language','3pE8u':'Mathematics','TEpPJ':'English Literature',
-  '9Cq4v':'Religious Studies','PjReb':'History','ogGmX':'Spanish',
-  'fs7YF':'Geography','qhMjG':'Design & Technology','9OO4v':'Biology',
-  '78xXo':'Chemistry','mOD9K':'Physics','tRQEm':'French',
-  '9CC4v':'Drama & Theatre Studies','O2cCL':'Business Studies:Single',
-  '0tIT5':'Art & Design (Textiles)','Ol3CL':'Computer Studies/Computing',
-  'YxtHK':'D&T Food Technology','5wndi':'Dance','bRntT':'Music',
-  'wU9bx':'Hospitality / Catering',
-  // Additional codes seen in data (exact match pending):
-  'ALBGK':'Computer Appreciation','bUvtT':'Sports Studies',
-  'Pqweb':'Science: Double Award','fZBYF':'Health Studies',
-  'VQe5X':'Small Business Management','ujpo4':'Sociology',
-  'C2iId':'Tourism','TtnPJ':'Art & Design','kBThs':'Physical Education',
-};
+function loadSubjectEntriesIndex() {
+  if (!_subjectEntriesIndex) {
+    const path = new URL('./sources/subject-entries-by-urn.json', import.meta.url);
+    _subjectEntriesIndex = JSON.parse(readFileSync(path, 'utf8'));
+  }
+  return _subjectEntriesIndex;
+}
 
-// Qualification code → name
-const QUAL_NAMES = {
-  'wIKLb':'GCSE','qfrwj':'GCSE','oWVfm':'GCSE','t76OE':'GCSE',
-  'LK9oW':'GCSE','jYDXA':'GCSE','7SjQX':'GCSE','S9YZV':'GCSE',
-  '9ldB4':'GCSE','bB1Pt':'GCSE','eapwu':'GCSE','5UFud':'GCSE',
-  'OJbiC':'GCSE','2iUpl':'GCSE','crhx3':'GCSE','W14z2':'GCSE',
-  'DOx0Q':'GCSE','QCMUw':'GCSE','dRFI0':'GCSE','kZekh':'GCSE',
-  'f5gpY':'Technical Award','0kJbT':'Technical Award',
-  'ThnhP':'Technical Award','zTCHF':'Technical Award',
-  'm2dc9':'Technical Award','6A83r':'Technical Award','ij326':'Technical Award',
-};
-
-/**
- * Fetches KS4 subject entries for a school from the EES subject-level dataset.
- * Returns an array of { subject, qualification, entries } sorted by entries descending.
- */
-export async function fetchSubjectEntries(urn) {
+export function fetchSubjectEntries(urn) {
   if (!urn) return null;
-  const EES_BASE = 'https://api.education.gov.uk/statistics/v1';
-  const allResults = [];
+  const index = loadSubjectEntriesIndex();
+  return index[String(urn)] || null;
+}
 
-  // Fetch all pages (typically 1-2 pages for a single school)
-  for (let page = 1; page <= 5; page++) {
-    const params = new URLSearchParams({
-      'locations.in': `SCH|urn|${urn}`,
-      'timePeriods.in': '2024/2025|AY',
-      'pageSize': '200',
-      'page': String(page),
-    });
-    const url = `${EES_BASE}/data-sets/${EES_SUBJECT_DATASET}/query?${params}`;
-    const data = await safeFetchJson(url).catch(() => null);
-    if (!data?.results?.length) break;
-    allResults.push(...data.results);
+// ─── KS5 Subject entries (bundled EES CSV lookup) ─────────────────────────
+
+let _ks5SubjectIndex = null;
+
+function loadKS5SubjectIndex() {
+  if (!_ks5SubjectIndex) {
+    const path = new URL('./sources/ks5-subject-entries-by-urn.json', import.meta.url);
+    _ks5SubjectIndex = JSON.parse(readFileSync(path, 'utf8'));
   }
+  return _ks5SubjectIndex;
+}
 
-  if (!allResults.length) return null;
-
-  // Filter to yM9aB=AHDJG (Total pupils) and 1wmi3=mgN9K (total row)
-  const totals = allResults.filter(r =>
-    r.filters?.yM9aB === 'AHDJG' && r.filters?.['1wmi3'] === 'mgN9K'
-  );
-
-  // Build subject entries
-  const entries = [];
-  for (const r of totals) {
-    const subjCode = r.filters?.dmG0Z;
-    const qualCode = r.filters?.b7NtT;
-    const count = parseInt(r.values?.TEpPJ || '0', 10);
-    if (!count) continue;
-    entries.push({
-      subject: SUBJECT_NAMES[subjCode] || subjCode,
-      qualification: QUAL_NAMES[qualCode] || qualCode,
-      entries: count,
-    });
-  }
-
-  return entries.sort((a, b) => b.entries - a.entries);
+export function fetchKS5SubjectEntries(urn) {
+  if (!urn) return null;
+  const index = loadKS5SubjectIndex();
+  return index[String(urn)] || null;
 }
 
 export async function getFinancialData(urn) {
@@ -2745,7 +2702,7 @@ function govLinks(urn) {
  * Picks ~15 high-signal variables by code rather than dumping all rows.
  * Covers KS2 (primary), KS4 (secondary), plus pupil census and absence for all.
  */
-function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false, isIndependent = false, laPerfKS5 = null, subjectEntries = null) {
+function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false, isIndependent = false, laPerfKS5 = null, subjectEntries = null, ks5SubjectEntries = null) {
 
   if (!perf) return '_Not retrieved_';
 
@@ -3361,10 +3318,20 @@ const KS5_TOPICS = [
     if (subjectEntries?.length) {
       lines.push('');
       lines.push('**Subjects entered (KS4)**');
-      lines.push('| Subject | Qualification | Entries |');
-      lines.push('|---|---:|---:|');
-      for (const e of subjectEntries) {
-        lines.push(`| ${e.subject} | ${e.qualification} | ${e.entries} |`);
+      const hasG7 = subjectEntries.some(e => e.grade7PlusPct !== undefined);
+      if (hasG7) {
+        lines.push('| Subject | Qualification | Entries | Grade 7+ |');
+        lines.push('|---|---:|---:|---:|');
+        for (const e of subjectEntries) {
+          const g7 = e.grade7PlusPct !== undefined ? `${e.grade7PlusPct}%` : '—';
+          lines.push(`| ${e.subject} | ${e.qualification} | ${e.entries} | ${g7} |`);
+        }
+      } else {
+        lines.push('| Subject | Qualification | Entries |');
+        lines.push('|---|---:|---:|');
+        for (const e of subjectEntries) {
+          lines.push(`| ${e.subject} | ${e.qualification} | ${e.entries} |`);
+        }
       }
     }
   }
@@ -3374,6 +3341,39 @@ const KS5_TOPICS = [
     lines.push('**Key Stage 5 / 16–18 (2024/25)**');
     for (const topic of KS5_TOPICS) renderTopic(indCols(topic), 'KS5');
     renderKS5Timeseries();
+
+    // KS5 subject entries table
+    if (ks5SubjectEntries?.length) {
+      lines.push('');
+      lines.push('**A-level / Level 3 subjects entered**');
+      const hasAB = ks5SubjectEntries.some(e => e.aToBPct !== undefined);
+      if (hasAB) {
+        lines.push('| Subject | Qualification | Entries | A–B |');
+        lines.push('|---|---:|---:|---:|');
+        for (const e of ks5SubjectEntries) {
+          const ab = e.aToBPct !== undefined ? `${e.aToBPct}%` : '—';
+          // Shorten verbose qualification names
+          const qual = e.qualification
+            .replace('GCE A level', 'A-level')
+            .replace('GCE AS level', 'AS-level')
+            .replace(/BTEC National Extended Certificate L3 - Band \w - P-D\*/, 'BTEC L3 Ext Cert')
+            .replace(/BTEC National Diploma L3 - Band \w - PP-D\*D\*/, 'BTEC L3 Diploma')
+            .replace(/OCR Cambridge Technical Extended Certificate at Level 3/, 'OCR L3 Ext Cert')
+            .replace(/OCR Cambridge Technical Diploma at Level 2/, 'OCR L2 Diploma')
+            .replace(/OCR Cambridge Technical Certificate at Level 2/, 'OCR L2 Cert')
+            .replace(/VRQ Level 3/, 'VRQ L3')
+            .replace(/Extended Project \(Diploma\)/, 'Extended Project')
+            .replace(/Core Maths Qualifications at Level 3/, 'Core Maths');
+          lines.push(`| ${e.subject} | ${qual} | ${e.entries} | ${ab} |`);
+        }
+      } else {
+        lines.push('| Subject | Qualification | Entries |');
+        lines.push('|---|---:|---:|');
+        for (const e of ks5SubjectEntries) {
+          lines.push(`| ${e.subject} | ${e.qualification} | ${e.entries} |`);
+        }
+      }
+    }
   }
 
   return lines.filter(l => l !== '').length > 1
@@ -3562,7 +3562,7 @@ function fmtSchoolEthnicitySlim(e) {
 }
 
 export function buildSlimBlock(school) {
-  const { input, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees, subjectEntries } = school;
+  const { input, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees, subjectEntries, ks5SubjectEntries } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
 
@@ -3609,7 +3609,7 @@ export function buildSlimBlock(school) {
 **Links:** ${links}
 
 ### Academic Results (DfE)
-${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null, false, identity?.isIndependent ?? false, null, subjectEntries)}
+${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null, false, identity?.isIndependent ?? false, null, subjectEntries, ks5SubjectEntries)}
 ### Financial Benchmarking (FBIT)
 ${fmtFinancial(financial, identity?.isIndependent ?? false)}
 ${fees ? `### School Fees\n- ${Object.entries(fees).filter(([k]) => k !== 'source' && k !== 'raw').map(([k,v]) => {
@@ -3670,6 +3670,34 @@ function fmtCensusSlim(performance, schoolEthnicity) {
     if (eal)  lines.push(`| EAL pupils | ${eal} | — |`);
     if (senK) lines.push(`| SEN support | ${senK} | ~13% |`);
     if (senE) lines.push(`| EHC plans | ${senE} | ~4.5% |`);
+  }
+
+  // ── SEN & Inclusion sub-section ──────────────────────────────────────
+  if (senK || senE) {
+    lines.push('');
+    lines.push('**SEN & Inclusion**');
+    const senKnum = parseFloat(senK);
+    const senEnum = parseFloat(senE);
+    const totalSEN = (!isNaN(senKnum) ? senKnum : 0) + (!isNaN(senEnum) ? senEnum : 0);
+
+    if (totalSEN > 30) {
+      lines.push(`- **Very high SEN cohort** — ${Math.round(totalSEN)}% of pupils have SEN support or an EHC plan (national ~17.5%). Likely a school with a SEN unit or resourced provision — contact the SENCo for details on specialist support.`);
+    } else if (totalSEN > 22) {
+      lines.push(`- **Above-average SEN cohort** — ${Math.round(totalSEN)}% of pupils have SEN support or an EHC plan (national ~17.5%). This usually indicates strong, well-resourced SEN provision that attracts families with additional needs.`);
+    } else if (totalSEN > 5) {
+      lines.push(`- **Typical SEN profile** — ${Math.round(totalSEN)}% of pupils have SEN support or an EHC plan, broadly in line with national averages.`);
+    } else {
+      lines.push(`- **Low SEN cohort** — ${Math.round(totalSEN)}% of pupils have SEN support or an EHC plan (national ~17.5%). Parents of children with significant needs may wish to ask the SENCo about capacity.`);
+    }
+
+    const senEAbove = !isNaN(senEnum) && senEnum > 6;
+    if (senEAbove) {
+      lines.push(`- **Above-average proportion of pupils with EHC plans** (${senEnum}% vs national ~4.5%) — suggests the school has experience with high-need pupils and a dedicated SEN team.`);
+    }
+
+    if (totalSEN > 15) {
+      lines.push('- **For parents of children with SEN:** Ask about the SENCo team size, TA-to-pupil ratio for 1:1 support, and whether the school has a specialist unit/resourced provision for your child\'s specific primary need.');
+    }
   }
 
   if (schoolEthnicity) {
@@ -3930,9 +3958,9 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
 
       // Phase 2c: KS4 subject entries for all schools with KS4 data
       const hasKS4 = Object.keys(performance ?? {}).some(k => k.startsWith('KS4'));
-      const subjectEntries = hasKS4
-        ? await fetchSubjectEntries(urn).catch(() => null)
-        : null;
+      const hasKS5 = Object.keys(performance ?? {}).some(k => k.startsWith('KS5'));
+      const subjectEntries = hasKS4 ? fetchSubjectEntries(urn) : null;
+      const ks5SubjectEntries = hasKS5 ? fetchKS5SubjectEntries(urn) : null;
 
       // Phase 3: area data — postcode comes from DfE CSV (PCODE in phase-specific namespace, e.g. KS2_25).
       // Fall back to identity.postcode (from GIAS search tile — always present when URN resolves)
@@ -3955,7 +3983,6 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
         : null;
 
       // Phase 4b: KS5 LA averages (separate EES datasets)
-      const hasKS5 = Object.keys(performance ?? {}).some(k => k.startsWith('KS5'));
       const laPerfKS5 = (detailed && hasKS5 && area?.laCode)
         ? await getLAPerformanceKS5(area.laCode).catch(() => null)
         : null;
@@ -3970,7 +3997,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Bundled local data (zero-latency — no HTTP)
       const schoolEthnicity = urn ? getSchoolEthnicity(urn) : null;
 
-      return { input: name, identity, ofsted, performance, financial, area, laPerf, laPerfKS5, schoolEthnicity, giasDetails, subjectEntries };
+      return { input: name, identity, ofsted, performance, financial, area, laPerf, laPerfKS5, schoolEthnicity, giasDetails, subjectEntries, ks5SubjectEntries };
     })
   );
 
@@ -4114,7 +4141,7 @@ export function computeFlags(school) {
 // Exported so the Lambda handler can call it after fetchGovDataForPrompt resolves.
 
 export function renderPartA(school, flags = {}) {
-  const { identity, ofsted, performance, financial, area, schoolEthnicity, laPerf, giasDetails, subjectEntries } = school;
+  const { identity, ofsted, performance, financial, area, schoolEthnicity, laPerf, giasDetails, subjectEntries, ks5SubjectEntries } = school;
   const isIndependent = identity?.isIndependent ?? false;
 
   // ── Lookup helpers ─────────────────────────────────────────────────────────
@@ -4333,7 +4360,7 @@ export function renderPartA(school, flags = {}) {
   {
     // tablesOnly=true: stop before the census/absence/raw-variable dump —
     // those sections are already rendered in A4, A6, and the slim block.
-    const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null, true, identity?.isIndependent ?? false, null, subjectEntries);
+    const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null, true, identity?.isIndependent ?? false, null, subjectEntries, ks5SubjectEntries);
     sections.push({ heading: 'A5. Academic Performance', body, flag: flags['A5. Academic Performance'] ?? 'none' });
   }
 

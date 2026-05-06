@@ -27,6 +27,7 @@ import {
   getLAPerformanceKS2,
   getLAPerformanceKS4,
   fetchSubjectEntries,
+  fetchKS5SubjectEntries,
   buildSlimBlock,
 } from '../govuk.js';
 
@@ -191,6 +192,7 @@ async function captureOne(school) {
   // 6. LA performance data — based on what data the school has, not phase label
   const hasKS2 = Object.keys(performance ?? {}).some(k => k.startsWith('KS2'));
   const hasKS4 = Object.keys(performance ?? {}).some(k => k.startsWith('KS4'));
+  const hasKS5 = Object.keys(performance ?? {}).some(k => k.startsWith('KS5'));
   const laCode = area?.laCode ?? null;
   const laPerf = hasKS2 && laCode
     ? await getLAPerformanceKS2(laCode).catch(() => null)
@@ -209,9 +211,17 @@ async function captureOne(school) {
   // 7. KS4 subject entries
   let subjectEntries = null;
   if (hasKS4) {
-    subjectEntries = await fetchSubjectEntries(urn).catch(() => null);
+    subjectEntries = fetchSubjectEntries(urn);
     if (subjectEntries) ok(`Subject entries: ${subjectEntries.length} subjects`);
     else nil('Subject entries not retrieved');
+  }
+
+  // 7b. KS5 subject entries
+  let ks5SubjectEntries = null;
+  if (hasKS5) {
+    ks5SubjectEntries = fetchKS5SubjectEntries(urn);
+    if (ks5SubjectEntries) ok(`KS5 subject entries: ${ks5SubjectEntries.length} subjects`);
+    else nil('KS5 subject entries not retrieved');
   }
 
   // 9. Local ethnicity index
@@ -224,7 +234,7 @@ async function captureOne(school) {
     ? ofstedBase  // ISI data is self-contained (enriched inside getISIInspection)
     : ofstedBase; // Ofsted data is already enriched with PDFs inside getOfstedData
 
-  const schoolObj = { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees, subjectEntries };
+  const schoolObj = { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees, subjectEntries, ks5SubjectEntries };
 
   // 10. Render slim block
   const slim = buildSlimBlock(schoolObj);
@@ -249,6 +259,7 @@ async function captureOne(school) {
     giasDetails,
     fees,
     subjectEntries,
+    ks5SubjectEntries,
   };
 
   writeFileSync(

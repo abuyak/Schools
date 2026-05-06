@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 145217,
     "label": "state-secondary",
-    "capturedAt": "2026-05-05T20:56:45.093Z",
+    "capturedAt": "2026-05-06T00:33:09.915Z",
     "note": "KS4 only — Attainment 8, Progress 8, EBacc"
   },
   "input": "Reigate School",
@@ -1928,13 +1928,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 213,
+      "totalTransactions": 215,
       "postcodesQueried": 100,
-      "medianAllTypes": "£460,000",
+      "medianAllTypes": "£442,500",
       "byType": {
         "Semi-detached": "£475,000",
-        "Terraced": "£450,000",
-        "Flat / Maisonette": "£240,000",
+        "Terraced": "£430,000",
+        "Flat / Maisonette": "£257,500",
         "Detached": "£850,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -2194,108 +2194,189 @@
   "subjectEntries": [
     {
       "subject": "English Language",
-      "qualification": "GCSE",
-      "entries": 252
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 252,
+      "grade7Plus": 70,
+      "grade7PlusPct": 28
     },
     {
       "subject": "Mathematics",
-      "qualification": "GCSE",
-      "entries": 252
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 252,
+      "grade7Plus": 80,
+      "grade7PlusPct": 32
     },
     {
       "subject": "English Literature",
-      "qualification": "GCSE",
-      "entries": 245
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 245,
+      "grade7Plus": 67,
+      "grade7PlusPct": 27
     },
     {
       "subject": "Religious Studies",
-      "qualification": "GCSE",
-      "entries": 243
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 243,
+      "grade7Plus": 67,
+      "grade7PlusPct": 28
+    },
+    {
+      "subject": "Combined Science",
+      "qualification": "GCSE (9-1) Full Course (Double Award)",
+      "entries": 188
     },
     {
       "subject": "History",
-      "qualification": "GCSE",
-      "entries": 176
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 176,
+      "grade7Plus": 58,
+      "grade7PlusPct": 33
     },
     {
       "subject": "Spanish",
-      "qualification": "GCSE",
-      "entries": 149
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 149,
+      "grade7Plus": 16,
+      "grade7PlusPct": 11
     },
     {
       "subject": "Geography",
-      "qualification": "GCSE",
-      "entries": 78
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 78,
+      "grade7Plus": 24,
+      "grade7PlusPct": 31
     },
     {
-      "subject": "Science: Double Award",
-      "qualification": "GCSE",
-      "entries": 76
+      "subject": "Art and Design",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 76,
+      "grade7Plus": 17,
+      "grade7PlusPct": 22
     },
     {
       "subject": "Design & Technology",
-      "qualification": "GCSE",
-      "entries": 61
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 61,
+      "grade7Plus": 17,
+      "grade7PlusPct": 28
     },
     {
       "subject": "Biology",
-      "qualification": "GCSE",
-      "entries": 57
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 57,
+      "grade7Plus": 30,
+      "grade7PlusPct": 53
     },
     {
       "subject": "Chemistry",
-      "qualification": "GCSE",
-      "entries": 57
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 57,
+      "grade7Plus": 24,
+      "grade7PlusPct": 42
     },
     {
       "subject": "Physics",
-      "qualification": "GCSE",
-      "entries": 57
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 57,
+      "grade7Plus": 34,
+      "grade7PlusPct": 60
     },
     {
       "subject": "French",
-      "qualification": "GCSE",
-      "entries": 54
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 54,
+      "grade7Plus": 15,
+      "grade7PlusPct": 28
     },
     {
-      "subject": "Drama & Theatre Studies",
-      "qualification": "GCSE",
-      "entries": 34
+      "subject": "Sports",
+      "qualification": "OCR Level 1 / 2 Cambridge National Certificate",
+      "entries": 51,
+      "grade7Plus": 20,
+      "grade7PlusPct": 39
     },
     {
-      "subject": "Computer Studies/Computing",
-      "qualification": "GCSE",
-      "entries": 32
+      "subject": "Multimedia",
+      "qualification": "OCR Level 1 / 2 Cambridge National Certificate",
+      "entries": 49,
+      "grade7Plus": 9,
+      "grade7PlusPct": 18
     },
     {
-      "subject": "Business Studies:Single",
-      "qualification": "GCSE",
-      "entries": 31
+      "subject": "Drama",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 34,
+      "grade7Plus": 8,
+      "grade7PlusPct": 24
     },
     {
-      "subject": "Art & Design (Textiles)",
-      "qualification": "GCSE",
-      "entries": 30
+      "subject": "Physical Education",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 32,
+      "grade7Plus": 9,
+      "grade7PlusPct": 28
     },
     {
-      "subject": "Hospitality / Catering",
-      "qualification": "Technical Award",
-      "entries": 22
+      "subject": "Computer Science",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 30,
+      "grade7Plus": 11,
+      "grade7PlusPct": 37
     },
     {
-      "subject": "D&T Food Technology",
-      "qualification": "GCSE",
-      "entries": 17
+      "subject": "Health",
+      "qualification": "OCR Level 1 / 2 Cambridge National Certificate",
+      "entries": 26,
+      "grade7Plus": 4,
+      "grade7PlusPct": 15
+    },
+    {
+      "subject": "Social Studies",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 22,
+      "grade7Plus": 11,
+      "grade7PlusPct": 50
+    },
+    {
+      "subject": "Business",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 21,
+      "grade7Plus": 14,
+      "grade7PlusPct": 67
+    },
+    {
+      "subject": "Hospitality and Catering",
+      "qualification": "Level 1 / Level 2 vocational qualification (any AO and grade structure)",
+      "entries": 20,
+      "grade7Plus": 2,
+      "grade7PlusPct": 10
+    },
+    {
+      "subject": "Tourism",
+      "qualification": "BTEC Technical Award L1 / 2 - Band C - P-D*",
+      "entries": 18
     },
     {
       "subject": "Dance",
-      "qualification": "GCSE",
-      "entries": 17
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 17,
+      "grade7Plus": 9,
+      "grade7PlusPct": 53
+    },
+    {
+      "subject": "Food Preparation & Nutrition",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 17,
+      "grade7Plus": 2,
+      "grade7PlusPct": 12
     },
     {
       "subject": "Music",
-      "qualification": "GCSE",
-      "entries": 10
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 10,
+      "grade7Plus": 2,
+      "grade7PlusPct": 20
     }
-  ]
+  ],
+  "ks5SubjectEntries": null
 }

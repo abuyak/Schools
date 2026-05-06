@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 145005,
     "label": "state-sixth-form",
-    "capturedAt": "2026-05-05T20:56:55.272Z",
+    "capturedAt": "2026-05-06T00:33:19.933Z",
     "note": "KS5 only — no KS2 or KS4"
   },
   "input": "Reigate College",
@@ -3045,5 +3045,347 @@
     "religiousCharacter": "Does not apply"
   },
   "fees": null,
-  "subjectEntries": null
+  "subjectEntries": null,
+  "ks5SubjectEntries": [
+    {
+      "subject": "Mathematics",
+      "qualification": "GCE A level",
+      "entries": 311,
+      "aToB": 181,
+      "aToBPct": 58
+    },
+    {
+      "subject": "Business Studies",
+      "qualification": "BTEC National Extended Certificate L3 - Band F - P-D*",
+      "entries": 282,
+      "aToB": 204,
+      "aToBPct": 72
+    },
+    {
+      "subject": "Social Science",
+      "qualification": "VRQ Level 3",
+      "entries": 266,
+      "aToB": 89,
+      "aToBPct": 33
+    },
+    {
+      "subject": "Study Skills",
+      "qualification": "Extended Project (Diploma)",
+      "entries": 217,
+      "aToB": 202,
+      "aToBPct": 93
+    },
+    {
+      "subject": "Psychology",
+      "qualification": "GCE A level",
+      "entries": 201,
+      "aToB": 118,
+      "aToBPct": 59
+    },
+    {
+      "subject": "Sociology",
+      "qualification": "GCE A level",
+      "entries": 172,
+      "aToB": 92,
+      "aToBPct": 53
+    },
+    {
+      "subject": "Law / Legal Studies",
+      "qualification": "BTEC National Extended Certificate L3 - Band F - P-D*",
+      "entries": 160,
+      "aToB": 128,
+      "aToBPct": 80
+    },
+    {
+      "subject": "Economics",
+      "qualification": "GCE A level",
+      "entries": 150,
+      "aToB": 93,
+      "aToBPct": 62
+    },
+    {
+      "subject": "Biology",
+      "qualification": "BTEC National Extended Certificate L3 - Band F - P-D*",
+      "entries": 150,
+      "aToB": 72,
+      "aToBPct": 48
+    },
+    {
+      "subject": "History",
+      "qualification": "GCE A level",
+      "entries": 137,
+      "aToB": 72,
+      "aToBPct": 53
+    },
+    {
+      "subject": "Geography",
+      "qualification": "GCE A level",
+      "entries": 128,
+      "aToB": 84,
+      "aToBPct": 66
+    },
+    {
+      "subject": "Biology",
+      "qualification": "GCE A level",
+      "entries": 124,
+      "aToB": 79,
+      "aToBPct": 64
+    },
+    {
+      "subject": "Business Studies",
+      "qualification": "GCE A level",
+      "entries": 122,
+      "aToB": 90,
+      "aToBPct": 74
+    },
+    {
+      "subject": "Film / Video / Television Production",
+      "qualification": "BTEC National Extended Certificate L3 - Band F - P-D*",
+      "entries": 112,
+      "aToB": 42,
+      "aToBPct": 38
+    },
+    {
+      "subject": "Chemistry",
+      "qualification": "GCE A level",
+      "entries": 111,
+      "aToB": 61,
+      "aToBPct": 55
+    },
+    {
+      "subject": "English Literature",
+      "qualification": "GCE A level",
+      "entries": 107,
+      "aToB": 67,
+      "aToBPct": 63
+    },
+    {
+      "subject": "English Language and Literature",
+      "qualification": "GCE A level",
+      "entries": 104,
+      "aToB": 50,
+      "aToBPct": 48
+    },
+    {
+      "subject": "Physics",
+      "qualification": "GCE A level",
+      "entries": 104,
+      "aToB": 56,
+      "aToBPct": 54
+    },
+    {
+      "subject": "Health Studies",
+      "qualification": "BTEC National Extended Certificate L3 - Band F - P-D*",
+      "entries": 95,
+      "aToB": 60,
+      "aToBPct": 63
+    },
+    {
+      "subject": "Government and Politics",
+      "qualification": "GCE A level",
+      "entries": 76,
+      "aToB": 61,
+      "aToBPct": 80
+    },
+    {
+      "subject": "Law",
+      "qualification": "GCE A level",
+      "entries": 72,
+      "aToB": 54,
+      "aToBPct": 75
+    },
+    {
+      "subject": "Film Studies",
+      "qualification": "GCE A level",
+      "entries": 71,
+      "aToB": 50,
+      "aToBPct": 70
+    },
+    {
+      "subject": "Sports Studies",
+      "qualification": "BTEC National Extended Certificate L3 - Band F - P-D*",
+      "entries": 67,
+      "aToB": 46,
+      "aToBPct": 69
+    },
+    {
+      "subject": "Classical Civilisation",
+      "qualification": "GCE A level",
+      "entries": 64,
+      "aToB": 39,
+      "aToBPct": 61
+    },
+    {
+      "subject": "Media / Film / TV Studies",
+      "qualification": "GCE A level",
+      "entries": 64,
+      "aToB": 36,
+      "aToBPct": 56
+    },
+    {
+      "subject": "Computer Science",
+      "qualification": "GCE A level",
+      "entries": 61,
+      "aToB": 25,
+      "aToBPct": 41
+    },
+    {
+      "subject": "Travel and Tourism",
+      "qualification": "BTEC National Extended Certificate L3 - Band F - P-D*",
+      "entries": 56,
+      "aToB": 29,
+      "aToBPct": 52
+    },
+    {
+      "subject": "Engineering Studies",
+      "qualification": "BTEC National Extended Certificate L3 - Band F - P-D*",
+      "entries": 55,
+      "aToB": 29,
+      "aToBPct": 53
+    },
+    {
+      "subject": "3D Studies",
+      "qualification": "GCE A level",
+      "entries": 50,
+      "aToB": 29,
+      "aToBPct": 58
+    },
+    {
+      "subject": "Physical Education / Sports Studies",
+      "qualification": "GCE A level",
+      "entries": 45,
+      "aToB": 17,
+      "aToBPct": 38
+    },
+    {
+      "subject": "Fine Art",
+      "qualification": "GCE A level",
+      "entries": 44,
+      "aToB": 32,
+      "aToBPct": 73
+    },
+    {
+      "subject": "Photography",
+      "qualification": "GCE A level",
+      "entries": 43,
+      "aToB": 31,
+      "aToBPct": 72
+    },
+    {
+      "subject": "Computer Appreciation (Introduction)",
+      "qualification": "OCR Cambridge Technical Introductory Diploma at Level 3",
+      "entries": 43,
+      "aToB": 29,
+      "aToBPct": 67
+    },
+    {
+      "subject": "Graphics",
+      "qualification": "GCE A level",
+      "entries": 39,
+      "aToB": 29,
+      "aToBPct": 74
+    },
+    {
+      "subject": "Mathematics (Further)",
+      "qualification": "GCE A level",
+      "entries": 38,
+      "aToB": 34,
+      "aToBPct": 89
+    },
+    {
+      "subject": "Logic / Philosophy",
+      "qualification": "GCE A level",
+      "entries": 35,
+      "aToB": 27,
+      "aToBPct": 77
+    },
+    {
+      "subject": "Sports / Movement Science",
+      "qualification": "BTEC National Extended Certificate L3 - Band F - P-D*",
+      "entries": 33,
+      "aToB": 25,
+      "aToBPct": 76
+    },
+    {
+      "subject": "Spanish",
+      "qualification": "GCE A level",
+      "entries": 28,
+      "aToB": 21,
+      "aToBPct": 75
+    },
+    {
+      "subject": "Textiles",
+      "qualification": "GCE A level",
+      "entries": 28,
+      "aToB": 22,
+      "aToBPct": 79
+    },
+    {
+      "subject": "French",
+      "qualification": "GCE A level",
+      "entries": 19,
+      "aToB": 9,
+      "aToBPct": 47
+    },
+    {
+      "subject": "Music Technology",
+      "qualification": "GCE A level",
+      "entries": 19,
+      "aToB": 10,
+      "aToBPct": 53
+    },
+    {
+      "subject": "Music Performance (Group)",
+      "qualification": "BTEC National Extended Certificate L3 - Band F - P-D*",
+      "entries": 11,
+      "aToB": 2,
+      "aToBPct": 18
+    },
+    {
+      "subject": "German",
+      "qualification": "GCE A level",
+      "entries": 7,
+      "aToB": 6,
+      "aToBPct": 86
+    },
+    {
+      "subject": "Business Studies",
+      "qualification": "BTEC Level 3 National Certificate (Band D)",
+      "entries": 7
+    },
+    {
+      "subject": "Music",
+      "qualification": "GCE A level",
+      "entries": 6,
+      "aToB": 1,
+      "aToBPct": 17
+    },
+    {
+      "subject": "Travel and Tourism",
+      "qualification": "BTEC Level 3 National Certificate (Band D)",
+      "entries": 6,
+      "aToB": 2,
+      "aToBPct": 33
+    },
+    {
+      "subject": "Law / Legal Studies",
+      "qualification": "BTEC Level 3 National Certificate (Band D)",
+      "entries": 3
+    },
+    {
+      "subject": "Ancient History",
+      "qualification": "GCE A level",
+      "entries": 1
+    },
+    {
+      "subject": "Mathematics (Further)",
+      "qualification": "GCE AS level",
+      "entries": 1
+    },
+    {
+      "subject": "Computer Appreciation (Introduction)",
+      "qualification": "OCR Cambridge Technical Certificate at Level 3",
+      "entries": 1
+    }
+  ]
 }

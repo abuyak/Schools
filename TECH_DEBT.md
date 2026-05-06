@@ -317,3 +317,34 @@ schools (state and independent).
 1. School location code is mapped from URN
 2. Per-subject entry counts are rendered as a table in the A5 KS4 section
 3. Table shows: Subject | Qualification | Total entries
+
+---
+
+## TD-014 · KS5 LA comparisons from EES API
+
+**Severity:** Medium — KS5 tables show England but not LA comparisons  
+**File:** `functions/research/govuk.js` — new `getLAPerformanceKS5(laCode)` function  
+**Dataset:** `019d913a-eae0-7043-b196-875639ce5402` (A level by region and subject)  
+**Publication:** A level and other 16 to 18 results (`3f3a66ec-...`)
+
+**Problem:**
+The DfE compare-school-performance website shows LA comparisons for KS5 metrics
+(average grade, average points, progress VA, AAB facilitating, retention).
+The EES dataset returns LA-level data but uses opaque, unlabelled filter codes:
+- `52udi`: subject/characteristic dimension (9 unique values)
+- `mMa9K`: grade band/metric type (6 unique values)
+- `41LUZ`: institution type (6 unique values)
+- Value fields: `5TOPd` (count), `TuBeP` (count), `cZPZ3` (%), `tjcGE` (%)
+
+Each result is per-subject × per-grade, requiring aggregation to get school-level
+averages. Filter codes need mapping to human-readable dimensions.
+
+**Approach options:**
+1. Find EES metadata endpoint that labels filter/value codes (check /v1/meta or similar)
+2. Cross-reference values against known DfE website data to reverse-engineer mappings
+3. Scrape compare-school-performance website directly for LA figures
+
+**Done when:**
+1. KS5 LA data is fetched for the school's LA and displayed alongside England values
+2. Minimum: average grade, average points, progress VA, AAB, retention LA values
+3. Multi-year support (like KS4 results over time)
