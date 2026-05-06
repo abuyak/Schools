@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 137648,
     "label": "state-primary",
-    "capturedAt": "2026-05-02T07:23:08.279Z",
+    "capturedAt": "2026-05-06T00:33:02.386Z",
     "note": "KS1 + KS2 — largest data set for primary"
   },
   "input": "Redriff Primary",
@@ -982,12 +982,12 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 234,
+      "totalTransactions": 190,
       "postcodesQueried": 100,
-      "medianAllTypes": "£520,000",
+      "medianAllTypes": "£499,950",
       "byType": {
         "Flat / Maisonette": "£450,000",
-        "Terraced": "£669,000",
+        "Terraced": "£740,000",
         "Semi-detached": "£675,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -1105,5 +1105,7 @@
     "website": "https://redriff.cola.org.uk (opens in new tab)",
     "religiousCharacter": "Does not apply"
   },
-  "fees": null
+  "fees": null,
+  "subjectEntries": null,
+  "ks5SubjectEntries": null
 }

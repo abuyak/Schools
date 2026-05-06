@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125427,
     "label": "independent-secondary",
-    "capturedAt": "2026-05-02T07:23:42.190Z",
+    "capturedAt": "2026-05-06T00:33:44.354Z",
     "note": "Independent secondary — fees, ISI, no DfE data"
   },
   "input": "Caterham School",
@@ -1110,13 +1110,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 107,
+      "totalTransactions": 151,
       "postcodesQueried": 74,
-      "medianAllTypes": "£725,000",
+      "medianAllTypes": "£675,000",
       "byType": {
-        "Flat / Maisonette": "£305,000",
-        "Detached": "£988,000",
-        "Semi-detached": "£699,950",
+        "Flat / Maisonette": "£312,500",
+        "Detached": "£989,668",
+        "Semi-detached": "£679,950",
         "Terraced": "£625,000"
       },
       "source": "HM Land Registry Price Paid Data"
@@ -1130,25 +1130,7 @@
       "year": "FYE 2018",
       "source": "ONS Small Area Income Estimates"
     },
-    "imd": {
-      "lsoaCode": "E01030828",
-      "year": "2025",
-      "imdScore": 4.66,
-      "imdRank": 31267,
-      "imdDecile": 10,
-      "subDomains": {
-        "Income": 10,
-        "Employment": 10,
-        "Education, Skills & Training": 10,
-        "Health & Disability": 9,
-        "Crime": 8,
-        "Barriers to Housing & Services": 4,
-        "Living Environment": 8
-      },
-      "population": 1460,
-      "populationYear": "2022",
-      "source": "MHCLG Indices of Multiple Deprivation 2025 via findthatpostcode.uk"
-    },
+    "imd": null,
     "crystalRoof": {
       "qualifications": {
         "noQualifications": 8,
@@ -1372,5 +1354,291 @@
     "website": "http://www.caterhamschool.co.uk (opens in new tab)",
     "religiousCharacter": "Christian"
   },
-  "fees": null
+  "fees": null,
+  "subjectEntries": [
+    {
+      "subject": "Spanish",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 65,
+      "grade7Plus": 48,
+      "grade7PlusPct": 74
+    },
+    {
+      "subject": "Religious Studies",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 52,
+      "grade7Plus": 49,
+      "grade7PlusPct": 94
+    },
+    {
+      "subject": "Latin",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 38,
+      "grade7Plus": 38,
+      "grade7PlusPct": 100
+    },
+    {
+      "subject": "French",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 36,
+      "grade7Plus": 26,
+      "grade7PlusPct": 72
+    },
+    {
+      "subject": "Art and Design",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 32,
+      "grade7Plus": 28,
+      "grade7PlusPct": 88
+    },
+    {
+      "subject": "Physical Education",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 32,
+      "grade7Plus": 25,
+      "grade7PlusPct": 78
+    },
+    {
+      "subject": "Computer Science",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 25,
+      "grade7Plus": 22,
+      "grade7PlusPct": 88
+    },
+    {
+      "subject": "Design & Technology",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 20,
+      "grade7Plus": 17,
+      "grade7PlusPct": 85
+    },
+    {
+      "subject": "Music",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 13,
+      "grade7Plus": 12,
+      "grade7PlusPct": 92
+    },
+    {
+      "subject": "Classical Greek",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 5
+    },
+    {
+      "subject": "Chinese",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 5
+    },
+    {
+      "subject": "Italian",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 5
+    },
+    {
+      "subject": "Mathematics",
+      "qualification": "Free standing Maths Qual Level 3",
+      "entries": 3
+    },
+    {
+      "subject": "Music Performance: Group",
+      "qualification": "Grade 6 Music or Dance",
+      "entries": 3
+    },
+    {
+      "subject": "Russian",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 1
+    }
+  ],
+  "ks5SubjectEntries": [
+    {
+      "subject": "Mathematics",
+      "qualification": "GCE A level",
+      "entries": 95,
+      "aToB": 88,
+      "aToBPct": 93
+    },
+    {
+      "subject": "Physics",
+      "qualification": "GCE A level",
+      "entries": 54,
+      "aToB": 46,
+      "aToBPct": 85
+    },
+    {
+      "subject": "Chemistry",
+      "qualification": "GCE A level",
+      "entries": 43,
+      "aToB": 38,
+      "aToBPct": 88
+    },
+    {
+      "subject": "Psychology",
+      "qualification": "GCE A level",
+      "entries": 41,
+      "aToB": 35,
+      "aToBPct": 85
+    },
+    {
+      "subject": "Biology",
+      "qualification": "GCE A level",
+      "entries": 38,
+      "aToB": 32,
+      "aToBPct": 84
+    },
+    {
+      "subject": "Economics",
+      "qualification": "GCE A level",
+      "entries": 35,
+      "aToB": 31,
+      "aToBPct": 89
+    },
+    {
+      "subject": "Mathematics (Further)",
+      "qualification": "GCE A level",
+      "entries": 32,
+      "aToB": 31,
+      "aToBPct": 97
+    },
+    {
+      "subject": "English Literature",
+      "qualification": "GCE A level",
+      "entries": 30,
+      "aToB": 28,
+      "aToBPct": 93
+    },
+    {
+      "subject": "Business Studies",
+      "qualification": "GCE A level",
+      "entries": 28,
+      "aToB": 23,
+      "aToBPct": 82
+    },
+    {
+      "subject": "History",
+      "qualification": "GCE A level",
+      "entries": 28,
+      "aToB": 28,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Study Skills",
+      "qualification": "Extended Project (Diploma)",
+      "entries": 25,
+      "aToB": 25,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Government and Politics",
+      "qualification": "GCE A level",
+      "entries": 20,
+      "aToB": 20,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Religious Studies",
+      "qualification": "GCE A level",
+      "entries": 17,
+      "aToB": 16,
+      "aToBPct": 94
+    },
+    {
+      "subject": "Computer Science",
+      "qualification": "GCE A level",
+      "entries": 10,
+      "aToB": 10,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Latin",
+      "qualification": "GCE A level",
+      "entries": 9,
+      "aToB": 9,
+      "aToBPct": 100
+    },
+    {
+      "subject": "French",
+      "qualification": "GCE A level",
+      "entries": 8,
+      "aToB": 7,
+      "aToBPct": 88
+    },
+    {
+      "subject": "Physical Education / Sports Studies",
+      "qualification": "GCE A level",
+      "entries": 8,
+      "aToB": 7,
+      "aToBPct": 88
+    },
+    {
+      "subject": "Spanish",
+      "qualification": "GCE A level",
+      "entries": 8,
+      "aToB": 8,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Chinese",
+      "qualification": "GCE A level",
+      "entries": 6,
+      "aToB": 6,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Design and Technology (Product Design)",
+      "qualification": "GCE A level",
+      "entries": 6,
+      "aToB": 6,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Drama and Theatre Studies",
+      "qualification": "GCE A level",
+      "entries": 6,
+      "aToB": 6,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Textiles",
+      "qualification": "GCE A level",
+      "entries": 6,
+      "aToB": 6,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Fine Art",
+      "qualification": "GCE A level",
+      "entries": 4
+    },
+    {
+      "subject": "Classical Greek",
+      "qualification": "GCE A level",
+      "entries": 3
+    },
+    {
+      "subject": "Music",
+      "qualification": "GCE A level",
+      "entries": 3
+    },
+    {
+      "subject": "Photography",
+      "qualification": "GCE A level",
+      "entries": 3
+    },
+    {
+      "subject": "German",
+      "qualification": "GCE A level",
+      "entries": 2
+    },
+    {
+      "subject": "Photography",
+      "qualification": "GCE AS level",
+      "entries": 1
+    },
+    {
+      "subject": "Russian",
+      "qualification": "GCE A level",
+      "entries": 1
+    }
+  ]
 }

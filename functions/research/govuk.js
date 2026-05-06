@@ -15,6 +15,7 @@
  * the AI knows to fetch it via web search rather than silently omitting it.
  */
 
+import { readFileSync } from 'fs';
 import { getSchoolEthnicity } from './local-data.js';
 import { getISIInspection, getIndependentFees } from './independent.js';
 
@@ -142,12 +143,13 @@ const NATIONAL_AVG = {
     EBACC_LAN_1:        98.6,   // Languages at grade 1+
   },
   // KS5 / 16–18 attainment 2024/25 — England state-funded schools/colleges
-  // Source: https://www.compare-school-performance.service.gov.uk/download-data (16 to 18 tab)
+  // Source: https://www.compare-school-performance.service.gov.uk — verified May 2026
   KS5: {
-    avgGrade:      'B- (35 pts)',   // England state-funded average A-level grade (all students)
+    AVG_GRADE:     'B-',            // England state-funded average A-level grade
+    AVG_PTS:       36.1,            // England state-funded average A-level points per entry
     avgGradeDis:   'C+ (32 pts)',   // England state-funded average A-level grade (disadvantaged)
     avgGradeNonDis:'B- (36 pts)',   // England state-funded average A-level grade (non-disadvantaged)
-    retained:      92.5,            // % retained to end of course
+    retained:      93.1,            // % retained to end of course (was 92.5)
     advMaths:      30.0,            // % achieving advanced maths
     aab2fac:       null,            // % AAB in 2 facilitating subjects — national not published inline
   },
@@ -2200,6 +2202,104 @@ async function fetchFBITCensus(urn) {
  *
  * Both fetches run in parallel. Either can succeed independently.
  */
+// ─── KS5 LA performance (EES A-level datasets) ──────────────────────────
+
+const EES_KS5_REGION_DS = '019d913a-eae0-7043-b196-875639ce5402';
+const EES_KS5_RETENTION_DS = '019d9139-4416-70c8-9275-ed2def6c2eb9';
+
+/**
+ * Fetches KS5 LA-level averages from EES datasets.
+ * Returns { avgPoints, retention } or null.
+ */
+export async function getLAPerformanceKS5(laCode) {
+  if (!laCode) return null;
+  const EES_BASE = 'https://api.education.gov.uk/statistics/v1';
+  const result = {};
+
+  // 1. A-level region/subject dataset — average points per entry
+  try {
+    const params = new URLSearchParams({
+      'locations.in': `LA|code|${laCode}`,
+      'timePeriods.in': '2024/2025|AY',
+      'pageSize': '50',
+    });
+    const url = `${EES_BASE}/data-sets/${EES_KS5_REGION_DS}/query?${params}`;
+    const data = await safeFetchJson(url);
+    if (data?.results?.length) {
+      // Find aggregate row: institution type = state-funded, metric = avg points
+      for (const r of data.results) {
+        if (r.filters?.['41LUZ'] === '0hvJT' && r.filters?.['mMa9K'] === 'eL5au' && r.filters?.['52udi'] === '43TGU') {
+          const pts = parseFloat(r.values?.tjcGE);
+          if (!isNaN(pts) && pts > 20 && pts < 60) result.avgPoints = String(pts);
+        }
+        // VA score
+        if (r.filters?.['41LUZ'] === 'WiUz2' && r.filters?.['mMa9K'] === 'fdCSY' && r.filters?.['52udi'] === '43TGU') {
+          const va = parseFloat(r.values?.tjcGE);
+          if (!isNaN(va) && va > -3 && va < 3) result.vaScore = String(va);
+        }
+      }
+    }
+  } catch (_) {}
+
+  // 2. Retention dataset
+  try {
+    const params = new URLSearchParams({
+      'locations.in': `LA|code|${laCode}`,
+      'timePeriods.in': '2024/2025|AY',
+      'pageSize': '10',
+    });
+    const url = `${EES_BASE}/data-sets/${EES_KS5_RETENTION_DS}/query?${params}`;
+    const data = await safeFetchJson(url);
+    if (data?.results?.length) {
+      // TcBPJ=9cnB4 = All pupils, hrSyW=IpD1B = Total
+      for (const r of data.results) {
+        if (r.filters?.['TcBPJ'] === '9cnB4' && r.filters?.['hrSyW'] === 'IpD1B') {
+          const ret = parseFloat(r.values?.wEWyb);
+          if (!isNaN(ret) && ret > 50 && ret < 100) result.retention = String(ret);
+        }
+      }
+    }
+  } catch (_) {}
+
+  return Object.keys(result).length ? result : null;
+}
+
+// ─── KS4 Subject entries (bundled EES CSV lookup) ─────────────────────────
+
+let _subjectEntriesIndex = null;
+
+function loadSubjectEntriesIndex() {
+  if (!_subjectEntriesIndex) {
+    const path = new URL('./sources/subject-entries-by-urn.json', import.meta.url);
+    _subjectEntriesIndex = JSON.parse(readFileSync(path, 'utf8'));
+  }
+  return _subjectEntriesIndex;
+}
+
+export function fetchSubjectEntries(urn) {
+  if (!urn) return null;
+  const index = loadSubjectEntriesIndex();
+  return index[String(urn)] || null;
+}
+
+// ─── KS5 Subject entries (bundled EES CSV lookup) ─────────────────────────
+
+let _ks5SubjectIndex = null;
+
+function loadKS5SubjectIndex() {
+  if (!_ks5SubjectIndex) {
+    const path = new URL('./sources/ks5-subject-entries-by-urn.json', import.meta.url);
+    _ks5SubjectIndex = JSON.parse(readFileSync(path, 'utf8'));
+  }
+  return _ks5SubjectIndex;
+}
+
+export function fetchKS5SubjectEntries(urn) {
+  if (!urn) return null;
+  const index = loadKS5SubjectIndex();
+  return index[String(urn)] || null;
+}
+
 export async function getFinancialData(urn) {
   const [spendRes, censusRes] = await Promise.allSettled([
     fetchFBITSpending(urn),
@@ -2602,7 +2702,7 @@ function govLinks(urn) {
  * Picks ~15 high-signal variables by code rather than dumping all rows.
  * Covers KS2 (primary), KS4 (secondary), plus pupil census and absence for all.
  */
-function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false, isIndependent = false) {
+function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, tablesOnly = false, isIndependent = false, laPerfKS5 = null, subjectEntries = null, ks5SubjectEntries = null) {
 
   if (!perf) return '_Not retrieved_';
 
@@ -2838,16 +2938,16 @@ function fmtAcademicResultsSlim(perf, phase, fallbackNor = null, laPerf = null, 
       { label: "% grade 4+ English & maths", var: "PTL2BASICS_94", la: "grade4Em", eng: String(nat4.PTL2BASICS_94),
         colVars: { '_FSM6CLA1A': 'PTFSM6CLA1ABASICS_94', '_NOTFSM6CLA1A': 'PTNOTFSM6CLA1ABASICS_94', '_EAL': 'PTL2BASICSEAL_94' } },
     ]},
-    { heading: "EBacc entry by subject", cols: "a", rows: [
-      { label: "English", var: "PTEBACENG_E_PTQ_EE" },
-      { label: "Maths", var: "PTEBACMAT_E_PTQ_EE" },
-      { label: "Science", var: "PTEBAC2SCI_E_PTQ_EE" },
-      { label: "Humanities", var: "PTEBACHUM_E_PTQ_EE" },
-      { label: "Languages", var: "PTEBACLAN_E_PTQ_EE" },
+    { heading: "EBacc entry by subject", cols: "al", rows: [
+      { label: "English", var: "PTEBACENG_E_PTQ_EE", la: "ebEeng" },
+      { label: "Maths", var: "PTEBACMAT_E_PTQ_EE", la: "ebEmat" },
+      { label: "Science", var: "PTEBAC2SCI_E_PTQ_EE", la: "ebEsci" },
+      { label: "Humanities", var: "PTEBACHUM_E_PTQ_EE", la: "ebEhum" },
+      { label: "Languages", var: "PTEBACLAN_E_PTQ_EE", la: "ebElan" },
     ]},
-    { heading: "Post-16 destinations (2023 leavers)", cols: "a", rows: [
-      { label: "% sustained education or employment", var: "OVERALL_DESTPER" },
-      { label: "% in education", var: "EDUCATIONPER" },
+    { heading: "Post-16 destinations (2023 leavers)", cols: "al", rows: [
+      { label: "% sustained education or employment", var: "OVERALL_DESTPER", la: "destOver" },
+      { label: "% in education", var: "EDUCATIONPER", la: "destEdu" },
       { label: "% sixth form college", var: "SIXTH_COLPER" },
       { label: "% further education", var: "FEPER" },
       { label: "% apprenticeships", var: "APPRENPER" },
@@ -2873,7 +2973,7 @@ const KS5_TOPICS = [
         { label: 'Total 16–18 students', var: 'TALLPUP_1618' },
         { label: 'A-level students', var: 'TALLPUP_ALEV_1618' },
         { label: 'Average A-level grade', var: 'TALLPPEGRD_ALEV_1618', eng: nat5.AVG_GRADE ?? 'B-' },
-        { label: 'Average A-level points', var: 'TALLPPE_ALEV_1618', eng: nat5.AVG_PTS ? String(nat5.AVG_PTS) : '35' },
+        { label: 'Average A-level points', var: 'TALLPPE_ALEV_1618', eng: String(nat5.AVG_PTS) },
         { label: 'Best 3 A-levels — grade', var: 'TB3PTSE_GRD' },
         { label: 'Best 3 A-levels — points', var: 'TB3PTSE' },
       ],
@@ -3039,23 +3139,24 @@ const KS5_TOPICS = [
   // ── EBacc subject achievement (9-4 and 9-5 combined table) ─────────────
 
   function renderEBaccSubjects() {
-    const laKeys = [
-      { label: 'English',    v94: 'PTEBACENG_94',  v95: 'PTEBACENG_95',  la94: 'eng94', la95: 'eng95', eng94: String(nat4.EBACC_ENG_94), eng95: String(nat4.EBACC_ENG_95) },
-      { label: 'Maths',      v94: 'PTEBACMAT_94',  v95: 'PTEBACMAT_95',  la94: 'mat94', la95: 'mat95', eng94: String(nat4.EBACC_MAT_94), eng95: String(nat4.EBACC_MAT_95) },
-      { label: 'Science',    v94: 'PTEBAC2SCI_94', v95: 'PTEBAC2SCI_95', la94: 'sci94', la95: 'sci95', eng94: String(nat4.EBACC_SCI_94), eng95: String(nat4.EBACC_SCI_95) },
-      { label: 'Humanities', v94: 'PTEBACHUM_94',  v95: 'PTEBACHUM_95',  la94: 'hum94', la95: 'hum95', eng94: String(nat4.EBACC_HUM_94), eng95: String(nat4.EBACC_HUM_95) },
-      { label: 'Languages',  v94: 'PTEBACLAN_94',  v95: 'PTEBACLAN_95',  la94: 'lan94', la95: 'lan95', eng94: String(nat4.EBACC_LAN_94), eng95: String(nat4.EBACC_LAN_95) },
+    const subjects = [
+      { label: 'English',    v94: 'PTEBACENG_94',  v95: 'PTEBACENG_95',  v1: 'PTEBACENG91',  la94: 'eng94', la95: 'eng95', la1: 'eng1', eng94: String(nat4.EBACC_ENG_94), eng95: String(nat4.EBACC_ENG_95), eng1: String(nat4.EBACC_ENG_1) },
+      { label: 'Maths',      v94: 'PTEBACMAT_94',  v95: 'PTEBACMAT_95',  v1: 'PTEBACMAT91',  la94: 'mat94', la95: 'mat95', la1: 'mat1', eng94: String(nat4.EBACC_MAT_94), eng95: String(nat4.EBACC_MAT_95), eng1: String(nat4.EBACC_MAT_1) },
+      { label: 'Science',    v94: 'PTEBAC2SCI_94', v95: 'PTEBAC2SCI_95', v1: 'PTEBAC2SCI91', la94: 'sci94', la95: 'sci95', la1: 'sci1', eng94: String(nat4.EBACC_SCI_94), eng95: String(nat4.EBACC_SCI_95), eng1: String(nat4.EBACC_SCI_1) },
+      { label: 'Humanities', v94: 'PTEBACHUM_94',  v95: 'PTEBACHUM_95',  v1: 'PTEBACHUM91',  la94: 'hum94', la95: 'hum95', la1: 'hum1', eng94: String(nat4.EBACC_HUM_94), eng95: String(nat4.EBACC_HUM_95), eng1: String(nat4.EBACC_HUM_1) },
+      { label: 'Languages',  v94: 'PTEBACLAN_94',  v95: 'PTEBACLAN_95',  v1: 'PTEBACLAN91',  la94: 'lan94', la95: 'lan95', la1: 'lan1', eng94: String(nat4.EBACC_LAN_94), eng95: String(nat4.EBACC_LAN_95), eng1: String(nat4.EBACC_LAN_1) },
     ];
-    const rows = laKeys.filter(s => !suppressed(v(s.v94)) || !suppressed(v(s.v95)));
+    const rows = subjects.filter(s => !suppressed(v(s.v94)) || !suppressed(v(s.v95)) || !suppressed(v(s.v1)));
     if (!rows.length) return;
 
     lines.push('');
     lines.push('**EBacc subject achievement**');
-    lines.push('| Category | School 9-4 | LA 9-4 | England 9-4 | School 9-5 | LA 9-5 | England 9-5 |');
-    lines.push('|---|---:|---:|---:|---:|---:|---:|');
+    lines.push('| Category | School | LA | England | School | LA | England | School | LA | England |');
+    lines.push('| | 9-4 | 9-4 | 9-4 | 9-5 | 9-5 | 9-5 | 1+ | 1+ | 1+ |');
+    lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|');
     for (const s of rows) {
-      const la94 = la(s.la94); const la95 = la(s.la95);
-      lines.push(`| ${s.label} | ${c(v(s.v94))} | ${la94 !== '—' ? la94 + '%' : '—'} | ${s.eng94}% | ${c(v(s.v95))} | ${la95 !== '—' ? la95 + '%' : '—'} | ${s.eng95}% |`);
+      const la94 = la(s.la94); const la95 = la(s.la95); const la1 = la(s.la1);
+      lines.push(`| ${s.label} | ${c(v(s.v94))} | ${la94 !== '—' ? la94 + '%' : '—'} | ${s.eng94}% | ${c(v(s.v95))} | ${la95 !== '—' ? la95 + '%' : '—'} | ${s.eng95}% | ${c(v(s.v1))} | ${la1 !== '—' ? la1 + '%' : '—'} | ${s.eng1}% |`);
     }
   }
 
@@ -3213,6 +3314,26 @@ const KS5_TOPICS = [
     for (const topic of KS4_TOPICS) renderTopic(indCols(topic), 'KS4');
     renderEBaccSubjects();
     renderKS4Timeseries();
+    // Subject entries table
+    if (subjectEntries?.length) {
+      lines.push('');
+      lines.push('**Subjects entered (KS4)**');
+      const hasG7 = subjectEntries.some(e => e.grade7PlusPct !== undefined);
+      if (hasG7) {
+        lines.push('| Subject | Qualification | Entries | Grade 7+ |');
+        lines.push('|---|---:|---:|---:|');
+        for (const e of subjectEntries) {
+          const g7 = e.grade7PlusPct !== undefined ? `${e.grade7PlusPct}%` : '—';
+          lines.push(`| ${e.subject} | ${e.qualification} | ${e.entries} | ${g7} |`);
+        }
+      } else {
+        lines.push('| Subject | Qualification | Entries |');
+        lines.push('|---|---:|---:|');
+        for (const e of subjectEntries) {
+          lines.push(`| ${e.subject} | ${e.qualification} | ${e.entries} |`);
+        }
+      }
+    }
   }
 
   if (hasKS5) {
@@ -3220,6 +3341,39 @@ const KS5_TOPICS = [
     lines.push('**Key Stage 5 / 16–18 (2024/25)**');
     for (const topic of KS5_TOPICS) renderTopic(indCols(topic), 'KS5');
     renderKS5Timeseries();
+
+    // KS5 subject entries table
+    if (ks5SubjectEntries?.length) {
+      lines.push('');
+      lines.push('**A-level / Level 3 subjects entered**');
+      const hasAB = ks5SubjectEntries.some(e => e.aToBPct !== undefined);
+      if (hasAB) {
+        lines.push('| Subject | Qualification | Entries | A–B |');
+        lines.push('|---|---:|---:|---:|');
+        for (const e of ks5SubjectEntries) {
+          const ab = e.aToBPct !== undefined ? `${e.aToBPct}%` : '—';
+          // Shorten verbose qualification names
+          const qual = e.qualification
+            .replace('GCE A level', 'A-level')
+            .replace('GCE AS level', 'AS-level')
+            .replace(/BTEC National Extended Certificate L3 - Band \w - P-D\*/, 'BTEC L3 Ext Cert')
+            .replace(/BTEC National Diploma L3 - Band \w - PP-D\*D\*/, 'BTEC L3 Diploma')
+            .replace(/OCR Cambridge Technical Extended Certificate at Level 3/, 'OCR L3 Ext Cert')
+            .replace(/OCR Cambridge Technical Diploma at Level 2/, 'OCR L2 Diploma')
+            .replace(/OCR Cambridge Technical Certificate at Level 2/, 'OCR L2 Cert')
+            .replace(/VRQ Level 3/, 'VRQ L3')
+            .replace(/Extended Project \(Diploma\)/, 'Extended Project')
+            .replace(/Core Maths Qualifications at Level 3/, 'Core Maths');
+          lines.push(`| ${e.subject} | ${qual} | ${e.entries} | ${ab} |`);
+        }
+      } else {
+        lines.push('| Subject | Qualification | Entries |');
+        lines.push('|---|---:|---:|');
+        for (const e of ks5SubjectEntries) {
+          lines.push(`| ${e.subject} | ${e.qualification} | ${e.entries} |`);
+        }
+      }
+    }
   }
 
   return lines.filter(l => l !== '').length > 1
@@ -3408,7 +3562,7 @@ function fmtSchoolEthnicitySlim(e) {
 }
 
 export function buildSlimBlock(school) {
-  const { input, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees } = school;
+  const { input, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails, fees, subjectEntries, ks5SubjectEntries } = school;
   const name = identity?.officialName ?? input;
   const urn  = identity?.urn;
 
@@ -3455,8 +3609,7 @@ export function buildSlimBlock(school) {
 **Links:** ${links}
 
 ### Academic Results (DfE)
-${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null, false, identity?.isIndependent ?? false)}
-
+${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null, false, identity?.isIndependent ?? false, null, subjectEntries, ks5SubjectEntries)}
 ### Financial Benchmarking (FBIT)
 ${fmtFinancial(financial, identity?.isIndependent ?? false)}
 ${fees ? `### School Fees\n- ${Object.entries(fees).filter(([k]) => k !== 'source' && k !== 'raw').map(([k,v]) => {
@@ -3517,6 +3670,34 @@ function fmtCensusSlim(performance, schoolEthnicity) {
     if (eal)  lines.push(`| EAL pupils | ${eal} | — |`);
     if (senK) lines.push(`| SEN support | ${senK} | ~13% |`);
     if (senE) lines.push(`| EHC plans | ${senE} | ~4.5% |`);
+  }
+
+  // ── SEN & Inclusion sub-section ──────────────────────────────────────
+  if (senK || senE) {
+    lines.push('');
+    lines.push('**SEN & Inclusion**');
+    const senKnum = parseFloat(senK);
+    const senEnum = parseFloat(senE);
+    const totalSEN = (!isNaN(senKnum) ? senKnum : 0) + (!isNaN(senEnum) ? senEnum : 0);
+
+    if (totalSEN > 30) {
+      lines.push(`- **Very high SEN cohort** — ${Math.round(totalSEN)}% of pupils have SEN support or an EHC plan (national ~17.5%). Likely a school with a SEN unit or resourced provision — contact the SENCo for details on specialist support.`);
+    } else if (totalSEN > 22) {
+      lines.push(`- **Above-average SEN cohort** — ${Math.round(totalSEN)}% of pupils have SEN support or an EHC plan (national ~17.5%). This usually indicates strong, well-resourced SEN provision that attracts families with additional needs.`);
+    } else if (totalSEN > 5) {
+      lines.push(`- **Typical SEN profile** — ${Math.round(totalSEN)}% of pupils have SEN support or an EHC plan, broadly in line with national averages.`);
+    } else {
+      lines.push(`- **Low SEN cohort** — ${Math.round(totalSEN)}% of pupils have SEN support or an EHC plan (national ~17.5%). Parents of children with significant needs may wish to ask the SENCo about capacity.`);
+    }
+
+    const senEAbove = !isNaN(senEnum) && senEnum > 6;
+    if (senEAbove) {
+      lines.push(`- **Above-average proportion of pupils with EHC plans** (${senEnum}% vs national ~4.5%) — suggests the school has experience with high-need pupils and a dedicated SEN team.`);
+    }
+
+    if (totalSEN > 15) {
+      lines.push('- **For parents of children with SEN:** Ask about the SENCo team size, TA-to-pupil ratio for 1:1 support, and whether the school has a specialist unit/resourced provision for your child\'s specific primary need.');
+    }
   }
 
   if (schoolEthnicity) {
@@ -3775,6 +3956,12 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
           : null;
       }
 
+      // Phase 2c: KS4 subject entries for all schools with KS4 data
+      const hasKS4 = Object.keys(performance ?? {}).some(k => k.startsWith('KS4'));
+      const hasKS5 = Object.keys(performance ?? {}).some(k => k.startsWith('KS5'));
+      const subjectEntries = hasKS4 ? fetchSubjectEntries(urn) : null;
+      const ks5SubjectEntries = hasKS5 ? fetchKS5SubjectEntries(urn) : null;
+
       // Phase 3: area data — postcode comes from DfE CSV (PCODE in phase-specific namespace, e.g. KS2_25).
       // Fall back to identity.postcode (from GIAS search tile — always present when URN resolves)
       // for infant/nursery schools that have no KS2/KS4 namespace and thus no PCODE in the CSV.
@@ -3787,13 +3974,17 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Determined by what data the school actually has, not the phase label
       // (independent schools often have KS4 data but phase is "Not applicable")
       const hasKS2 = Object.keys(performance ?? {}).some(k => k.startsWith('KS2'));
-      const hasKS4 = Object.keys(performance ?? {}).some(k => k.startsWith('KS4'));
       const laPerf = detailed && area?.laCode
         ? (hasKS2
             ? await getLAPerformanceKS2(area.laCode).catch(() => null)
             : hasKS4
               ? await getLAPerformanceKS4(area.laCode).catch(() => null)
               : null)
+        : null;
+
+      // Phase 4b: KS5 LA averages (separate EES datasets)
+      const laPerfKS5 = (detailed && hasKS5 && area?.laCode)
+        ? await getLAPerformanceKS5(area.laCode).catch(() => null)
         : null;
 
       // Ofsted object is now fully enriched by getOfstedData/getISIInspection.
@@ -3806,7 +3997,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       // Bundled local data (zero-latency — no HTTP)
       const schoolEthnicity = urn ? getSchoolEthnicity(urn) : null;
 
-      return { input: name, identity, ofsted, performance, financial, area, laPerf, schoolEthnicity, giasDetails };
+      return { input: name, identity, ofsted, performance, financial, area, laPerf, laPerfKS5, schoolEthnicity, giasDetails, subjectEntries, ks5SubjectEntries };
     })
   );
 
@@ -3950,7 +4141,7 @@ export function computeFlags(school) {
 // Exported so the Lambda handler can call it after fetchGovDataForPrompt resolves.
 
 export function renderPartA(school, flags = {}) {
-  const { identity, ofsted, performance, financial, area, schoolEthnicity, laPerf, giasDetails } = school;
+  const { identity, ofsted, performance, financial, area, schoolEthnicity, laPerf, giasDetails, subjectEntries, ks5SubjectEntries } = school;
   const isIndependent = identity?.isIndependent ?? false;
 
   // ── Lookup helpers ─────────────────────────────────────────────────────────
@@ -4169,7 +4360,7 @@ export function renderPartA(school, flags = {}) {
   {
     // tablesOnly=true: stop before the census/absence/raw-variable dump —
     // those sections are already rendered in A4, A6, and the slim block.
-    const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null, true, identity?.isIndependent ?? false);
+    const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null, true, identity?.isIndependent ?? false, null, subjectEntries, ks5SubjectEntries);
     sections.push({ heading: 'A5. Academic Performance', body, flag: flags['A5. Academic Performance'] ?? 'none' });
   }
 

@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 102055,
     "label": "state-secondary-sixth",
-    "capturedAt": "2026-05-02T07:23:31.905Z",
+    "capturedAt": "2026-05-06T00:33:27.044Z",
     "note": "KS4 + KS5 — grammar with sixth form"
   },
   "input": "The Latymer School",
@@ -3688,13 +3688,13 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 156,
+      "totalTransactions": 142,
       "postcodesQueried": 100,
-      "medianAllTypes": "£422,500",
+      "medianAllTypes": "£436,000",
       "byType": {
-        "Terraced": "£435,000",
-        "Flat / Maisonette": "£225,000",
-        "Semi-detached": "£465,000"
+        "Terraced": "£436,000",
+        "Flat / Maisonette": "£259,000",
+        "Semi-detached": "£470,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -3949,5 +3949,429 @@
     "website": "http://www.latymer.co.uk/ (opens in new tab)",
     "religiousCharacter": "None"
   },
-  "fees": null
+  "fees": null,
+  "subjectEntries": [
+    {
+      "subject": "English Language",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 190,
+      "grade7Plus": 156,
+      "grade7PlusPct": 82
+    },
+    {
+      "subject": "Mathematics",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 190,
+      "grade7Plus": 183,
+      "grade7PlusPct": 96
+    },
+    {
+      "subject": "Biology",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 189,
+      "grade7Plus": 159,
+      "grade7PlusPct": 84
+    },
+    {
+      "subject": "Chemistry",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 189,
+      "grade7Plus": 160,
+      "grade7PlusPct": 85
+    },
+    {
+      "subject": "English Literature",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 189,
+      "grade7Plus": 146,
+      "grade7PlusPct": 77
+    },
+    {
+      "subject": "Physics",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 189,
+      "grade7Plus": 163,
+      "grade7PlusPct": 86
+    },
+    {
+      "subject": "Geography",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 142,
+      "grade7Plus": 125,
+      "grade7PlusPct": 88
+    },
+    {
+      "subject": "French",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 115,
+      "grade7Plus": 108,
+      "grade7PlusPct": 94
+    },
+    {
+      "subject": "Design & Technology",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 78,
+      "grade7Plus": 62,
+      "grade7PlusPct": 79
+    },
+    {
+      "subject": "German",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 63,
+      "grade7Plus": 56,
+      "grade7PlusPct": 89
+    },
+    {
+      "subject": "Computer Science",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 60,
+      "grade7Plus": 48,
+      "grade7PlusPct": 80
+    },
+    {
+      "subject": "History",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 59,
+      "grade7Plus": 55,
+      "grade7PlusPct": 93
+    },
+    {
+      "subject": "Business",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 51,
+      "grade7Plus": 38,
+      "grade7PlusPct": 75
+    },
+    {
+      "subject": "Music",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 31,
+      "grade7Plus": 25,
+      "grade7PlusPct": 81
+    },
+    {
+      "subject": "Physical Education",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 29,
+      "grade7Plus": 25,
+      "grade7PlusPct": 86
+    },
+    {
+      "subject": "Art and Design",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 26,
+      "grade7Plus": 8,
+      "grade7PlusPct": 31
+    },
+    {
+      "subject": "Drama",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 23,
+      "grade7Plus": 16,
+      "grade7PlusPct": 70
+    },
+    {
+      "subject": "Media / Film / TV",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 22,
+      "grade7Plus": 20,
+      "grade7PlusPct": 91
+    },
+    {
+      "subject": "Russian",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 22,
+      "grade7Plus": 20,
+      "grade7PlusPct": 91
+    },
+    {
+      "subject": "Religious Studies",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 19,
+      "grade7Plus": 15,
+      "grade7PlusPct": 79
+    },
+    {
+      "subject": "Latin",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 16,
+      "grade7Plus": 14,
+      "grade7PlusPct": 88
+    },
+    {
+      "subject": "Japanese Language",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 4
+    },
+    {
+      "subject": "Greek",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 3
+    },
+    {
+      "subject": "Music Performance: Group",
+      "qualification": "Grade 6 Music or Dance",
+      "entries": 3
+    },
+    {
+      "subject": "Chinese",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 2
+    },
+    {
+      "subject": "Polish",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 1
+    },
+    {
+      "subject": "Hebrew Language",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 1
+    },
+    {
+      "subject": "Turkish",
+      "qualification": "GCSE (9-1) Full Course",
+      "entries": 1
+    }
+  ],
+  "ks5SubjectEntries": [
+    {
+      "subject": "Mathematics",
+      "qualification": "GCE A level",
+      "entries": 200,
+      "aToB": 178,
+      "aToBPct": 89
+    },
+    {
+      "subject": "Chemistry",
+      "qualification": "GCE A level",
+      "entries": 112,
+      "aToB": 86,
+      "aToBPct": 77
+    },
+    {
+      "subject": "Biology",
+      "qualification": "GCE A level",
+      "entries": 74,
+      "aToB": 64,
+      "aToBPct": 86
+    },
+    {
+      "subject": "Physics",
+      "qualification": "GCE A level",
+      "entries": 61,
+      "aToB": 50,
+      "aToBPct": 82
+    },
+    {
+      "subject": "Mathematics (Further)",
+      "qualification": "GCE A level",
+      "entries": 60,
+      "aToB": 51,
+      "aToBPct": 85
+    },
+    {
+      "subject": "Economics",
+      "qualification": "GCE A level",
+      "entries": 54,
+      "aToB": 44,
+      "aToBPct": 81
+    },
+    {
+      "subject": "English Literature",
+      "qualification": "GCE A level",
+      "entries": 33,
+      "aToB": 30,
+      "aToBPct": 91
+    },
+    {
+      "subject": "Economics",
+      "qualification": "GCE AS level",
+      "entries": 24,
+      "aToB": 23,
+      "aToBPct": 96
+    },
+    {
+      "subject": "Geography",
+      "qualification": "GCE A level",
+      "entries": 18,
+      "aToB": 18,
+      "aToBPct": 100
+    },
+    {
+      "subject": "History",
+      "qualification": "GCE A level",
+      "entries": 18,
+      "aToB": 17,
+      "aToBPct": 94
+    },
+    {
+      "subject": "Religious Studies",
+      "qualification": "GCE A level",
+      "entries": 14,
+      "aToB": 14,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Music",
+      "qualification": "GCE A level",
+      "entries": 13,
+      "aToB": 13,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Geography",
+      "qualification": "GCE AS level",
+      "entries": 12,
+      "aToB": 9,
+      "aToBPct": 75
+    },
+    {
+      "subject": "Government and Politics",
+      "qualification": "GCE A level",
+      "entries": 12,
+      "aToB": 10,
+      "aToBPct": 83
+    },
+    {
+      "subject": "Art and Design",
+      "qualification": "GCE A level",
+      "entries": 11,
+      "aToB": 11,
+      "aToBPct": 100
+    },
+    {
+      "subject": "French",
+      "qualification": "GCE A level",
+      "entries": 11,
+      "aToB": 9,
+      "aToBPct": 82
+    },
+    {
+      "subject": "Mathematics",
+      "qualification": "GCE AS level",
+      "entries": 11,
+      "aToB": 4,
+      "aToBPct": 36
+    },
+    {
+      "subject": "Media / Film / TV Studies",
+      "qualification": "GCE A level",
+      "entries": 11,
+      "aToB": 11,
+      "aToBPct": 100
+    },
+    {
+      "subject": "German",
+      "qualification": "GCE A level",
+      "entries": 10,
+      "aToB": 9,
+      "aToBPct": 90
+    },
+    {
+      "subject": "Government and Politics",
+      "qualification": "GCE AS level",
+      "entries": 10,
+      "aToB": 9,
+      "aToBPct": 90
+    },
+    {
+      "subject": "English Literature",
+      "qualification": "GCE AS level",
+      "entries": 9,
+      "aToB": 8,
+      "aToBPct": 89
+    },
+    {
+      "subject": "French",
+      "qualification": "GCE AS level",
+      "entries": 9,
+      "aToB": 9,
+      "aToBPct": 100
+    },
+    {
+      "subject": "Physics",
+      "qualification": "GCE AS level",
+      "entries": 9,
+      "aToB": 7,
+      "aToBPct": 78
+    },
+    {
+      "subject": "Religious Studies",
+      "qualification": "GCE AS level",
+      "entries": 9,
+      "aToB": 7,
+      "aToBPct": 78
+    },
+    {
+      "subject": "Russian",
+      "qualification": "GCE A level",
+      "entries": 9,
+      "aToB": 8,
+      "aToBPct": 89
+    },
+    {
+      "subject": "Biology",
+      "qualification": "GCE AS level",
+      "entries": 8,
+      "aToB": 7,
+      "aToBPct": 88
+    },
+    {
+      "subject": "Media / Film / TV Studies",
+      "qualification": "GCE AS level",
+      "entries": 8,
+      "aToB": 7,
+      "aToBPct": 88
+    },
+    {
+      "subject": "Design and Technology (Engineering)",
+      "qualification": "GCE A level",
+      "entries": 7,
+      "aToB": 5,
+      "aToBPct": 71
+    },
+    {
+      "subject": "German",
+      "qualification": "GCE AS level",
+      "entries": 7,
+      "aToB": 7,
+      "aToBPct": 100
+    },
+    {
+      "subject": "History",
+      "qualification": "GCE AS level",
+      "entries": 5
+    },
+    {
+      "subject": "Chemistry",
+      "qualification": "GCE AS level",
+      "entries": 4
+    },
+    {
+      "subject": "Japanese",
+      "qualification": "GCE A level",
+      "entries": 3
+    },
+    {
+      "subject": "Polish",
+      "qualification": "GCE A level",
+      "entries": 2
+    },
+    {
+      "subject": "Modern Hebrew",
+      "qualification": "GCE A level",
+      "entries": 1
+    },
+    {
+      "subject": "Turkish",
+      "qualification": "GCE A level",
+      "entries": 1
+    },
+    {
+      "subject": "Mathematics",
+      "qualification": "Advanced Extension Award",
+      "entries": 1
+    }
+  ]
 }
