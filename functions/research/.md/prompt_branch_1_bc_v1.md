@@ -221,15 +221,11 @@ Note clearly if no destinations data is published.
 
 ---
 
-### **C0. Your Question**
-
-One sentence restating what the parent asked — show you understood. Example: "You asked whether Godolphin and Latymer would be a good fit for a child with SEN, and whether the school has strong pastoral support."
-
----
-
 ### **C1. School Character — Who Thrives Here**
 
-Based on everything in the government data and Parts B, assess what kind of child and family this school suits. Score each dimension as **Strong**, **Present**, or **Not evident**. **Bold** the 2–3 dimensions most relevant to the parent's question.
+Open with one sentence restating the parent's question. Example: "You asked whether Godolphin and Latymer would be a good fit for a child with SEN — here's what the evidence shows."
+
+Then, based on everything in the government data and Parts B, assess what kind of child and family this school suits. Score each dimension as **Strong**, **Present**, or **Not evident**. **Bold** the 2–3 dimensions most relevant to the parent's question.
 
 | Dimension | Evidence level | Notes |
 |---|---|---|
