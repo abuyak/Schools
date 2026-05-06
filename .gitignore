@@ -24,7 +24,10 @@ test-results/
 playwright-report/
 
 # Docs — local reference only, not needed in cloud
-docs/
+docs/EES/
+docs/dfe-data-mapping.md
+docs/School Scanner Wire Mocks - Mix.csv
+docs/School Scanner Wire Mocks - Summary.csv
 
 # Claude Code working directory
 .claude/
