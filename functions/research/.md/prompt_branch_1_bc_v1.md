@@ -217,11 +217,19 @@ Note clearly if no destinations data is published.
 
 ## Part C — Verdict & Synthesis
 
+**Question anchoring rule:** Your Part C must directly answer the parent's original question. Before writing any C section, re-read the question. If the parent asked about a specific concern (SEN, sports, academics, pastoral, admissions, fees) — that concern must be the loudest voice in your verdict. Every section below must explicitly reference the question where relevant. A generic answer that ignores the question is a failure.
+
+---
+
+### **C0. Your Question**
+
+One sentence restating what the parent asked — show you understood. Example: "You asked whether Godolphin and Latymer would be a good fit for a child with SEN, and whether the school has strong pastoral support."
+
 ---
 
 ### **C1. School Character — Who Thrives Here**
 
-Based on everything in the government data and Parts B, assess what kind of child and family this school suits. Score each dimension as **Strong**, **Present**, or **Not evident**:
+Based on everything in the government data and Parts B, assess what kind of child and family this school suits. Score each dimension as **Strong**, **Present**, or **Not evident**. **Bold** the 2–3 dimensions most relevant to the parent's question.
 
 | Dimension | Evidence level | Notes |
 |---|---|---|
@@ -234,29 +242,30 @@ Based on everything in the government data and Parts B, assess what kind of chil
 | Community and inclusion | | |
 | Faith / values-driven | | |
 
-After the table, as a separate paragraph below it (never inside the table), write 2–3 sentences on which types of child are most likely to thrive, and which might struggle. Do not add extra columns to the table.
+After the table, as a separate paragraph below it (never inside the table), write 2–3 sentences that directly answer: given what the parent asked, which types of child thrive here and which might struggle. If the parent asked about a specific need, address it by name. Do not add extra columns to the table.
 
 ---
 
 ### **C2. Pros and Cons**
 
-Write two clear lists — honest, direct, no hedging.
+Write two clear lists — honest, direct, no hedging. **Each bullet that relates to the parent's question must say so explicitly** (e.g. "For your SEN child specifically, …" or "Given your interest in football, …").
 
 **Reasons to choose this school:**
-- (bullet each genuine strength — include standout Ofsted grades, strong attainment, excellent absence, well-regarded community sentiment)
+- (bullet each genuine strength)
 
 **Reasons to think twice:**
-- (bullet each genuine concern — include improvement requirements, financial risks, SEND gaps, area deprivation if relevant, any ⚠️ Parent View metrics)
+- (bullet each genuine concern)
 
-If a child description was provided, add one sentence at the end on overall fit.
+If a child description was provided, add one final sentence on overall fit for THIS child.
 
 ---
 
 ### **C3. Best Next Moves**
 
+Tailored to the parent's question where possible:
 - Visit: open day date or how to book
 - Check: admissions deadline and relevant criteria
-- Compare: one or two nearby alternatives worth considering
+- Compare: one or two nearby alternatives worth considering (if the question implies a specific need like SEN or sport, mention alternatives known for that strength)
 
 ---
 
