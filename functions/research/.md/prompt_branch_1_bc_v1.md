@@ -242,6 +242,8 @@ Based on everything in the government data and Parts B, assess what kind of chil
 | Community and inclusion | | |
 | Faith / values-driven | | |
 
+**Table formatting:** Every row MUST begin with `|` and end with `|`. The separator row MUST be `|---|---|---|`. If you omit the pipes the table will not render.
+
 After the table, as a separate paragraph below it (never inside the table), write 2–3 sentences that directly answer: given what the parent asked, which types of child thrive here and which might struggle. If the parent asked about a specific need, address it by name. Do not add extra columns to the table.
 
 ---

@@ -266,12 +266,18 @@
         return;
       }
 
-      // Table row detection
-      if (/^\|.+\|$/.test(line)) {
+      // Table row detection. Accepts both strict markdown (|...|) and
+      // loose AI output where pipes appear inline without outer framing.
+      // Requires ≥2 pipes to avoid matching single-pipe prose.
+      if (/^\|.+\|$/.test(line) || (line.split('|').length >= 3 && !/^[-*]/.test(line))) {
+        // Normalise: add leading/trailing pipes if the AI omitted them
+        var normalised = line;
+        if (!normalised.startsWith('|')) normalised = '| ' + normalised;
+        if (!normalised.endsWith('|')) normalised = normalised + ' |';
         inTable = true;
         currentList = null; currentListType = null;
         lastOlLi = null; nestedUl = null; groupList = null;
-        tableLines.push(line);
+        tableLines.push(normalised);
         return;
       }
       if (inTable) flushTable();
