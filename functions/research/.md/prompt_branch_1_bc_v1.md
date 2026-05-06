@@ -234,7 +234,7 @@ Based on everything in the government data and Parts B, assess what kind of chil
 | Community and inclusion | | |
 | Faith / values-driven | | |
 
-Then write 2–3 sentences on which types of child are most likely to thrive, and which might struggle.
+After the table, as a separate paragraph below it (never inside the table), write 2–3 sentences on which types of child are most likely to thrive, and which might struggle. Do not add extra columns to the table.
 
 ---
 
