@@ -8,8 +8,9 @@ import { jest } from '@jest/globals';
 
 // Mock govuk.js so it never makes real fetch calls during unit tests
 await jest.unstable_mockModule('../govuk.js', () => ({
-  fetchGovDataForPrompt: jest.fn().mockResolvedValue({ block: '', flags: {}, schools: [] }),
+  fetchGovDataForPrompt: jest.fn().mockResolvedValue({ block: '', quickTakeBlock: '', flags: {}, schools: [] }),
   renderPartA: jest.fn().mockReturnValue([]),
+  renderPartAComparison: jest.fn().mockReturnValue([]),
   computeFlags: jest.fn().mockReturnValue({}),
 }));
 
