@@ -105,7 +105,19 @@ One paragraph. Copy the official school name and local authority verbatim from t
 
 ## Part A — Official Record
 
-*Everything in Part A comes from the pre-fetched government data block. Use the exact heading text and section numbers below. Show the data, then add your verdict. Do not search the web for any field present in the block.*
+*Everything in Part A comes from the pre-fetched government data block. Do not search the web for any field present in the block.*
+
+**CRITICAL — use these exact section headings and numbers. Do not deviate:**
+- `## A1. School Identity`
+- `## A2. Inspection Outcomes`
+- `## A3. What the School Needs to Improve`
+- `## A4. Academic Performance`
+- `## A5. Intake & Cohort`
+- `## A6. Absence & Engagement`
+- `## A7. Financial Health`
+- `## A8. Area Context`
+
+No other Part A heading text or numbering is permitted.
 
 ---
 
