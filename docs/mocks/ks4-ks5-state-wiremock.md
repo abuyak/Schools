@@ -1,39 +1,66 @@
 # State Secondary KS4/KS5 Wire Mock — Template Reference
 
-State secondary schools have full DfE performance data with all subgroup breakdowns.
-Compare with `ks4-ks5-independent-wiremock.md` — independents strip Disadv/EAL columns
-and hide Progress 8, post-16 destinations, and Grade 5+/4+ when iGCSE-suppressed.
+State secondary schools with sixth form have full DfE KS4 + KS5 performance data.
+KS4-only (no sixth form) omits KS5 sub-sections (A3.11–A3.17).
 
-**Table order for KS4:** Attainment 8 → Progress 8 → Cohort → Grade 5+/4+ → EBacc entry → Post-16 destinations → Entry volumes → Results over time → Subjects entered
-
-**Legend:** `la X` = EES API by LA code. `eng X` = `NATIONAL_AVG` in govuk.js.
+**Legend:** `la X` = from EES API by LA code. `eng X` = from `NATIONAL_AVG`. `—` = suppressed.
 
 ---
 
-## KS4 Tables
+## A1. School Identity
 
-### Attainment 8
-*Columns: All pupils | Girls | Boys | Disadvantaged | Not Disadv. | EAL | Local Authority | England*
+```
+**School:** {officialName} · URN {urn} · {type} · {phase} (ages {ageLow}–{ageHigh}) · LA: {la} · {postcode} · {gender} · {religion} · admissions: {admissions} · capacity: {capacity} ({nor} on roll — {fillRate}% full)
+```
+**Links:** GIAS · Compare School Performance · FBIT · Ofsted
+
+---
+
+## A2. Inspection Outcomes (Ofsted)
+
+```
+- Overall: **{grade}** ({date})
+- Quality of Education: {grade}
+- Behaviour and Attitudes: {grade}
+- Personal Development: {grade}
+- Leadership and Management: {grade}
+- [Sixth form provision: {grade}] — if sixth form present
+- Parent View: {url} _(data not retrieved)_
+```
+
+**What it's like to be a pupil**
+Ofsted PDF narrative, first ~800 chars, truncated with link to full PDF.
+
+**What the School Needs to Improve**
+Verbatim from Ofsted next steps. Fallback: `_No improvement requirements stated._`
+
+---
+
+## A3. Academic Performance
+
+### Key Stage 4
+
+#### A3.1 — Attainment 8
+
+Columns: All pupils | Girls | Boys | Disadvantaged | Not Disadv. | EAL | Local Authority | England
 
 | Metric | All | Girls | Boys | Disadv. | Not Disadv. | EAL | LA | England |
-|---|---|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|---|---|
 | Attainment 8 score | `ATT8SCR` | `_GIRLS` | `_BOYS` | `_DIS` | `_NOTDIS` | `_EAL` | la `att8` | eng `ATT8SCR` |
-| English element | `ATT8SCRENG` | suffix | suffix | suffix | suffix | suffix | la `att8Eng` | eng `ATT8_ENG` |
-| Maths element | `ATT8SCRMAT` | suffix | suffix | suffix | suffix | suffix | la `att8Mat` | eng `ATT8_MAT` |
-| EBacc element | `ATT8SCREBAC` | suffix | suffix | suffix | suffix | suffix | la `att8Ebacc` | eng `ATT8_EBACC` |
-| Open element | `ATT8SCROPEN` | suffix | suffix | suffix | suffix | suffix | la `att8Open` | eng `ATT8_OPEN` |
-| Open — GCSE only | `ATT8SCROPENG` | suffix | suffix | suffix | suffix | suffix | la `att8OpenG` | eng `ATT8_OPENG` |
-| Open — non-GCSE | `ATT8SCROPENNG` | suffix | suffix | suffix | suffix | suffix | la `att8OpenNg` | eng `ATT8_OPENNG` |
+| English element | `ATT8SCRENG` | `_GIRLS` | `_BOYS` | `_DIS` | `_NOTDIS` | `_EAL` | la `att8Eng` | eng `ATT8_ENG` |
+| Maths element | `ATT8SCRMAT` | `_GIRLS` | `_BOYS` | `_DIS` | `_NOTDIS` | `_EAL` | la `att8Mat` | eng `ATT8_MAT` |
+| EBacc element | `ATT8SCREBAC` | `_GIRLS` | `_BOYS` | `_DIS` | `_NOTDIS` | `_EAL` | la `att8Ebacc` | eng `ATT8_EBACC` |
+| Open element | `ATT8SCROPEN` | `_GIRLS` | `_BOYS` | `_DIS` | `_NOTDIS` | `_EAL` | la `att8Open` | eng `ATT8_OPEN` |
+| Open — GCSE only | `ATT8SCROPENG` | `_GIRLS` | `_BOYS` | `_DIS` | `_NOTDIS` | `_EAL` | la `att8OpenG` | eng `ATT8_OPENG` |
+| Open — non-GCSE | `ATT8SCROPENNG` | `_GIRLS` | `_BOYS` | `_DIS` | `_NOTDIS` | `_EAL` | la `att8OpenNg` | eng `ATT8_OPENNG` |
 
-### Progress 8
-*Columns: same 8-column layout as Attainment 8.*
+#### A3.2 — Progress 8
 
 | Metric | All | Girls | Boys | Disadv. | Not Disadv. | EAL | LA | England |
-|---|---|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|---|---|
 | Progress 8 score | `P8MEA` | `_GIRLS` | `_BOYS` | `_DIS` | `_NOTDIS` | `_EAL` | la `p8` | 0.00 |
 
-### Cohort characteristics
-*Single value column — no subgroup breakdowns.*
+#### A3.3 — Cohort Characteristics
 
 | Category | All pupils |
 |---|---|
@@ -48,16 +75,14 @@ and hide Progress 8, post-16 destinations, and Grade 5+/4+ when iGCSE-suppressed
 | % SEN total | `PSEN_ALL4` |
 | % SEN without EHC | `PSENK4` |
 
-### Grade 5+ and 4+ English & Maths
-*Columns: same 8-column layout as Attainment 8.*
+#### A3.4 — Grade 5+ and 4+ English & Maths
 
 | Metric | All | Girls | Boys | Disadv. | Not Disadv. | EAL | LA | England |
-|---|---|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|---|---|
 | % grade 5+ English & maths | `PTL2BASICS_95` | `_GIRLS` | `_BOYS` | `PTFSM6CLA1ABASICS_95` | `PTNOTFSM6CLA1ABASICS_95` | `PTL2BASICSEAL_95` | la `grade5Em` | eng `PTL2BASICS_95` |
 | % grade 4+ English & maths | `PTL2BASICS_94` | `_GIRLS` | `_BOYS` | `PTFSM6CLA1ABASICS_94` | `PTNOTFSM6CLA1ABASICS_94` | `PTL2BASICSEAL_94` | la `grade4Em` | eng `PTL2BASICS_94` |
 
-### EBacc entry by subject
-*Columns: All pupils | Local Authority. No gender/disadvantage breakdown.*
+#### A3.5 — EBacc Entry by Subject
 
 | Category | All pupils | LA |
 |---|---|---|
@@ -67,8 +92,7 @@ and hide Progress 8, post-16 destinations, and Grade 5+/4+ when iGCSE-suppressed
 | Humanities | `PTEBACHUM_E_PTQ_EE` | la `ebEhum` |
 | Languages | `PTEBACLAN_E_PTQ_EE` | la `ebElan` |
 
-### Post-16 destinations (2023 leavers)
-*KS4_PUPDEST_25 namespace. Columns: All pupils | Local Authority.*
+#### A3.6 — Post-16 Destinations (2023 leavers)
 
 | Category | All pupils | LA |
 |---|---|---|
@@ -80,8 +104,7 @@ and hide Progress 8, post-16 destinations, and Grade 5+/4+ when iGCSE-suppressed
 | % employment | `EMPLOYMENTPER` | |
 | % not sustained | `NOT_SUSTAINEDPER` | |
 
-### Entry volumes
-*Single value column.*
+#### A3.7 — Entry Volumes
 
 | Category | All pupils |
 |---|---|
@@ -93,10 +116,19 @@ and hide Progress 8, post-16 destinations, and Grade 5+/4+ when iGCSE-suppressed
 | Level 2 threshold (9-4 EM) | `PT5EM_94` |
 | % achieving any qualification | `PTANYQ_PTQ_EE` |
 
-### Results over time
-*LA row shown for each metric. EES API queried for 3 years per LA.*
+#### A3.8 — EBacc Subject Achievement
 
-| | 2023 | 2024 | 2025 |
+| Category | School 9-4 | LA 9-4 | England 9-4 | School 9-5 | LA 9-5 | England 9-5 | School 1+ | LA 1+ | England 1+ |
+|---|---|---|---|---|---|---|---|---|---|
+| English | `PTEBACENG_94` | la `eng94` | eng `EBACC_ENG_94` | `PTEBACENG_95` | la `eng95` | eng `EBACC_ENG_95` | `PTEBACENG_E_PTQ_EE` | la `eng1+` | 93% |
+| Maths | `PTEBACMAT_94` | la `mat94` | eng `EBACC_MAT_94` | `PTEBACMAT_95` | la `mat95` | eng `EBACC_MAT_95` | `PTEBACMAT_E_PTQ_EE` | la `mat1+` | 94.5% |
+| Science | `PTEBAC2SCI_94` | la `sci94` | eng `EBACC_SCI_94` | `PTEBAC2SCI_95` | la `sci95` | eng `EBACC_SCI_95` | `PTEBAC2SCI_E_PTQ_EE` | la `sci1+` | 98.2% |
+| Humanities | `PTEBACHUM_94` | la `hum94` | eng `EBACC_HUM_94` | `PTEBACHUM_95` | la `hum95` | eng `EBACC_HUM_95` | `PTEBACHUM_E_PTQ_EE` | la `hum1+` | 97% |
+| Languages | `PTEBACLAN_94` | la `lan94` | eng `EBACC_LAN_94` | `PTEBACLAN_95` | la `lan95` | eng `EBACC_LAN_95` | `PTEBACLAN_E_PTQ_EE` | la `lan1+` | 98.6% |
+
+#### A3.9 — Results Over Time (KS4)
+
+| | 2023 final | 2024 final | 2025 final |
 |---|---|---|---|
 | Attainment 8 Score | `ATT8SCR_PREV2` | `ATT8SCR_PREV` | `ATT8SCR` |
 | Local Authority | la `att8.yr23` | la `att8.yr24` | la `att8.yr25` |
@@ -109,19 +141,21 @@ and hide Progress 8, post-16 destinations, and Grade 5+/4+ when iGCSE-suppressed
 | EBacc Entry | `PTEBACC_E_PTQ_EE_PREV2` | `PTEBACC_E_PTQ_EE_PREV` | `PTEBACC_E_PTQ_EE` |
 | Local Authority | la `ebaccEntry.yr23` | la `ebaccEntry.yr24` | la `ebaccEntry.yr25` |
 
-### Subjects entered (KS4)
-*From bundled EES CSV. 4 columns. Grade 7+ = A/A*/B equivalent.*
+#### A3.10 — Subjects Entered (KS4)
 
 | Subject | Qualification | Entries | Grade 7+ |
-|---|---:|---:|---:|
+|---|---|---|---|
 | (per-school, sorted by entries desc) | | | |
+
+From bundled EES CSV (`subject-entries-by-urn.json`). Grade 7+ = A/A* equivalent.
 
 ---
 
-## KS5 Tables
+### Key Stage 5
 
-### A-level attainment
-*Columns: All pupils | England.*
+**Shown when KS5_25 namespace present and TALLPUP_1618 or TALLPUP_ALEV_1618 has data.**
+
+#### A3.11 — A-level Attainment
 
 | Category | All pupils | England |
 |---|---|---|
@@ -132,16 +166,16 @@ and hide Progress 8, post-16 destinations, and Grade 5+/4+ when iGCSE-suppressed
 | Best 3 A-levels — grade | `TB3PTSE_GRD` | — |
 | Best 3 A-levels — points | `TB3PTSE` | — |
 
-### A-level progress
-*Columns: All pupils | England.*
+#### A3.12 — A-level Progress
 
 | Category | All pupils | England |
 |---|---|---|
 | Progress score (VA) | `VA_INS_ALEV` (CI: `LCI_INS_ALEV` to `UCI_INS_ALEV`) | 0 |
 | Progress band | `PROGRESS_BAND_ALEV` | — |
 
-### A-level value-added — disadvantaged
-*Hidden when no disadvantaged pupils.*
+#### A3.13 — A-level Value-Added — Disadvantaged
+
+Hidden when no disadvantaged pupils.
 
 | Category | All pupils |
 |---|---|
@@ -150,8 +184,7 @@ and hide Progress 8, post-16 destinations, and Grade 5+/4+ when iGCSE-suppressed
 | Average points (disadvantaged) | `TALLPPE_ALEV_1618_DIS` |
 | Progress score (disadvantaged) | `VA_INS_ALEV_DIS` (CI: `LCI_INS_ALEV_DIS` to `UCI_INS_ALEV_DIS`) |
 
-### Facilitating subjects & destinations
-*Columns: All pupils | England.*
+#### A3.14 — Facilitating Subjects & Destinations
 
 | Category | All pupils | England |
 |---|---|---|
@@ -161,26 +194,104 @@ and hide Progress 8, post-16 destinations, and Grade 5+/4+ when iGCSE-suppressed
 | % to higher education | `TOT_HEPER` | — |
 | % to any sustained destination | `ALL_PROGRESSED` | — |
 
-### Tech levels & T-levels / Applied general
-*Hidden when no data.*
+#### A3.15 — Tech Levels & T-levels / Applied General
 
-### Results over time
-| | 2022 | 2023 | 2024 | 2025 |
+Hidden when no data.
+
+#### A3.16 — Results Over Time (KS5)
+
+| | 2022 final | 2023 final | 2024 final | 2025 final |
 |---|---|---|---|---|
 | Average grade | `TALLPPEGRD_ALEV_1618_22` | `TALLPPEGRD_ALEV_1618_23` | `TALLPPEGRD_ALEV_1618_24` | `TALLPPEGRD_ALEV_1618` |
 | Average points | `TALLPPE_ALEV_1618_22` | `TALLPPE_ALEV_1618_23` | `TALLPPE_ALEV_1618_24` | `TALLPPE_ALEV_1618` |
 | VA score | `VA_INS_ALEV_22` | `VA_INS_ALEV_23` | `VA_INS_ALEV_24` | `VA_INS_ALEV` |
 
-### A-level / Level 3 subjects entered
-*From bundled EES CSV. 4 columns. A–B = A-level equivalent of grade 7+.*
+#### A3.17 — Subjects Entered (KS5)
 
 | Subject | Qualification | Entries | A–B |
-|---|---:|---:|---:|
+|---|---|---|---|
 | (per-school, sorted by entries desc) | | | |
+
+From bundled EES CSV (`ks5-subject-entries-by-urn.json`). A–B = A-level equivalent of grade 7+.
 
 ---
 
-## Column codes
+## A4. Intake & Cohort — Pupil Census (DfE)
+
+### Pupil numbers
+| Category | School | National avg |
+|---|---:|---:|
+| Pupils on roll | `NOR` | ~1,000 secondary |
+| FSM eligible (last 6 years) | `PNUMFSMEVER`% | ~20% secondary |
+| EAL pupils | `PNUMEAL`% | — |
+| SEN support | `PSENELK`% | ~13% |
+| EHC plans | `PSENELSE`% | ~4.5% |
+
+### SEN & Inclusion
+Auto-generated paragraph based on SEN support + EHC plan % vs national ~17.5% combined.
+
+### Ethnicity
+| Ethnic group | % of pupils |
+|---|---:|
+| White | `schoolEthnicity.w`% |
+| Mixed | `schoolEthnicity.m`% |
+| Asian | `schoolEthnicity.a`% |
+| Black | `schoolEthnicity.b`% |
+| Chinese | `schoolEthnicity.c`% |
+| Other | `schoolEthnicity.o`% |
+| Not stated | `schoolEthnicity.ns`% |
+
+Hidden entirely if all groups are 0%.
+
+---
+
+## A5. Absence & Engagement (DfE)
+
+| Category | School | National avg |
+|---|---:|---:|
+| Overall absence | `PERCTOT`% | 6.6% |
+| Persistent absence | `PPERSABS10`% | 21.3% |
+
+---
+
+## A6. Financial Health
+
+### Financial Benchmarking (FBIT)
+
+**Summary:**
+```
+- In-year balance: £{inYearBalance}
+- Revenue reserve: £{revenueReserve}
+- Total spend per pupil (excl. premises): £{totalSpendPerPupil}/pupil (comparator avg: £{comparatorTotalPerPupil}/pupil)
+- Pupil:teacher ratio: {ptr}:1
+- Total workforce FTE: {workforceFte}
+- Teachers FTE: {teachersFte}
+- Senior leadership FTE: {sltFte}
+- Teaching assistants FTE: {taFte}
+- % teachers with Qualified Teacher Status (QTS): {qts}% (comparator set avg: {comparatorQts}%)
+```
+
+**Spending per pupil vs similar schools**
+8 categories, each: `- {category}: £{school}/pupil | avg £{comparator}/pupil | £{diff} more/less than avg | {pctDiff}%`
+
+---
+
+## A7. Area Context
+
+```
+- Location: {postcode} · {district} · {region}
+- Geography codes: LSOA {code} · MSOA {code}
+- Deprivation (IMD 2025): decile **{X}/10** · weaker sub-domains: {list}
+- Household income (MSOA): mean gross £{X} (Census 2021 era) · net £{X} (ONS 2018) · after housing £{X}
+- House prices (~800m, {N} sales, 5yr): median £{X} · by type: {breakdown}
+- Ethnicity (LSOA, Census 2021): {breakdown}
+- Qualifications (OA, Census 2021): level 4+ {X%} · no qualifications {X%}
+- Occupation (OA, Census 2021): professional/managerial {X%} · routine/manual {X%}
+```
+
+---
+
+## Column codes (for A3 tables)
 
 | Code | Columns |
 |---|---|
@@ -192,11 +303,8 @@ and hide Progress 8, post-16 destinations, and Grade 5+/4+ when iGCSE-suppressed
 | `e` | EAL |
 | `l` | Local Authority |
 | `E` | England |
-| `all` | All pupils (single column only — no subgroup breakdown) |
 
-`indCols()` strips `d`, `n`, `e` for independent schools.
-
-## Differences from independent schools
+## State vs Independent differences (for A3)
 
 | Section | State | Independent |
 |---|---|---|

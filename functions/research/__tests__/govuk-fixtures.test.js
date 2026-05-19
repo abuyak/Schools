@@ -57,43 +57,40 @@ function loadSnapshot(urn) {
 
 const EXPECTATIONS = {
   'state-infant': {
-    // KS1 is teacher-assessed; DfE CSV does not publish it at school level.
-    // Infant school slim block will contain census + absence + Ofsted — no perf tables.
-    shouldContain:    ['Ofsted', 'Census'],
-    shouldNotContain: ['Key Stage 2', 'Key Stage 4', 'Key Stage 5', 'Attainment 8'],
+    shouldContain:    ['A2. Inspection Outcomes', 'A4. Academic Performance', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldNotContain: ['Key Stage 2', 'Key Stage 4', 'Key Stage 5', 'Attainment 8', 'ISI:'],
   },
   'state-junior': {
-    shouldContain:    ['Key Stage 2', 'RWM'],
-    shouldNotContain: ['Key Stage 1', 'Key Stage 4', 'Key Stage 5'],
+    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 2', 'RWM', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldNotContain: ['Key Stage 4', 'Key Stage 5', 'Attainment 8', 'ISI:'],
   },
   'state-primary': {
-    shouldContain:    ['Key Stage 2', 'RWM'],
-    shouldNotContain: ['Key Stage 4', 'Key Stage 5', 'Attainment 8'],
+    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 2', 'RWM', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldNotContain: ['Key Stage 4', 'Key Stage 5', 'Attainment 8', 'ISI:'],
   },
   'state-secondary': {
-    shouldContain:    ['Key Stage 4', 'Attainment 8'],
-    shouldNotContain: ['Key Stage 1', 'Key Stage 2'],
+    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 4', 'Attainment 8', 'Progress 8', 'Post-16 destinations', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldNotContain: ['Key Stage 2', 'Key Stage 5', 'ISI:'],
   },
   'state-sixth-form': {
-    shouldContain:    ['Key Stage 5', '16–18'],
-    shouldNotContain: ['Key Stage 1', 'Key Stage 2', 'Attainment 8'],
+    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 5', '16–18', 'A7. Financial Health', 'A8. Area Context'],
+    shouldNotContain: ['Key Stage 2', 'Key Stage 4', 'Attainment 8', 'ISI:'],
   },
   'state-secondary-sixth': {
-    shouldContain:    ['Key Stage 4', 'Key Stage 5', 'Attainment 8'],
-    shouldNotContain: ['Key Stage 1', 'Key Stage 2'],
+    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 4', 'Key Stage 5', 'Attainment 8', 'Progress 8', 'Post-16 destinations', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldNotContain: ['Key Stage 2', 'ISI:'],
   },
   'independent-primary': {
-    shouldContain:    ['ISI'],
-    // Independent schools: Ofsted narrative won't be present
-    shouldNotContain: ['Key Stage 4', 'Key Stage 5'],
+    shouldContain:    ['A2. Inspection Outcomes', 'ISI:', 'A4. Academic Performance', '_No performance data', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldNotContain: ['Key Stage 2', 'Key Stage 4', 'Key Stage 5', 'Progress 8', 'Post-16 destinations'],
   },
   'independent-secondary': {
-    shouldContain:    ['ISI'],
-    shouldNotContain: ['Key Stage 1', 'Key Stage 2'],
+    shouldContain:    ['A2. Inspection Outcomes', 'ISI:', 'Key Stage 4', 'Key Stage 5', 'Attainment 8', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldNotContain: ['Key Stage 2', 'Progress 8', 'Post-16 destinations'],
   },
   'independent-all-through': {
-    shouldContain:    ['ISI'],
-    shouldNotContain: [],
+    shouldContain:    ['A2. Inspection Outcomes', 'ISI:', 'Key Stage 4', 'Key Stage 5', 'Attainment 8', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldNotContain: ['Key Stage 2', 'Progress 8', 'Post-16 destinations'],
   },
 };
 

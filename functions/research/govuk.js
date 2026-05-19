@@ -162,7 +162,7 @@ const NATIONAL_AVG = {
 
 // ─── Shared data helpers ──────────────────────────────────────────────────────
 
-const _parseNum = v => (v != null && typeof v === 'string') ? parseFloat(v.replace(/[%,£\s]/g, '')) : Number(v);
+const _parseNum = v => (v != null && typeof v === 'string') ? parseFloat(v.replace(/[%,£\s,]/g, '')) : Number(v);
 const _fmtVal = v => { const n = _parseNum(v); return !isNaN(n) ? n.toFixed(1) : null; };
 const _fmtPct = v => { const n = _parseNum(v); return !isNaN(n) ? n.toFixed(1) + '%' : null; };
 const _val = (v, fallback) => v != null ? v : (fallback ?? '—');
@@ -606,6 +606,8 @@ const REGEX_STOP_WORDS = new Set([
   'what','which','who','whom','whose','when','where','how','why',
   'please','tell','told','ask','asked','asking','know','think','thought',
   'wonder','wondering','check','find','look','looking','want','need','like','liked',
+  // comparison words — never part of a school name
+  'vs','versus','compare','comparing','between',
   // prepositions / conjunctions
   'a','an','the','in','on','at','to','for','of','or','and','but','nor',
   'with','from','by','about','into','onto','upon','near','nearby',
@@ -661,10 +663,47 @@ function extractNamesRegex(question) {
       : word.charAt(0).toUpperCase() + word.slice(1)
   );
 
-  const matches2 = [...qNorm.matchAll(pattern)]
+  const matches2 = [...normalised.matchAll(pattern)]
     .map(m => m[1].trim())
     .filter(n => !isDescriptorOnly(n));
-  return [...new Set(matches2)];
+  if (matches2.length) return [...new Set(matches2)];
+
+  // Third pass: comparison-aware. Split on vs/or/compare/between.
+  const comparisonDelim = /\b(?:vs\.?|versus|or|compare|between)\b/i;
+  if (comparisonDelim.test(question)) {
+    const segments = question.split(comparisonDelim);
+    const candidates = [];
+    const NAME_CONNECTORS = new Set(['of', 'the', 'and', '&', 'st', 'saint', 'de', 'la', 'les', 'upon', 'at']);
+    const STOP = new Set(['what','which','where','when','why','how','tell','find','show','give','need','want','looking','help','please','there','their','they','this','that','these','those','does','should','could','would','will','can','may','with','without','more','less','most','for','who','is','a','an','the','in','on','at','to','from','of','by']);
+    for (const seg of segments) {
+      const words = seg.trim().split(/\s+/);
+      let i = 0;
+      while (i < words.length) {
+        const w = words[i];
+        if (!/^[A-Z]/.test(w) || STOP.has(w.toLowerCase())) { i++; continue; }
+        const phrase = [w];
+        let j = i + 1;
+        while (j < words.length) {
+          const nw = words[j]; const lw = nw.toLowerCase();
+          if (NAME_CONNECTORS.has(lw) || /^(St\.?|Saint)$/i.test(nw)) { phrase.push(nw); j++; continue; }
+          if (/^[A-Z]/.test(nw) && !STOP.has(lw) && !NAME_CONNECTORS.has(lw)) { phrase.push(nw); j++; continue; }
+          break;
+        }
+        const name = phrase.join(' ');
+        if (!isDescriptorOnly(name)) candidates.push(name);
+        i = j;
+      }
+    }
+    // Split any candidate on " and " for schools like "Redriff Primary and Alfred Salter"
+    const out = [];
+    for (const c of candidates) {
+      if (/\band\b/i.test(c)) out.push(...c.split(/\s+and\s+/i).filter(p => p.trim()));
+      else out.push(c);
+    }
+    if (out.length >= 2) return [...new Set(out)];
+  }
+
+  return [];
 }
 
 /**
@@ -3688,9 +3727,22 @@ export function buildSlimBlock(school) {
 **School:** ${idLine}
 **Links:** ${links}
 
-### Academic Results (DfE)
+### A2. Inspection Outcomes
+${fmtOfstedSlim(ofsted, identity?.isIndependent ?? false)}
+
+### A3. What the School Needs to Improve
+${identity?.isIndependent ? (ofsted?.recommendations || ofsted?.nextSteps || '_Independent school — no improvement recommendations available._') : ofsted?.nextSteps ? ofsted.nextSteps : ofsted?.overall ? `_No improvement requirements stated. Ofsted grade: ${ofsted.overall}._` : '_Not retrieved — link to full Ofsted PDF if available._'}
+
+### A4. Academic Performance
 ${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null, false, identity?.isIndependent ?? false, null, subjectEntries, ks5SubjectEntries)}
-### Financial Benchmarking (FBIT)
+
+### A5. Intake & Cohort
+${fmtCensusSlim(performance, schoolEthnicity)}
+
+### A6. Absence & Engagement
+${fmtAbsenceSlim(performance)}
+
+### A7. Financial Health
 ${fmtFinancial(financial, identity?.isIndependent ?? false)}
 ${fees ? `### School Fees\n- ${Object.entries(fees).filter(([k]) => k !== 'source' && k !== 'raw').map(([k,v]) => {
   if (typeof v === 'object' && v !== null) {
@@ -3703,19 +3755,8 @@ ${fees ? `### School Fees\n- ${Object.entries(fees).filter(([k]) => k !== 'sourc
   }
   return `${k}: ${v}`;
 }).join('\n- ')}` : ''}
-### Inspection Outcomes (Ofsted)
-${fmtOfstedSlim(ofsted, identity?.isIndependent ?? false)}
 
-### A4 — What the School Needs to Improve (verbatim from Ofsted PDF — reproduce exactly in A4 section)
-${identity?.isIndependent ? (ofsted?.recommendations || ofsted?.nextSteps || '_Independent school — no improvement recommendations available._') : ofsted?.nextSteps ? ofsted.nextSteps : ofsted?.overall ? `_No improvement requirements stated. Ofsted grade: ${ofsted.overall}._` : '_Not retrieved — link to full Ofsted PDF if available._'}
-
-### Pupil Census (DfE)
-${fmtCensusSlim(performance, schoolEthnicity)}
-
-### Absence (DfE)
-${fmtAbsenceSlim(performance)}
-
-### Surrounding Area
+### A8. Area Context
 ${fmtAreaDataSlim(area)}
 ---`.trim();
 }
@@ -3967,7 +4008,7 @@ ${links || '_No URNs resolved — verify school names and search GIAS manually._
  * Returns an empty string if no school names could be found or all fetches fail.
  */
 export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, model) {
-  const detailed = branch === 'prompt_branch_1';
+  const detailed = true;
   const t0 = Date.now();
 
   const names = await extractSchoolNames(question, branch, apiKey, baseUrl, model);
@@ -3990,7 +4031,6 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
       let identity = await lookupSchoolURN(name, locationHints);
 
       // If GIAS can't resolve, try stripping the last word (fast local fix).
-      // AI correction already happened in extractSchoolNames — don't call it again.
       if (!identity?.urn) {
         const words = name.trim().split(/\s+/);
         if (words.length >= 3) {
@@ -4275,7 +4315,6 @@ export function renderPartAComparison(schools) {
         ['Admissions policy', s => lField(s, 'ADMPOL') ?? '—'],
         ['Address', s => s.identity?.address?.replace(/,?\s*Not recorded/gi, '').replace(/\s{2,}/g, ' ').trim() || '—'],
         ['Pupils on roll', s => nsField(s, 'NOR') ?? '—'],
-        ['Capacity / fill rate', s => { const cap=s.giasDetails?.capacity; const nor=nsField(s,'NOR'); if(!cap||!nor) return '—'; const rate=Math.round(parseInt(nor,10)/parseInt(cap.replace(/,/g,''),10)*100); return cap+' ('+rate+'% full)'; }],
       ].map(([label, fn]) => '| ' + label + ' | ' + schools.map(fn).join(' | ') + ' |').join('\n'),
     flag: 'none',
   });
@@ -4324,19 +4363,17 @@ export function renderPartAComparison(schools) {
   }
   if (a3Rows.length) sections.push({ heading: 'A3. Academic Performance', body: buildTable4('National', a3Rows), flag: 'none' });
 
-  // A4 — Intake & Cohort
-  if (schools.some(s => isState(s))) {
-    sections.push({
-      heading: 'A4. Intake & Cohort',
-      body: buildTable4('National', [
-        ['FSM eligible %', s => isState(s) ? val(() => fmtPct(nsField(s, 'PNUMFSMEVER'))) : '(indep)', () => schools.some(s => (s.identity?.phase ?? '').toLowerCase().includes('secondary')) ? '~20%' : '~25%'],
-        ['EAL %', s => val(() => fmtPct(nsField(s, 'PNUMEAL'))), '—'],
-        ['SEN support %', s => val(() => fmtPct(nsField(s, 'PSENELK'))), '~13%'],
-        ['EHC plan %', s => val(() => fmtPct(nsField(s, 'PSENELSE'))), '~4.5%'],
-      ]),
-      flag: 'none',
-    });
-  }
+  // A4 — Intake & Cohort (available for all schools including independents)
+  sections.push({
+    heading: 'A4. Intake & Cohort',
+    body: buildTable4('National', [
+      ['FSM eligible %', s => isState(s) ? val(() => fmtPct(nsField(s, 'PNUMFSMEVER'))) : '(indep — near 0%)', () => schools.some(s => (s.identity?.phase ?? '').toLowerCase().includes('secondary')) ? '~20%' : '~25%'],
+      ['EAL %', s => val(() => fmtPct(nsField(s, 'PNUMEAL'))), '—'],
+      ['SEN support %', s => val(() => fmtPct(nsField(s, 'PSENELK'))), '~13%'],
+      ['EHC plan %', s => val(() => fmtPct(nsField(s, 'PSENELSE'))), '~4.5%'],
+    ]),
+    flag: 'none',
+  });
 
   // A5 — Absence
   if (schools.some(s => isState(s) && nsField(s, 'PERCTOT'))) {
@@ -4350,7 +4387,7 @@ export function renderPartAComparison(schools) {
     });
   }
 
-  // A6 — Financial Health
+  // A6 — Financial Health (state schools only)
   if (schools.some(s => isState(s) && s.financial)) {
     sections.push({
       heading: 'A6. Financial Health',
@@ -4364,13 +4401,14 @@ export function renderPartAComparison(schools) {
   }
 
   // A7 — Area Context
-  if (schools.some(s => s.area?.imd?.imdDecile != null || s.area?.crystalRoof?.income?.meanAnnualHouseholdIncome != null)) {
+  if (schools.some(s => s.area?.imd?.imdDecile != null || s.area?.crystalRoof?.income?.meanAnnualHouseholdIncome != null || s.area?.pricePaid?.medianAllTypes != null)) {
     sections.push({
       heading: 'A7. Area Context',
       body: '| | ' + names.join(' | ') + ' |\n' +
         '|---|---:|---:|\n' +
         '| IMD decile (1=most deprived) | ' + schools.map(s => val(() => s.area?.imd?.imdDecile + '/10')).join(' | ') + ' |\n' +
-        '| Mean household income | ' + schools.map(s => { const v=s.area?.crystalRoof?.income?.meanAnnualHouseholdIncome; if(v!=null)return '£'+Number(v).toLocaleString(); const v2=s.area?.income?.netAnnualHouseholdIncome; return v2!=null?'£'+Number(v2).toLocaleString():'—'; }).join(' | ') + ' |\n' +
+        '| Mean household income | ' + schools.map(s => { const v=s.area?.crystalRoof?.income?.meanAnnualHouseholdIncome; const n=_parseNum(v); if(!isNaN(n))return '£'+n.toLocaleString(); const v2=s.area?.income?.netAnnualHouseholdIncome; const n2=_parseNum(v2); return !isNaN(n2)?'£'+n2.toLocaleString():'—'; }).join(' | ') + ' |\n' +
+        '| Median property price | ' + schools.map(s => { const v=s.area?.pricePaid?.medianAllTypes; const n=_parseNum(v); return !isNaN(n)?'£'+n.toLocaleString():'—'; }).join(' | ') + ' |\n' +
         '| % degree-level quals (area) | ' + schools.map(s => val(() => fmtPct(s.area?.crystalRoof?.qualifications?.level4AndAbove))).join(' | ') + ' |',
       flag: 'none',
     });
@@ -4461,6 +4499,8 @@ export function renderPartAComparison(schools) {
           analysis += ' ' + (pwinner ? pwinner + ' also leads on persistent absence (' + Math.min(paa,pab).toFixed(1) + '% vs ' + Math.max(paa,pab).toFixed(1) + '%).'
             : 'Persistent absence equal.');
         }
+      } else if (schools.every(s => !isState(s))) {
+        analysis = 'Absence data not reported — independent schools do not report absence to DfE.';
       }
     }
 
@@ -4472,6 +4512,8 @@ export function renderPartAComparison(schools) {
         else if (spendB < 0 && spendA >= 0) analysis = names[1] + ' is running a deficit while ' + names[0] + ' is in surplus.';
         else if (spendA < 0 && spendB < 0) analysis = 'Both schools running deficits.';
         else analysis = 'Both schools in surplus.';
+      } else if (schools.every(s => !isState(s))) {
+        analysis = 'Financial benchmarking not available — independent schools do not report to FBIT.';
       }
     }
 
