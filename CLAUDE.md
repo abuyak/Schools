@@ -2,6 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Development rules
+
+**Don't break the build:**
+- Run `npm test` in `functions/research` before every deploy. Never ship failing tests.
+- Verify with `curl` against the Lambda URL after deploy.
+
+**Don't repeat yourself:**
+- If you're writing the same logic in two places, extract a shared function at module level.
+- Before adding a new helper, check if one already exists in the file.
+
+**Commit often:**
+- Commit working changes at least every few hours. Don't let uncommitted fixes pile up — a single bad revert can wipe everything.
+
+**Keep it simple:**
+- govuk.js is large. Make surgical edits; don't rewrite functions unless necessary.
+- Prompt files are short — edit directly.
+
 ## Project overview
 
 School Scanner is a mobile-first web app that answers UK school-choice questions across four decision paths: evaluate a school, compare schools, check an area, and plan admissions backup routes. It pre-fetches UK government school data (Ofsted, DfE performance, GIAS, financial benchmarking, census) and then calls an OpenAI-compatible API (Responses API with web search tool) to produce structured, cited answers.

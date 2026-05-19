@@ -160,6 +160,24 @@ const NATIONAL_AVG = {
   },
 };
 
+// ─── Shared data helpers ──────────────────────────────────────────────────────
+
+const _parseNum = v => (v != null && typeof v === 'string') ? parseFloat(v.replace(/[%,£\s]/g, '')) : Number(v);
+const _fmtVal = v => { const n = _parseNum(v); return !isNaN(n) ? n.toFixed(1) : null; };
+const _fmtPct = v => { const n = _parseNum(v); return !isNaN(n) ? n.toFixed(1) + '%' : null; };
+const _val = (v, fallback) => v != null ? v : (fallback ?? '—');
+const _isState = s => !(s?.identity?.isIndependent ?? false);
+
+const _nsField = (s, variable) => {
+  const perf = s?.performance ?? {};
+  const sorted = Object.entries(perf)
+    .sort(([a], [b]) => (parseInt(b.match(/_\d+$/)?.[1] ?? '0', 10) - parseInt(a.match(/_\d+$/)?.[1] ?? '0', 10)))
+    .flatMap(([, rows]) => rows);
+  return sorted.find(r => r.variable === variable)?.value ?? null;
+};
+
+const _lField = (s, v) => (s?.performance?.L ?? []).find(r => r.variable === v)?.value ?? null;
+
 // ─── HTTP helpers ─────────────────────────────────────────────────────────────
 
 // Government sites block non-browser User-Agents; use a realistic one.
@@ -624,7 +642,11 @@ function extractNamesRegex(question) {
   };
 
   // First pass: try on the original question (handles already-capitalised input).
-  const matches1 = [...question.matchAll(pattern)]
+  // Normalise: all-caps words → lowercase, mid-word caps → lowercase
+  // "FORTISMERE SCHOOL" → "fortismere school", "COllege" → "College"
+  let qNorm = question.replace(/\b([A-Z]{2,})\b/g, w => w.toLowerCase());
+  qNorm = qNorm.replace(/\B[A-Z]\B/g, c => c.toLowerCase());
+  const matches1 = [...qNorm.matchAll(pattern)]
     .map(m => m[1].trim())
     .filter(n => !isDescriptorOnly(n));
   if (matches1.length) return [...new Set(matches1)];
@@ -639,7 +661,7 @@ function extractNamesRegex(question) {
       : word.charAt(0).toUpperCase() + word.slice(1)
   );
 
-  const matches2 = [...normalised.matchAll(pattern)]
+  const matches2 = [...qNorm.matchAll(pattern)]
     .map(m => m[1].trim())
     .filter(n => !isDescriptorOnly(n));
   return [...new Set(matches2)];
@@ -651,6 +673,7 @@ function extractNamesRegex(question) {
  * short-form names are common ("Eton vs Winchester").
  */
 async function extractNamesAI(question, branch, apiKey, baseUrl, model) {
+  console.log(JSON.stringify({ event: 'ai_extract_enter', question: question.slice(0, 80), branch }));
   const isComparison = branch === 'prompt_branch_2';
   const instructions = isComparison
     ? 'Extract all school names from the text. Return ONLY a JSON array of strings. Example: ["Eton College","Winchester College"]. If none found, return [].'
@@ -673,7 +696,20 @@ async function extractNamesAI(question, branch, apiKey, baseUrl, model) {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    const text = (data.output_text ?? '').trim();
+    // Check both output_text and output[].content[].text
+    let text = (data.output_text ?? '').trim();
+    if (!text && Array.isArray(data.output)) {
+      const fragments = [];
+      for (const item of data.output) {
+        if (Array.isArray(item.content)) {
+          for (const c of item.content) {
+            if (c.text?.trim()) fragments.push(c.text);
+          }
+        }
+      }
+      text = fragments.join(' ').trim();
+    }
+    if (!text) return [];
     const match = text.match(/\[[\s\S]*?\]/);
     if (!match) return [];
     return JSON.parse(match[0]).filter(n => typeof n === 'string' && n.trim());
@@ -721,21 +757,28 @@ async function extractSchoolNames(question, branch, apiKey, baseUrl, model) {
   const regexNames = extractNamesRegex(question);
   const isComparison = branch === 'prompt_branch_2';
 
+  const cleanNames = (names) => names
+    .map(n => n.replace(/^(Compare|Versus|Vs\.?)\s+/i, '').trim())
+    .map(n => n.replace(/\s+[A-Z]{1,2}\d{1,2}[A-Z]?(\s*\d[A-Z]{2})?$/i, '').trim())
+    .map(n => n.replace(/'([A-Z])/g, (_, ch) => "'" + ch.toLowerCase()))
+    .map(n => n.replace(/\B[A-Z]\B/g, ch => ch.toLowerCase()))
+    .map(n => n.replace(/\b[Cc]olledge\b/g, 'College'))  // common misspelling
+    .filter(Boolean);
+
   // Regex is sufficient when it found results and this isn't a comparison
-  if (regexNames.length >= 1 && !isComparison) return regexNames;
+  if (regexNames.length >= 1 && !isComparison) return cleanNames(regexNames);
   // For comparisons we want ≥2; fall through to AI if we have fewer
-  if (regexNames.length >= 2 && isComparison) return regexNames;
+  if (regexNames.length >= 2 && isComparison) return cleanNames(regexNames);
 
-  // Build a keyword search phrase from distinctive question words.
-  // GIAS does token-based matching, so "latymer godolphin" finds
-  // "Godolphin and Latymer School" without needing AI.
-  // Require ≥2 words — a single word is too likely to be a false match.
-  const phrase = extractSearchPhrase(question);
-  if (phrase && regexNames.length === 0 && phrase.split(/\s+/).length >= 2) return [phrase];
-
+  // Always use AI when regex finds nothing — search phrases can't fix misspellings.
   const aiNames = await extractNamesAI(question, branch, apiKey, baseUrl, model);
-  // Return whichever set is larger / non-empty
-  return aiNames.length >= regexNames.length ? aiNames : regexNames;
+  if (aiNames.length) return cleanNames(aiNames);
+
+  // Fall back to keyword search phrase if AI returns nothing
+  const phrase = extractSearchPhrase(question);
+  if (phrase && regexNames.length === 0 && phrase.split(/\s+/).length >= 2) return cleanNames([phrase]);
+
+  return regexNames;
 }
 
 // ─── GIAS URN lookup ──────────────────────────────────────────────────────────
@@ -3946,15 +3989,14 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
     names.map(async (name) => {
       let identity = await lookupSchoolURN(name, locationHints);
 
-      // When GIAS can't resolve the name (0 tiles even after the stripped-name
-      // retry), ask the AI to spell-correct/canonicalise — e.g. "Mickelfield" →
-      // "Micklefield School".  Only attempt once to avoid latency loops.
-      if (!identity) {
-        const aiNames = await extractNamesAI(question, branch, apiKey, baseUrl, model);
-        const aiName  = aiNames.find(n => n.toLowerCase() !== name.toLowerCase());
-        if (aiName) {
-          glog('govuk_gias_ai_fallback', { original: name, aiName });
-          identity = await lookupSchoolURN(aiName, locationHints);
+      // If GIAS can't resolve, try stripping the last word (fast local fix).
+      // AI correction already happened in extractSchoolNames — don't call it again.
+      if (!identity?.urn) {
+        const words = name.trim().split(/\s+/);
+        if (words.length >= 3) {
+          const shorter = words.slice(0, -1).join(' ');
+          identity = await lookupSchoolURN(shorter, locationHints);
+          if (identity?.urn) glog('govuk_gias_shortened', { original: name, shorter, urn: identity.urn });
         }
       }
 
@@ -4071,7 +4113,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
 
   const block = '\n\n' + (detailed
     ? schools.map(buildSlimBlock).join('\n\n')
-    : buildComparisonBlock(schools));
+    : buildComparisonBlock(schools) + '\n\n' + schools.map(buildSlimBlock).join('\n\n'));
 
   const flags = (detailed && schools.length === 1) ? computeFlags(schools[0]) : {};
   return { block, flags, schools };
@@ -4177,6 +4219,270 @@ export function computeFlags(school) {
 //
 // Exported so the Lambda handler can call it after fetchGovDataForPrompt resolves.
 
+
+// ─── Server-rendered Part A comparison tables ───────────────────────────────
+
+export function renderPartAComparison(schools) {
+  if (!schools.length) return [];
+  // If only 1 school resolved, pad with placeholder so tables still render
+  if (schools.length < 2) {
+    schools = [...schools, { identity: { officialName: 'Not resolved' }, ofsted: null, performance: {}, financial: null, giasDetails: null, area: null }];
+  }
+
+  let names = schools.map(s => s.identity?.officialName ?? s.input);
+
+  const decodeHtml = (str) => {
+    if (!str || typeof str !== 'string') return str;
+    return str.replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+  };
+
+  const isState = (s) => _isState(s);
+  const nsField = (s, v) => _nsField(s, v);
+  const lField = (s, v) => _lField(s, v);
+  const fmt = (v) => _fmtVal(v);
+  const fmtPct = (v) => _fmtPct(v);
+  const val = (fn, fallback) => { const v = fn(); return _val(v, fallback ?? '—'); };
+
+  const hasKS2 = schools.some(s => Object.keys(s.performance ?? {}).some(k => k.slice(0,3) === 'KS2'));
+  const hasKS4 = schools.some(s => Object.keys(s.performance ?? {}).some(k => k.slice(0,3) === 'KS4'));
+  const hasKS5 = schools.some(s => Object.keys(s.performance ?? {}).some(k => k.slice(0,3) === 'KS5'));
+
+  const nat2 = NATIONAL_AVG.KS2 ?? {};
+  const nat4 = NATIONAL_AVG.KS4 ?? {};
+  const nat5 = NATIONAL_AVG.KS5 ?? {};
+
+  const buildTable4 = (lastCol, rows) => {
+    return '| | ' + names.join(' | ') + ' | ' + lastCol + ' |\n' +
+      '|---:|---:|---:|---:|\n' +
+      rows.map(([label, fn, nat]) => '| ' + label + ' | ' + schools.map(fn).join(' | ') + ' | ' + (typeof nat === 'function' ? nat() : (nat ?? '—')) + ' |').join('\n');
+  };
+
+  const sections = [];
+
+  // A1 — School Identity
+  sections.push({
+    heading: 'A1. School Identity',
+    body: '| | ' + names.join(' | ') + ' |\n' +
+      '|---|---:|---:|\n' +
+      [
+        ['Official name', s => s.identity?.officialName ?? '—'],
+        ['URN', s => s.identity?.urn ?? '—'],
+        ['Type', s => s.identity?.type ?? '—'],
+        ['Phase & age range', s => { const lo=lField(s,'AGELOW');const hi=lField(s,'AGEHIGH'); return (s.identity?.phase ?? '') + (lo&&hi ? ', ages '+lo+'–'+hi : ''); }],
+        ['Gender', s => lField(s, 'GENDER') ?? '—'],
+        ['Religious character', s => lField(s, 'RELCHAR') ?? '—'],
+        ['Admissions policy', s => lField(s, 'ADMPOL') ?? '—'],
+        ['Address', s => s.identity?.address?.replace(/,?\s*Not recorded/gi, '').replace(/\s{2,}/g, ' ').trim() || '—'],
+        ['Pupils on roll', s => nsField(s, 'NOR') ?? '—'],
+        ['Capacity / fill rate', s => { const cap=s.giasDetails?.capacity; const nor=nsField(s,'NOR'); if(!cap||!nor) return '—'; const rate=Math.round(parseInt(nor,10)/parseInt(cap.replace(/,/g,''),10)*100); return cap+' ('+rate+'% full)'; }],
+      ].map(([label, fn]) => '| ' + label + ' | ' + schools.map(fn).join(' | ') + ' |').join('\n'),
+    flag: 'none',
+  });
+
+  // A2 — Inspection Grades
+  if (schools.some(s => !s.identity?.isIndependent)) {
+    sections.push({
+      heading: 'A2. Inspection Grades',
+      body: '| | ' + names.join(' | ') + ' |\n' +
+        '|---|---:|---:|\n' +
+        '| Overall grade | ' + schools.map(s => val(() => s.ofsted?.overall)).join(' | ') + ' |\n' +
+        '| Inspection date | ' + schools.map(s => val(() => s.ofsted?.date)).join(' | ') + ' |',
+      flag: 'none',
+    });
+  } else {
+    sections.push({
+      heading: 'A2. Inspection Grades',
+      body: '| | ' + names.join(' | ') + ' |\n' +
+        '|---|---:|---:|\n' +
+        '| Overall (ISI) | ' + schools.map(s => val(() => s.ofsted?.overall)).join(' | ') + ' |\n' +
+        '| Inspection date | ' + schools.map(s => val(() => s.ofsted?.date)).join(' | ') + ' |',
+      flag: 'none',
+    });
+  }
+
+  // A3 — Academic Performance
+  const a3Rows = [];
+  if (hasKS2) {
+    a3Rows.push(['KS2 RWM expected %', s => val(() => fmtPct(nsField(s, 'PTRWM_EXP'))), () => nat2.PTRWM_EXP ? nat2.PTRWM_EXP + '%' : '—']);
+    a3Rows.push(['KS2 RWM higher %', s => val(() => fmtPct(nsField(s, 'PTRWM_HIGH'))), () => nat2.PTRWM_HIGH ? nat2.PTRWM_HIGH + '%' : '—']);
+    a3Rows.push(['Reading progress', s => { const v=s.performance?.KS2_23?.find(r=>r.variable==='READPROG_23')?.value; const b=s.performance?.KS2_23?.find(r=>r.variable==='READPROG_23_DESCR_23')?.value; return v ? v+' ('+(b||'—')+')' : '—'; }, '0']);
+    a3Rows.push(['Maths progress', s => { const v=s.performance?.KS2_23?.find(r=>r.variable==='MATPROG_23')?.value; const b=s.performance?.KS2_23?.find(r=>r.variable==='MATPROG_23_DESCR_23')?.value; return v ? v+' ('+(b||'—')+')' : '—'; }, '0']);
+  }
+  if (hasKS4) {
+    a3Rows.push(['Attainment 8', s => val(() => fmt(nsField(s, 'ATT8SCR'))), () => nat4.ATT8SCR != null ? String(nat4.ATT8SCR) : '—']);
+    a3Rows.push(['Progress 8', s => val(() => fmt(nsField(s, 'P8MEA'))), '0']);
+    a3Rows.push(['Grade 5+ Eng & Maths %', s => val(() => fmtPct(nsField(s, 'PTL2BASICS_95'))), () => nat4.PTL2BASICS_95 != null ? nat4.PTL2BASICS_95 + '%' : '—']);
+    a3Rows.push(['Grade 4+ Eng & Maths %', s => val(() => fmtPct(nsField(s, 'PTL2BASICS_94'))), () => nat4.PTL2BASICS_94 != null ? nat4.PTL2BASICS_94 + '%' : '—']);
+    a3Rows.push(['EBacc entry %', s => val(() => fmtPct(nsField(s, 'PTEBACC_E_PTQ_EE'))), () => nat4.PTEBACC_E_PTQ_EE != null ? nat4.PTEBACC_E_PTQ_EE + '%' : '—']);
+    a3Rows.push(['% sustained destination', s => val(() => fmtPct(nsField(s, 'OVERALL_DESTPER'))), '—']);
+  }
+  if (hasKS5) {
+    a3Rows.push(['A-level avg grade', s => val(() => nsField(s, 'TALLPPEGRD_ALEV_1618')), () => nat5.AVG_GRADE ?? '—']);
+    a3Rows.push(['A-level progress (VA)', s => val(() => fmt(nsField(s, 'VA_INS_ALEV'))), '0']);
+    a3Rows.push(['% to higher education', s => val(() => fmtPct(nsField(s, 'TOT_HEPER'))), '—']);
+  }
+  if (a3Rows.length) sections.push({ heading: 'A3. Academic Performance', body: buildTable4('National', a3Rows), flag: 'none' });
+
+  // A4 — Intake & Cohort
+  if (schools.some(s => isState(s))) {
+    sections.push({
+      heading: 'A4. Intake & Cohort',
+      body: buildTable4('National', [
+        ['FSM eligible %', s => isState(s) ? val(() => fmtPct(nsField(s, 'PNUMFSMEVER'))) : '(indep)', () => schools.some(s => (s.identity?.phase ?? '').toLowerCase().includes('secondary')) ? '~20%' : '~25%'],
+        ['EAL %', s => val(() => fmtPct(nsField(s, 'PNUMEAL'))), '—'],
+        ['SEN support %', s => val(() => fmtPct(nsField(s, 'PSENELK'))), '~13%'],
+        ['EHC plan %', s => val(() => fmtPct(nsField(s, 'PSENELSE'))), '~4.5%'],
+      ]),
+      flag: 'none',
+    });
+  }
+
+  // A5 — Absence
+  if (schools.some(s => isState(s) && nsField(s, 'PERCTOT'))) {
+    sections.push({
+      heading: 'A5. Absence & Engagement',
+      body: buildTable4('National', [
+        ['Overall absence', s => isState(s) ? val(() => fmt(nsField(s, 'PERCTOT'))) + '%' : '(indep)', '6.6%'],
+        ['Persistent absence', s => isState(s) ? val(() => fmt(nsField(s, 'PPERSABS10'))) + '%' : '(indep)', '21.3%'],
+      ]),
+      flag: 'none',
+    });
+  }
+
+  // A6 — Financial Health
+  if (schools.some(s => isState(s) && s.financial)) {
+    sections.push({
+      heading: 'A6. Financial Health',
+      body: '| | ' + names.join(' | ') + ' | Comparator |\n' +
+        '|---:|---:|---:|---:|\n' +
+        '| Spend per pupil | ' + schools.map(s => { const n=_parseNum(s.financial?.totalSpendPerPupil); return !isNaN(n)?'£'+Number(n).toLocaleString():'—'; }).join(' | ') + ' | ' + schools.map(s => { const n=_parseNum(s.financial?.comparatorTotalPerPupil); return !isNaN(n)?'£'+Number(n).toLocaleString():'—'; }).join(' / ') + ' |\n' +
+        '| In-year balance | ' + schools.map(s => { const n=_parseNum(s.financial?.inYearBalance); return !isNaN(n)?'£'+Number(n).toLocaleString():'—'; }).join(' | ') + ' | — |\n' +
+        '| QTS % | ' + schools.map(s => { const n=_parseNum(s.financial?.qualifiedTeachersPct); return !isNaN(n)?n.toFixed(1)+'%':'—'; }).join(' | ') + ' | ' + schools.map(s => { const n=_parseNum(s.financial?.comparatorQtsAvgPct); return !isNaN(n)?n.toFixed(1)+'%':'—'; }).join(' / ') + ' |',
+      flag: 'none',
+    });
+  }
+
+  // A7 — Area Context
+  if (schools.some(s => s.area?.imd?.imdDecile != null || s.area?.crystalRoof?.income?.meanAnnualHouseholdIncome != null)) {
+    sections.push({
+      heading: 'A7. Area Context',
+      body: '| | ' + names.join(' | ') + ' |\n' +
+        '|---|---:|---:|\n' +
+        '| IMD decile (1=most deprived) | ' + schools.map(s => val(() => s.area?.imd?.imdDecile + '/10')).join(' | ') + ' |\n' +
+        '| Mean household income | ' + schools.map(s => { const v=s.area?.crystalRoof?.income?.meanAnnualHouseholdIncome; if(v!=null)return '£'+Number(v).toLocaleString(); const v2=s.area?.income?.netAnnualHouseholdIncome; return v2!=null?'£'+Number(v2).toLocaleString():'—'; }).join(' | ') + ' |\n' +
+        '| % degree-level quals (area) | ' + schools.map(s => val(() => fmtPct(s.area?.crystalRoof?.qualifications?.level4AndAbove))).join(' | ') + ' |',
+      flag: 'none',
+    });
+  }
+
+  
+  // ── Append deterministic analysis to each table ──────────────────────────
+  for (const s of sections) {
+    const h = s.heading || '';
+    let analysis = '';
+
+    if (h.startsWith('A2.')) {
+      const grades = schools.map(s => s.ofsted?.overall ?? null);
+      const dates = schools.map(s => s.ofsted?.date ?? null);
+      if (grades[0] && grades[1]) {
+        if (grades[0] === grades[1]) {
+          analysis = 'Both schools rated ' + grades[0] + ' — no inspection winner. ';
+          if (dates[0] && dates[1]) {
+            const d0 = new Date(dates[0]), d1 = new Date(dates[1]);
+            analysis += d0 > d1 ? names[0] + ' has the more recent inspection (' + dates[0] + ' vs ' + dates[1] + ').'
+              : names[1] + ' has the more recent inspection (' + dates[1] + ' vs ' + dates[0] + ').';
+          }
+        } else {
+          const winner = (grades[0] === 'Outstanding' || grades[0] === 'Exceptional') ? names[0] :
+                         (grades[1] === 'Outstanding' || grades[1] === 'Exceptional') ? names[1] : null;
+          analysis = winner ? winner + ' wins on inspection (' + grades[0] + ' vs ' + grades[1] + ').'
+            : names[0] + ': ' + grades[0] + ' vs ' + names[1] + ': ' + grades[1] + '.';
+        }
+      }
+    }
+
+    if (h.startsWith('A3.')) {
+      // Compare Attainment 8 (secondary) or KS2 RWM (primary)
+      const getVal = (s, v) => { const r = _nsField(s, v); return r != null ? parseFloat(String(r).replace(/%/g,'')) : null; };
+      const a8a = getVal(schools[0], 'ATT8SCR'), a8b = getVal(schools[1], 'ATT8SCR');
+      const p8a = getVal(schools[0], 'P8MEA'), p8b = getVal(schools[1], 'P8MEA');
+      const rwma = getVal(schools[0], 'PTRWM_EXP'), rwmb = getVal(schools[1], 'PTRWM_EXP');
+      const aleva = schools[0].performance ? _nsField(schools[0], 'TALLPPEGRD_ALEV_1618') : null;
+      const alevb = schools[1].performance ? _nsField(schools[1], 'TALLPPEGRD_ALEV_1618') : null;
+
+      if (a8a != null && a8b != null && !isNaN(a8a) && !isNaN(a8b)) {
+        analysis = a8a > a8b ? names[0] + ' leads on Attainment 8 (' + a8a.toFixed(1) + ' vs ' + a8b.toFixed(1) + ').'
+          : a8b > a8a ? names[1] + ' leads on Attainment 8 (' + a8b.toFixed(1) + ' vs ' + a8a.toFixed(1) + ').'
+          : 'Attainment 8 is equal (' + a8a.toFixed(1) + ').';
+      }
+      if (p8a != null && p8b != null && !isNaN(p8a) && !isNaN(p8b)) {
+        analysis += ' ' + (p8a > p8b ? names[0] + ' leads on Progress 8 (' + p8a.toFixed(1) + ' vs ' + p8b.toFixed(1) + ').'
+          : p8b > p8a ? names[1] + ' leads on Progress 8 (' + p8b.toFixed(1) + ' vs ' + p8a.toFixed(1) + ').'
+          : 'Progress 8 is equal.');
+      }
+      if (rwma != null && rwmb != null && !isNaN(rwma) && !isNaN(rwmb)) {
+        analysis += ' ' + (rwma > rwmb ? names[0] + ' leads on KS2 RWM (' + rwma.toFixed(1) + '% vs ' + rwmb.toFixed(1) + '%).'
+          : rwmb > rwma ? names[1] + ' leads on KS2 RWM (' + rwmb.toFixed(1) + '% vs ' + rwma.toFixed(1) + '%).'
+          : 'KS2 RWM is equal.');
+      }
+      if (!analysis && aleva && alevb) {
+        analysis = aleva !== alevb ? (aleva > alevb ? names[0] : names[1]) + ' leads on A-level grade (' + aleva + ' vs ' + alevb + ').'
+          : 'A-level grades equal (' + aleva + ').';
+      }
+      if (!analysis) analysis = 'Academic comparison limited — some metrics not available for both schools.';
+    }
+
+    if (h.startsWith('A4.')) {
+      const getPct = (s, v) => { const r = _nsField(s, v); if (!r) return null; const n = parseFloat(String(r).replace(/%/g,'')); return isNaN(n) ? null : n; };
+      const fsma = getPct(schools[0], 'PNUMFSMEVER'), fsmb = getPct(schools[1], 'PNUMFSMEVER');
+      const sena = getPct(schools[0], 'PSENELK'), senb = getPct(schools[1], 'PSENELK');
+      if (fsma != null && fsmb != null) {
+        analysis = fsmb > fsma ? names[1] + ' has a more disadvantaged intake (FSM ' + fsmb.toFixed(1) + '% vs ' + fsma.toFixed(1) + '%).'
+          : fsma > fsmb ? names[0] + ' has a more disadvantaged intake (FSM ' + fsma.toFixed(1) + '% vs ' + fsmb.toFixed(1) + '%).'
+          : 'FSM rates are equal (' + fsma.toFixed(1) + '%).';
+      }
+      if (sena != null && senb != null) {
+        const diff = Math.abs(sena - senb);
+        if (diff > 5) analysis += ' ' + (sena > senb ? names[0] : names[1]) + ' has a notably higher SEN support rate (' + Math.max(sena,senb).toFixed(1) + '% vs ' + Math.min(sena,senb).toFixed(1) + '%).';
+      }
+    }
+
+    if (h.startsWith('A5.')) {
+      const getAbs = (s, v) => { const r = _nsField(s, v); return r != null ? parseFloat(String(r)) : null; };
+      const oaa = getAbs(schools[0], 'PERCTOT'), oab = getAbs(schools[1], 'PERCTOT');
+      const paa = getAbs(schools[0], 'PPERSABS10'), pab = getAbs(schools[1], 'PPERSABS10');
+      if (oaa != null && oab != null && !isNaN(oaa) && !isNaN(oab)) {
+        const winner = oaa < oab ? names[0] : oab < oaa ? names[1] : null;
+        analysis = winner ? winner + ' has better overall absence (' + Math.min(oaa,oab).toFixed(1) + '% vs ' + Math.max(oaa,oab).toFixed(1) + '%).'
+          : 'Overall absence equal (' + oaa.toFixed(1) + '%).';
+        if (paa != null && pab != null && !isNaN(paa) && !isNaN(pab)) {
+          const pwinner = paa < pab ? names[0] : pab < paa ? names[1] : null;
+          analysis += ' ' + (pwinner ? pwinner + ' also leads on persistent absence (' + Math.min(paa,pab).toFixed(1) + '% vs ' + Math.max(paa,pab).toFixed(1) + '%).'
+            : 'Persistent absence equal.');
+        }
+      }
+    }
+
+    if (h.startsWith('A6.')) {
+      const spendA = schools[0].financial?.inYearBalance != null ? _parseNum(schools[0].financial.inYearBalance) : null;
+      const spendB = schools[1].financial?.inYearBalance != null ? _parseNum(schools[1].financial.inYearBalance) : null;
+      if (spendA != null && spendB != null && !isNaN(spendA) && !isNaN(spendB)) {
+        if (spendA < 0 && spendB >= 0) analysis = names[0] + ' is running a deficit while ' + names[1] + ' is in surplus.';
+        else if (spendB < 0 && spendA >= 0) analysis = names[1] + ' is running a deficit while ' + names[0] + ' is in surplus.';
+        else if (spendA < 0 && spendB < 0) analysis = 'Both schools running deficits.';
+        else analysis = 'Both schools in surplus.';
+      }
+    }
+
+    if (analysis) s.body += '\n\n' + analysis;
+  }
+
+  for (const s of sections) s.body = decodeHtml(s.body);
+  return sections;
+}
+
+
 export function renderPartA(school, flags = {}) {
   const { identity, ofsted, performance, financial, area, schoolEthnicity, laPerf, giasDetails, subjectEntries, ks5SubjectEntries } = school;
   const isIndependent = identity?.isIndependent ?? false;
@@ -4222,6 +4528,7 @@ export function renderPartA(school, flags = {}) {
       `| Local authority | ${d(identity?.la)} |`,
       `| Co-ed / single-sex | ${genderDisplay} |`,
       `| Religious character | ${relDisplay} |`,
+      `| Admissions policy | ${d(lv('ADMPOL'))} |`,
     ];
     if (headteacher) lines.push(`| Headteacher | ${headteacher} |`);
     if (address)     lines.push(`| Address | ${address} |`);

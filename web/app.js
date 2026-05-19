@@ -13,12 +13,50 @@
   const resultTitle = document.getElementById("result-title");
   const resultSummary = document.getElementById("result-summary");
   const scorecardEl = document.getElementById("scorecard");
+  const sectionsToolbar = document.getElementById("sections-toolbar");
+  const toggleAllBtn = document.getElementById("toggle-all-btn");
   const answerSections = document.getElementById("answer-sections");
   const premiumPoints = document.getElementById("premium-points");
   const gateNote = document.getElementById("gate-note");
   const premiumPanel = document.getElementById("premium-panel");
   const coffeeCta = document.getElementById("coffee-cta");
   const feedbackCta = document.getElementById("feedback-cta");
+
+  // ── Section collapse/expand ───────────────────────────────────────────
+
+  var allExpanded = true;
+
+  function updateToggleButton() {
+    toggleAllBtn.textContent = allExpanded ? "Collapse all" : "Expand all";
+  }
+
+  function setAllSections(collapsed) {
+    var articles = answerSections.querySelectorAll(".answer-section");
+    articles.forEach(function (a) {
+      if (collapsed) a.classList.add("collapsed");
+      else a.classList.remove("collapsed");
+    });
+  }
+
+  toggleAllBtn.addEventListener("click", function () {
+    allExpanded = !allExpanded;
+    setAllSections(!allExpanded);
+    updateToggleButton();
+  });
+
+  // Delegated click on section headings to toggle individual sections
+  answerSections.addEventListener("click", function (e) {
+    var row = e.target.closest(".answer-section-heading-row");
+    if (!row) return;
+    var article = row.closest(".answer-section");
+    if (!article) return;
+    article.classList.toggle("collapsed");
+
+    // Sync the "all" button: if any section is collapsed, we're not in "all expanded"
+    var anyCollapsed = answerSections.querySelector(".answer-section.collapsed");
+    allExpanded = !anyCollapsed;
+    updateToggleButton();
+  });
 
   function setStatus(message) {
     formStatus.textContent = message;
@@ -412,11 +450,33 @@
   }
 
   function renderResult(result, modeLabel) {
+    // API-level errors: display the message instead of a blank page
+    if (result.error) {
+      resultTitle.textContent = "Not possible to complete the request";
+      resultSummary.replaceChildren();
+      resultSummary.textContent = result.error;
+      scorecardEl.hidden = true;
+      sectionsToolbar.hidden = true;
+      answerSections.replaceChildren();
+      resultCard.hidden = false;
+      setStatus(modeLabel);
+      return;
+    }
+
     resultTitle.textContent = result.title || "Answer";
     resultSummary.replaceChildren();
     appendTextWithLinks(resultSummary, result.summary || "");
     renderScorecard(result.scorecard || []);
     renderSections(result.sections || []);
+
+    // Show section toggle toolbar when there are sections
+    if (result.sections && result.sections.length > 0) {
+      sectionsToolbar.hidden = false;
+      allExpanded = true;
+      updateToggleButton();
+    } else {
+      sectionsToolbar.hidden = true;
+    }
 
     if (coffeeCta) {
       const status = result.status || "";
@@ -497,6 +557,7 @@
     }
 
     submitButton.disabled = true;
+    sectionsToolbar.hidden = true;
     setStatus("Researching online sources…");
     trackEvent("question_submitted", { branch: payload.branch });
     const _t0 = Date.now();

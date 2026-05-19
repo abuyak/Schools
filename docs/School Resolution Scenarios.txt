@@ -1,0 +1,79 @@
+# School Name Resolution — Test Scenarios
+# Each line: scenario → expected URN (or null if unresolvable)
+# Format: "input question" | branch | expected_names | expected_urns
+
+# ── Original examples ───────────────────────────────────────────────────
+"Bacon's COllege" | prompt_branch_1 | ["Bacon's College"] | 145313
+"Bacon's Colledge" | prompt_branch_1 | ["Bacon's College"] | 145313
+"Mickelfield School" | prompt_branch_1 | ["Micklefield School"] | 125357
+
+# ── Basic exact matches ─────────────────────────────────────────────────
+"Fortismere School" | prompt_branch_1 | ["Fortismere School"] | 102156
+"Eton College" | prompt_branch_1 | ["Eton College"] | TODO
+"Redriff Primary" | prompt_branch_1 | ["Redriff Primary, City of London Academy"] | 137648
+
+# ── Case variations ────────────────────────────────────────────────────
+"fortismere school" | prompt_branch_1 | ["Fortismere School"] | 102156
+"FORTISMERE SCHOOL" | prompt_branch_1 | ["Fortismere School"] | 102156
+"Fortismere SCHOOL" | prompt_branch_1 | ["Fortismere School"] | 102156
+
+# ── Mid-word capitals (typoglycemia) ───────────────────────────────────
+"FOrtismere School" | prompt_branch_1 | ["Fortismere School"] | 102156
+"Fortismere SCchool" | prompt_branch_1 | ["Fortismere School"] | 102156
+"Bacon's COllege" | prompt_branch_1 | ["Bacon's College"] | 145313
+
+# ── Apostrophes and special chars ──────────────────────────────────────
+"Bacon's College" | prompt_branch_1 | ["Bacon's College"] | 145313
+"Bacons College" | prompt_branch_1 | ["Bacon's College"] | 145313
+"St Marys School" | prompt_branch_1 | TODO | TODO
+"St. Mary's School" | prompt_branch_1 | TODO | TODO
+
+# ── Postcodes embedded in name ─────────────────────────────────────────
+"Bacon's College SE16" | prompt_branch_1 | ["Bacon's College"] | 145313
+"Redriff Primary SE16 4PS" | prompt_branch_1 | ["Redriff Primary, City of London Academy"] | 137648
+"Fortismere School N10" | prompt_branch_1 | ["Fortismere School"] | 102156
+
+# ── Misspelled names (AI correction needed) ────────────────────────────
+"Fortismere Schoool" | prompt_branch_1 | TODO | 102156
+"Redriff Primry" | prompt_branch_1 | TODO | 137648
+"Charter School Bermondsey" | prompt_branch_1 | ["The Charter School Bermondsey"] | 139587
+"Charter School Beremondsey" | prompt_branch_1 | ["The Charter School Bermondsey"] | 139587
+
+# ── Extra words / context ──────────────────────────────────────────────
+"Tell me about Fortismere School in Haringey" | prompt_branch_1 | ["Fortismere School"] | 102156
+"Is Fortismere School good for music?" | prompt_branch_1 | ["Fortismere School"] | 102156
+"What's Redriff Primary like for a shy child?" | prompt_branch_1 | ["Redriff Primary, City of London Academy"] | 137648
+
+# ── Comparison (Branch 2) — vs syntax ──────────────────────────────────
+"Fortismere School vs Highgate Wood School" | prompt_branch_2 | ["Fortismere School","Highgate Wood Secondary School"] | [102156,102154]
+"Fortismere vs Highgate Wood" | prompt_branch_2 | ["Fortismere School","Highgate Wood Secondary School"] | [102156,102154]
+"Redriff Primary vs Galleywall Primary" | prompt_branch_2 | ["Redriff Primary, City of London Academy","Galleywall Primary School"] | [137648,100845]
+
+# ── Comparison (Branch 2) — and syntax ─────────────────────────────────
+"Compare Fortismere and Highgate Wood" | prompt_branch_2 | ["Fortismere School","Highgate Wood Secondary School"] | [102156,102154]
+"Compare Redriff Primary and Alfred Salter Primary" | prompt_branch_2 | ["Redriff Primary, City of London Academy","Alfred Salter Primary School"] | [137648,100819]
+
+# ── Comparison (Branch 2) — "or" syntax ────────────────────────────────
+"Which is better: Fortismere or Highgate Wood" | prompt_branch_2 | ["Fortismere School","Highgate Wood Secondary School"] | [102156,102154]
+
+# ── Comparison (Branch 2) — compare keyword ────────────────────────────
+"Compare Bacon's College and Charter School Bermondsey" | prompt_branch_2 | ["Bacon's College","The Charter School Bermondsey"] | [145313,139587]
+"Bacon's COllege SE16 vs Charter School Beremondsey" | prompt_branch_2 | ["Bacon's College","The Charter School Bermondsey"] | [145313,139587]
+
+# ── Comparison (Branch 2) — "between" syntax ───────────────────────────
+"Between Fortismere and Highgate Wood which is better" | prompt_branch_2 | ["Fortismere School","Highgate Wood Secondary School"] | [102156,102154]
+
+# ── Independent schools ────────────────────────────────────────────────
+"Eton College" | prompt_branch_1 | TODO | TODO
+"Reigate Grammar School" | prompt_branch_1 | TODO | TODO
+"Caterham School" | prompt_branch_1 | TODO | TODO
+
+# ── Single word / ambiguous names ──────────────────────────────────────
+"Eton" | prompt_branch_1 | TODO | TODO
+"Winchester" | prompt_branch_1 | TODO | TODO
+
+# ── Names with "The" prefix ────────────────────────────────────────────
+"The Charter School Bermondsey" | prompt_branch_1 | ["The Charter School Bermondsey"] | 139587
+
+# ── Multiple schools in question (but not comparison) ──────────────────
+"What's better about Fortismere compared to Highgate Wood" | prompt_branch_1 | ["Fortismere School"] | 102156

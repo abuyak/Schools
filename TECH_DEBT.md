@@ -293,6 +293,65 @@ the old `sites/files/oxford/` URLs are dead and the new site blocks automated re
 
 ---
 
+## TD-015 · Async Call 2 + queue-mediated inference
+
+**Severity:** High — synchronous Call 2 blocks Lambda, burns wait-time cost, and will fail under concurrent load  
+**File:** `functions/research/index.js` → Branch 1 & 2 handler  
+**Ref:** `docs/requirements/Model Pricing and Architecture.md`
+
+**Problem:**  
+Both branches run Call 1 and Call 2 synchronously inside a single Lambda invocation.
+Call 2 takes 15–32 seconds — the Lambda is billed for that entire wait. Under concurrent
+beta load (10–20 testers), this creates:
+
+- Lambda wait-time cost on every request
+- OpenAI rate-limit bursts (all Call 2s hit simultaneously)
+- p95 tail latency that makes the app feel broken
+- No retry — a single 429 or timeout loses the full analysis
+
+The architecture document prescribes: *"Queue everything. Do not let frontend traffic
+hit the model directly. Without this, concurrency will crush you."*
+
+**Fix:**
+
+**Phase 1 — Lightweight async (beta-ready, no new infra):**
+1. Return Call 1 (Quick Take) immediately — user sees title/summary/scorecard in ~3s
+2. Fire Call 2 in the background within the same Lambda
+3. Add a polling endpoint: `GET /api/research/{jobId}` returns `{ status, result }`
+4. In-memory job store (Map) with 60s TTL — sufficient for single-Lambda dev/beta
+5. UI polls every 2s; shows Call 1 data as final answer if Call 2 exceeds 60s
+
+**Phase 2 — Queue-mediated (post-beta, production):**
+1. SQS queue receives Call 2 jobs (school data pre-fetched, serialised in message)
+2. Separate Call 2 worker Lambda reads from SQS, calls OpenAI, writes to DynamoDB
+3. DynamoDB table keyed by job ID, TTL for auto-cleanup
+4. Polling endpoint reads from DynamoDB
+5. Token-aware scheduler: Lambda reserved concurrency gates throughput, smooths bursts
+6. Dead-letter queue + auto-retry for failed Call 2s
+
+**Done when:**  
+- Phase 1: User gets Quick Take response in <5s; full sections arrive via polling
+- Phase 2: System survives 100+ concurrent users without throttling or dropped requests
+
+---
+## TD-016 · No retry logic on OpenAI API calls
+
+**Severity:** Medium — transient 429s and network errors fail the entire request  
+**File:** `functions/research/index.js` → all `fetch()` calls to OpenAI
+
+**Problem:**  
+OpenAI API calls have zero retry logic. A single 429 (rate limit), 5xx, or network
+blip propagates as a fatal error to the user. Under concurrent load, transient
+failures become common — even a 99.9% success rate means 1 in 1,000 requests fails.
+
+**Fix:**  
+Add exponential backoff around every OpenAI `fetch()` call: initial delay 1s, max 3
+retries, jitter to avoid thundering herd. Only retry on 429, 5xx, and network errors
+(not 4xx).
+
+**Done when:** transient OpenAI errors are retried transparently without user-visible failure.
+
+---
 ## TD-013 · Ingest EES subject-level exam data for per-subject entry tables
 
 **Severity:** Medium — adds per-subject entry lists to A5, currently missing  

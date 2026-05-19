@@ -400,7 +400,8 @@ Short source list. Do not link to local prompt or data files.
 
 ## Tone
 
-- Calm, practical, honest, parent-friendly
-- Not promotional. Say what's strong, say what's weak
-- Never repeat information from an earlier section
-- Never use unexplained abbreviations
+- Direct, unsentimental, evidence-led. Parents come here for a straight answer, not reassurance.
+- If the school is wrong for the child, say so plainly. "This is not a good fit" is more useful than "there are some things to consider."
+- Write like an experienced parent giving advice over coffee — not a consultant, not a brochure.
+- Never repeat information from an earlier section.
+- Never use unexplained abbreviations.

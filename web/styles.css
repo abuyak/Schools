@@ -301,11 +301,36 @@ input[type="email"]:focus,
   --ac-indent: 1.3rem;
 }
 
+/* ── Sections toolbar ───────────────────────────────────────────────── */
+.sections-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.toggle-all-btn {
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent-deep, #6b5e4f);
+  background: none;
+  border: 1px solid var(--line, #d1cbc0);
+  border-radius: 8px;
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.toggle-all-btn:hover {
+  background: var(--accent-deep, #6b5e4f);
+  color: #fff;
+}
+
 /* ── Section grid ──────────────────────────────────────────────────── */
 .answer-sections {
   display: grid;
   gap: 0.85rem;
-  margin-top: 1rem;
+  margin-top: 0;
 }
 
 /* ── Section card ──────────────────────────────────────────────────── */
@@ -342,7 +367,8 @@ input[type="email"]:focus,
   border-left: 4px solid #1e8c45;
 }
 
-/* Heading row — flexbox so flag badge sits inline with the title */
+/* Heading row — flexbox so flag badge sits inline with the title.
+   Clickable toggle for collapsing the section body. */
 .answer-section-heading-row {
   display: flex;
   align-items: center;
@@ -350,12 +376,40 @@ input[type="email"]:focus,
   margin-bottom: 0.75rem;
   border-bottom: 1px solid var(--line);
   padding-bottom: 0.4rem;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.answer-section-heading-row:hover {
+  opacity: 0.82;
 }
 .answer-section-heading-row h4 {
   margin: 0;
   border-bottom: none;
   padding-bottom: 0;
   flex: 1;
+}
+
+/* Chevron indicator */
+.answer-section-heading-row::after {
+  content: "▾";
+  font-size: 0.7rem;
+  color: #999;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.answer-section.collapsed .answer-section-heading-row::after {
+  transform: rotate(-90deg);
+}
+
+/* Collapsed body */
+.answer-section.collapsed .answer-section-body {
+  display: none;
+}
+.answer-section.collapsed .answer-section-heading-row {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
 }
 .section-flag {
   font-size: 0.85rem;
