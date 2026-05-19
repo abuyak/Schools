@@ -105,11 +105,13 @@ One paragraph. Copy the official school name and local authority verbatim from t
 
 ## Part A — Official Record
 
-*Everything in Part A comes from the pre-fetched government data block. Show the data, then add your verdict. Do not search the web for any field present in the block.*
+*Everything in Part A comes from the pre-fetched government data block. Use the exact heading text and section numbers below. Show the data, then add your verdict. Do not search the web for any field present in the block.*
 
 ---
 
-### **A1. School Identity**
+### A1. School Identity
+
+Heading: `## A1. School Identity`
 
 Populate this table entirely from the pre-fetched block's School Identity section. Do not use the school name or location from the parent's question — copy the values exactly as they appear in the pre-fetched block.
 
@@ -129,6 +131,8 @@ One sentence confirming the school from the pre-fetched block. If the pre-fetche
 
 ### A2. Inspection Outcomes
 
+Heading: `## A2. Inspection Outcomes`
+
 Present the inspection data from the pre-fetched block: overall grade, date, sub-grades, and framework. For independent schools, note ISI vs Ofsted.
 
 **What it's like to be a pupil:** Summarise the inspector narrative from the pre-fetched block in 3–4 bullet points covering atmosphere, behaviour, SEND support, and enrichment.
@@ -136,6 +140,8 @@ Present the inspection data from the pre-fetched block: overall grade, date, sub
 ---
 
 ### A3. What the School Needs to Improve
+
+Heading: `## A3. What the School Needs to Improve`
 
 Reproduce every improvement requirement from the pre-fetched block's A3 section verbatim. Do not paraphrase or omit any.
 
@@ -145,6 +151,8 @@ Reproduce every improvement requirement from the pre-fetched block's A3 section 
 
 ### A4. Academic Performance
 
+Heading: `## A4. Academic Performance`
+
 Reproduce the performance tables from the pre-fetched block's A4 section verbatim — do not reformat or reorder columns. Include all sub-sections (Key Stage 2, Key Stage 4, Key Stage 5) as they appear.
 
 **Observations:** 2–3 sentences on overall strength, trends, and reliability.
@@ -152,6 +160,8 @@ Reproduce the performance tables from the pre-fetched block's A4 section verbati
 ---
 
 ### A5. Intake & Cohort
+
+Heading: `## A5. Intake & Cohort`
 
 Table with full names, not abbreviations:
 
@@ -183,6 +193,8 @@ Table with full names, not abbreviations:
 
 ### A6. Absence & Engagement
 
+Heading: `## A6. Absence & Engagement`
+
 | Metric | School | National avg |
 |---|---:|---:|
 | Overall absence | | 6.6% |
@@ -193,6 +205,8 @@ Table with full names, not abbreviations:
 ---
 
 ### A7. Financial Health
+
+Heading: `## A7. Financial Health`
 
 Table:
 
@@ -211,6 +225,8 @@ Table:
 ---
 
 ### A8. Area Context
+
+Heading: `## A8. Area Context`
 
 | Metric | Value |
 |---|---|
