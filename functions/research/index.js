@@ -45,7 +45,7 @@ const OUTPUT_CONSTRAINTS = `
 - When a topic has a colon label (e.g. "11+ mechanics:", "Timing:", "Upside:"), write the label as a plain text line (no leading -) and put the details as bullet sub-points on the following lines. Never merge a label and its content into a single bullet.
 - For any comparison table section, write the body as a markdown table using | col | col | syntax with a separator row of |---|---|.
 - Every section object MUST include a "flag" field set to exactly one of: "red", "green", or "none". Apply the traffic-light rules below. When in doubt, use "none".
-- **CRITICAL — Bullet points for observations:** Every Part A observation section (headings A3–A9, e.g. "A5. Observations") MUST use bullet-point format. Never write an A-section body as a prose paragraph. Each distinct finding, observation, or data point must be a separate "- " bullet. Group related bullets under bold-only bullet headers ("- **Theme name**"). A single paragraph of prose in an A-section is the most common quality failure.
+- **CRITICAL — Bullet points for observations:** Every Part A observation section (headings A2–A8 with "Observations" suffix, e.g. "A5. Observations") MUST use bullet-point format. Never write an A-section body as a prose paragraph. Each distinct finding, observation, or data point must be a separate "- " bullet. Group related bullets under bold-only bullet headers ("- **Theme name**"). A single paragraph of prose in an A-section is the most common quality failure.
 
 ## Traffic Light Rules
 
