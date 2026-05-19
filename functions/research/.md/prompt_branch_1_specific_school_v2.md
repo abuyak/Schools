@@ -127,46 +127,31 @@ One sentence confirming the school from the pre-fetched block. If the pre-fetche
 
 ---
 
-### **A2. Ofsted Inspection Grades**
+### A2. Inspection Outcomes
 
-State: inspection date, framework used, safeguarding status (Met / Not Met).
+Present the inspection data from the pre-fetched block: overall grade, date, sub-grades, and framework. For independent schools, note ISI vs Ofsted.
 
-**New framework (Nov 2025 onwards):** show all 7 area grades — Achievement · Attendance and Behaviour · Curriculum and Teaching · Inclusion · Leadership and Governance · Personal Development and Wellbeing · Post-16 Provision (if applicable). Scale: Exceptional → Strong → Expected → Needs Attention → Urgent Improvement.
-
-**Old framework (pre-Nov 2025):** show overall grade + sub-grades — Quality of Education · Behaviour and Attitudes · Personal Development · Leadership and Management · Sixth Form (if applicable).
-
-**Verdict:** one sentence — note any sub-grade weaker than the overall, or confirm a clean sweep.
+**What it's like to be a pupil:** Summarise the inspector narrative from the pre-fetched block in 3–4 bullet points covering atmosphere, behaviour, SEND support, and enrichment.
 
 ---
 
-### **A3. What It's Like to Be a Pupil**
+### A3. What the School Needs to Improve
 
-**Do not quote verbatim.** Summarise the Ofsted inspector narrative from the pre-fetched block in 4–6 bullet points covering:
-- Overall atmosphere and culture
-- How pupils behave and relate to each other and staff
-- How SEND pupils are supported
-- Enrichment and wider opportunities
-- Any notable strengths or concerns from the inspector's language
-
-*The narrative has already been extracted from the Ofsted PDF — do not re-fetch it.*
-
----
-
-### **A4. What the School Needs to Improve**
-
-The pre-fetched block includes the inspectors' "What the school needs to do" or "Next steps" section, extracted directly from the Ofsted PDF. It appears under the heading **"What the school needs to improve"** in the pre-fetched block.
-
-**Reproduce every improvement requirement verbatim — exactly as written, whether formatted as bullet points, numbered items, or prose paragraphs.** Do not soften, paraphrase, or summarise. Do not omit any requirement.
-
-If the pre-fetched block shows only "The school needs to do the following:" without bullet points, it means the PDF was parsed but the bullets could not be extracted (they may be in a table or image layer). In this case: state that improvement requirements are present but could not be extracted, and link directly to the full Ofsted report PDF.
-
-If the section is genuinely absent from the pre-fetched block, say so and link to the full Ofsted report PDF so parents can check directly.
+Reproduce every improvement requirement from the pre-fetched block's A3 section verbatim. Do not paraphrase or omit any.
 
 **Observations:** flag any requirement that signals a serious or systemic concern.
 
 ---
 
-### **A5. Pupil Census**
+### A4. Academic Performance
+
+Reproduce the performance tables from the pre-fetched block's A4 section verbatim — do not reformat or reorder columns. Include all sub-sections (Key Stage 2, Key Stage 4, Key Stage 5) as they appear.
+
+**Observations:** 2–3 sentences on overall strength, trends, and reliability.
+
+---
+
+### A5. Intake & Cohort
 
 Table with full names, not abbreviations:
 
@@ -190,34 +175,24 @@ Table with full names, not abbreviations:
 | Other | |
 | Not stated | |
 
-**Observations:** flag anything notably above or below average. Note whether a resourced provision or SEND unit is confirmed. Note any significant difference between pupil ethnicity and the surrounding area ethnicity (A9).
+**Observations:** flag anything notably above or below average. Note whether a resourced provision or SEND unit is confirmed. Note any significant difference between pupil ethnicity and the surrounding area ethnicity (A8).
 
 *Primary average roll ~280, secondary ~1,000.*
 
 ---
 
-### **A6. Academic Performance**
-
-**Reproduce the performance table(s) exactly as they appear in the pre-fetched block — do not reformat or reorder columns.** The pre-fetched block already contains formatted markdown tables. Copy each table verbatim, including the sub-section header (e.g. **Key Stage 4 (2024/25)**, **Key Stage 5 / 16–18 (2024/25)**), the column header row, the separator row, and all data rows. Do not condense, merge, or summarise the tables.
-
-If the pre-fetched block contains a **Key Stage 5 / 16–18** section (sixth form), reproduce it as a separate sub-table with its own header. Do not omit it.
-
-**Verdict:** 2–3 sentences on overall strength, trends, and reliability (flag if cohort below 30 pupils or absent-from-tests above 5%). For schools with a sixth form, comment on sixth form performance separately.
-
----
-
-### **A7. Absence**
+### A6. Absence & Engagement
 
 | Metric | School | National avg |
 |---|---:|---:|
 | Overall absence | | 6.6% |
 | Persistent absence (missed 10%+ of sessions) | | 21.3% |
 
-**Observations:** flag if either is more than 2pp above national. Persistent absence above 25% is a meaningful concern.
+**Observations:** flag if either is more than 2pp above national.
 
 ---
 
-### **A8. Financial Position and Staffing**
+### A7. Financial Health
 
 Table:
 
@@ -235,13 +210,13 @@ Table:
 
 ---
 
-### **A9. Area Profile**
+### A8. Area Context
 
 | Metric | Value |
 |---|---|
 | Household income (mean gross, MSOA) | |
 | Median property price (~800m radius) | |
-| Deprivation — Index of Multiple Deprivation (IMD) decile (1=most deprived, 10=least) | |
+| Deprivation (IMD decile, 1=most deprived) | |
 | Ethnicity breakdown | |
 | Qualifications (% degree-level or above) | |
 | Occupation (% professional/managerial) | |
