@@ -160,6 +160,27 @@ const NATIONAL_AVG = {
   },
 };
 
+// ─── Part A section registry — single source of truth ────────────────────────
+// Every renderer, flag computer, and slim-block builder references these labels.
+// To change a section heading, edit here and nowhere else.
+
+const PART_A = {
+  A1: 'School Identity',
+  A2: 'Inspection Outcomes',
+  A3: 'Academic Performance',
+  A4: 'Intake & Cohort',
+  A5: 'Absence & Engagement',
+  A6: 'Financial Health',
+  A7: 'Area Context',
+  improvement: 'What the School Needs to Improve',  // unnumbered, between A2 and A3
+};
+
+/** "A2. Inspection Outcomes" */
+const pa = (key) => /^A\d/.test(key) ? `${key}. ${PART_A[key]}` : PART_A[key];
+
+/** Flag key for a section — e.g. paFlag('A2') → "A2. Inspection Outcomes" */
+const paFlag = (key) => pa(key);
+
 // ─── Shared data helpers ──────────────────────────────────────────────────────
 
 const _parseNum = v => (v != null && typeof v === 'string') ? parseFloat(v.replace(/[%,£\s,]/g, '')) : Number(v);
@@ -3727,22 +3748,22 @@ export function buildSlimBlock(school) {
 **School:** ${idLine}
 **Links:** ${links}
 
-### A2. Inspection Outcomes
+### ${pa('A2')}
 ${fmtOfstedSlim(ofsted, identity?.isIndependent ?? false)}
 
-### What the School Needs to Improve
+### ${pa('improvement')}
 ${identity?.isIndependent ? (ofsted?.recommendations || ofsted?.nextSteps || '_Independent school — no improvement recommendations available._') : ofsted?.nextSteps ? ofsted.nextSteps : ofsted?.overall ? `_No improvement requirements stated. Ofsted grade: ${ofsted.overall}._` : '_Not retrieved — link to full Ofsted PDF if available._'}
 
-### A3. Academic Performance
+### ${pa('A3')}
 ${fmtAcademicResultsSlim(performance, identity?.phase, identity?.numberOnRoll ?? null, laPerf ?? null, false, identity?.isIndependent ?? false, null, subjectEntries, ks5SubjectEntries)}
 
-### A4. Intake & Cohort
+### ${pa('A4')}
 ${fmtCensusSlim(performance, schoolEthnicity)}
 
-### A5. Absence & Engagement
+### ${pa('A5')}
 ${fmtAbsenceSlim(performance)}
 
-### A6. Financial Health
+### ${pa('A6')}
 ${fmtFinancial(financial, identity?.isIndependent ?? false)}
 ${fees ? `### School Fees\n- ${Object.entries(fees).filter(([k]) => k !== 'source' && k !== 'raw').map(([k,v]) => {
   if (typeof v === 'object' && v !== null) {
@@ -3756,7 +3777,7 @@ ${fees ? `### School Fees\n- ${Object.entries(fees).filter(([k]) => k !== 'sourc
   return `${k}: ${v}`;
 }).join('\n- ')}` : ''}
 
-### A7. Area Context
+### ${pa('A7')}
 ${fmtAreaDataSlim(area)}
 ---`.trim();
 }
@@ -4172,8 +4193,8 @@ export function computeFlags(school) {
 
   // A2 — Inspection Outcomes
   const overall = (ofsted?.overall ?? '').toLowerCase();
-  if (/outstanding|exceptional/i.test(overall))              flags['A2. Inspection Outcomes'] = 'green';
-  else if (/requires improvement|inadequate/i.test(overall)) flags['A2. Inspection Outcomes'] = 'red';
+  if (/outstanding|exceptional/i.test(overall))              flags[paFlag('A2')] = 'green';
+  else if (/requires improvement|inadequate/i.test(overall)) flags[paFlag('A2')] = 'red';
 
   // Improvement requirements (unnumbered)
   // ISI recommendations in independent schools are suggestions, not mandates → never red
@@ -4184,9 +4205,9 @@ export function computeFlags(school) {
     ([k, v]) => k !== 'overall' && typeof v === 'string' && /requires improvement|inadequate/i.test(v)
   );
   if ((ofstedNextSteps || hasRIGrade) && !isISI)
-    flags['What the School Needs to Improve'] = 'red';
+    flags[paFlag('improvement')] = 'red';
   else if (isISI || /outstanding|exceptional/i.test(overall) || (!ofstedNextSteps && !hasRIGrade))
-    flags['What the School Needs to Improve'] = 'green';
+    flags[paFlag('improvement')] = 'green';
 
   // A4 — Intake & Cohort: high FSM or EHC
   const fsmPct = parseFloat(vv('PNUMFSMEVER') ?? '');
@@ -4194,7 +4215,7 @@ export function computeFlags(school) {
   const isPrimary5 = /primary|junior|infant|middle.*primary/i.test(identity?.phase ?? '');
   if ((!isNaN(fsmPct) && fsmPct > (isPrimary5 ? 35 : 30)) ||
       (!isNaN(ehcPct) && ehcPct > 6)) {
-    flags['A4. Intake & Cohort'] = 'red';
+    flags[paFlag('A4')] = 'red';
   }
 
   // A3 — Academic Performance
@@ -4207,17 +4228,17 @@ export function computeFlags(school) {
     if ((!isNaN(att8) && att8 > nat4.ATT8SCR + 10) ||
         (!isNaN(p8)   && p8 > 0.5) ||
         (!isNaN(rwm)  && rwm > nat2.PTRWM_EXP + 10)) {
-      flags['A3. Academic Performance'] = 'green';
+      flags[paFlag('A3')] = 'green';
     } else if ((!isNaN(att8) && att8 < nat4.ATT8SCR - 10) ||
                (!isNaN(p8)   && p8 < -0.5) ||
                (!isNaN(rwm)  && rwm < nat2.PTRWM_EXP - 10)) {
-      flags['A3. Academic Performance'] = 'red';
+      flags[paFlag('A3')] = 'red';
     }
   } else {
     // KS5-only schools — use VA band
     const ks5Band = parseInt(vv('PROGRESS_BAND_ALEV') ?? '', 10);
-    if (ks5Band === 1)    flags['A3. Academic Performance'] = 'green';
-    else if (ks5Band >= 4) flags['A3. Academic Performance'] = 'red';
+    if (ks5Band === 1)    flags[paFlag('A3')] = 'green';
+    else if (ks5Band >= 4) flags[paFlag('A3')] = 'red';
   }
 
   // A5 — Absence & Engagement
@@ -4225,9 +4246,9 @@ export function computeFlags(school) {
   const persVal = parseFloat(vv('PPERSABS10') ?? '');
   if (!isNaN(absVal) || !isNaN(persVal)) {
     if ((!isNaN(absVal) && absVal < 5) || (!isNaN(persVal) && persVal < 15))
-      flags['A5. Absence & Engagement'] = 'green';
+      flags[paFlag('A5')] = 'green';
     else if ((!isNaN(absVal) && absVal > 8.6) || (!isNaN(persVal) && persVal > 23.3))
-      flags['A5. Absence & Engagement'] = 'red';
+      flags[paFlag('A5')] = 'red';
   }
 
   // A6 — Financial Health: red if in-year deficit or QTS below comparator
@@ -4237,7 +4258,7 @@ export function computeFlags(school) {
     const qts    = parseFloat(String(financial.qualifiedTeachersPct  ?? '').replace('%', ''));
     const cmpQts = parseFloat(String(financial.comparatorQtsAvgPct   ?? '').replace('%', ''));
     if (isDeficit || (!isNaN(qts) && !isNaN(cmpQts) && qts < cmpQts))
-      flags['A6. Financial Health'] = 'red';
+      flags[paFlag('A6')] = 'red';
   }
 
   // A7 — Area Context: red if IMD 1–3 or mean household income below £35,000
@@ -4245,7 +4266,7 @@ export function computeFlags(school) {
     const imdDecile = area.imd?.imdDecile;
     const incNum    = parseFloat(String(area.crystalRoof?.income?.meanAnnualHouseholdIncome ?? '').replace(/[£,]/g, ''));
     if ((imdDecile != null && imdDecile <= 3) || (!isNaN(incNum) && incNum < 35000))
-      flags['A7. Area Context'] = 'red';
+      flags[paFlag('A7')] = 'red';
   }
 
   return flags;
@@ -4302,7 +4323,7 @@ export function renderPartAComparison(schools) {
 
   // A1 — School Identity
   sections.push({
-    heading: 'A1. School Identity',
+    heading: pa('A1'),
     body: '| | ' + names.join(' | ') + ' |\n' +
       '|---|---:|---:|\n' +
       [
@@ -4322,7 +4343,7 @@ export function renderPartAComparison(schools) {
   // A2 — Inspection Grades
   if (schools.some(s => !s.identity?.isIndependent)) {
     sections.push({
-      heading: 'A2. Inspection Outcomes',
+      heading: pa('A2'),
       body: '| | ' + names.join(' | ') + ' |\n' +
         '|---|---:|---:|\n' +
         '| Overall grade | ' + schools.map(s => val(() => s.ofsted?.overall)).join(' | ') + ' |\n' +
@@ -4331,7 +4352,7 @@ export function renderPartAComparison(schools) {
     });
   } else {
     sections.push({
-      heading: 'A2. Inspection Outcomes',
+      heading: pa('A2'),
       body: '| | ' + names.join(' | ') + ' |\n' +
         '|---|---:|---:|\n' +
         '| Overall (ISI) | ' + schools.map(s => val(() => s.ofsted?.overall)).join(' | ') + ' |\n' +
@@ -4361,11 +4382,11 @@ export function renderPartAComparison(schools) {
     a3Rows.push(['A-level progress (VA)', s => val(() => fmt(nsField(s, 'VA_INS_ALEV'))), '0']);
     a3Rows.push(['% to higher education', s => val(() => fmtPct(nsField(s, 'TOT_HEPER'))), '—']);
   }
-  if (a3Rows.length) sections.push({ heading: 'A3. Academic Performance', body: buildTable4('National', a3Rows), flag: 'none' });
+  if (a3Rows.length) sections.push({ heading: pa('A3'), body: buildTable4('National', a3Rows), flag: 'none' });
 
   // A4 — Intake & Cohort (available for all schools including independents)
   sections.push({
-    heading: 'A4. Intake & Cohort',
+    heading: pa('A4'),
     body: buildTable4('National', [
       ['FSM eligible %', s => isState(s) ? val(() => fmtPct(nsField(s, 'PNUMFSMEVER'))) : '(indep — near 0%)', () => schools.some(s => (s.identity?.phase ?? '').toLowerCase().includes('secondary')) ? '~20%' : '~25%'],
       ['EAL %', s => val(() => fmtPct(nsField(s, 'PNUMEAL'))), '—'],
@@ -4378,7 +4399,7 @@ export function renderPartAComparison(schools) {
   // A5 — Absence
   if (schools.some(s => isState(s) && nsField(s, 'PERCTOT'))) {
     sections.push({
-      heading: 'A5. Absence & Engagement',
+      heading: pa('A5'),
       body: buildTable4('National', [
         ['Overall absence', s => isState(s) ? val(() => fmt(nsField(s, 'PERCTOT'))) + '%' : '(indep)', '6.6%'],
         ['Persistent absence', s => isState(s) ? val(() => fmt(nsField(s, 'PPERSABS10'))) + '%' : '(indep)', '21.3%'],
@@ -4390,7 +4411,7 @@ export function renderPartAComparison(schools) {
   // A6 — Financial Health (state schools only)
   if (schools.some(s => isState(s) && s.financial)) {
     sections.push({
-      heading: 'A6. Financial Health',
+      heading: pa('A6'),
       body: '| | ' + names.join(' | ') + ' | Comparator |\n' +
         '|---:|---:|---:|---:|\n' +
         '| Spend per pupil | ' + schools.map(s => { const n=_parseNum(s.financial?.totalSpendPerPupil); return !isNaN(n)?'£'+Number(n).toLocaleString():'—'; }).join(' | ') + ' | ' + schools.map(s => { const n=_parseNum(s.financial?.comparatorTotalPerPupil); return !isNaN(n)?'£'+Number(n).toLocaleString():'—'; }).join(' / ') + ' |\n' +
@@ -4403,7 +4424,7 @@ export function renderPartAComparison(schools) {
   // A7 — Area Context
   if (schools.some(s => s.area?.imd?.imdDecile != null || s.area?.crystalRoof?.income?.meanAnnualHouseholdIncome != null || s.area?.pricePaid?.medianAllTypes != null)) {
     sections.push({
-      heading: 'A7. Area Context',
+      heading: pa('A7'),
       body: '| | ' + names.join(' | ') + ' |\n' +
         '|---|---:|---:|\n' +
         '| IMD decile (1=most deprived) | ' + schools.map(s => val(() => s.area?.imd?.imdDecile + '/10')).join(' | ') + ' |\n' +
@@ -4579,7 +4600,7 @@ export function renderPartA(school, flags = {}) {
     lines.push('');
     lines.push(`This is ${d(identity?.officialName)}${identity?.la ? ` in ${identity.la}` : ''}, the subject of this report.`);
 
-    sections.push({ heading: 'A1. School Identity', body: lines.join('\n'), flag: 'none' });
+    sections.push({ heading: pa('A1'), body: lines.join('\n'), flag: 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -4697,7 +4718,7 @@ export function renderPartA(school, flags = {}) {
     } else {
       body = `_Not retrieved.${ofsted?.reportUrl ? ` [View full report](${ofsted.reportUrl})` : ''}_`;
     }
-    sections.push({ heading: 'What the School Needs to Improve', body, flag: flags['What the School Needs to Improve'] ?? 'none' });
+    sections.push({ heading: pa('improvement'), body, flag: flags[paFlag('improvement')] ?? 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -4705,7 +4726,7 @@ export function renderPartA(school, flags = {}) {
   // ────────────────────────────────────────────────────────────────────────────
   {
     const body = fmtAcademicResultsSlim(performance, identity?.phase, null, laPerf ?? null, true, identity?.isIndependent ?? false, null, subjectEntries, ks5SubjectEntries);
-    sections.push({ heading: 'A3. Academic Performance', body, flag: flags['A3. Academic Performance'] ?? 'none' });
+    sections.push({ heading: pa('A3'), body, flag: flags[paFlag('A3')] ?? 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -4745,7 +4766,7 @@ export function renderPartA(school, flags = {}) {
       }
     }
 
-    sections.push({ heading: 'A4. Intake & Cohort', body: lines.join('\n'), flag: flags['A4. Intake & Cohort'] ?? 'none' });
+    sections.push({ heading: pa('A4'), body: lines.join('\n'), flag: flags[paFlag('A4')] ?? 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -4761,7 +4782,7 @@ export function renderPartA(school, flags = {}) {
       `| Persistent absence (missed 10%+ of sessions) | ${d(pers)} | 21.3% |`,
     ];
 
-    sections.push({ heading: 'A5. Absence & Engagement', body: lines.join('\n'), flag: flags['A5. Absence & Engagement'] ?? 'none' });
+    sections.push({ heading: pa('A5'), body: lines.join('\n'), flag: flags[paFlag('A5')] ?? 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -4786,7 +4807,7 @@ export function renderPartA(school, flags = {}) {
 
       body = lines.join('\n');
     }
-    sections.push({ heading: 'A6. Financial Health', body, flag: flags['A6. Financial Health'] ?? 'none' });
+    sections.push({ heading: pa('A6'), body, flag: flags[paFlag('A6')] ?? 'none' });
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -4833,7 +4854,7 @@ export function renderPartA(school, flags = {}) {
 
       body = lines.join('\n');
     }
-    sections.push({ heading: 'A7. Area Context', body, flag: flags['A7. Area Context'] ?? 'none' });
+    sections.push({ heading: pa('A7'), body, flag: flags[paFlag('A7')] ?? 'none' });
   }
 
   // A9. What It's Like to Be a Pupil is generated entirely by the AI

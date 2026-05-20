@@ -57,39 +57,39 @@ function loadSnapshot(urn) {
 
 const EXPECTATIONS = {
   'state-infant': {
-    shouldContain:    ['A2. Inspection Outcomes', 'A4. Academic Performance', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldContain:    ['A2. Inspection Outcomes', 'What the School Needs to Improve', 'A3. Academic Performance', 'A4. Intake & Cohort', 'A5. Absence & Engagement', 'A6. Financial Health', 'A7. Area Context'],
     shouldNotContain: ['Key Stage 2', 'Key Stage 4', 'Key Stage 5', 'Attainment 8', 'ISI:'],
   },
   'state-junior': {
-    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 2', 'RWM', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 2', 'RWM', 'A4. Intake & Cohort', 'A5. Absence & Engagement', 'A6. Financial Health', 'A7. Area Context'],
     shouldNotContain: ['Key Stage 4', 'Key Stage 5', 'Attainment 8', 'ISI:'],
   },
   'state-primary': {
-    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 2', 'RWM', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 2', 'RWM', 'A4. Intake & Cohort', 'A5. Absence & Engagement', 'A6. Financial Health', 'A7. Area Context'],
     shouldNotContain: ['Key Stage 4', 'Key Stage 5', 'Attainment 8', 'ISI:'],
   },
   'state-secondary': {
-    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 4', 'Attainment 8', 'Progress 8', 'Post-16 destinations', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 4', 'Attainment 8', 'Progress 8', 'Post-16 destinations', 'A4. Intake & Cohort', 'A5. Absence & Engagement', 'A6. Financial Health', 'A7. Area Context'],
     shouldNotContain: ['Key Stage 2', 'Key Stage 5', 'ISI:'],
   },
   'state-sixth-form': {
-    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 5', '16–18', 'A7. Financial Health', 'A8. Area Context'],
+    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 5', '16–18', 'A6. Financial Health', 'A7. Area Context'],
     shouldNotContain: ['Key Stage 2', 'Key Stage 4', 'Attainment 8', 'ISI:'],
   },
   'state-secondary-sixth': {
-    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 4', 'Key Stage 5', 'Attainment 8', 'Progress 8', 'Post-16 destinations', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldContain:    ['A2. Inspection Outcomes', 'Key Stage 4', 'Key Stage 5', 'Attainment 8', 'Progress 8', 'Post-16 destinations', 'A4. Intake & Cohort', 'A5. Absence & Engagement', 'A6. Financial Health', 'A7. Area Context'],
     shouldNotContain: ['Key Stage 2', 'ISI:'],
   },
   'independent-primary': {
-    shouldContain:    ['A2. Inspection Outcomes', 'ISI:', 'A4. Academic Performance', '_No performance data', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldContain:    ['A2. Inspection Outcomes', 'ISI:', 'A3. Academic Performance', '_No performance data', 'A4. Intake & Cohort', 'A5. Absence & Engagement', 'A6. Financial Health', 'A7. Area Context'],
     shouldNotContain: ['Key Stage 2', 'Key Stage 4', 'Key Stage 5', 'Progress 8', 'Post-16 destinations'],
   },
   'independent-secondary': {
-    shouldContain:    ['A2. Inspection Outcomes', 'ISI:', 'Key Stage 4', 'Key Stage 5', 'Attainment 8', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldContain:    ['A2. Inspection Outcomes', 'ISI:', 'Key Stage 4', 'Key Stage 5', 'Attainment 8', 'A4. Intake & Cohort', 'A5. Absence & Engagement', 'A6. Financial Health', 'A7. Area Context'],
     shouldNotContain: ['Key Stage 2', 'Progress 8', 'Post-16 destinations'],
   },
   'independent-all-through': {
-    shouldContain:    ['A2. Inspection Outcomes', 'ISI:', 'Key Stage 4', 'Key Stage 5', 'Attainment 8', 'A5. Intake & Cohort', 'A6. Absence & Engagement', 'A7. Financial Health', 'A8. Area Context'],
+    shouldContain:    ['A2. Inspection Outcomes', 'ISI:', 'Key Stage 4', 'Key Stage 5', 'Attainment 8', 'A4. Intake & Cohort', 'A5. Absence & Engagement', 'A6. Financial Health', 'A7. Area Context'],
     shouldNotContain: ['Key Stage 2', 'Progress 8', 'Post-16 destinations'],
   },
 };

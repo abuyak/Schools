@@ -34,19 +34,19 @@ const EXPECTED = {
   'state-infant': [
     'Pre-Fetched Government Data',
     'A2. Inspection Outcomes',
-    'A3. What the School Needs to Improve',
-    'A4. Academic Performance',       // (no data)
-    'A5. Intake & Cohort',
-    'A6. Absence & Engagement',
-    'A7. Financial Health',
-    'A8. Area Context',
+    'What the School Needs to Improve',
+    'A3. Academic Performance',       // (no data)
+    'A4. Intake & Cohort',
+    'A5. Absence & Engagement',
+    'A6. Financial Health',
+    'A7. Area Context',
   ],
   // KS2 — A1–A8 with A4.1–A4.10 sub-sections
   'state-junior': [
     'Pre-Fetched Government Data',
     'A2. Inspection Outcomes',
-    'A3. What the School Needs to Improve',
-    'A4. Academic Performance',
+    'What the School Needs to Improve',
+    'A3. Academic Performance',
     'Key Stage 2',
     'Cohort',                         // A4.1
     'Attainment',                     // A4.2
@@ -57,17 +57,17 @@ const EXPECTED = {
     'Test participation',             // A4.8
     'Progress (KS1 to KS2)',          // A4.9
     'Results over time',              // A4.10
-    'A5. Intake & Cohort',
-    'A6. Absence & Engagement',
-    'A7. Financial Health',
-    'A8. Area Context',
+    'A4. Intake & Cohort',
+    'A5. Absence & Engagement',
+    'A6. Financial Health',
+    'A7. Area Context',
   ],
   // KS1+KS2 combined — same as KS2 (no KS1 SATs data)
   'state-primary': [
     'Pre-Fetched Government Data',
     'A2. Inspection Outcomes',
-    'A3. What the School Needs to Improve',
-    'A4. Academic Performance',
+    'What the School Needs to Improve',
+    'A3. Academic Performance',
     'Key Stage 2',
     'Cohort',
     'Attainment',
@@ -78,17 +78,17 @@ const EXPECTED = {
     'Test participation',
     'Progress (KS1 to KS2)',
     'Results over time',
-    'A5. Intake & Cohort',
-    'A6. Absence & Engagement',
-    'A7. Financial Health',
-    'A8. Area Context',
+    'A4. Intake & Cohort',
+    'A5. Absence & Engagement',
+    'A6. Financial Health',
+    'A7. Area Context',
   ],
   // KS4 only — A1–A8 with A4.1–A4.10 (no KS5)
   'state-secondary': [
     'Pre-Fetched Government Data',
     'A2. Inspection Outcomes',
-    'A3. What the School Needs to Improve',
-    'A4. Academic Performance',
+    'What the School Needs to Improve',
+    'A3. Academic Performance',
     'Key Stage 4',
     'Attainment 8',                   // A4.1
     'Progress 8',                     // A4.2
@@ -101,34 +101,34 @@ const EXPECTED = {
     'EBacc subject achievement',      // A4.8
     'Results over time',              // A4.9
     'Subjects entered (KS4)',         // A4.10
-    'A5. Intake & Cohort',
-    'A6. Absence & Engagement',
-    'A7. Financial Health',
-    'A8. Area Context',
+    'A4. Intake & Cohort',
+    'A5. Absence & Engagement',
+    'A6. Financial Health',
+    'A7. Area Context',
   ],
   // KS5 only (sixth form college)
   'state-sixth-form': [
     'Pre-Fetched Government Data',
     'A2. Inspection Outcomes',
-    'A3. What the School Needs to Improve',
-    'A4. Academic Performance',
+    'What the School Needs to Improve',
+    'A3. Academic Performance',
     'Key Stage 5',
     'A-level attainment',             // A4.11
     'A-level progress',               // A4.12
     'Facilitating subjects',          // A4.14
     'Results over time',              // A4.16
     'A-level / Level 3 subjects entered', // A4.17
-    'A5. Intake & Cohort',            // (no data)
-    'A6. Absence & Engagement',       // (no data)
-    'A7. Financial Health',
-    'A8. Area Context',
+    'A4. Intake & Cohort',            // (no data)
+    'A5. Absence & Engagement',       // (no data)
+    'A6. Financial Health',
+    'A7. Area Context',
   ],
   // KS4+KS5 state — A1–A8 with A4.1–A4.17
   'state-secondary-sixth': [
     'Pre-Fetched Government Data',
     'A2. Inspection Outcomes',
-    'A3. What the School Needs to Improve',
-    'A4. Academic Performance',
+    'What the School Needs to Improve',
+    'A3. Academic Performance',
     'Key Stage 4',
     'Attainment 8',
     'Progress 8',
@@ -146,33 +146,33 @@ const EXPECTED = {
     'Results over time',
     'Subjects entered (KS4)',
     'A-level / Level 3 subjects entered',
-    'A5. Intake & Cohort',
-    'A6. Absence & Engagement',
-    'A7. Financial Health',
-    'A8. Area Context',
+    'A4. Intake & Cohort',
+    'A5. Absence & Engagement',
+    'A6. Financial Health',
+    'A7. Area Context',
   ],
   // Independent primary — A1–A8, ISI, no performance data, sparse census, no absence, no FBIT
   'independent-primary': [
     'Pre-Fetched Government Data',
     'A2. Inspection Outcomes',
     'ISI:',
-    'A3. What the School Needs to Improve',
-    'A4. Academic Performance',
+    'What the School Needs to Improve',
+    'A3. Academic Performance',
     '_No performance data',
-    'A5. Intake & Cohort',
-    'A6. Absence & Engagement',
+    'A4. Intake & Cohort',
+    'A5. Absence & Engagement',
     'No absence data',
-    'A7. Financial Health',
+    'A6. Financial Health',
     'Not available for independent',
-    'A8. Area Context',
+    'A7. Area Context',
   ],
   // Independent secondary — A1–A8, ISI, KS4+KS5 stripped
   'independent-secondary': [
     'Pre-Fetched Government Data',
     'A2. Inspection Outcomes',
     'ISI:',
-    'A3. What the School Needs to Improve',
-    'A4. Academic Performance',
+    'What the School Needs to Improve',
+    'A3. Academic Performance',
     'Key Stage 4',
     'Attainment 8',
     'Cohort characteristics',
@@ -186,20 +186,20 @@ const EXPECTED = {
     'Facilitating subjects',
     'A-level / Level 3 subjects entered',
     'Results over time',
-    'A5. Intake & Cohort',
-    'A6. Absence & Engagement',
+    'A4. Intake & Cohort',
+    'A5. Absence & Engagement',
     'No absence data',
-    'A7. Financial Health',
+    'A6. Financial Health',
     'Not available for independent',
-    'A8. Area Context',
+    'A7. Area Context',
   ],
   // Independent all-through — same as independent-secondary
   'independent-all-through': [
     'Pre-Fetched Government Data',
     'A2. Inspection Outcomes',
     'ISI:',
-    'A3. What the School Needs to Improve',
-    'A4. Academic Performance',
+    'What the School Needs to Improve',
+    'A3. Academic Performance',
     'Key Stage 4',
     'Attainment 8',
     'Cohort characteristics',
@@ -213,12 +213,12 @@ const EXPECTED = {
     'Facilitating subjects',
     'A-level / Level 3 subjects entered',
     'Results over time',
-    'A5. Intake & Cohort',
-    'A6. Absence & Engagement',
+    'A4. Intake & Cohort',
+    'A5. Absence & Engagement',
     'No absence data',
-    'A7. Financial Health',
+    'A6. Financial Health',
     'Not available for independent',
-    'A8. Area Context',
+    'A7. Area Context',
   ],
 };
 
