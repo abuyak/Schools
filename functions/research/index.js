@@ -1253,7 +1253,12 @@ export const handler = async (event) => {
 
     // ── Step 5: Assemble and return ───────────────────────────────────────────
     // Part A sections already have _partLabel on A1; tag B1 and C1 from Call 2.
-    let finalSections = normaliseC1Table(tagPartLabels(interleaveVerdicts(partASections, bcSections)));
+    let finalSections = normaliseC1Table(tagPartLabels(
+      enforceObservations(
+        interleaveVerdicts(partASections, bcSections),
+        partASections
+      )
+    ));
 
     // Apply deterministic flag overrides to AI-generated verdict sections.
     // partAFlags keys are like 'A5. Academic Performance'; verdict headings
