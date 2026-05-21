@@ -657,6 +657,60 @@ function interleaveVerdicts(partASections, call2Sections) {
   return [...result, ...bcSections];
 }
 
+/**
+ * Strip orphan observation sections (e.g. "A8. Observations" when only A1–A7
+ * data sections exist) and ensure every data section A2–A7 has a matching
+ * observation slot, inserting an empty placeholder if the AI omitted one.
+ */
+function enforceObservations(sections, partADataSections) {
+  const dataPrefixes = new Set(
+    partADataSections.map(s => (s.heading?.match(/^(A\d+)\./)?.[1] ?? '').filter(Boolean))
+  );
+
+  // Partition into A-sections (data or observation) and non-A sections
+  const aSections = [];
+  const other = [];
+  for (const s of sections) {
+    if (/^A\d+\./i.test(s.heading ?? '')) {
+      aSections.push(s);
+    } else {
+      other.push(s);
+    }
+  }
+
+  // Strip observations that don't match any data section
+  const cleaned = aSections.filter(s => {
+    const isObs = /\bObservations?\b/i.test(s.heading ?? '');
+    if (!isObs) return true; // keep data sections
+    const prefix = s.heading?.match(/^(A\d+)/)?.[1];
+    return prefix && dataPrefixes.has(prefix);
+  });
+
+  // Insert placeholders for data sections that lack an observation
+  for (const prefix of [...dataPrefixes].sort()) {
+    if (prefix === 'A1') continue; // A1 has no Observations
+    const hasObs = cleaned.some(s =>
+      /\bObservations?\b/i.test(s.heading ?? '') &&
+      s.heading?.startsWith(prefix + '.')
+    );
+    if (!hasObs) {
+      // Find where to insert: after this prefix's data section
+      let insertIdx = -1;
+      for (let i = cleaned.length - 1; i >= 0; i--) {
+        if (cleaned[i].heading?.startsWith(prefix + '.')) { insertIdx = i + 1; break; }
+      }
+      if (insertIdx < 0) insertIdx = cleaned.length;
+      cleaned.splice(insertIdx, 0, {
+        heading: `${prefix}. Observations`,
+        body: '_Analysis not available for this section._',
+        flag: 'none',
+      });
+    }
+  }
+
+  return [...cleaned, ...other];
+}
+
 // ── In-memory job store for async Call 2 ────────────────────────────────────
 
 const ASYNC_TTL_MS = 120_000;  // drop jobs older than 2 minutes
@@ -778,7 +832,12 @@ async function processCall2(job, event, body, t0) {
     const call2Searches = (call2Response.output ?? []).filter(i => i.type === 'web_search_call').map(i => i.action?.query ?? null).filter(Boolean);
     const deferredPartA = partASections.filter(s => s._deferred);
     const visiblePartA = partASections.filter(s => !s._deferred);
-    let finalSections = normaliseC1Table(tagPartLabels(interleaveVerdicts([...visiblePartA, ...deferredPartA], bcSections)));
+    let finalSections = normaliseC1Table(tagPartLabels(
+      enforceObservations(
+        interleaveVerdicts([...visiblePartA, ...deferredPartA], bcSections),
+        partASections
+      )
+    ));
 
     if (Object.keys(partAFlags).length) {
       for (const s of finalSections) {

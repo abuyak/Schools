@@ -19,7 +19,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { buildSlimBlock } from '../govuk.js';
+import { buildSlimBlock, renderPartA, computeFlags } from '../govuk.js';
 
 const __dir       = dirname(fileURLToPath(import.meta.url));
 const FIXTURES    = join(__dir, 'fixtures');
@@ -190,6 +190,92 @@ describe('buildSlimBlock — reference school fixtures', () => {
             `If this change is intentional, re-run capture-fixtures.mjs for URN ${urn} ` +
             `(or delete the snapshot and re-run tests to regenerate).`
           );
+        }
+      });
+
+    });
+  }
+
+});
+
+// ── Part A section order contract ────────────────────────────────────────────
+// Verifies that renderPartA outputs sections in the correct A1–A7 sequence,
+// with unnumbered "What the School Needs to Improve" between A2 and A3.
+// This is the structural contract that the AI observations interleave against.
+
+const PART_A_ORDER = [
+  'A1. School Identity',
+  'A2. Inspection Outcomes',
+  'What the School Needs to Improve',
+  'A3. Academic Performance',
+  'A4. Intake & Cohort',
+  'A5. Absence & Engagement',
+  'A6. Financial Health',
+  'A7. Area Context',
+];
+
+describe('renderPartA — section order contract', () => {
+
+  for (const school of SCHOOLS) {
+    const { urn, label } = school;
+
+    describe(`${label} (URN ${urn})`, () => {
+
+      let fixture;
+      let sections;
+
+      beforeAll(() => {
+        fixture = loadFixture(urn);
+        if (!fixture) return;
+        const flags = computeFlags(fixture);
+        sections = renderPartA(fixture, flags);
+      });
+
+      test('fixture exists and produces sections', () => {
+        if (!fixture) return;
+        expect(sections.length).toBeGreaterThanOrEqual(1);
+      });
+
+      test('section headings follow the A1–A7 contract in order', () => {
+        if (!fixture) return;
+        const headings = sections.map(s => s.heading);
+
+        // Check that every expected heading appears in order
+        let expectedIdx = 0;
+        for (const h of headings) {
+          if (expectedIdx < PART_A_ORDER.length && h === PART_A_ORDER[expectedIdx]) {
+            expectedIdx++;
+          }
+        }
+        if (expectedIdx < PART_A_ORDER.length) {
+          throw new Error(
+            `Missing section "${PART_A_ORDER[expectedIdx]}" at position ${expectedIdx + 1}.\n` +
+            `Got headings: ${JSON.stringify(headings)}`
+          );
+        }
+      });
+
+      test('no unexpected numbered A-sections', () => {
+        if (!fixture) return;
+        const headings = sections.map(s => s.heading);
+        const valid = new Set([...PART_A_ORDER]);
+        for (const h of headings) {
+          if (/^A\d+\./.test(h) && !valid.has(h)) {
+            throw new Error(`Unexpected numbered section: "${h}"`);
+          }
+        }
+      });
+
+      test('A-sections are in ascending numeric order', () => {
+        if (!fixture) return;
+        const nums = sections
+          .map(s => s.heading?.match(/^A(\d+)\./)?.[1])
+          .filter(Boolean)
+          .map(Number);
+        for (let i = 1; i < nums.length; i++) {
+          if (nums[i] < nums[i-1]) {
+            throw new Error(`A-sections out of order: A${nums[i-1]} before A${nums[i]}`);
+          }
         }
       });
 
