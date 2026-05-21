@@ -153,7 +153,7 @@ Present the inspection data from the pre-fetched block: overall grade, date, sub
 
 Heading: `## A2. Observations` · Flag: `green` if Outstanding/Exceptional, `red` if RI/Inadequate, else `none`
 
-Bullet list, 3–4 bullets:
+Bullet list, 3–4 bullets. Discuss ONLY inspection data — do not mention academic results, census, absence, or finances here:
 - Overall grade and what it means for quality
 - Any sub-grade weaker than the overall — call it out
 - Inspection recency — stale if >5 years
@@ -183,7 +183,7 @@ Reproduce the performance tables from the pre-fetched block's A3 section verbati
 
 Heading: `## A3. Observations` · Flag: `green` if well above national, `red` if well below, else `none`
 
-Bullet list, 3–4 bullets:
+Bullet list, 3–4 bullets. Discuss ONLY academic performance data — do not mention inspection, census, absence, or finances here:
 - Overall attainment vs national and LA
 - Progress scores — direction and significance
 - Multi-year trend if notable
@@ -221,7 +221,7 @@ Table with full names, not abbreviations:
 
 Heading: `## A4. Observations` · Flag: `red` if FSM >35% primary/30% secondary or EHC >6%, else `none`
 
-Bullet list, 2–3 bullets:
+Bullet list, 2–3 bullets. Discuss ONLY census/intake data — do not mention inspection, academic results, absence, or finances here:
 - FSM rate vs national — what it says about intake
 - SEN/EHC profile — well-resourced or capacity concern?
 - School ethnicity vs area ethnicity gap (A7) if notable
@@ -243,7 +243,7 @@ Heading: `## A5. Absence & Engagement`
 
 Heading: `## A5. Observations` · Flag: `green` if <5% or persistent <15%, `red` if >8.6% or >23.3%
 
-Bullet list, 2 bullets:
+Bullet list, 2 bullets. Discuss ONLY absence data — do not mention inspection, academic results, census, or finances here:
 - Overall absence vs national — gap matters >2pp
 - Persistent absence — the stronger signal
 
@@ -267,7 +267,7 @@ Table:
 
 Heading: `## A6. Observations` · Flag: `red` if in-year deficit or QTS below comparator, else `none`
 
-Bullet list, 2–3 bullets:
+Bullet list, 2–3 bullets. Discuss ONLY financial data — do not mention inspection, academic results, census, or absence here:
 - Spend per pupil vs comparator
 - In-year balance — flag deficit explicitly
 - QTS% and staffing stability
@@ -293,7 +293,7 @@ Heading: `## A7. Area Context`
 
 Heading: `## A7. Observations` · Flag: `red` if IMD 1–3 or income <£35k, else `none`
 
-Bullet list, 2–3 bullets:
+Bullet list, 2–3 bullets. Discuss ONLY area/context data — do not mention inspection, academic results, census, absence, or finances here:
 - IMD decile and what it means for intake
 - Income and property prices — catchment context
 - School FSM vs area deprivation — divergence suggests selection or outreach
