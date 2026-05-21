@@ -664,7 +664,9 @@ function interleaveVerdicts(partASections, call2Sections) {
  */
 function enforceObservations(sections, partADataSections) {
   const dataPrefixes = new Set(
-    partADataSections.map(s => (s.heading?.match(/^(A\d+)\./)?.[1] ?? '').filter(Boolean))
+    partADataSections
+      .map(s => s.heading?.match(/^(A\d+)\./)?.[1])
+      .filter(Boolean)
   );
 
   // Partition into A-sections (data or observation) and non-A sections
