@@ -243,7 +243,7 @@ Note clearly if no destinations data is published.
 
 Open with one sentence that directly engages the parent's question. Do not soften it.
 
-Then, based on everything in the government data and Parts B, assess what kind of child and family this school suits. Score each dimension as **Strong**, **Present**, or **Not evident**. **Bold** the 2–3 dimensions most relevant to the parent's question.
+Then, based on everything in the government data and Parts B, assess what kind of child and family this school suits. Score each dimension as plain text: Strong, Present, or Not evident. Do NOT use bold markers inside table cells — write the evidence level exactly as one of these three words with no formatting. Bold the dimension name in the first column for the 2–3 dimensions most relevant to the parent's question.
 
 | Dimension | Evidence level | Notes |
 |---|---|---|

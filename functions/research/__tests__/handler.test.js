@@ -18,7 +18,7 @@ await jest.unstable_mockModule('../govuk.js', () => ({
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-const { handler } = await import('../index.js');
+const { handler, normaliseC1Table } = await import('../index.js');
 
 // Reset mock and env before every test to prevent bleed-through
 beforeEach(() => {
@@ -347,4 +347,86 @@ describe('Error handling', () => {
     expect(body.status).toBe('upstream_error');
     expect(body.httpStatus).toBe(502);
   });
+});
+
+// ── C1 Table structure contract ──────────────────────────────────────────────
+// Verifies that normaliseC1Table produces a valid C1 table regardless of
+// how the AI formats its input. These test the output contract, not the input.
+
+const VALID_EVIDENCE = new Set(['Strong', 'Present', 'Not evident', 'Mixed', 'Weak']);
+
+describe('normaliseC1Table — output contract', () => {
+
+  test('every data row has exactly 3 columns', () => {
+    const sections = [
+      { heading: 'C1. School Character', body: [
+        '| Dimension | Evidence level | Notes |',
+        '|---|---|---|',
+        '| Academic focus | Strong | Above national. |',
+        '| Arts, music | Present | Good offer. |',
+        '| Sports | Not evident | No standout sport. |',
+      ].join('\n'), flag: 'none' },
+    ];
+    const result = normaliseC1Table(sections);
+    const lines = result[0].body.split('\n');
+    for (const line of lines) {
+      if (line.startsWith('|') && !line.startsWith('|---')) {
+        const cells = line.split('|').filter(c => c.trim());
+        if (cells.length !== 3) throw new Error(`Expected 3 columns, got ${cells.length}: "${line}"`);
+      }
+    }
+  });
+
+  test('evidence level is always a valid keyword (Strong, Present, Not evident)', () => {
+    const sections = [
+      { heading: 'C1. School Character', body: [
+        '| Dimension | Evidence level | Notes |',
+        '|---|---|---|',
+        '| Academic focus | Strong | Results above national. |',
+        '| Arts | Present | Broad offer. |',
+        '| Sports | Not evident | Nothing notable. |',
+      ].join('\n'), flag: 'none' },
+    ];
+    const result = normaliseC1Table(sections);
+    const lines = result[0].body.split('\n');
+    for (const line of lines) {
+      // Skip header, separator, and non-table lines
+      if (!line.startsWith('|') || line.startsWith('|---')) continue;
+      if (/\bDimension\b/i.test(line) && /\bEvidence\s*level\b/i.test(line)) continue;
+      const cells = line.split('|').filter(c => c.trim());
+      const evidence = cells[1]?.trim();
+      if (!VALID_EVIDENCE.has(evidence)) {
+        throw new Error(`Invalid evidence level "${evidence}" in row: "${line}"`);
+      }
+    }
+  });
+
+  test('dimension and notes columns are non-empty', () => {
+    const sections = [
+      { heading: 'C1. School Character', body: [
+        '| Dimension | Evidence level | Notes |',
+        '|---|---|---|',
+        '| Academic focus | Strong | Results above national. |',
+        '| Arts | Present | Broad offer. |',
+      ].join('\n'), flag: 'none' },
+    ];
+    const result = normaliseC1Table(sections);
+    const lines = result[0].body.split('\n');
+    for (const line of lines) {
+      if (!line.startsWith('|') || line.startsWith('|---')) continue;
+      if (/\bDimension\b/i.test(line) && /\bEvidence\s*level\b/i.test(line)) continue;
+      const cells = line.split('|').filter(c => c.trim());
+      if (!cells[0]) throw new Error(`Empty dimension in: "${line}"`);
+      if (!cells[2]) throw new Error(`Empty notes in: "${line}"`);
+    }
+  });
+
+  test('non-C1 sections pass through unchanged', () => {
+    const sections = [
+      { heading: 'B1. Pupil Experience', body: 'Some content.', flag: 'none' },
+    ];
+    const result = normaliseC1Table(sections);
+    expect(result[0].body).toBe('Some content.');
+  });
+
 });

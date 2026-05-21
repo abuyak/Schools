@@ -480,7 +480,7 @@ function splitColumns(line, minCols) {
   return cols.length >= 2 ? cols : [trimmed];
 }
 
-function normaliseC1Table(sections) {
+export function normaliseC1Table(sections) {
   for (const s of sections) {
     if (!s.heading?.startsWith('C1.')) continue;
     const body = s.body || '';
@@ -498,23 +498,6 @@ function normaliseC1Table(sections) {
       const trimmed = line.trim();
       if (!trimmed) { out.push(''); continue; }
 
-      // Pre-process: fix AI splitting **Strong** across two cells
-      // e.g. | ** | Strong | ... → | **Strong** | ...
-      let fixed = trimmed;
-      for (const level of ['Strong', 'Present', 'Not evident', 'Mixed', 'Weak']) {
-        const splitPattern = new RegExp(
-          `\\|\\s*\\*\\*\\s*\\|\\s*(${level.replace(/\s/g, '\\s')})(?=\\s*\\|)`, 'i'
-        );
-        fixed = fixed.replace(splitPattern, `| **${level}**`);
-      }
-      // Also fix: | Pastoral | **Strong | → | Pastoral | **Strong** |
-      for (const level of ['Strong', 'Present', 'Not evident', 'Mixed', 'Weak']) {
-        const trailingPattern = new RegExp(
-          `\\*\\*(${level.replace(/\s/g, '\\s')})\\s*\\|(?!\\s*\\*\\*)`, 'i'
-        );
-        fixed = fixed.replace(trailingPattern, `**${level}** |`);
-      }
-
       // Detect the C1 table header row
       if (/\bDimension\b/i.test(trimmed) && /\bEvidence\s*level\b/i.test(trimmed)) {
         // Use the fixed line for the table, but keep original trimmed for header detection
@@ -528,12 +511,10 @@ function normaliseC1Table(sections) {
       if (/^\|?\s*[-:| ]+\s*\|?$/.test(trimmed)) continue;
 
       if (inTable) {
-        // Use the fixed version with merged ** markers
-        const lineToMatch = fixed;
         // Accept optional **bold** around the evidence keyword.
         // Require the keyword to be flanked by 2+ spaces or a pipe — columnar layout,
         // not prose like "academically strong".
-        const evidenceMatch = lineToMatch.match(
+        const evidenceMatch = trimmed.match(
           /(?:^|\s{2,}|\|\s*)(?:\*\*)?(Strong|Present|Not\s*evident|Mixed|Weak)(?:\*\*)?(?=\s{2,}|\s*\|)/i
         );
         if (evidenceMatch) {
@@ -545,11 +526,11 @@ function normaliseC1Table(sections) {
           const matchEnd = evidenceMatch.index + evidenceMatch[0].length;  // past closing **
 
           // Everything before the evidence level = dimension name
-          let dimension = lineToMatch.slice(0, kwStart).trim();
+          let dimension = trimmed.slice(0, kwStart).trim();
           dimension = dimension.replace(/^[\s|]+/, '').replace(/[\s|]+$/, '');
 
           // Everything after the full match (after any closing **) = notes
-          let notes = lineToMatch.slice(matchEnd).trim();
+          let notes = trimmed.slice(matchEnd).trim();
           notes = notes.replace(/^[\s|]+/, '').replace(/[\s|]+$/, '');
 
           // If notes is too long (>200 chars) or contains sentence-like text
