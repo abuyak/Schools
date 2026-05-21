@@ -105,19 +105,31 @@ One paragraph. Copy the official school name and local authority verbatim from t
 
 ## Part A — Official Record
 
-*Everything in Part A comes from the pre-fetched government data block. Do not search the web for any field present in the block.*
+Work through the pre-fetched block section by section. For each numbered section A2–A7 below:
 
-**CRITICAL — use these exact section headings and numbers. Do not deviate:**
+1. **Find the matching heading** in the pre-fetched block (e.g. `### A2. Inspection Outcomes`)
+2. **Present the data** — copy tables verbatim, render bullet lists as shown
+3. **Write your observations** as a separate section with heading `## A{N}. Observations`
+
+Do not copy data from one section into another section's observations. Each observation section discusses ONLY the data from its matching section.
+
+**CRITICAL — exact section headings, in order:**
 - `## A1. School Identity`
 - `## A2. Inspection Outcomes`
+- `## A2. Observations`
 - `## What the School Needs to Improve`
 - `## A3. Academic Performance`
+- `## A3. Observations`
 - `## A4. Intake & Cohort`
+- `## A4. Observations`
 - `## A5. Absence & Engagement`
+- `## A5. Observations`
 - `## A6. Financial Health`
+- `## A6. Observations`
 - `## A7. Area Context`
+- `## A7. Observations`
 
-No other Part A heading text or numbering is permitted.
+No other Part A headings. Do not skip any A2–A7 Observations section.
 
 ---
 
@@ -143,57 +155,53 @@ One sentence confirming the school from the pre-fetched block. If the pre-fetche
 
 ### A2. Inspection Outcomes
 
-Heading: `## A2. Inspection Outcomes`
+The pre-fetched block has a section headed `### A2. Inspection Outcomes`. Copy its content: overall grade, date, sub-grades, framework. For independent schools, note ISI vs Ofsted. Include the pupil-experience narrative as bullet points.
 
-Present the inspection data from the pre-fetched block: overall grade, date, sub-grades, and framework. For independent schools, note ISI vs Ofsted.
-
-**What it's like to be a pupil:** Summarise the inspector narrative from the pre-fetched block in 3–4 bullet points covering atmosphere, behaviour, SEND support, and enrichment.
+Then generate:
 
 ### A2. Observations
 
 Heading: `## A2. Observations` · Flag: `green` if Outstanding/Exceptional, `red` if RI/Inadequate, else `none`
 
-Bullet list, 3–4 bullets. Discuss ONLY inspection data — do not mention academic results, census, absence, or finances here:
-- Overall grade and what it means for quality
-- Any sub-grade weaker than the overall — call it out
-- Inspection recency — stale if >5 years
-- For ISI: note framework, flag ROU as limited
+What to write: 3–4 bullets analysing the inspection data you just presented above. Cover overall grade meaning, any sub-grade weaker than overall, inspection recency, ISI framework if applicable.
 
 ---
 
 ### What the School Needs to Improve
 
-Heading: `## What the School Needs to Improve`
+The pre-fetched block has a section headed `### What the School Needs to Improve`. Copy every requirement verbatim. Do not paraphrase.
 
-Reproduce every improvement requirement from the pre-fetched block verbatim. Do not paraphrase or omit any.
+Flag inline: `red` for formal action points or sub-grade RI/Inadequate, else `green`.
 
-Flag: `red` if formal Ofsted action points or sub-grade RI/Inadequate, `green` if none.
-
-No separate Observations section — flag inline.
+No Observations section — the text speaks for itself.
 
 ---
 
 ### A3. Academic Performance
 
-Heading: `## A3. Academic Performance`
+The pre-fetched block has a section headed `### A3. Academic Performance`. Copy all tables verbatim — do not reorder or reformat columns. Include every Key Stage sub-section present.
 
-Reproduce the performance tables from the pre-fetched block's A3 section verbatim — do not reformat or reorder columns. Include all sub-sections (Key Stage 2, Key Stage 4, Key Stage 5) as they appear.
+Then generate:
 
 ### A3. Observations
 
 Heading: `## A3. Observations` · Flag: `green` if well above national, `red` if well below, else `none`
 
-Bullet list, 3–4 bullets. Discuss ONLY academic performance data — do not mention inspection, census, absence, or finances here:
-- Overall attainment vs national and LA
-- Progress scores — direction and significance
-- Multi-year trend if notable
-- KS5: A-level grade and progress if sixth form
+What to write: 3–4 bullets about the academic tables you just presented. Attainment vs national/LA, progress scores, multi-year trend, sixth form if present.
 
 ---
 
 ### A4. Intake & Cohort
 
-Heading: `## A4. Intake & Cohort`
+The pre-fetched block has a section headed `### A4. Intake & Cohort`. Copy the pupil-numbers table and ethnicity table verbatim.
+
+Then generate:
+
+### A4. Observations
+
+Heading: `## A4. Observations` · Flag: `red` if FSM >35% primary/30% secondary or EHC >6%, else `none`
+
+What to write: 2–3 bullets about the census data you just presented. FSM rate vs national, SEN/EHC profile, school ethnicity vs area ethnicity (A7).
 
 Table with full names, not abbreviations:
 
@@ -232,7 +240,15 @@ Bullet list, 2–3 bullets. Discuss ONLY census/intake data — do not mention i
 
 ### A5. Absence & Engagement
 
-Heading: `## A5. Absence & Engagement`
+The pre-fetched block has a section headed `### A5. Absence & Engagement`. Copy the absence table verbatim.
+
+Then generate:
+
+### A5. Observations
+
+Heading: `## A5. Observations` · Flag: `green` if <5% overall or <15% persistent, `red` if >8.6% or >23.3%
+
+What to write: 2 bullets about the absence data you just presented. Overall absence vs national, persistent absence.
 
 | Metric | School | National avg |
 |---|---:|---:|
@@ -251,7 +267,15 @@ Bullet list, 2 bullets. Discuss ONLY absence data — do not mention inspection,
 
 ### A6. Financial Health
 
-Heading: `## A6. Financial Health`
+The pre-fetched block has a section headed `### A6. Financial Health`. Copy the financial data verbatim (summary + spending breakdown for state schools; "Not available" for independents; fees table if present).
+
+Then generate:
+
+### A6. Observations
+
+Heading: `## A6. Observations` · Flag: `red` if in-year deficit or QTS below comparator, else `none`
+
+What to write: 2–3 bullets about the financial data you just presented. Spend per pupil vs comparator, in-year balance, QTS%.
 
 Table:
 
@@ -278,7 +302,15 @@ Bullet list, 2–3 bullets. Discuss ONLY financial data — do not mention inspe
 
 ### A7. Area Context
 
-Heading: `## A7. Area Context`
+The pre-fetched block has a section headed `### A7. Area Context`. Copy the area data verbatim (bullets or table as shown).
+
+Then generate:
+
+### A7. Observations
+
+Heading: `## A7. Observations` · Flag: `red` if IMD 1–3 or income <£35k, else `none`
+
+What to write: 2–3 bullets about the area data you just presented. IMD decile, income/property prices, school FSM vs area deprivation.
 
 | Metric | Value |
 |---|---|
