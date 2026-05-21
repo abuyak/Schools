@@ -669,48 +669,44 @@ function enforceObservations(sections, partADataSections) {
       .filter(Boolean)
   );
 
-  // Partition into A-sections (data or observation) and non-A sections
-  const aSections = [];
-  const other = [];
-  for (const s of sections) {
-    if (/^A\d+\./i.test(s.heading ?? '')) {
-      aSections.push(s);
-    } else {
-      other.push(s);
+  // Work on a copy; preserve original order of ALL sections.
+  const result = [...sections];
+
+  // 1. Strip orphan observations (A-prefix observations with no matching data section)
+  for (let i = result.length - 1; i >= 0; i--) {
+    const h = result[i].heading ?? '';
+    const isObs = /^A\d+\./i.test(h) && /\bObservations?\b/i.test(h);
+    if (!isObs) continue;
+    const prefix = h.match(/^(A\d+)/)?.[1];
+    if (!prefix || !dataPrefixes.has(prefix)) {
+      result.splice(i, 1);
     }
   }
 
-  // Strip observations that don't match any data section
-  const cleaned = aSections.filter(s => {
-    const isObs = /\bObservations?\b/i.test(s.heading ?? '');
-    if (!isObs) return true; // keep data sections
-    const prefix = s.heading?.match(/^(A\d+)/)?.[1];
-    return prefix && dataPrefixes.has(prefix);
-  });
-
-  // Insert placeholders for data sections that lack an observation
-  for (const prefix of [...dataPrefixes].sort()) {
-    if (prefix === 'A1') continue; // A1 has no Observations
-    const hasObs = cleaned.some(s =>
+  // 2. Insert placeholders for data sections A2–A7 that lack an observation
+  for (const prefix of [...dataPrefixes].sort((a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1)))) {
+    if (prefix === 'A1') continue;
+    const hasObs = result.some(s =>
+      /^A\d+\./i.test(s.heading ?? '') &&
       /\bObservations?\b/i.test(s.heading ?? '') &&
       s.heading?.startsWith(prefix + '.')
     );
-    if (!hasObs) {
-      // Find where to insert: after this prefix's data section
-      let insertIdx = -1;
-      for (let i = cleaned.length - 1; i >= 0; i--) {
-        if (cleaned[i].heading?.startsWith(prefix + '.')) { insertIdx = i + 1; break; }
-      }
-      if (insertIdx < 0) insertIdx = cleaned.length;
-      cleaned.splice(insertIdx, 0, {
-        heading: `${prefix}. Observations`,
-        body: '_Analysis not available for this section._',
-        flag: 'none',
-      });
+    if (hasObs) continue;
+
+    // Find the last section with this prefix (should be the data section) and insert after it
+    let insertIdx = -1;
+    for (let i = 0; i < result.length; i++) {
+      if ((result[i].heading ?? '').startsWith(prefix + '.')) insertIdx = i + 1;
     }
+    if (insertIdx < 0) insertIdx = result.length;
+    result.splice(insertIdx, 0, {
+      heading: `${prefix}. Observations`,
+      body: '_Analysis not available for this section._',
+      flag: 'none',
+    });
   }
 
-  return [...cleaned, ...other];
+  return result;
 }
 
 // ── In-memory job store for async Call 2 ────────────────────────────────────
