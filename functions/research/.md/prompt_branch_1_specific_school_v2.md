@@ -110,12 +110,12 @@ One paragraph. Copy the official school name and local authority verbatim from t
 **CRITICAL — use these exact section headings and numbers. Do not deviate:**
 - `## A1. School Identity`
 - `## A2. Inspection Outcomes`
-- `## A3. What the School Needs to Improve`
-- `## A4. Academic Performance`
-- `## A5. Intake & Cohort`
-- `## A6. Absence & Engagement`
-- `## A7. Financial Health`
-- `## A8. Area Context`
+- `## What the School Needs to Improve`
+- `## A3. Academic Performance`
+- `## A4. Intake & Cohort`
+- `## A5. Absence & Engagement`
+- `## A6. Financial Health`
+- `## A7. Area Context`
 
 No other Part A heading text or numbering is permitted.
 
@@ -149,31 +149,51 @@ Present the inspection data from the pre-fetched block: overall grade, date, sub
 
 **What it's like to be a pupil:** Summarise the inspector narrative from the pre-fetched block in 3–4 bullet points covering atmosphere, behaviour, SEND support, and enrichment.
 
----
+### A2. Observations
 
-### A3. What the School Needs to Improve
+Heading: `## A2. Observations` · Flag: `green` if Outstanding/Exceptional, `red` if RI/Inadequate, else `none`
 
-Heading: `## A3. What the School Needs to Improve`
-
-Reproduce every improvement requirement from the pre-fetched block's A3 section verbatim. Do not paraphrase or omit any.
-
-**Observations:** flag any requirement that signals a serious or systemic concern.
-
----
-
-### A4. Academic Performance
-
-Heading: `## A4. Academic Performance`
-
-Reproduce the performance tables from the pre-fetched block's A4 section verbatim — do not reformat or reorder columns. Include all sub-sections (Key Stage 2, Key Stage 4, Key Stage 5) as they appear.
-
-**Observations:** 2–3 sentences on overall strength, trends, and reliability.
+Bullet list, 3–4 bullets:
+- Overall grade and what it means for quality
+- Any sub-grade weaker than the overall — call it out
+- Inspection recency — stale if >5 years
+- For ISI: note framework, flag ROU as limited
 
 ---
 
-### A5. Intake & Cohort
+### What the School Needs to Improve
 
-Heading: `## A5. Intake & Cohort`
+Heading: `## What the School Needs to Improve`
+
+Reproduce every improvement requirement from the pre-fetched block verbatim. Do not paraphrase or omit any.
+
+Flag: `red` if formal Ofsted action points or sub-grade RI/Inadequate, `green` if none.
+
+No separate Observations section — flag inline.
+
+---
+
+### A3. Academic Performance
+
+Heading: `## A3. Academic Performance`
+
+Reproduce the performance tables from the pre-fetched block's A3 section verbatim — do not reformat or reorder columns. Include all sub-sections (Key Stage 2, Key Stage 4, Key Stage 5) as they appear.
+
+### A3. Observations
+
+Heading: `## A3. Observations` · Flag: `green` if well above national, `red` if well below, else `none`
+
+Bullet list, 3–4 bullets:
+- Overall attainment vs national and LA
+- Progress scores — direction and significance
+- Multi-year trend if notable
+- KS5: A-level grade and progress if sixth form
+
+---
+
+### A4. Intake & Cohort
+
+Heading: `## A4. Intake & Cohort`
 
 Table with full names, not abbreviations:
 
@@ -197,28 +217,41 @@ Table with full names, not abbreviations:
 | Other | |
 | Not stated | |
 
-**Observations:** flag anything notably above or below average. Note whether a resourced provision or SEND unit is confirmed. Note any significant difference between pupil ethnicity and the surrounding area ethnicity (A8).
+### A4. Observations
+
+Heading: `## A4. Observations` · Flag: `red` if FSM >35% primary/30% secondary or EHC >6%, else `none`
+
+Bullet list, 2–3 bullets:
+- FSM rate vs national — what it says about intake
+- SEN/EHC profile — well-resourced or capacity concern?
+- School ethnicity vs area ethnicity gap (A7) if notable
 
 *Primary average roll ~280, secondary ~1,000.*
 
 ---
 
-### A6. Absence & Engagement
+### A5. Absence & Engagement
 
-Heading: `## A6. Absence & Engagement`
+Heading: `## A5. Absence & Engagement`
 
 | Metric | School | National avg |
 |---|---:|---:|
 | Overall absence | | 6.6% |
 | Persistent absence (missed 10%+ of sessions) | | 21.3% |
 
-**Observations:** flag if either is more than 2pp above national.
+### A5. Observations
+
+Heading: `## A5. Observations` · Flag: `green` if <5% or persistent <15%, `red` if >8.6% or >23.3%
+
+Bullet list, 2 bullets:
+- Overall absence vs national — gap matters >2pp
+- Persistent absence — the stronger signal
 
 ---
 
-### A7. Financial Health
+### A6. Financial Health
 
-Heading: `## A7. Financial Health`
+Heading: `## A6. Financial Health`
 
 Table:
 
@@ -230,15 +263,22 @@ Table:
 | Qualified Teacher Status (QTS) % | | |
 | Pupil:teacher ratio | | |
 
-**Observations:** flag negative in-year balance, reserves below one month's spend, spend per pupil far above comparators, or QTS% below comparator average — all can signal staffing instability.
+### A6. Observations
+
+Heading: `## A6. Observations` · Flag: `red` if in-year deficit or QTS below comparator, else `none`
+
+Bullet list, 2–3 bullets:
+- Spend per pupil vs comparator
+- In-year balance — flag deficit explicitly
+- QTS% and staffing stability
 
 *State schools only. Note if FBIT data not available.*
 
 ---
 
-### A8. Area Context
+### A7. Area Context
 
-Heading: `## A8. Area Context`
+Heading: `## A7. Area Context`
 
 | Metric | Value |
 |---|---|
@@ -249,9 +289,14 @@ Heading: `## A8. Area Context`
 | Qualifications (% degree-level or above) | |
 | Occupation (% professional/managerial) | |
 
-**Observations:** one short paragraph — income, housing, community mix, deprivation context, and what this means for the school's intake.
+### A7. Observations
 
-**Flag rule:** Set red if IMD decile is 1–3 or mean household income is below £35,000 — these signal a genuinely deprived catchment and must be called out in C2 Cons even if the school performs well above average for its context.
+Heading: `## A7. Observations` · Flag: `red` if IMD 1–3 or income <£35k, else `none`
+
+Bullet list, 2–3 bullets:
+- IMD decile and what it means for intake
+- Income and property prices — catchment context
+- School FSM vs area deprivation — divergence suggests selection or outreach
 
 ---
 

@@ -37,6 +37,17 @@ No "What it's like to be a pupil" narrative for ISI (no PDF parsing).
 **What the School Needs to Improve**
 Same as recommendations. Fallback: `_Independent school — no improvement recommendations available._`
 
+No Observations — the text speaks for itself.
+
+### A2. Observations
+
+Heading: `## A2. Observations` · Flag: `green` if ISI Excellent, else `none`
+
+Bullet list, 2–3 bullets:
+- ISI grade — Excellent/Good/Sound, framework (EQI/ROU)
+- Summary of key findings if available
+- Note: ROU (compliance-only) is more limited than EQI
+
 ---
 
 ## A3. Academic Performance
@@ -204,6 +215,16 @@ From bundled EES CSV. Grade 7+ = A/A* equivalent.
 
 From bundled EES CSV. A–B = A-level equivalent of grade 7+.
 
+### A3. Observations
+
+Heading: `## A3. Observations` · Flag: `green` if A-level grade well above national, else `none`
+
+Bullet list, 3–4 bullets:
+- KS4: Attainment 8 score — note iGCSE caveat (low scores are normal for independents)
+- KS5: A-level grade and progress — the primary academic signal for independents
+- Subjects entered — unusual/broad offering is a strength
+- Note: Progress 8 and Post-16 destinations are not published for independents
+
 ---
 
 ## A4. Intake & Cohort — Pupil Census (DfE)
@@ -223,6 +244,14 @@ From bundled EES CSV. A–B = A-level equivalent of grade 7+.
 ### SEN & Inclusion
 Auto-generated paragraph based on SEN support + EHC plan %.
 
+### A4. Observations
+
+Heading: `## A4. Observations` · Flag: `none` (FSM always near 0% for independents)
+
+Bullet list, 1–2 bullets:
+- SEN profile — high SEN support % can indicate strong learning support
+- FSM is near 0% — not a meaningful comparison for independents
+
 ---
 
 ## A5. Absence & Engagement (DfE)
@@ -230,6 +259,12 @@ Auto-generated paragraph based on SEN support + EHC plan %.
 ```
 _No absence data available — independent schools do not report absence to DfE._
 ```
+
+### A5. Observations
+
+Heading: `## A5. Observations` · Flag: `none`
+
+One bullet: `- No DfE absence data — independent schools do not report attendance centrally. Ask the school directly about attendance culture.`
 
 ---
 
@@ -249,6 +284,14 @@ Shown when fees data scraped from school website:
 ```
 Hidden when no fees data available.
 
+### A6. Observations
+
+Heading: `## A6. Observations` · Flag: `none`
+
+Bullet list, 1–2 bullets:
+- FBIT not available for independent schools — note this
+- If fees shown: compare day fees, note any significant gap if comparing schools
+
 ---
 
 ## A7. Area Context
@@ -263,3 +306,12 @@ Hidden when no fees data available.
 - Qualifications (OA, Census 2021): level 4+ {X%} · no qualifications {X%}
 - Occupation (OA, Census 2021): professional/managerial {X%} · routine/manual {X%}
 ```
+
+### A7. Observations
+
+Heading: `## A7. Observations` · Flag: `red` if IMD 1–3 or income <£35k, else `none`
+
+Bullet list, 2–3 bullets:
+- IMD decile and what it means for intake
+- Income and property prices — catchment affluence
+- Independent schools draw from wider geographies than state — area profile is context, not catchment

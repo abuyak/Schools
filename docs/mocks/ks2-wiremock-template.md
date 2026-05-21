@@ -35,6 +35,18 @@ Ofsted PDF narrative, first ~800 chars, truncated with link to full PDF.
 **What the School Needs to Improve**
 Verbatim from Ofsted next steps. Fallback: `_No improvement requirements stated._`
 
+No Observations — the text speaks for itself.
+
+### A2. Observations
+
+Heading: `## A2. Observations` · Flag: `green` if Outstanding/Exceptional, `red` if RI/Inadequate, else `none`
+
+Bullet list, 3–4 bullets:
+- Overall grade and what it means for quality
+- Any sub-grade weaker than the overall — call it out
+- Inspection recency — stale if >5 years
+- Pupil experience highlights from the narrative
+
 ---
 
 ## A3. Academic Performance
@@ -149,6 +161,16 @@ Rows hidden when 0% (DfE-suppressed).
 | Local Authority | — | — | la `maths.avgScore` |
 | England | 104 | 104 | 104 |
 
+### A3. Observations
+
+Heading: `## A3. Observations` · Flag: `green` if Attainment 8 >national+10, P8 >0.5, or RWM >national+10; `red` if below by same margins
+
+Bullet list, 3–4 bullets:
+- Overall attainment vs national and LA benchmarks
+- Progress scores if present — direction and significance
+- Multi-year trend if notable (check A3.10 table)
+- Cohort size caveat if below 30 pupils
+
 ---
 
 ## A4. Intake & Cohort — Pupil Census (DfE)
@@ -178,6 +200,15 @@ Auto-generated paragraph based on SEN support + EHC plan % vs national ~17.5% co
 
 Hidden entirely if all groups are 0%.
 
+### A4. Observations
+
+Heading: `## A4. Observations` · Flag: `red` if FSM >35% primary/30% secondary or EHC >6%, else `none`
+
+Bullet list, 2–3 bullets:
+- FSM rate vs national — what it says about intake
+- SEN/EHC profile — well-resourced or capacity concern?
+- School ethnicity vs area ethnicity gap if notable
+
 ---
 
 ## A5. Absence & Engagement (DfE)
@@ -186,6 +217,14 @@ Hidden entirely if all groups are 0%.
 |---|---:|---:|
 | Overall absence | `PERCTOT`% | 6.6% |
 | Persistent absence | `PPERSABS10`% | 21.3% |
+
+### A5. Observations
+
+Heading: `## A5. Observations` · Flag: `green` if <5% overall or <15% persistent, `red` if >8.6% or >23.3%
+
+Bullet list, 2 bullets:
+- Overall absence vs national — gap matters >2pp
+- Persistent absence — the stronger signal
 
 ---
 
@@ -209,6 +248,15 @@ Hidden entirely if all groups are 0%.
 **Spending per pupil vs similar schools**
 8 categories, each: `- {category}: £{school}/pupil | avg £{comparator}/pupil | £{diff} more/less than avg | {pctDiff}%`
 
+### A6. Observations
+
+Heading: `## A6. Observations` · Flag: `red` if in-year deficit or QTS below comparator avg, else `none`
+
+Bullet list, 2–3 bullets:
+- Spend per pupil vs comparator
+- In-year balance — flag deficit explicitly
+- QTS% and staffing stability
+
 ---
 
 ## A7. Area Context
@@ -223,3 +271,12 @@ Hidden entirely if all groups are 0%.
 - Qualifications (OA, Census 2021): level 4+ {X%} · no qualifications {X%}
 - Occupation (OA, Census 2021): professional/managerial {X%} · routine/manual {X%}
 ```
+
+### A7. Observations
+
+Heading: `## A7. Observations` · Flag: `red` if IMD 1–3 or income <£35k, else `none`
+
+Bullet list, 2–3 bullets:
+- IMD decile and what it means for intake
+- Income profile — affluent, mixed, or deprived catchment
+- School FSM vs area deprivation — divergence suggests selection or outreach
