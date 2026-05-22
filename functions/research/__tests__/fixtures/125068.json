@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125068,
     "label": "state-junior",
-    "capturedAt": "2026-05-06T00:32:54.547Z",
+    "capturedAt": "2026-05-19T21:35:57.053Z",
     "note": "KS2 only — no KS1 or KS4"
   },
   "input": "Earlswood Junior School",
@@ -919,14 +919,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 313,
+      "totalTransactions": 356,
       "postcodesQueried": 100,
-      "medianAllTypes": "£433,000",
+      "medianAllTypes": "£440,000",
       "byType": {
-        "Terraced": "£422,500",
-        "Semi-detached": "£520,000",
-        "Detached": "£655,000",
-        "Flat / Maisonette": "£266,000"
+        "Semi-detached": "£525,000",
+        "Terraced": "£420,000",
+        "Detached": "£600,000",
+        "Flat / Maisonette": "£265,000"
       },
       "source": "HM Land Registry Price Paid Data"
     },

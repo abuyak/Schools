@@ -45,7 +45,7 @@ const OUTPUT_CONSTRAINTS = `
 - When a topic has a colon label (e.g. "11+ mechanics:", "Timing:", "Upside:"), write the label as a plain text line (no leading -) and put the details as bullet sub-points on the following lines. Never merge a label and its content into a single bullet.
 - For any comparison table section, write the body as a markdown table using | col | col | syntax with a separator row of |---|---|.
 - Every section object MUST include a "flag" field set to exactly one of: "red", "green", or "none". Apply the traffic-light rules below. When in doubt, use "none".
-- **CRITICAL — Bullet points for observations:** Every Part A observation section (headings A3–A9, e.g. "A5. Observations") MUST use bullet-point format. Never write an A-section body as a prose paragraph. Each distinct finding, observation, or data point must be a separate "- " bullet. Group related bullets under bold-only bullet headers ("- **Theme name**"). A single paragraph of prose in an A-section is the most common quality failure.
+- **CRITICAL — Bullet points for observations:** Every Part A observation section (headings A2–A7 with "Observations" suffix, e.g. "A5. Observations") MUST use bullet-point format. Never write an A-section body as a prose paragraph. Each distinct finding, observation, or data point must be a separate "- " bullet. Group related bullets under bold-only bullet headers ("- **Theme name**"). A single paragraph of prose in an A-section is the most common quality failure.
 
 ## Traffic Light Rules
 
@@ -480,7 +480,7 @@ function splitColumns(line, minCols) {
   return cols.length >= 2 ? cols : [trimmed];
 }
 
-function normaliseC1Table(sections) {
+export function normaliseC1Table(sections) {
   for (const s of sections) {
     if (!s.heading?.startsWith('C1.')) continue;
     const body = s.body || '';
@@ -500,6 +500,7 @@ function normaliseC1Table(sections) {
 
       // Detect the C1 table header row
       if (/\bDimension\b/i.test(trimmed) && /\bEvidence\s*level\b/i.test(trimmed)) {
+        // Use the fixed line for the table, but keep original trimmed for header detection
         inTable = true;
         out.push('| Dimension | Evidence level | Notes |');
         out.push('|---|---|---|');
@@ -657,6 +658,58 @@ function interleaveVerdicts(partASections, call2Sections) {
   return [...result, ...bcSections];
 }
 
+/**
+ * Strip orphan observation sections (e.g. "A8. Observations" when only A1–A7
+ * data sections exist) and ensure every data section A2–A7 has a matching
+ * observation slot, inserting an empty placeholder if the AI omitted one.
+ */
+function enforceObservations(sections, partADataSections) {
+  const dataPrefixes = new Set(
+    partADataSections
+      .map(s => s.heading?.match(/^(A\d+)\./)?.[1])
+      .filter(Boolean)
+  );
+
+  // Work on a copy; preserve original order of ALL sections.
+  const result = [...sections];
+
+  // 1. Strip orphan observations (A-prefix observations with no matching data section)
+  for (let i = result.length - 1; i >= 0; i--) {
+    const h = result[i].heading ?? '';
+    const isObs = /^A\d+\./i.test(h) && /\bObservations?\b/i.test(h);
+    if (!isObs) continue;
+    const prefix = h.match(/^(A\d+)/)?.[1];
+    if (!prefix || !dataPrefixes.has(prefix)) {
+      result.splice(i, 1);
+    }
+  }
+
+  // 2. Insert placeholders for data sections A2–A7 that lack an observation
+  for (const prefix of [...dataPrefixes].sort((a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1)))) {
+    if (prefix === 'A1') continue;
+    const hasObs = result.some(s =>
+      /^A\d+\./i.test(s.heading ?? '') &&
+      /\bObservations?\b/i.test(s.heading ?? '') &&
+      s.heading?.startsWith(prefix + '.')
+    );
+    if (hasObs) continue;
+
+    // Find the last section with this prefix (should be the data section) and insert after it
+    let insertIdx = -1;
+    for (let i = 0; i < result.length; i++) {
+      if ((result[i].heading ?? '').startsWith(prefix + '.')) insertIdx = i + 1;
+    }
+    if (insertIdx < 0) insertIdx = result.length;
+    result.splice(insertIdx, 0, {
+      heading: `${prefix}. Observations`,
+      body: '_Analysis not available for this section._',
+      flag: 'none',
+    });
+  }
+
+  return result;
+}
+
 // ── In-memory job store for async Call 2 ────────────────────────────────────
 
 const ASYNC_TTL_MS = 120_000;  // drop jobs older than 2 minutes
@@ -778,7 +831,12 @@ async function processCall2(job, event, body, t0) {
     const call2Searches = (call2Response.output ?? []).filter(i => i.type === 'web_search_call').map(i => i.action?.query ?? null).filter(Boolean);
     const deferredPartA = partASections.filter(s => s._deferred);
     const visiblePartA = partASections.filter(s => !s._deferred);
-    let finalSections = normaliseC1Table(tagPartLabels(interleaveVerdicts([...visiblePartA, ...deferredPartA], bcSections)));
+    let finalSections = normaliseC1Table(tagPartLabels(
+      enforceObservations(
+        interleaveVerdicts([...visiblePartA, ...deferredPartA], bcSections),
+        partASections
+      )
+    ));
 
     if (Object.keys(partAFlags).length) {
       for (const s of finalSections) {
@@ -1192,7 +1250,12 @@ export const handler = async (event) => {
 
     // ── Step 5: Assemble and return ───────────────────────────────────────────
     // Part A sections already have _partLabel on A1; tag B1 and C1 from Call 2.
-    let finalSections = normaliseC1Table(tagPartLabels(interleaveVerdicts(partASections, bcSections)));
+    let finalSections = normaliseC1Table(tagPartLabels(
+      enforceObservations(
+        interleaveVerdicts(partASections, bcSections),
+        partASections
+      )
+    ));
 
     // Apply deterministic flag overrides to AI-generated verdict sections.
     // partAFlags keys are like 'A5. Academic Performance'; verdict headings

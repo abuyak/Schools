@@ -105,11 +105,37 @@ One paragraph. Copy the official school name and local authority verbatim from t
 
 ## Part A — Official Record
 
-*Everything in Part A comes from the pre-fetched government data block. Show the data, then add your verdict. Do not search the web for any field present in the block.*
+Work through the pre-fetched block section by section. For each numbered section A2–A7 below:
+
+1. **Find the matching heading** in the pre-fetched block (e.g. `### A2. Inspection Outcomes`)
+2. **Present the data** — copy tables verbatim, render bullet lists as shown
+3. **Write your observations** as a separate section with heading `## A{N}. Observations`
+
+Do not copy data from one section into another section's observations. Each observation section discusses ONLY the data from its matching section.
+
+**CRITICAL — exact section headings, in order:**
+- `## A1. School Identity`
+- `## A2. Inspection Outcomes`
+- `## A2. Observations`
+- `## What the School Needs to Improve`
+- `## A3. Academic Performance`
+- `## A3. Observations`
+- `## A4. Intake & Cohort`
+- `## A4. Observations`
+- `## A5. Absence & Engagement`
+- `## A5. Observations`
+- `## A6. Financial Health`
+- `## A6. Observations`
+- `## A7. Area Context`
+- `## A7. Observations`
+
+No other Part A headings. Do not skip any A2–A7 Observations section.
 
 ---
 
-### **A1. School Identity**
+### A1. School Identity
+
+Heading: `## A1. School Identity`
 
 Populate this table entirely from the pre-fetched block's School Identity section. Do not use the school name or location from the parent's question — copy the values exactly as they appear in the pre-fetched block.
 
@@ -127,46 +153,55 @@ One sentence confirming the school from the pre-fetched block. If the pre-fetche
 
 ---
 
-### **A2. Ofsted Inspection Grades**
+### A2. Inspection Outcomes
 
-State: inspection date, framework used, safeguarding status (Met / Not Met).
+The pre-fetched block has a section headed `### A2. Inspection Outcomes`. Copy its content: overall grade, date, sub-grades, framework. For independent schools, note ISI vs Ofsted. Include the pupil-experience narrative as bullet points.
 
-**New framework (Nov 2025 onwards):** show all 7 area grades — Achievement · Attendance and Behaviour · Curriculum and Teaching · Inclusion · Leadership and Governance · Personal Development and Wellbeing · Post-16 Provision (if applicable). Scale: Exceptional → Strong → Expected → Needs Attention → Urgent Improvement.
+Then generate:
 
-**Old framework (pre-Nov 2025):** show overall grade + sub-grades — Quality of Education · Behaviour and Attitudes · Personal Development · Leadership and Management · Sixth Form (if applicable).
+### A2. Observations
 
-**Verdict:** one sentence — note any sub-grade weaker than the overall, or confirm a clean sweep.
+Heading: `## A2. Observations` · Flag: `green` if Outstanding/Exceptional, `red` if RI/Inadequate, else `none`
 
----
-
-### **A3. What It's Like to Be a Pupil**
-
-**Do not quote verbatim.** Summarise the Ofsted inspector narrative from the pre-fetched block in 4–6 bullet points covering:
-- Overall atmosphere and culture
-- How pupils behave and relate to each other and staff
-- How SEND pupils are supported
-- Enrichment and wider opportunities
-- Any notable strengths or concerns from the inspector's language
-
-*The narrative has already been extracted from the Ofsted PDF — do not re-fetch it.*
+What to write: 3–4 bullets analysing the inspection data you just presented above. Cover overall grade meaning, any sub-grade weaker than overall, inspection recency, ISI framework if applicable.
 
 ---
 
-### **A4. What the School Needs to Improve**
+### What the School Needs to Improve
 
-The pre-fetched block includes the inspectors' "What the school needs to do" or "Next steps" section, extracted directly from the Ofsted PDF. It appears under the heading **"What the school needs to improve"** in the pre-fetched block.
+The pre-fetched block has a section headed `### What the School Needs to Improve`. Copy every requirement verbatim. Do not paraphrase.
 
-**Reproduce every improvement requirement verbatim — exactly as written, whether formatted as bullet points, numbered items, or prose paragraphs.** Do not soften, paraphrase, or summarise. Do not omit any requirement.
+Flag inline: `red` for formal action points or sub-grade RI/Inadequate, else `green`.
 
-If the pre-fetched block shows only "The school needs to do the following:" without bullet points, it means the PDF was parsed but the bullets could not be extracted (they may be in a table or image layer). In this case: state that improvement requirements are present but could not be extracted, and link directly to the full Ofsted report PDF.
-
-If the section is genuinely absent from the pre-fetched block, say so and link to the full Ofsted report PDF so parents can check directly.
-
-**Observations:** flag any requirement that signals a serious or systemic concern.
+No Observations section — the text speaks for itself.
 
 ---
 
-### **A5. Pupil Census**
+### A3. Academic Performance
+
+The pre-fetched block has a section headed `### A3. Academic Performance`. Copy all tables verbatim — do not reorder or reformat columns. Include every Key Stage sub-section present.
+
+Then generate:
+
+### A3. Observations
+
+Heading: `## A3. Observations` · Flag: `green` if well above national, `red` if well below, else `none`
+
+What to write: 3–4 bullets about the academic tables you just presented. Attainment vs national/LA, progress scores, multi-year trend, sixth form if present.
+
+---
+
+### A4. Intake & Cohort
+
+The pre-fetched block has a section headed `### A4. Intake & Cohort`. Copy the pupil-numbers table and ethnicity table verbatim.
+
+Then generate:
+
+### A4. Observations
+
+Heading: `## A4. Observations` · Flag: `red` if FSM >35% primary/30% secondary or EHC >6%, else `none`
+
+What to write: 2–3 bullets about the census data you just presented. FSM rate vs national, SEN/EHC profile, school ethnicity vs area ethnicity (A7).
 
 Table with full names, not abbreviations:
 
@@ -190,34 +225,57 @@ Table with full names, not abbreviations:
 | Other | |
 | Not stated | |
 
-**Observations:** flag anything notably above or below average. Note whether a resourced provision or SEND unit is confirmed. Note any significant difference between pupil ethnicity and the surrounding area ethnicity (A9).
+### A4. Observations
+
+Heading: `## A4. Observations` · Flag: `red` if FSM >35% primary/30% secondary or EHC >6%, else `none`
+
+Bullet list, 2–3 bullets. Discuss ONLY census/intake data — do not mention inspection, academic results, absence, or finances here:
+- FSM rate vs national — what it says about intake
+- SEN/EHC profile — well-resourced or capacity concern?
+- School ethnicity vs area ethnicity gap (A7) if notable
 
 *Primary average roll ~280, secondary ~1,000.*
 
 ---
 
-### **A6. Academic Performance**
+### A5. Absence & Engagement
 
-**Reproduce the performance table(s) exactly as they appear in the pre-fetched block — do not reformat or reorder columns.** The pre-fetched block already contains formatted markdown tables. Copy each table verbatim, including the sub-section header (e.g. **Key Stage 4 (2024/25)**, **Key Stage 5 / 16–18 (2024/25)**), the column header row, the separator row, and all data rows. Do not condense, merge, or summarise the tables.
+The pre-fetched block has a section headed `### A5. Absence & Engagement`. Copy the absence table verbatim.
 
-If the pre-fetched block contains a **Key Stage 5 / 16–18** section (sixth form), reproduce it as a separate sub-table with its own header. Do not omit it.
+Then generate:
 
-**Verdict:** 2–3 sentences on overall strength, trends, and reliability (flag if cohort below 30 pupils or absent-from-tests above 5%). For schools with a sixth form, comment on sixth form performance separately.
+### A5. Observations
 
----
+Heading: `## A5. Observations` · Flag: `green` if <5% overall or <15% persistent, `red` if >8.6% or >23.3%
 
-### **A7. Absence**
+What to write: 2 bullets about the absence data you just presented. Overall absence vs national, persistent absence.
 
 | Metric | School | National avg |
 |---|---:|---:|
 | Overall absence | | 6.6% |
 | Persistent absence (missed 10%+ of sessions) | | 21.3% |
 
-**Observations:** flag if either is more than 2pp above national. Persistent absence above 25% is a meaningful concern.
+### A5. Observations
+
+Heading: `## A5. Observations` · Flag: `green` if <5% or persistent <15%, `red` if >8.6% or >23.3%
+
+Bullet list, 2 bullets. Discuss ONLY absence data — do not mention inspection, academic results, census, or finances here:
+- Overall absence vs national — gap matters >2pp
+- Persistent absence — the stronger signal
 
 ---
 
-### **A8. Financial Position and Staffing**
+### A6. Financial Health
+
+The pre-fetched block has a section headed `### A6. Financial Health`. Copy the financial data verbatim (summary + spending breakdown for state schools; "Not available" for independents; fees table if present).
+
+Then generate:
+
+### A6. Observations
+
+Heading: `## A6. Observations` · Flag: `red` if in-year deficit or QTS below comparator, else `none`
+
+What to write: 2–3 bullets about the financial data you just presented. Spend per pupil vs comparator, in-year balance, QTS%.
 
 Table:
 
@@ -229,26 +287,48 @@ Table:
 | Qualified Teacher Status (QTS) % | | |
 | Pupil:teacher ratio | | |
 
-**Observations:** flag negative in-year balance, reserves below one month's spend, spend per pupil far above comparators, or QTS% below comparator average — all can signal staffing instability.
+### A6. Observations
+
+Heading: `## A6. Observations` · Flag: `red` if in-year deficit or QTS below comparator, else `none`
+
+Bullet list, 2–3 bullets. Discuss ONLY financial data — do not mention inspection, academic results, census, or absence here:
+- Spend per pupil vs comparator
+- In-year balance — flag deficit explicitly
+- QTS% and staffing stability
 
 *State schools only. Note if FBIT data not available.*
 
 ---
 
-### **A9. Area Profile**
+### A7. Area Context
+
+The pre-fetched block has a section headed `### A7. Area Context`. Copy the area data verbatim (bullets or table as shown).
+
+Then generate:
+
+### A7. Observations
+
+Heading: `## A7. Observations` · Flag: `red` if IMD 1–3 or income <£35k, else `none`
+
+What to write: 2–3 bullets about the area data you just presented. IMD decile, income/property prices, school FSM vs area deprivation.
 
 | Metric | Value |
 |---|---|
 | Household income (mean gross, MSOA) | |
 | Median property price (~800m radius) | |
-| Deprivation — Index of Multiple Deprivation (IMD) decile (1=most deprived, 10=least) | |
+| Deprivation (IMD decile, 1=most deprived) | |
 | Ethnicity breakdown | |
 | Qualifications (% degree-level or above) | |
 | Occupation (% professional/managerial) | |
 
-**Observations:** one short paragraph — income, housing, community mix, deprivation context, and what this means for the school's intake.
+### A7. Observations
 
-**Flag rule:** Set red if IMD decile is 1–3 or mean household income is below £35,000 — these signal a genuinely deprived catchment and must be called out in C2 Cons even if the school performs well above average for its context.
+Heading: `## A7. Observations` · Flag: `red` if IMD 1–3 or income <£35k, else `none`
+
+Bullet list, 2–3 bullets. Discuss ONLY area/context data — do not mention inspection, academic results, census, absence, or finances here:
+- IMD decile and what it means for intake
+- Income and property prices — catchment context
+- School FSM vs area deprivation — divergence suggests selection or outreach
 
 ---
 

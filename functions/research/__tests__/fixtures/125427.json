@@ -2,7 +2,7 @@
   "_meta": {
     "urn": 125427,
     "label": "independent-secondary",
-    "capturedAt": "2026-05-06T00:33:44.354Z",
+    "capturedAt": "2026-05-19T21:36:40.183Z",
     "note": "Independent secondary — fees, ISI, no DfE data"
   },
   "input": "Caterham School",
@@ -1110,14 +1110,14 @@
     "pricePaid": {
       "radiusM": 800,
       "yearsBack": 5,
-      "totalTransactions": 151,
+      "totalTransactions": 150,
       "postcodesQueried": 74,
-      "medianAllTypes": "£675,000",
+      "medianAllTypes": "£700,000",
       "byType": {
-        "Flat / Maisonette": "£312,500",
+        "Flat / Maisonette": "£310,000",
         "Detached": "£989,668",
-        "Semi-detached": "£679,950",
-        "Terraced": "£625,000"
+        "Semi-detached": "£699,950",
+        "Terraced": "£672,500"
       },
       "source": "HM Land Registry Price Paid Data"
     },
@@ -1130,7 +1130,25 @@
       "year": "FYE 2018",
       "source": "ONS Small Area Income Estimates"
     },
-    "imd": null,
+    "imd": {
+      "lsoaCode": "E01030828",
+      "year": "2025",
+      "imdScore": 4.66,
+      "imdRank": 31267,
+      "imdDecile": 10,
+      "subDomains": {
+        "Income": 10,
+        "Employment": 10,
+        "Education, Skills & Training": 10,
+        "Health & Disability": 9,
+        "Crime": 8,
+        "Barriers to Housing & Services": 4,
+        "Living Environment": 8
+      },
+      "population": 1460,
+      "populationYear": "2022",
+      "source": "MHCLG Indices of Multiple Deprivation 2025 via findthatpostcode.uk"
+    },
     "crystalRoof": {
       "qualifications": {
         "noQualifications": 8,
