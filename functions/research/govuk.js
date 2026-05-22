@@ -4361,28 +4361,353 @@ export function renderPartAComparison(schools) {
     });
   }
 
-  // A3 — Academic Performance
-  const a3Rows = [];
+  // A3 — Academic Performance (sub-sections vary by phase)
+  // Sub-section naming matches the wiremock: A3.1. Attainment 8, etc.
+
+  const buildTable3 = (rows) => {
+    return '| | ' + names.join(' | ') + ' |\n' +
+      '|---:|---:|---:|\n' +
+      rows.map(([label, fn]) => '| ' + label + ' | ' + schools.map(fn).join(' | ') + ' |').join('\n');
+  };
+
+  // ── KS2 (primary) sub-sections ──────────────────────────────────────────────
   if (hasKS2) {
-    a3Rows.push(['KS2 RWM expected %', s => val(() => fmtPct(nsField(s, 'PTRWM_EXP'))), () => nat2.PTRWM_EXP ? nat2.PTRWM_EXP + '%' : '—']);
-    a3Rows.push(['KS2 RWM higher %', s => val(() => fmtPct(nsField(s, 'PTRWM_HIGH'))), () => nat2.PTRWM_HIGH ? nat2.PTRWM_HIGH + '%' : '—']);
-    a3Rows.push(['Reading progress', s => { const v=s.performance?.KS2_23?.find(r=>r.variable==='READPROG_23')?.value; const b=s.performance?.KS2_23?.find(r=>r.variable==='READPROG_23_DESCR_23')?.value; return v ? v+' ('+(b||'—')+')' : '—'; }, '0']);
-    a3Rows.push(['Maths progress', s => { const v=s.performance?.KS2_23?.find(r=>r.variable==='MATPROG_23')?.value; const b=s.performance?.KS2_23?.find(r=>r.variable==='MATPROG_23_DESCR_23')?.value; return v ? v+' ('+(b||'—')+')' : '—'; }, '0']);
+    // A3.1 — Cohort
+    sections.push({
+      heading: 'A3.1. Cohort',
+      body: buildTable3([
+        ['Eligible cohort', s => val(() => nsField(s, 'TELIG'))],
+        ['% girls', s => val(() => fmtPct(nsField(s, 'PGELIG')))],
+        ['% boys', s => val(() => fmtPct(nsField(s, 'PBELIG')))],
+        ['% disadvantaged', s => val(() => fmtPct(nsField(s, 'PTFSM6CLA1A')))],
+        ['% EAL', s => val(() => fmtPct(nsField(s, 'PTEALGRP2')))],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.2 — Attainment (RWM)
+    sections.push({
+      heading: 'A3.2. Attainment — Reading, Writing & Maths',
+      body: buildTable4('National', [
+        ['% expected standard (RWM)', s => val(() => fmtPct(nsField(s, 'PTRWM_EXP'))), () => nat2.PTRWM_EXP ? nat2.PTRWM_EXP + '%' : '—'],
+        ['% higher standard (RWM)', s => val(() => fmtPct(nsField(s, 'PTRWM_HIGH'))), () => nat2.PTRWM_HIGH ? nat2.PTRWM_HIGH + '%' : '—'],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.3 — Scaled Scores
+    sections.push({
+      heading: 'A3.3. Scaled Scores',
+      body: buildTable4('National', [
+        ['Reading — avg scaled score', s => val(() => fmt(nsField(s, 'READ_AVERAGE'))), '105'],
+        ['Maths — avg scaled score', s => val(() => fmt(nsField(s, 'MAT_AVERAGE'))), '104'],
+        ['GPS — avg scaled score', s => val(() => fmt(nsField(s, 'GPS_AVERAGE'))), '105'],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.4 — Per-subject: Expected Standard
+    sections.push({
+      heading: 'A3.4. Per-subject Attainment — Expected Standard',
+      body: buildTable4('National', [
+        ['Reading', s => val(() => fmtPct(nsField(s, 'PTREAD_EXP'))), () => nat2.PTREAD_EXP ? nat2.PTREAD_EXP + '%' : '—'],
+        ['Writing (TA)', s => val(() => fmtPct(nsField(s, 'PTWRITTA_EXP'))), () => nat2.PTWRITTA_EXP ? nat2.PTWRITTA_EXP + '%' : '—'],
+        ['Maths', s => val(() => fmtPct(nsField(s, 'PTMAT_EXP'))), () => nat2.PTMAT_EXP ? nat2.PTMAT_EXP + '%' : '—'],
+        ['GPS', s => val(() => fmtPct(nsField(s, 'PTGPS_EXP'))), () => nat2.PTGPS_EXP ? nat2.PTGPS_EXP + '%' : '—'],
+        ['Science (TA)', s => val(() => fmtPct(nsField(s, 'PTSCITA_EXP'))), () => nat2.PTSCITA_EXP ? nat2.PTSCITA_EXP + '%' : '—'],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.5 — Per-subject: Higher Standard
+    sections.push({
+      heading: 'A3.5. Per-subject Attainment — Higher Standard',
+      body: buildTable4('National', [
+        ['Reading', s => val(() => fmtPct(nsField(s, 'PTREAD_HIGH'))), () => nat2.PTREAD_HIGH ? nat2.PTREAD_HIGH + '%' : '—'],
+        ['Writing (TA)', s => val(() => fmtPct(nsField(s, 'PTWRITTA_HIGH'))), () => nat2.PTWRITTA_HIGH ? nat2.PTWRITTA_HIGH + '%' : '—'],
+        ['Maths', s => val(() => fmtPct(nsField(s, 'PTMAT_HIGH'))), () => nat2.PTMAT_HIGH ? nat2.PTMAT_HIGH + '%' : '—'],
+        ['GPS', s => val(() => fmtPct(nsField(s, 'PTGPS_HIGH'))), () => nat2.PTGPS_HIGH ? nat2.PTGPS_HIGH + '%' : '—'],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.6 — Cohort Characteristics
+    sections.push({
+      heading: 'A3.6. Cohort Characteristics',
+      body: buildTable3([
+        ['% disadvantaged', s => val(() => fmtPct(nsField(s, 'PTFSM6CLA1A')))],
+        ['% EAL', s => val(() => fmtPct(nsField(s, 'PTEALGRP2')))],
+        ['% non-mobile', s => val(() => fmtPct(nsField(s, 'PTMOBN')))],
+        ['% SEN with EHC plan', s => val(() => fmtPct(nsField(s, 'PSENELE')))],
+        ['% SEN support', s => val(() => fmtPct(nsField(s, 'PSENELK')))],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.7 — Disadvantage Gap
+    sections.push({
+      heading: 'A3.7. Disadvantage Gap',
+      body: buildTable4('National', [
+        ['RWM expected — gap vs national (pp)', s => val(() => fmt(nsField(s, 'DIFFN_RWM_EXP'))), '0'],
+        ['RWM higher — gap vs national (pp)', s => val(() => fmt(nsField(s, 'DIFFN_RWM_HIGH'))), '0'],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.8 — Test Participation
+    const hasPart = schools.some(s => {
+      const v = nsField(s, 'PTREAD_AT');
+      return v != null && String(v).trim() !== '' && String(v).trim() !== '0';
+    });
+    if (hasPart) {
+      sections.push({
+        heading: 'A3.8. Test Participation',
+        body: buildTable3([
+          ['Reading — % absent from test', s => val(() => fmtPct(nsField(s, 'PTREAD_AT')))],
+          ['Maths — % absent from test', s => val(() => fmtPct(nsField(s, 'PTMAT_AT')))],
+          ['GPS — % absent from test', s => val(() => fmtPct(nsField(s, 'PTGPS_AT')))],
+        ]),
+        flag: 'none',
+      });
+    }
+
+    // A3.9 — Progress (KS1 to KS2)
+    sections.push({
+      heading: 'A3.9. Progress — KS1 to KS2',
+      body: buildTable4('National', [
+        ['Reading progress', s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_23_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }, '0'],
+        ['Writing progress', s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'WRITPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'WRITPROG_23_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }, '0'],
+        ['Maths progress', s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_23_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }, '0'],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.10 — Results Over Time (KS2)
+    sections.push({
+      heading: 'A3.10. Results Over Time — KS2',
+      body: buildTable4('National', [
+        ['RWM expected 2023', s => val(() => fmtPct(nsField(s, 'PTRWM_EXP_23'))), '60%'],
+        ['RWM expected 2024', s => val(() => fmtPct(nsField(s, 'PTRWM_EXP_24'))), '61%'],
+        ['RWM expected 2025', s => val(() => fmtPct(nsField(s, 'PTRWM_EXP'))), () => nat2.PTRWM_EXP ? nat2.PTRWM_EXP + '%' : '—'],
+        ['RWM higher 2023', s => val(() => fmtPct(nsField(s, 'PTRWM_HIGH_23'))), '8%'],
+        ['RWM higher 2024', s => val(() => fmtPct(nsField(s, 'PTRWM_HIGH_24'))), '8%'],
+        ['RWM higher 2025', s => val(() => fmtPct(nsField(s, 'PTRWM_HIGH'))), () => nat2.PTRWM_HIGH ? nat2.PTRWM_HIGH + '%' : '—'],
+      ]),
+      flag: 'none',
+    });
   }
+
+  // ── KS4 (secondary) sub-sections ────────────────────────────────────────────
   if (hasKS4) {
-    a3Rows.push(['Attainment 8', s => val(() => fmt(nsField(s, 'ATT8SCR'))), () => nat4.ATT8SCR != null ? String(nat4.ATT8SCR) : '—']);
-    a3Rows.push(['Progress 8', s => val(() => fmt(nsField(s, 'P8MEA'))), '0']);
-    a3Rows.push(['Grade 5+ Eng & Maths %', s => val(() => fmtPct(nsField(s, 'PTL2BASICS_95'))), () => nat4.PTL2BASICS_95 != null ? nat4.PTL2BASICS_95 + '%' : '—']);
-    a3Rows.push(['Grade 4+ Eng & Maths %', s => val(() => fmtPct(nsField(s, 'PTL2BASICS_94'))), () => nat4.PTL2BASICS_94 != null ? nat4.PTL2BASICS_94 + '%' : '—']);
-    a3Rows.push(['EBacc entry %', s => val(() => fmtPct(nsField(s, 'PTEBACC_E_PTQ_EE'))), () => nat4.PTEBACC_E_PTQ_EE != null ? nat4.PTEBACC_E_PTQ_EE + '%' : '—']);
-    a3Rows.push(['% sustained destination', s => val(() => fmtPct(nsField(s, 'OVERALL_DESTPER'))), '—']);
+    // A3.1 — Attainment 8
+    sections.push({
+      heading: 'A3.1. Attainment 8',
+      body: buildTable4('National', [
+        ['Attainment 8 score', s => val(() => fmt(nsField(s, 'ATT8SCR'))), () => nat4.ATT8SCR != null ? String(nat4.ATT8SCR) : '—'],
+        ['English element', s => val(() => fmt(nsField(s, 'ATT8SCRENG'))), () => nat4.ATT8_ENG != null ? String(nat4.ATT8_ENG) : '—'],
+        ['Maths element', s => val(() => fmt(nsField(s, 'ATT8SCRMAT'))), () => nat4.ATT8_MAT != null ? String(nat4.ATT8_MAT) : '—'],
+        ['EBacc element', s => val(() => fmt(nsField(s, 'ATT8SCREBAC'))), () => nat4.ATT8_EBACC != null ? String(nat4.ATT8_EBACC) : '—'],
+        ['Open element', s => val(() => fmt(nsField(s, 'ATT8SCROPEN'))), () => nat4.ATT8_OPEN != null ? String(nat4.ATT8_OPEN) : '—'],
+        ['Open — GCSE only', s => val(() => fmt(nsField(s, 'ATT8SCROPENG'))), () => nat4.ATT8_OPENG != null ? String(nat4.ATT8_OPENG) : '—'],
+        ['Open — non-GCSE', s => val(() => fmt(nsField(s, 'ATT8SCROPENNG'))), () => nat4.ATT8_OPENNG != null ? String(nat4.ATT8_OPENNG) : '—'],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.2 — Progress 8 (hidden for independents)
+    const anyState = schools.some(s => isState(s));
+    if (anyState) {
+      sections.push({
+        heading: 'A3.2. Progress 8',
+        body: buildTable4('National', [
+          ['Progress 8 score', s => isState(s) ? val(() => fmt(nsField(s, 'P8MEA'))) : '(indep)', '0'],
+        ]),
+        flag: 'none',
+      });
+    }
+
+    // A3.3 — Cohort Characteristics
+    sections.push({
+      heading: 'A3.3. Cohort Characteristics',
+      body: buildTable3([
+        ['Pupils at end of KS4', s => val(() => nsField(s, 'TPUP'))],
+        ['% disadvantaged', s => val(() => fmtPct(nsField(s, 'PTFSM6CLA1A')))],
+        ['% EAL', s => val(() => fmtPct(nsField(s, 'PTEALGRP2')))],
+        ['% non-mobile', s => val(() => fmtPct(nsField(s, 'PTNMOB')))],
+        ['% SEN with EHC plan', s => val(() => fmtPct(nsField(s, 'PSENE4')))],
+        ['% SEN total', s => val(() => fmtPct(nsField(s, 'PSEN_ALL4')))],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.4 — Grade 5+ and 4+ English & Maths
+    const hasGcse = schools.some(s => {
+      const v = nsField(s, 'PTL2BASICS_95');
+      return v != null && String(v).trim() !== '' && String(v).trim() !== '0.0' && String(v).trim() !== '0';
+    });
+    if (hasGcse) {
+      sections.push({
+        heading: 'A3.4. Grade 5+ and 4+ English & Maths',
+        body: buildTable4('National', [
+          ['% grade 5+ English & maths', s => val(() => fmtPct(nsField(s, 'PTL2BASICS_95'))), () => nat4.PTL2BASICS_95 != null ? nat4.PTL2BASICS_95 + '%' : '—'],
+          ['% grade 4+ English & maths', s => val(() => fmtPct(nsField(s, 'PTL2BASICS_94'))), () => nat4.PTL2BASICS_94 != null ? nat4.PTL2BASICS_94 + '%' : '—'],
+        ]),
+        flag: 'none',
+      });
+    }
+
+    // A3.5 — EBacc Entry by Subject
+    const hasEbacc = schools.some(s => {
+      const v = nsField(s, 'PTEBACC_E_PTQ_EE');
+      return v != null && String(v).trim() !== '' && String(v).trim() !== '0';
+    });
+    if (hasEbacc) {
+      sections.push({
+        heading: 'A3.5. EBacc Entry by Subject',
+        body: buildTable3([
+          ['English', s => val(() => fmtPct(nsField(s, 'PTEBACENG_E_PTQ_EE')))],
+          ['Maths', s => val(() => fmtPct(nsField(s, 'PTEBACMAT_E_PTQ_EE')))],
+          ['Science', s => val(() => fmtPct(nsField(s, 'PTEBAC2SCI_E_PTQ_EE')))],
+          ['Humanities', s => val(() => fmtPct(nsField(s, 'PTEBACHUM_E_PTQ_EE')))],
+          ['Languages', s => val(() => fmtPct(nsField(s, 'PTEBACLAN_E_PTQ_EE')))],
+        ]),
+        flag: 'none',
+      });
+    }
+
+    // A3.6 — Post-16 Destinations (state only)
+    if (anyState) {
+      const hasDest = schools.some(s => isState(s) && nsField(s, 'OVERALL_DESTPER') != null);
+      if (hasDest) {
+        sections.push({
+          heading: 'A3.6. Post-16 Destinations (2023 leavers)',
+          body: buildTable4('National', [
+            ['% sustained education or employment', s => val(() => fmtPct(nsField(s, 'OVERALL_DESTPER'))), '—'],
+            ['% in education', s => val(() => fmtPct(nsField(s, 'EDUCATIONPER'))), '—'],
+            ['% further education', s => val(() => fmtPct(nsField(s, 'FEPER'))), '—'],
+            ['% apprenticeships', s => val(() => fmtPct(nsField(s, 'APPRENPER'))), '—'],
+            ['% not sustained', s => val(() => fmtPct(nsField(s, 'NOT_SUSTAINEDPER'))), '—'],
+          ]),
+          flag: 'none',
+        });
+      }
+    }
+
+    // A3.7 — Entry Volumes
+    sections.push({
+      heading: 'A3.7. Entry Volumes',
+      body: buildTable3([
+        ['Avg KS4 entries per pupil', s => val(() => fmt(nsField(s, 'TAVENT_E_3NG_PTQ_EE')))],
+        ['Avg GCSE entries per pupil', s => val(() => fmt(nsField(s, 'TAVENT_G_PTQ_EE')))],
+        ['% entering multiple languages', s => val(() => fmtPct(nsField(s, 'PTMULTILAN_E')))],
+        ['% entering triple science', s => val(() => fmtPct(nsField(s, 'PTTRIPLESCI_E')))],
+        ['% achieving any qualification', s => val(() => fmtPct(nsField(s, 'PTANYQ_PTQ_EE')))],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.8 — EBacc Subject Achievement (9-4 and 9-5)
+    const hasEbaccAch = schools.some(s => {
+      const v = nsField(s, 'PTEBACENG_95');
+      return v != null && String(v).trim() !== '' && String(v).trim() !== '0';
+    });
+    if (hasEbaccAch) {
+      sections.push({
+        heading: 'A3.8. EBacc Subject Achievement',
+        body: '| Category | ' + names.join(' 9-5 | ') + ' 9-5 | National 9-5 | ' + names.join(' 9-4 | ') + ' 9-4 | National 9-4 |\n' +
+          '|---:|---:|---:|---:|---:|---:|---:|\n' +
+          ['English', 'Maths', 'Science', 'Humanities', 'Languages'].map(sub => {
+            const eng95 = 'EBACC_' + sub.toUpperCase().slice(0,3) + '_95';
+            const eng94 = 'EBACC_' + sub.toUpperCase().slice(0,3) + '_94';
+            const v95 = sub === 'English' ? 'PTEBACENG_95' : sub === 'Maths' ? 'PTEBACMAT_95' : sub === 'Science' ? 'PTEBAC2SCI_95' : sub === 'Humanities' ? 'PTEBACHUM_95' : 'PTEBACLAN_95';
+            const v94 = sub === 'English' ? 'PTEBACENG_94' : sub === 'Maths' ? 'PTEBACMAT_94' : sub === 'Science' ? 'PTEBAC2SCI_94' : sub === 'Humanities' ? 'PTEBACHUM_94' : 'PTEBACLAN_94';
+            return '| ' + sub + ' | ' +
+              schools.map(s => val(() => fmtPct(nsField(s, v95))) ?? '—').join(' | ') + ' | ' +
+              (nat4[eng95] != null ? nat4[eng95] + '%' : '—') + ' | ' +
+              schools.map(s => val(() => fmtPct(nsField(s, v94))) ?? '—').join(' | ') + ' | ' +
+              (nat4[eng94] != null ? nat4[eng94] + '%' : '—') + ' |';
+          }).join('\n'),
+        flag: 'none',
+      });
+    }
+
+    // A3.9 — Results Over Time (KS4)
+    sections.push({
+      heading: 'A3.9. Results Over Time — KS4',
+      body: buildTable4('National', [
+        ['Attainment 8 (2023)', s => val(() => fmt(nsField(s, 'ATT8SCR_PREV2'))), '—'],
+        ['Attainment 8 (2024)', s => val(() => fmt(nsField(s, 'ATT8SCR_PREV'))), '—'],
+        ['Attainment 8 (2025)', s => val(() => fmt(nsField(s, 'ATT8SCR'))), () => nat4.ATT8SCR != null ? String(nat4.ATT8SCR) : '—'],
+      ].concat(anyState ? [
+        ['Progress 8 (2023)', s => val(() => fmt(nsField(s, 'P8MEA_PREV2'))), '0'],
+        ['Progress 8 (2024)', s => val(() => fmt(nsField(s, 'P8MEA_PREV'))), '0'],
+        ['Progress 8 (2025)', s => val(() => fmt(nsField(s, 'P8MEA'))), '0'],
+        ['Grade 5+ EM (2023)', s => val(() => fmtPct(nsField(s, 'PTL2BASICS_95_PREV2'))), '—'],
+        ['Grade 5+ EM (2024)', s => val(() => fmtPct(nsField(s, 'PTL2BASICS_95_PREV'))), '—'],
+        ['Grade 5+ EM (2025)', s => val(() => fmtPct(nsField(s, 'PTL2BASICS_95'))), () => nat4.PTL2BASICS_95 != null ? nat4.PTL2BASICS_95 + '%' : '—'],
+      ] : [])),
+      flag: 'none',
+    });
+
+    // A3.10 — Subjects Entered (KS4)
+    if (schools.some(s => s.subjectEntries && s.subjectEntries.length)) {
+      const topA = (schools[0]?.subjectEntries ?? []).slice(0, 8);
+      const topB = (schools[1]?.subjectEntries ?? []).slice(0, 8);
+      if (topA.length || topB.length) {
+        const allNames = new Set([...topA.map(e => e.subject), ...topB.map(e => e.subject)]);
+        const rows = [...allNames].slice(0, 12).map(sub => {
+          const a = topA.find(e => e.subject === sub);
+          const b = topB.find(e => e.subject === sub);
+          return '| ' + sub + ' | ' +
+            (a ? a.entries + ' entries' + (a.grade7PlusPct != null ? ' (' + a.grade7PlusPct + '% 7+)' : '') : '—') + ' | ' +
+            (b ? b.entries + ' entries' + (b.grade7PlusPct != null ? ' (' + b.grade7PlusPct + '% 7+)' : '') : '—') + ' |';
+        });
+        sections.push({
+          heading: 'A3.10. Subjects Entered — KS4',
+          body: '| Subject | ' + names.join(' | ') + ' |\n' +
+            '|---:|---:|---:|\n' + rows.join('\n'),
+          flag: 'none',
+        });
+      }
+    }
   }
+
+  // ── KS5 (sixth form) sub-sections ────────────────────────────────────────────
   if (hasKS5) {
-    a3Rows.push(['A-level avg grade', s => val(() => nsField(s, 'TALLPPEGRD_ALEV_1618')), () => nat5.AVG_GRADE ?? '—']);
-    a3Rows.push(['A-level progress (VA)', s => val(() => fmt(nsField(s, 'VA_INS_ALEV'))), '0']);
-    a3Rows.push(['% to higher education', s => val(() => fmtPct(nsField(s, 'TOT_HEPER'))), '—']);
+    // A3.11 — A-level Attainment
+    sections.push({
+      heading: 'A3.11. A-level Attainment',
+      body: buildTable4('National', [
+        ['A-level students', s => val(() => nsField(s, 'TALLPUP_ALEV_1618')), '—'],
+        ['Average A-level grade', s => val(() => nsField(s, 'TALLPPEGRD_ALEV_1618')), () => nat5.AVG_GRADE ?? '—'],
+        ['Average A-level points', s => val(() => fmt(nsField(s, 'TALLPPE_ALEV_1618'))), () => nat5.AVG_PTS != null ? String(nat5.AVG_PTS) : '—'],
+        ['Best 3 A-levels — grade', s => val(() => nsField(s, 'TB3PTSE_GRD')), '—'],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.12 — A-level Progress
+    sections.push({
+      heading: 'A3.12. A-level Progress',
+      body: buildTable4('National', [
+        ['Progress score (VA)', s => val(() => fmt(nsField(s, 'VA_INS_ALEV'))), '0'],
+        ['Progress band', s => val(() => nsField(s, 'PROGRESS_BAND_ALEV')), '—'],
+      ]),
+      flag: 'none',
+    });
+
+    // A3.14 — Facilitating Subjects & Destinations
+    sections.push({
+      heading: 'A3.14. Facilitating Subjects & Destinations',
+      body: buildTable4('National', [
+        ['% AAB in ≥2 facilitating subjects', s => val(() => fmtPct(nsField(s, 'PTAAB_2FAC'))), '—'],
+        ['% achieving advanced maths', s => val(() => fmtPct(nsField(s, 'L3M_PER'))), () => nat5.ADV_MATHS != null ? nat5.ADV_MATHS + '%' : '—'],
+        ['% to higher education', s => val(() => fmtPct(nsField(s, 'TOT_HEPER'))), '—'],
+        ['% to any sustained destination', s => val(() => fmtPct(nsField(s, 'ALL_PROGRESSED'))), '—'],
+      ]),
+      flag: 'none',
+    });
   }
-  if (a3Rows.length) sections.push({ heading: pa('A3'), body: buildTable4('National', a3Rows), flag: 'none' });
 
   // A4 — Intake & Cohort (available for all schools including independents)
   sections.push({
@@ -4435,9 +4760,16 @@ export function renderPartAComparison(schools) {
     });
   }
 
-  
+
   // ── Append deterministic analysis to each table ──────────────────────────
-  for (const s of sections) {
+  // Pre-scan: find the last A3.x sub-section so we only append the analysis there
+  let lastA3Idx = -1;
+  for (let i = sections.length - 1; i >= 0; i--) {
+    if (/^A3\.\d+\./.test(sections[i].heading || '')) { lastA3Idx = i; break; }
+  }
+
+  for (let i = 0; i < sections.length; i++) {
+    const s = sections[i];
     const h = s.heading || '';
     let analysis = '';
 
@@ -4461,7 +4793,8 @@ export function renderPartAComparison(schools) {
       }
     }
 
-    if (h.startsWith('A3.')) {
+    // Only append A3 analysis to the last sub-section (before A3 Observations)
+    if (i === lastA3Idx) {
       // Compare Attainment 8 (secondary) or KS2 RWM (primary)
       const getVal = (s, v) => { const r = _nsField(s, v); return r != null ? parseFloat(String(r).replace(/%/g,'')) : null; };
       const a8a = getVal(schools[0], 'ATT8SCR'), a8b = getVal(schools[1], 'ATT8SCR');

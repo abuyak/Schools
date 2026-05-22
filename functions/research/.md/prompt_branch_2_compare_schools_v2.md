@@ -37,61 +37,82 @@ The user already received a quick verdict from Call 1. Your job is the full evid
 
 **Always use the official school names from the pre-fetched block. Never use the user's original spelling.**
 
-**Traffic-light flags:** `"green"` if one school clearly wins this dimension, `"none"` if too close or no data.
+Your job is to write analytical observations for sections A2 through A7. Each observation section analyses the data from the matching pre-fetched heading and compares the two schools. The correct output heading is given in each instruction — use it exactly.
 
-Your job is to write analytical observations for sections A2 through A7. For each, produce a bullet-point list (3–5 bullets) that analyses what the data shows and which school wins.
+**Data sections you will analyse:** Each corresponding data section in the pre-fetched block is headed `### A{N}. {Name}`. Read that section, then write your comparison observations under the output heading specified below.
 
-**Traffic-light flags:** `"green"` if one school clearly wins this dimension (name the winner), `"none"` if too close to call or insufficient data. Never use `"red"`.
+**Flag rules:**
+- `"green"` if one school clearly wins this dimension (name the winner)
+- `"none"` if too close to call, no clear signal, or insufficient data
+- Never use `"red"` — the server handles red flags
+
+---
 
 ### A2. Observations
 
-Heading: `## A2. Observations`
-Format: Bullet list (`- `). Comment on the inspection grades table:
-- Which school has the stronger inspection outcome and what the gap means
-- Any notable recency difference (inspection dates)
-- For independent schools: note if ISI vs Ofsted
+**Analyse this data:** The inspection section in the pre-fetched block, headed `### A2. Inspection Outcomes`. It contains Ofsted/ISI grades and inspection dates for both schools.
+**Output heading:** `## A2. Observations`
+
+Bullet-point list, 3–4 bullets:
+- Which school has the stronger inspection grade and what the gap means
+- Any sub-grade weaker than overall for either school — call it out
+- Inspection recency — note if either inspection is >5 years old
+- For ISI vs Ofsted: note frameworks are not directly comparable
 
 ### A3. Observations
 
-Heading: `## A3. Observations`
-Format: Bullet list (`- `). Comment on the academic performance table:
-- Overall attainment — which school leads and by how much (use exact numbers)
-- Progress scores if present — direction and significance
-- Multi-year trend or cohort size caveat if notable
-- For secondary: comment on Progress 8 and Attainment 8 separately
+**Analyse this data:** The academic performance sections in the pre-fetched block, headed `### A3.1` through `### A3.17`. They contain Attainment 8, Progress 8, grade thresholds, EBacc, destinations, entry volumes, results over time, and (if sixth forms present) A-level attainment and progress.
+**Output heading:** `## A3. Observations`
+
+Bullet-point list, 4–6 bullets:
+- Overall attainment — which school leads on Attainment 8 / KS2 RWM and by how much (use exact numbers)
+- Progress scores — Progress 8 or VA direction and significance for each school; disadvantage gap if present
+- Grade thresholds — 5+ / 4+ English & Maths comparison
+- Standout subjects — which school excels in what areas (from A3.10 / A3.17 subjects tables)
+- Multi-year trend from results-over-time tables (A3.9 / A3.10 / A3.16)
+- KS5 if present: A-level grade and progress comparison
 
 ### A4. Observations
 
-Heading: `## A4. Observations`
-Format: Bullet list (`- `). Comment on the intake & cohort table:
-- How FSM and EAL compare to national norms and what they imply
-- Whether SEN/EHC rates suggest well-resourced provision
-- Independent schools: FSM near 0% — ignore
+**Analyse this data:** The intake & cohort section in the pre-fetched block, headed `### A4. Intake & Cohort`. It contains pupil census data — FSM, EAL, SEN, EHC rates.
+**Output heading:** `## A4. Observations`
+
+Bullet-point list, 2–3 bullets:
+- Compare FSM rates — which school has a more disadvantaged intake and what that means
+- SEN/EHC profile comparison — which school has higher learning support demand
+- If one school is selective/admissions-criteria-based, note the selection effect on intake
+- For independent schools: FSM is always near 0% — ignore FSM entirely
 
 ### A5. Observations
 
-Heading: `## A5. Observations`
-Format: Bullet list (`- `). Comment on the absence table:
-- Which school has better attendance and whether the gap matters
-- Persistent absence is the stronger signal
-- Skip for independent schools
+**Analyse this data:** The absence section in the pre-fetched block, headed `### A5. Absence & Engagement`. It contains overall absence % and persistent absence % vs national.
+**Output heading:** `## A5. Observations`
+
+Bullet-point list, 2 bullets:
+- Compare overall absence — which school has better attendance and whether the gap matters (>2pp)
+- Persistent absence comparison — the stronger signal
+- For independent schools: note no DfE absence data — ask school directly
 
 ### A6. Observations
 
-Heading: `## A6. Observations`
-Format: Bullet list (`- `). Comment on the financial health table:
-- Spend per pupil vs comparator
-- In-year balance — flag deficit explicitly
-- QTS% relative to comparators
-- Skip for independent schools
+**Analyse this data:** The financial section in the pre-fetched block, headed `### A6. Financial Health`. It contains spend per pupil, in-year balance, QTS%, and pupil:teacher ratio vs comparator.
+**Output heading:** `## A6. Observations`
+
+Bullet-point list, 2–3 bullets:
+- Compare spend per pupil — which school invests more
+- In-year balance — flag any deficit explicitly
+- QTS% and staffing comparison
+- For independent schools: FBIT not available — note this and move on
 
 ### A7. Observations
 
-Heading: `## A7. Observations`
-Format: Bullet list (`- `). Comment on the area context table:
-- IMD decile and what it means
-- Income profile — affluent, mixed, or deprived catchment
-- Skip if area data missing
+**Analyse this data:** The area section in the pre-fetched block, headed `### A7. Area Context`. It contains IMD decile, household income, property prices, qualifications, and occupation.
+**Output heading:** `## A7. Observations`
+
+Bullet-point list, 2–3 bullets:
+- Compare IMD deciles — which school operates in a more deprived area
+- Income and property price comparison — catchment affluence gap
+- Note if either school draws from a wider geography (selective/independent)
 
 ---
 

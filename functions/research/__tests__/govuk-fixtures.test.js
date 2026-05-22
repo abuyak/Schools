@@ -19,7 +19,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { buildSlimBlock, renderPartA, computeFlags } from '../govuk.js';
+import { buildSlimBlock, renderPartA, renderPartAComparison, computeFlags } from '../govuk.js';
 
 const __dir       = dirname(fileURLToPath(import.meta.url));
 const FIXTURES    = join(__dir, 'fixtures');
@@ -281,5 +281,198 @@ describe('renderPartA — section order contract', () => {
 
     });
   }
+
+});
+
+// ── renderPartAComparison — section structure contract ───────────────────────
+// Verifies that comparison tables are produced in the correct format with
+// A3 broken into sub-sections matching the wiremock spec.
+
+describe('renderPartAComparison — section structure', () => {
+
+  // Build comparison pairs from the fixture school registry.
+  // Each pair is two schools of the same type to test the comparison table layout.
+
+  const stateSecondaryA   = SCHOOLS.find(s => s.label === 'state-secondary');
+  const stateSecondaryB   = SCHOOLS.find(s => s.label === 'state-secondary-sixth');
+  const statePrimaryA     = SCHOOLS.find(s => s.label === 'state-primary');
+  const statePrimaryB     = SCHOOLS.find(s => s.label === 'state-junior');
+  const indepSecondaryA   = SCHOOLS.find(s => s.label === 'independent-secondary');
+  const indepSecondaryB   = SCHOOLS.find(s => s.label === 'independent-all-through');
+  const stateSecondary    = SCHOOLS.find(s => s.label === 'state-secondary');
+  const indepSecondary    = SCHOOLS.find(s => s.label === 'independent-secondary');
+
+  function loadPair(urnA, urnB) {
+    const a = loadFixture(urnA);
+    const b = loadFixture(urnB);
+    return (a && b) ? [a, b] : null;
+  }
+
+  describe('state secondary comparison (KS4 only)', () => {
+    let sections;
+    const pair = loadPair(stateSecondaryA?.urn, stateSecondaryB?.urn);
+
+    beforeAll(() => {
+      if (!pair) return;
+      sections = renderPartAComparison(pair);
+    });
+
+    test('fixtures loaded', () => {
+      if (!pair) console.warn('  ⚠  Skipping — pair fixtures missing');
+      expect(pair).not.toBeNull();
+    });
+
+    test('starts with A1. School Identity', () => {
+      if (!pair) return;
+      expect(sections[0].heading).toBe('A1. School Identity');
+    });
+
+    test('has A2. Inspection Outcomes', () => {
+      if (!pair) return;
+      const headings = sections.map(s => s.heading);
+      expect(headings).toContain('A2. Inspection Outcomes');
+    });
+
+    test('A3 subsections follow order: A3.1 through A3.9 (no KS5)', () => {
+      if (!pair) return;
+      const a3Headings = sections.map(s => s.heading).filter(h => /^A3\.\d+\./.test(h));
+      const nums = a3Headings.map(h => parseFloat(h.match(/A3\.(\d+)\./)?.[1] ?? '0'));
+      // Must start with A3.1
+      expect(nums[0]).toBe(1);
+      // Must be ascending
+      for (let i = 1; i < nums.length; i++) {
+        if (nums[i] <= nums[i-1]) throw new Error(`A3 sub-sections out of order: ${nums[i-1]} before ${nums[i]}`);
+      }
+    });
+
+    test('every A3 sub-section has heading matching A3.N. pattern', () => {
+      if (!pair) return;
+      for (const s of sections) {
+        if (s.heading?.startsWith('A3.')) {
+          expect(/^A3\.\d+\./.test(s.heading)).toBe(true);
+        }
+      }
+    });
+
+    test('side-by-side tables have valid markdown table separators', () => {
+      if (!pair) return;
+      const tableSections = sections.filter(s => s.body?.includes('|---'));
+      expect(tableSections.length).toBeGreaterThan(0);
+      for (const s of tableSections) {
+        const lines = s.body.split('\n');
+        const sepLine = lines.find(l => /^\|[-:| ]+\|/.test(l));
+        expect(sepLine).toBeDefined();
+        // Each column separator should have at least 3 dashes
+        const cols = sepLine.split('|').filter(c => c.trim());
+        expect(cols.length).toBeGreaterThanOrEqual(2);
+      }
+    });
+  });
+
+  describe('state primary comparison (KS2)', () => {
+    let sections;
+    const pair = loadPair(statePrimaryA?.urn, statePrimaryB?.urn);
+
+    beforeAll(() => {
+      if (!pair) return;
+      sections = renderPartAComparison(pair);
+    });
+
+    test('fixtures loaded', () => {
+      if (!pair) console.warn('  ⚠  Skipping — pair fixtures missing');
+      expect(pair).not.toBeNull();
+    });
+
+    test('A3 subsections include KS2-specific headings', () => {
+      if (!pair) return;
+      const headings = sections.map(s => s.heading);
+      expect(headings.some(h => /Reading.*Writing.*Maths/i.test(h))).toBe(true);
+      expect(headings.some(h => /Scaled Scores/i.test(h))).toBe(true);
+      expect(headings.some(h => /Progress/i.test(h))).toBe(true);
+    });
+
+    test('has A5 Absence section (state schools)', () => {
+      if (!pair) return;
+      const headings = sections.map(s => s.heading);
+      expect(headings).toContain('A5. Absence & Engagement');
+    });
+
+    test('has A6 Financial section (state schools)', () => {
+      if (!pair) return;
+      const headings = sections.map(s => s.heading);
+      expect(headings).toContain('A6. Financial Health');
+    });
+  });
+
+  describe('independent secondary comparison', () => {
+    let sections;
+    const pair = loadPair(indepSecondaryA?.urn, indepSecondaryB?.urn);
+
+    beforeAll(() => {
+      if (!pair) return;
+      sections = renderPartAComparison(pair);
+    });
+
+    test('fixtures loaded', () => {
+      if (!pair) console.warn('  ⚠  Skipping — pair fixtures missing');
+      expect(pair).not.toBeNull();
+    });
+
+    test('Progress 8 is hidden for independent schools', () => {
+      if (!pair) return;
+      const headings = sections.map(s => s.heading);
+      expect(headings.filter(h => h?.includes('Progress 8')).length).toBe(0);
+    });
+
+    test('A2 heading references ISI', () => {
+      if (!pair) return;
+      const a2 = sections.find(s => s.heading?.startsWith('A2.'));
+      expect(a2?.body).toContain('ISI');
+    });
+
+    test('A5 and A6 sections are absent for independent schools', () => {
+      if (!pair) return;
+      const headings = sections.map(s => s.heading);
+      expect(headings).not.toContain('A5. Absence & Engagement');
+      expect(headings).not.toContain('A6. Financial Health');
+    });
+  });
+
+  describe('state vs independent cross-type comparison', () => {
+    let sections;
+    const pair = loadPair(stateSecondary?.urn, indepSecondary?.urn);
+
+    beforeAll(() => {
+      if (!pair) return;
+      sections = renderPartAComparison(pair);
+    });
+
+    test('fixtures loaded', () => {
+      if (!pair) console.warn('  ⚠  Skipping — pair fixtures missing');
+      expect(pair).not.toBeNull();
+    });
+
+    test('Progress 8 table shows (indep) for independent school', () => {
+      if (!pair) return;
+      const p8 = sections.find(s => s.heading?.startsWith('A3.2.'));
+      if (p8) {
+        expect(p8.body).toContain('(indep)');
+      }
+    });
+
+    test('A4 table has independent FSM note', () => {
+      if (!pair) return;
+      const a4 = sections.find(s => s.heading?.startsWith('A4.'));
+      if (a4) {
+        expect(a4.body).toMatch(/indep|near 0%/i);
+      }
+    });
+
+    test('A5 is present (at least one state school has absence data)', () => {
+      if (!pair) return;
+      const headings = sections.map(s => s.heading);
+      expect(headings).toContain('A5. Absence & Engagement');
+    });
+  });
 
 });
