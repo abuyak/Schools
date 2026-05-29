@@ -302,12 +302,6 @@ describe('renderPartAComparison — section structure', () => {
   const stateSecondary    = SCHOOLS.find(s => s.label === 'state-secondary');
   const indepSecondary    = SCHOOLS.find(s => s.label === 'independent-secondary');
 
-  function loadPair(urnA, urnB) {
-    const a = loadFixture(urnA);
-    const b = loadFixture(urnB);
-    return (a && b) ? [a, b] : null;
-  }
-
   describe('state secondary comparison (KS4 only)', () => {
     let sections;
     const pair = loadPair(stateSecondaryA?.urn, stateSecondaryB?.urn);
@@ -472,6 +466,144 @@ describe('renderPartAComparison — section structure', () => {
       if (!pair) return;
       const headings = sections.map(s => s.heading);
       expect(headings).toContain('A5. Absence & Engagement');
+    });
+  });
+
+});
+
+// ── Parent View comparison — server-rendered table contract ──────────────────
+// Verifies the deterministic Parent View section is rendered correctly when
+// data is present, and absent when no school has parentView data.
+
+// ── Helper: build a comparison pair from fixture URNs ─────────────────────────
+function loadPair(urnA, urnB) {
+  const a = loadFixture(urnA);
+  const b = loadFixture(urnB);
+  return (a && b) ? [a, b] : null;
+}
+
+describe('renderPartAComparison — Parent View', () => {
+
+  const secA = SCHOOLS.find(s => s.label === 'state-secondary');
+  const secB = SCHOOLS.find(s => s.label === 'state-secondary-sixth');
+  const secondaryPair = loadPair(secA?.urn, secB?.urn);
+
+  describe('with parentView data present', () => {
+    let sections;
+    let pair;
+
+    beforeAll(() => {
+      if (!secondaryPair) return;
+      // Deep-clone so mock data doesn't leak into other tests
+      pair = secondaryPair.map(s => JSON.parse(JSON.stringify(s)));
+      pair[0].ofsted.parentView = {
+        totalResponses: 124, academicYear: '2024/2025',
+        wouldRecommend: 92, childHappy: 95, childSafe: 94,
+        wellBehaved: 88, bullyingHandled: 72, communication: 85,
+        concernsHandled: 78, bestInterests: 90, rightSupport: 87, sendSupport: 65
+      };
+      pair[1].ofsted.parentView = {
+        totalResponses: 89, academicYear: '2024/2025',
+        wouldRecommend: 78, childHappy: 93, childSafe: 88,
+        wellBehaved: 85, bullyingHandled: 65, communication: 80,
+        concernsHandled: 71, bestInterests: 86, rightSupport: 83, sendSupport: 58
+      };
+      sections = renderPartAComparison(pair);
+    });
+
+    test('fixtures loaded', () => {
+      if (!secondaryPair) console.warn('  ⚠  Skipping — pair fixtures missing');
+      expect(secondaryPair).not.toBeNull();
+    });
+
+    test('Parent View section exists', () => {
+      if (!secondaryPair) return;
+      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      expect(pv).toBeDefined();
+    });
+
+    test('heading includes academic year', () => {
+      if (!secondaryPair) return;
+      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      expect(pv.heading).toContain('2024/2025');
+    });
+
+    test('placed between A2 and A3 in section order', () => {
+      if (!secondaryPair) return;
+      const pvIdx = sections.findIndex(s => s.heading?.startsWith('Parent View'));
+      const a2Idx = sections.findIndex(s => s.heading?.startsWith('A2.'));
+      const a3Idx = sections.findIndex(s => s.heading?.startsWith('A3.'));
+      expect(pvIdx).toBeGreaterThan(a2Idx);
+      expect(pvIdx).toBeLessThan(a3Idx);
+    });
+
+    test('total responses is plain number (no % suffix)', () => {
+      if (!secondaryPair) return;
+      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      expect(pv.body).toContain('124');
+      expect(pv.body).not.toMatch(/124%/);
+    });
+
+    test('percentage values have % suffix', () => {
+      if (!secondaryPair) return;
+      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      expect(pv.body).toContain('92%');
+      expect(pv.body).toContain('95%');
+      expect(pv.body).toContain('93%');
+    });
+
+    test('below-threshold values are flagged', () => {
+      if (!secondaryPair) return;
+      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      // 78% < 80% threshold for "Would recommend"
+      expect(pv.body).toContain('78% ⚠️');
+      // 65% < 70% threshold for "Bullying dealt with well"
+      expect(pv.body).toContain('65% ⚠️');
+      // 71% < 75% threshold for "Concerns dealt with properly"
+      expect(pv.body).toContain('71% ⚠️');
+    });
+
+    test('above-threshold values are NOT flagged', () => {
+      if (!secondaryPair) return;
+      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      // 72% is above 70% threshold for bullying
+      expect(pv.body).not.toMatch(/72% ⚠️/);
+      // 92% is above 80% threshold for would recommend
+      expect(pv.body).not.toMatch(/92% ⚠️/);
+    });
+
+    test('footer explains threshold markers', () => {
+      if (!secondaryPair) return;
+      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      expect(pv.body).toMatch(/⚠️ = below threshold/);
+      expect(pv.body).toMatch(/Fewer than 20/);
+    });
+
+    test('both school names appear in header', () => {
+      if (!secondaryPair) return;
+      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      const nameA = pair[0].identity?.officialName;
+      const nameB = pair[1].identity?.officialName;
+      expect(pv.body).toContain(nameA.split(',')[0]); // first part of name
+      expect(pv.body).toContain(nameB.split(' ')[0]); // first word of name
+    });
+  });
+
+  describe('without parentView data', () => {
+    let sections;
+
+    beforeAll(() => {
+      if (!secondaryPair) return;
+      const clean = secondaryPair.map(s => JSON.parse(JSON.stringify(s)));
+      clean[0].ofsted.parentView = null;
+      clean[1].ofsted.parentView = null;
+      sections = renderPartAComparison(clean);
+    });
+
+    test('Parent View section is absent when no data', () => {
+      if (!secondaryPair) return;
+      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      expect(pv).toBeUndefined();
     });
   });
 

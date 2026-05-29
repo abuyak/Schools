@@ -96,6 +96,44 @@ Bullet list, 3–4 bullets:
 
 ---
 
+## Parent View (unnumbered, server-rendered)
+
+No Observations — the table speaks for itself. Deterministic server render.
+
+**Data source:** `fetchParentView(urn)` — Ofsted Parent View print page.
+
+Rendered only when at least one school has `ofsted.parentView` data. Independent schools skipped.
+
+```
+| | School A | School B |
+|---|---:|---:|
+| Total responses | {N} | {N} |
+| Would recommend this school | {X}% ⚠️ | {X}% |
+| My child is happy here | {X}% | {X}% |
+| My child feels safe | {X}% | {X}% ⚠️ |
+| Pupils are well behaved | {X}% | {X}% |
+| Bullying dealt with well | {X}% | {X}% ⚠️ |
+| School communicates well | {X}% | {X}% |
+| Concerns dealt with properly | {X}% | {X}% ⚠️ |
+| Acts in child's best interests | {X}% | {X}% |
+| Right support to learn | {X}% | {X}% |
+| SEND support | {X}% | {X}% |
+```
+
+⚠️ thresholds:
+- Would recommend: below 80%
+- Child feels safe: below 88%
+- Bullying dealt with well: below 70%
+- Concerns dealt with properly: below 75%
+
+Footer appended below table: `⚠️ = below threshold (...). Fewer than 20 responses = too thin to rely on.`
+
+Total responses shown as plain number (no % suffix). All other rows shown as percentages.
+
+Section heading: `Parent View` or `Parent View ({academicYear})` (e.g. `Parent View (2024/2025)`).
+
+---
+
 ## What the School Needs to Improve (unnumbered)
 
 Per-school, verbatim from Ofsted/ISI. Fallback: `_No improvement requirements stated._`
