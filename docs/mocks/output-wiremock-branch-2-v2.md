@@ -23,6 +23,16 @@ A6. Financial Health              ← server table
 A6. Observations                  ← AI bullets
 A7. Area Context                  ← server table
 A7. Observations                  ← AI bullets
+B1. Parent View                   ← AI reproduces pre-fetched table + commentary
+B2. Admissions                    ← AI from web search
+B3. Extracurricular & Clubs       ← AI from web search
+B4. What Parents Say              ← AI from web search
+B5. Where Pupils Go Next          ← AI from web search + pre-fetched destinations
+C1. Head-to-Head Verdict          ← AI table + paragraph
+C2. Which Child Thrives Where     ← AI per-school paragraph
+C3. Tradeoffs                     ← AI bullets
+C4. Best Next Move                ← AI bullets
+C5. Sources                       ← AI source list
 ```
 
 Observations are AI-written. Data tables are server-rendered (deterministic). Part A is interleaved: data table, then its observation section.
@@ -550,3 +560,165 @@ Bullet list, 2–3 bullets:
 - Compare IMD deciles — which school operates in a more deprived area
 - Income and property price comparison — catchment affluence gap
 - Note if either school draws from a wider geography (selective/independent)
+
+---
+
+## Part B — Independent Research
+
+All Part B sections are AI-generated from web search and pre-fetched data. No server-side rendering.
+
+### Part B rules
+- All sections are mandatory — do not skip any
+- Run all required searches before writing any B section
+- Use official school names from the pre-fetched block
+- If a search returns no useful results, say so clearly rather than fabricating
+
+---
+
+### B1. Parent View
+
+Heading: `## B1. Parent View` · Flag: `none`
+
+**Data source:** Pre-fetched block — the Ofsted section of each school's Detailed School Data.
+
+For each school, reproduce the Parent View table exactly as it appears in the pre-fetched block. Then write 2–3 sentences comparing the two schools' Parent View results.
+
+Thresholds (⚠️ flags already in the pre-fetched table):
+- Would recommend: below 80%
+- Child feels safe: below 88%
+- Bullying dealt with well: below 70%
+- Concerns dealt with properly: below 75%
+
+Total responses below 20 → note as too thin to rely on.
+
+If no Parent View data for either school, output: `_No Parent View data available for either school._`
+
+---
+
+### B2. Admissions
+
+Heading: `## B2. Admissions` · Flag: `none`
+
+**Data source:** Web search results 1, 2, 3.
+
+For each school, report:
+- Entry points (Nursery, Reception, 4+, 7+, 11+, sixth form)
+- Admissions criteria and oversubscription rules
+- Assessment format if selective
+- Sibling priority, catchment area, faith criteria
+- Oversubscription ratio if published
+- Next open day date and how to book
+
+Then 1–2 sentences comparing — which school is harder to get into.
+
+For independent schools: include fees, bursaries, scholarship details.
+
+Never guess contact details. Only cite what appears on the school's official website.
+
+---
+
+### B3. Extracurricular & Clubs
+
+Heading: `## B3. Extracurricular & Clubs` · Flag: `none`
+
+**Data source:** Web search result 4.
+
+For each school, report:
+- Sports offered
+- Arts, music, and drama
+- Academic clubs and enrichment
+- Other notable activities
+- Approximate number of clubs if stated
+
+1–2 sentences comparing — which school has broader opportunities.
+
+If a child description was provided, add one sentence on fit with the child's interests.
+
+---
+
+### B4. What Parents Say
+
+Heading: `## B4. What Parents Say` · Flag: `none`
+
+**Data source:** Web search result 5 (forum/review sites).
+
+Report positive and negative themes:
+- Recurring praise for each school
+- Concerns: prioritise safeguarding, SEN, staff turnover, bullying response, communication
+- Flag sudden leadership changes or significant events since last Ofsted
+
+If no substantive school-specific discussion found, say so clearly.
+
+---
+
+### B5. Where Pupils Go Next
+
+Heading: `## B5. Where Pupils Go Next` · Flag: `none`
+
+**Data source:** Pre-fetched destinations tables (A3.6, A3.11, A3.14) + web search 6 if data missing.
+
+**Primary schools:** report top secondary schools pupils move to.
+
+**Secondary schools:** report post-16 or university destinations. Compare the two — which has stronger outcomes.
+
+Note clearly if no destinations data is published.
+
+---
+
+## Part C — Verdict & Synthesis
+
+### C1. Head-to-Head Verdict
+
+Heading: `## C1. Head-to-Head Verdict` · Flag: `green` if clear winner, else `none`
+
+Table: `| Dimension | Winner | By how much |` — exactly 3 columns.
+
+Use these dimensions (populate from Parts A and B findings):
+| Dimension | Winner | By how much |
+|---|---|---|
+| Inspection | | |
+| Academic | | |
+| Intake / cohort | | |
+| Absence | | |
+| Financial | | |
+| Admissions | | |
+| Extracurricular | | |
+| Destinations | | |
+
+The final verdict paragraph goes BELOW the table, separated by a blank line. Never append it to the last table row. 3 sentences max.
+
+---
+
+### C2. Which Child Thrives Where
+
+Heading: `## C2. Which Child Thrives Where` · Flag: `none`
+
+One paragraph per school. Start with "[School A] suits a child who…" Be specific — never say "suits most children."
+
+---
+
+### C3. Tradeoffs
+
+Heading: `## C3. Tradeoffs` · Flag: `none`
+
+Bullet list, 2–3 bullets. What the parent gives up with each choice.
+
+---
+
+### C4. Best Next Move
+
+Heading: `## C4. Best Next Move` · Flag: `none`
+
+Bullet list, 3 items: Visit (open day dates or how to book), Check (admissions deadline and criteria), Compare (one or two nearby alternatives).
+
+---
+
+### C5. Sources
+
+Heading: `## C5. Sources` · Flag: `none`
+
+Two groups:
+- **Primary Sources** — school websites, Ofsted/ISI PDFs, GIAS, DfE performance pages (must have real URLs)
+- **Secondary Sources** — all other URLs from web search
+
+Every source must have a live URL. Do not list a source without its URL.

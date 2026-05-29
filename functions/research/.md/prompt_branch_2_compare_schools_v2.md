@@ -136,19 +136,20 @@ Do not write B1–B5 until you have search results.
 
 ### B1. Parent View
 
-**Parent View data is pre-fetched — it appears in the Ofsted section of each school's Detailed School Data block under "Ofsted Parent View".** Use it directly. Do not search for it.
+**CRITICAL — this section is about Parent View survey data only. Do NOT write pupil experience narrative here (that belongs in A2 Observations).**
 
-For each school, reproduce the Parent View table exactly as it appears in the pre-fetched block (all rows, percentages, and any ⚠️ flags). Then write 2–3 sentences comparing the two schools' Parent View results — call out any ⚠️ flagged rows explicitly.
+Heading: `## B1. Parent View` · Flag: `none`
 
-Thresholds (already applied in the pre-fetched tables — ⚠️ rows are already marked):
-- Would recommend: below 80%
-- Child feels safe: below 88%
-- Bullying dealt with well: below 70%
-- Concerns dealt with properly: below 75%
+**Parent View data is pre-fetched — it appears in the Ofsted section of each school's Detailed School Data block under "Ofsted Parent View".** Use it directly. Do not search for it. Do not describe the school's culture or atmosphere — that is pupil experience, not Parent View.
 
-Note the total number of responses per school — fewer than 20 means too thin to rely on.
+**Step 1: Reproduce the table.** For each school, copy the Parent View table exactly as it appears in the pre-fetched block — every row, every percentage, and every ⚠️ flag. Do not paraphrase. Do not convert to prose. The table format is non-negotiable.
 
-If the pre-fetched block shows no Parent View data for either school, note this and move on.
+**Step 2: Compare.** After both tables, write 2–3 sentences comparing the two schools' Parent View results. Call out any ⚠️ flagged rows explicitly — do not bury them. A ⚠️ on "Bullying dealt with well" or "Concerns dealt with properly" is a meaningful signal parents need to see.
+
+⚠️ thresholds (already applied in the pre-fetched tables):
+- Would recommend: below 80% | Child feels safe: below 88% | Bullying dealt with well: below 70% | Concerns dealt with properly: below 75%
+
+Note the total number of responses per school — fewer than 20 means too thin to rely on. If no Parent View data for either school, output `_No Parent View data available._` and move on.
 
 *"My child is happy" is high at almost all schools — do not cite it as a meaningful signal.*
 

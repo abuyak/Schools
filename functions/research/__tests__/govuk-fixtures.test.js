@@ -476,3 +476,65 @@ describe('renderPartAComparison — section structure', () => {
   });
 
 });
+
+// ── Branch 2 prompt section contract ─────────────────────────────────────────
+// Verifies that the prompt file specifies all expected Part B and Part C
+// sections. This is a contract test — the AI output must match these headings
+// for interleaveVerdicts and tagPartLabels to work correctly.
+
+const PART_B_HEADINGS = [
+  'B1. Parent View',
+  'B2. Admissions',
+  'B3. Extracurricular & Clubs',
+  'B4. What Parents Say',
+  'B5. Where Pupils Go Next',
+];
+
+const PART_C_HEADINGS = [
+  'C1. Head-to-Head Verdict',
+  'C2. Which Child Thrives Where',
+  'C3. Tradeoffs',
+  'C4. Best Next Move',
+  'C5. Sources',
+];
+
+describe('branch 2 prompt — section contract', () => {
+  const promptPath = join(__dir, '..', '.md', 'prompt_branch_2_compare_schools_v2.md');
+  let promptText;
+
+  beforeAll(() => {
+    promptText = existsSync(promptPath) ? readFileSync(promptPath, 'utf8') : '';
+  });
+
+  test('prompt file exists', () => {
+    expect(promptText.length).toBeGreaterThan(100);
+  });
+
+  for (const heading of PART_B_HEADINGS) {
+    test(`prompt specifies "${heading}" in output schema`, () => {
+      const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      expect(promptText).toMatch(new RegExp(escaped));
+    });
+  }
+
+  for (const heading of PART_C_HEADINGS) {
+    test(`prompt specifies "${heading}" in output schema`, () => {
+      const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      expect(promptText).toMatch(new RegExp(escaped));
+    });
+  }
+
+  test('prompt defines web search queries per section', () => {
+    expect(promptText).toMatch(/admissions criteria/);
+    expect(promptText).toMatch(/open day/);
+    expect(promptText).toMatch(/clubs activities extracurricular/);
+  });
+
+  test('prompt defines anti-fabrication rule', () => {
+    expect(promptText).toMatch(/fabrication/i);
+  });
+
+  test('prompt references pre-fetched data as ground truth', () => {
+    expect(promptText).toMatch(/pre-fetched/);
+  });
+});

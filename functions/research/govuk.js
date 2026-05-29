@@ -3999,8 +3999,8 @@ function buildComparisonBlock(schools) {
   if (hasKS2) {
     rows.push(nsRow('KS2 RWM expected %', 'PTRWM_EXP', '%'));
     rows.push(nsRow('KS2 RWM higher %', 'PTRWM_HIGH', '%'));
-    rows.push(['Reading progress',  s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_23_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }]);
-    rows.push(['Maths progress',    s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_23')?.value;   const b = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_23_DESCR_23')?.value;   return v != null ? v + ' (' + (b || '—') + ')' : '—'; }]);
+    rows.push(['Reading progress',  s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }]);
+    rows.push(['Maths progress',    s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_23')?.value;   const b = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_DESCR_23')?.value;   return v != null ? v + ' (' + (b || '—') + ')' : '—'; }]);
   }
 
   if (hasKS4) {
@@ -4528,9 +4528,9 @@ export function renderPartAComparison(schools) {
     sections.push({
       heading: 'A3.9. Progress — KS1 to KS2',
       body: buildTable4('National', [
-        ['Reading progress', s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_23_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }, '0'],
-        ['Writing progress', s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'WRITPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'WRITPROG_23_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }, '0'],
-        ['Maths progress', s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_23_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }, '0'],
+        ['Reading progress', s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }, '0'],
+        ['Writing progress', s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'WRITPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'WRITPROG_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }, '0'],
+        ['Maths progress', s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }, '0'],
       ]),
       flag: 'none',
     });
