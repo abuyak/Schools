@@ -118,41 +118,107 @@ Bullet-point list, 2–3 bullets:
 
 ## Part B — Independent Research
 
-*Use web search for these sections. Do not re-search fields already in the pre-fetched data.*
+*Part B is sourced from web search and the pre-fetched block. Run all required searches before writing any B section.*
 
-### B1. What It's Like to Be a Pupil
+**Run these searches now** — substitute actual school names and local authorities from the pre-fetched block:
 
-Heading: `## B1. Pupil Experience`
-Format: Bullet list, 4–5 bullets comparing the two schools on culture, atmosphere, behaviour, and pastoral feel. Source: Ofsted narratives from Detailed School Data + web search.
+1. `[school A] admissions criteria [local authority A]`
+2. `[school B] admissions criteria [local authority B]`
+3. `[school A] open day` + `[school B] open day`
+4. `[school A] clubs activities extracurricular` + `[school B] clubs activities extracurricular`
+5. `"[school A]" mumsnet OR "school review"` + `"[school B]" mumsnet OR "school review"`
+6. If either school has a sixth form: `[school A] leavers destinations university` + `[school B] leavers destinations university`
+7. If either school is independent: `[school A] fees bursaries scholarships` + `[school B] fees bursaries scholarships`
+
+Do not write B1–B5 until you have search results.
+
+---
+
+### B1. Parent View
+
+**Parent View data is pre-fetched — it appears in the Ofsted section of each school's Detailed School Data block under "Ofsted Parent View".** Use it directly. Do not search for it.
+
+For each school, reproduce the Parent View table exactly as it appears in the pre-fetched block (all rows, percentages, and any ⚠️ flags). Then write 2–3 sentences comparing the two schools' Parent View results — call out any ⚠️ flagged rows explicitly.
+
+Thresholds (already applied in the pre-fetched tables — ⚠️ rows are already marked):
+- Would recommend: below 80%
+- Child feels safe: below 88%
+- Bullying dealt with well: below 70%
+- Concerns dealt with properly: below 75%
+
+Note the total number of responses per school — fewer than 20 means too thin to rely on.
+
+If the pre-fetched block shows no Parent View data for either school, note this and move on.
+
+*"My child is happy" is high at almost all schools — do not cite it as a meaningful signal.*
 
 ### B2. Admissions
 
 Heading: `## B2. Admissions`
-Format: Bullet list comparing entry routes, oversubscription, criteria, open days. Include fees for independent schools.
+
+Using results from searches 1, 2, and 3 above:
+
+For each school, report:
+- Entry points (e.g. Nursery, Reception, 4+, 7+, 11+, sixth form)
+- Admissions criteria and oversubscription rules
+- Assessment format if selective
+- Sibling priority, catchment, faith criteria
+- Oversubscription ratio if published
+- Next open day date and how to book
+
+Then write 1–2 sentences comparing the admissions routes — which school is harder to get into, and what that means for the parent.
+
+Only cite contact details if they appear on the school's official website — do not guess them.
+
+For independent schools: add fees, bursaries, scholarship details.
 
 ### B3. Extracurricular
 
 Heading: `## B3. Extracurricular & Clubs`
-Format: Bullet list comparing sports, arts, music, clubs. If the parent described their child's interests, address fit directly.
+
+Using results from search 4:
+
+For each school, report:
+- Sports offered
+- Arts, music, and drama
+- Academic clubs and enrichment
+- Other notable activities
+- Approximate number of clubs if stated
+
+Then 1–2 sentences comparing the extracurricular offer — which school has broader opportunities and in what areas.
+
+**Child fit note** (if child described): one sentence on which school better fits the child's interests.
 
 ### B4. Community Sentiment
 
 Heading: `## B4. What Parents Say`
-Format: Bullet list summarising forum/review themes. If no substantive discussion found, say so.
+
+Using results from search 5:
+
+Report:
+- Positive themes: recurring praise for each school
+- Negative themes: prioritise safeguarding, SEN, staff turnover, bullying response, communication
+- Flag sudden leadership changes, supply teacher reliance, or significant events since last Ofsted
+
+If no substantive school-specific discussion was found for a school, say so clearly.
 
 ### B5. Destinations
 
 Heading: `## B5. Where Pupils Go Next`
-Format: Bullet list.
 
-**FIRST, check the Detailed School Data blocks and QC table for these values (do not re-search them):**
-- `% to higher education` (in QC table / KS5 section)
-- `% sustained destination` (in QC table / KS4 section)
-- `A-level avg grade` (in QC table / KS5 section)
-- Post-16 destinations from the KS4/KS5 tables in the Detailed School Data
+**FIRST, check the pre-fetched data for these values (do not re-search them):**
+- `% to higher education` (in KS5 / A3.14 section)
+- `% sustained destination` (in KS4 / A3.6 section)
+- `A-level avg grade` (in KS5 / A3.11 section)
+- Post-16 destinations table in the Detailed School Data blocks
 
-**Only if these are missing from the pre-fetched data**, web-search for:
-- `[school name] leavers destinations university`
+**Only if these are missing**, use search 6 results.
+
+**Primary schools:** report the top secondary schools pupils move to (search `[school name] Year 6 secondary destinations` if not in pre-fetched data).
+
+**Secondary schools:** report published post-16 or university destinations. Compare the two schools — which has stronger destination outcomes.
+
+Note clearly if no destinations data is published for either school.
 
 ---
 
@@ -197,26 +263,6 @@ Format: Bullet list, 3 items. Visit, check, compare/fallback.
 
 Heading: `## C5. Sources`
 Format: Primary Sources (school websites, Ofsted PDFs, GIAS, performance pages) + Secondary Sources (all other URLs). Every source must have a real URL.
-
----
-
-## Web Search Instructions
-
-The pre-fetched Quick Comparison Table and Detailed School Data already cover: identity, academic results, inspection grades, census/intake, absence, financials, and area profile. **Do not re-search these.**
-
-**Run only the searches below** — substitute actual school names from the pre-fetched block:
-
-1. `[school A] admissions criteria oversubscription catchment`
-2. `[school B] admissions criteria oversubscription catchment`
-3. `[school A] open day` + `[school B] open day` (can be one search)
-4. If either school is independent: `[school A] fees bursaries scholarships` + `[school B] fees bursaries scholarships`
-5. If the question is about fit/community/reputation: `"[school A]" OR "[school B]" mumsnet OR reddit`
-6. If either school has a sixth form: `[school A] leavers destinations university` + `[school B] leavers destinations university`
-
-If either school is independent: also search `[school name] ISI inspection report site:isi.net`.
-
-Skip any search not relevant to the parent's question.
-
 ---
 
 ## Tone
@@ -253,7 +299,7 @@ Return valid JSON only. No markdown fences. Schema:
     { "heading": "A5. Observations", "body": "...", "flag": "none" },
     { "heading": "A6. Observations", "body": "...", "flag": "none" },
     { "heading": "A7. Observations", "body": "...", "flag": "none" },
-    { "heading": "B1. Pupil Experience", "body": "...", "flag": "none" },
+    { "heading": "B1. Parent View", "body": "...", "flag": "none" },
     { "heading": "B2. Admissions", "body": "...", "flag": "none" },
     { "heading": "B3. Extracurricular & Clubs", "body": "...", "flag": "none" },
     { "heading": "B4. What Parents Say", "body": "...", "flag": "none" },
