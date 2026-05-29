@@ -12,6 +12,7 @@ Side-by-side comparison of two schools. Tables use format: `| Metric | School A 
 A1. School Identity               ← server table, no Observations
 A2. Inspection Outcomes           ← server table
 A2. Observations                  ← AI bullets
+Parent View                       ← server table (per-school survey data)
 What the School Needs to Improve  ← server verbatim, no Observations
 A3.1 through A3.17                ← server tables (varies by phase)
 A3. Observations                  ← AI bullets (one combined section after all A3 subs)

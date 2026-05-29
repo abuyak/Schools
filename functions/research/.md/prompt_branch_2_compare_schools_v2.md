@@ -134,24 +134,21 @@ Do not write B1–B5 until you have search results.
 
 ---
 
-### B1. Parent View
+### B1. What It's Like to Be a Pupil
 
-**CRITICAL — this section is about Parent View survey data only. Do NOT write pupil experience narrative here (that belongs in A2 Observations).**
+Heading: `## B1. Pupil Experience` · Flag: `none`
 
-Heading: `## B1. Parent View` · Flag: `none`
+**Parent View survey data is already rendered server-side as a table above — do not reproduce it here.**
 
-**Parent View data is pre-fetched — it appears in the Ofsted section of each school's Detailed School Data block under "Ofsted Parent View".** Use it directly. Do not search for it. Do not describe the school's culture or atmosphere — that is pupil experience, not Parent View.
+Synthesise a comparison of the pupil experience from the Ofsted narratives in the pre-fetched block and web search results. 4–5 bullets:
 
-**Step 1: Reproduce the table.** For each school, copy the Parent View table exactly as it appears in the pre-fetched block — every row, every percentage, and every ⚠️ flag. Do not paraphrase. Do not convert to prose. The table format is non-negotiable.
+- Compare school culture and atmosphere — warm, orderly, intense, calm?
+- How pupils treat each other and staff at each school
+- Behaviour and attitudes to learning — which school is stronger
+- Standout strengths or concerns for each school
+- If the parent described their child, add one bullet on personal fit
 
-**Step 2: Compare.** After both tables, write 2–3 sentences comparing the two schools' Parent View results. Call out any ⚠️ flagged rows explicitly — do not bury them. A ⚠️ on "Bullying dealt with well" or "Concerns dealt with properly" is a meaningful signal parents need to see.
-
-⚠️ thresholds (already applied in the pre-fetched tables):
-- Would recommend: below 80% | Child feels safe: below 88% | Bullying dealt with well: below 70% | Concerns dealt with properly: below 75%
-
-Note the total number of responses per school — fewer than 20 means too thin to rely on. If no Parent View data for either school, output `_No Parent View data available._` and move on.
-
-*"My child is happy" is high at almost all schools — do not cite it as a meaningful signal.*
+Never write a single prose paragraph. Use bullet points.
 
 ### B2. Admissions
 
@@ -304,7 +301,7 @@ Return valid JSON only. No markdown fences. Schema:
     { "heading": "A5. Observations", "body": "...", "flag": "none" },
     { "heading": "A6. Observations", "body": "...", "flag": "none" },
     { "heading": "A7. Observations", "body": "...", "flag": "none" },
-    { "heading": "B1. Parent View", "body": "...", "flag": "none" },
+    { "heading": "B1. Pupil Experience", "body": "...", "flag": "none" },
     { "heading": "B2. Admissions", "body": "...", "flag": "none" },
     { "heading": "B3. Extracurricular & Clubs", "body": "...", "flag": "none" },
     { "heading": "B4. What Parents Say", "body": "...", "flag": "none" },

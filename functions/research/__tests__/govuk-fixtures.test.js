@@ -483,7 +483,7 @@ describe('renderPartAComparison — section structure', () => {
 // for interleaveVerdicts and tagPartLabels to work correctly.
 
 const PART_B_HEADINGS = [
-  'B1. Parent View',
+  'B1. Pupil Experience',
   'B2. Admissions',
   'B3. Extracurricular & Clubs',
   'B4. What Parents Say',
