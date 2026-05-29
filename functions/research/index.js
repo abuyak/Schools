@@ -399,6 +399,11 @@ function normaliseComparisonTable(sections, schoolNames) {
           } else {
             out.push(trimmed);
           }
+        } else if (started) {
+          // Non-pipe line inside a table — end the table and push as separate paragraph
+          out.push('');
+          out.push(trimmed);
+          started = false;
         } else {
           out.push(trimmed);
         }

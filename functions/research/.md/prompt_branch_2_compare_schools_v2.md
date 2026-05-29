@@ -241,7 +241,11 @@ Format: Side-by-side table summarising who wins on each dimension covered in Par
 | Extracurricular | | |
 | Destinations | | |
 
-**CRITICAL: The final verdict paragraph goes BELOW the table, separated by a blank line. Never append it to the last table row. The table has exactly 3 columns — do not add extra columns.**
+**CRITICAL TABLE RULES:**
+- Every table row MUST be a single line — never use line breaks inside a cell. Multi-line cells break the markdown table.
+- The final verdict paragraph goes BELOW the table, separated by a blank line. Never append it to the last table row.
+- The table has exactly 3 columns — do not add extra columns.
+- If data is missing for one school, write "No data" in the cell — do not break to a new line to explain.
 
 After the table, one paragraph: the final recommendation. Start with the parent's question. Name the 1–2 decisive factors. If the parent described their child, say which school fits THAT child. 3 sentences max.
 
