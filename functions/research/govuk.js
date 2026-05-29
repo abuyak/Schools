@@ -3967,23 +3967,74 @@ function buildComparisonBlock(schools) {
   if (!schools.length) return '';
 
   const names = schools.map(s => s.identity?.officialName ?? s.input);
+  const isState = (s) => _isState(s);
+  const fmt = (v) => _fmtVal(v);
+  const fmtPct = (v) => _fmtPct(v);
 
-  // Each row: [label, accessor fn]
+  const nsRow = (label, varname, unit = '') => {
+    const fn = s => {
+      const v = _nsField(s, varname);
+      if (v != null && String(v).trim() !== '') {
+        return unit === '%' ? fmtPct(v) : unit ? fmt(v) + unit : fmt(v);
+      }
+      return '—';
+    };
+    return [label, fn];
+  };
+
+  // Detect what phases are present
+  const hasKS2 = schools.some(s => Object.keys(s.performance ?? {}).some(k => k.slice(0, 3) === 'KS2'));
+  const hasKS4 = schools.some(s => Object.keys(s.performance ?? {}).some(k => k.slice(0, 3) === 'KS4'));
+  const hasKS5 = schools.some(s => Object.keys(s.performance ?? {}).some(k => k.slice(0, 3) === 'KS5'));
+
   const rows = [
-    ['Type',             s => s.identity?.type                             ?? '—'],
-    ['URN',              s => s.identity?.urn                              ?? '—'],
+    ['Type',             s => s.identity?.type                                ?? '—'],
+    ['URN',              s => s.identity?.urn                                 ?? '—'],
+    ['Phase',            s => s.identity?.phase                               ?? '—'],
     ['Independent',      s => s.identity ? (s.identity.isIndependent ? 'Yes' : 'No') : '—'],
-    ['Ofsted overall',   s => s.identity?.isIndependent ? 'ISI (see web search)' : (s.ofsted?.overall   ?? '—')],
-    ['Ofsted date',      s => s.identity?.isIndependent ? '—'             : (s.ofsted?.date             ?? '—')],
-    ['Progress 8',       s => s.performance?.progress8                    ?? '—'],
-    ['Attainment 8',     s => s.performance?.attainment8                  ?? '—'],
-    ['Grade 5+ Eng+Ma',  s => s.performance?.grade5em                     ?? '—'],
-    ['EBacc entry %',    s => s.performance?.ebacc                        ?? '—'],
-    ['Overall absence',  s => s.performance?.absence                      ?? '—'],
-    ['Income/pupil',     s => s.financial?.incomePerPupil                 ?? '—'],
-    ['Staff costs %',    s => s.financial?.staffCostsPct                  ?? '—'],
-    ['Revenue balance',  s => s.financial?.revenueBalance                 ?? '—'],
+    ['Ofsted / ISI',     s => s.identity?.isIndependent ? (s.ofsted?.overall ?? '—') : (s.ofsted?.overall ?? '—')],
+    ['Inspection date',  s => s.ofsted?.date                                  ?? '—'],
   ];
+
+  if (hasKS2) {
+    rows.push(nsRow('KS2 RWM expected %', 'PTRWM_EXP', '%'));
+    rows.push(nsRow('KS2 RWM higher %', 'PTRWM_HIGH', '%'));
+    rows.push(['Reading progress',  s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_23')?.value; const b = s.performance?.KS2_23?.find(r => r.variable === 'READPROG_23_DESCR_23')?.value; return v != null ? v + ' (' + (b || '—') + ')' : '—'; }]);
+    rows.push(['Maths progress',    s => { const v = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_23')?.value;   const b = s.performance?.KS2_23?.find(r => r.variable === 'MATPROG_23_DESCR_23')?.value;   return v != null ? v + ' (' + (b || '—') + ')' : '—'; }]);
+  }
+
+  if (hasKS4) {
+    rows.push(nsRow('Attainment 8', 'ATT8SCR'));
+    rows.push(['Progress 8', s => isState(s) ? (_nsField(s, 'P8MEA') ?? '—') : '(indep)']);
+    rows.push(nsRow('Grade 5+ Eng & Maths %', 'PTL2BASICS_95', '%'));
+    rows.push(nsRow('Grade 4+ Eng & Maths %', 'PTL2BASICS_94', '%'));
+    rows.push(nsRow('EBacc entry %', 'PTEBACC_E_PTQ_EE', '%'));
+  }
+
+  if (hasKS5) {
+    rows.push(nsRow('A-level avg grade', 'TALLPPEGRD_ALEV_1618'));
+    rows.push(nsRow('A-level progress (VA)', 'VA_INS_ALEV'));
+    rows.push(nsRow('% to higher education', 'TOT_HEPER', '%'));
+  }
+
+  rows.push(['FSM eligible %', s => isState(s) ? (_nsField(s, 'PNUMFSMEVER') ?? '—') + '%' : '(indep — near 0%)']);
+  rows.push(['SEN support %', s => (_nsField(s, 'PSENELK') ?? '—') + '%']);
+  rows.push(['EHC plan %', s => (_nsField(s, 'PSENELSE') ?? '—') + '%']);
+
+  if (schools.some(s => isState(s) && _nsField(s, 'PERCTOT'))) {
+    rows.push(nsRow('Overall absence', 'PERCTOT', '%'));
+    rows.push(nsRow('Persistent absence', 'PPERSABS10', '%'));
+  }
+
+  if (schools.some(s => isState(s) && s.financial)) {
+    rows.push(['Spend per pupil', s => { const n = _parseNum(s.financial?.totalSpendPerPupil); return !isNaN(n) ? '£' + Number(n).toLocaleString() : '—'; }]);
+    rows.push(['In-year balance', s => { const n = _parseNum(s.financial?.inYearBalance); return !isNaN(n) ? '£' + Number(n).toLocaleString() : '—'; }]);
+    rows.push(['QTS %', s => { const n = _parseNum(s.financial?.qualifiedTeachersPct); return !isNaN(n) ? n.toFixed(1) + '%' : '—'; }]);
+  }
+
+  if (schools.some(s => s.area?.imd?.imdDecile != null)) {
+    rows.push(['IMD decile (1=most deprived)', s => s.area?.imd?.imdDecile != null ? s.area.imd.imdDecile + '/10' : '—']);
+  }
 
   const header = `| Metric | ${names.join(' | ')} |`;
   const sep    = `|${Array(names.length + 1).fill('---').join('|')}|`;
@@ -3996,7 +4047,7 @@ function buildComparisonBlock(schools) {
     .map(s => {
       const u = s.identity.urn;
       const n = s.identity.officialName;
-      return `- **${n}**: [GIAS](https://www.get-information-schools.service.gov.uk/Establishments/Establishment/Details/${u}) | [Performance](https://www.compare-school-performance.service.gov.uk/school/${u}) | [Financial](https://financial-benchmarking-and-insights-tool.education.gov.uk/school/${u}) | [Ofsted](https://reports.ofsted.gov.uk/provider/21/${u})`;
+      return `- **${n}**: [GIAS](https://www.get-information-schools.service.gov.uk/Establishments/Establishment/Details/${u}) | [Performance](https://www.compare-school-performance.service.gov.uk/school/${u}) | [Ofsted](https://reports.ofsted.gov.uk/provider/21/${u})`;
     })
     .join('\n');
 
@@ -4006,10 +4057,10 @@ function buildComparisonBlock(schools) {
 
   return `
 ---
-## Pre-Fetched Government Data — Comparison
+## Quick Comparison — Headline Metrics
 
-> Use the figures below directly in your comparison table. Do not re-search populated fields.
-> "—" means not retrieved; search the relevant source for those fields.
+> Use these figures directly. Do not re-search populated fields.
+> "—" means not retrieved.
 ${independentNote}
 ${header}
 ${sep}
@@ -4035,7 +4086,7 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
   const names = await extractSchoolNames(question, branch, apiKey, baseUrl, model);
   if (!names.length) {
     glog('govuk_no_names', { branch, question: question.slice(0, 120) });
-    return { block: '', flags: {}, schools: [] };
+    return { block: '', quickTakeBlock: '', flags: {}, schools: [] };
   }
 
   // Extract location hints once from the question — passed to every URN lookup
@@ -4170,14 +4221,16 @@ export async function fetchGovDataForPrompt(question, branch, apiKey, baseUrl, m
     resolved: schools.filter(s => s.identity).length,
   });
 
-  if (!schools.length) return { block: '', flags: {}, schools: [] };
+  if (!schools.length) return { block: '', quickTakeBlock: '', flags: {}, schools: [] };
+
+  const quickTakeBlock = buildComparisonBlock(schools);
 
   const block = '\n\n' + (detailed
     ? schools.map(buildSlimBlock).join('\n\n')
     : buildComparisonBlock(schools) + '\n\n' + schools.map(buildSlimBlock).join('\n\n'));
 
   const flags = (detailed && schools.length === 1) ? computeFlags(schools[0]) : {};
-  return { block, flags, schools };
+  return { block, quickTakeBlock, flags, schools };
 }
 
 // ─── Deterministic flag computation ──────────────────────────────────────────
