@@ -12,7 +12,6 @@ Side-by-side comparison of two schools. Tables use format: `| Metric | School A 
 A1. School Identity               ← server table, no Observations
 A2. Inspection Outcomes           ← server table
 A2. Observations                  ← AI bullets
-Parent View                       ← server table (per-school survey data)
 What the School Needs to Improve  ← server verbatim, no Observations
 A3.1 through A3.17                ← server tables (varies by phase)
 A3. Observations                  ← AI bullets (one combined section after all A3 subs)
@@ -24,7 +23,8 @@ A6. Financial Health              ← server table
 A6. Observations                  ← AI bullets
 A7. Area Context                  ← server table
 A7. Observations                  ← AI bullets
-B1. Parent View                   ← AI reproduces pre-fetched table + commentary
+A8. Parent View                   ← server table (per-school survey data)
+B1. Pupil Experience               ← AI from Ofsted narratives + web search
 B2. Admissions                    ← AI from web search
 B3. Extracurricular & Clubs       ← AI from web search
 B4. What Parents Say              ← AI from web search
@@ -93,44 +93,6 @@ Bullet list, 3–4 bullets:
 - Call out any sub-grade weaker than overall for either school
 - Note inspection recency — if either is >5 years old, flag it
 - For ISI vs Ofsted: note frameworks are not directly comparable
-
----
-
-## Parent View (unnumbered, server-rendered)
-
-No Observations — the table speaks for itself. Deterministic server render.
-
-**Data source:** `fetchParentView(urn)` — Ofsted Parent View print page.
-
-Rendered only when at least one school has `ofsted.parentView` data. Independent schools skipped.
-
-```
-| | School A | School B |
-|---|---:|---:|
-| Total responses | {N} | {N} |
-| Would recommend this school | {X}% ⚠️ | {X}% |
-| My child is happy here | {X}% | {X}% |
-| My child feels safe | {X}% | {X}% ⚠️ |
-| Pupils are well behaved | {X}% | {X}% |
-| Bullying dealt with well | {X}% | {X}% ⚠️ |
-| School communicates well | {X}% | {X}% |
-| Concerns dealt with properly | {X}% | {X}% ⚠️ |
-| Acts in child's best interests | {X}% | {X}% |
-| Right support to learn | {X}% | {X}% |
-| SEND support | {X}% | {X}% |
-```
-
-⚠️ thresholds:
-- Would recommend: below 80%
-- Child feels safe: below 88%
-- Bullying dealt with well: below 70%
-- Concerns dealt with properly: below 75%
-
-Footer appended below table: `⚠️ = below threshold (...). Fewer than 20 responses = too thin to rely on.`
-
-Total responses shown as plain number (no % suffix). All other rows shown as percentages.
-
-Section heading: `Parent View` or `Parent View ({academicYear})` (e.g. `Parent View (2024/2025)`).
 
 ---
 
@@ -602,6 +564,40 @@ Bullet list, 2–3 bullets:
 
 ---
 
+## A8. Parent View (server-rendered, after A7 before Part B)
+
+No Observations — the table speaks for itself. Deterministic server render.
+
+**Data source:** `fetchParentView(urn)` — Ofsted Parent View print page.
+
+Rendered only when at least one school has `ofsted.parentView` data. Independent schools skipped.
+
+```
+| | School A | School B |
+|---|---:|---:|
+| Total responses | {N} | {N} |
+| Would recommend this school | {X}% ⚠️ | {X}% |
+| My child is happy here | {X}% | {X}% |
+| My child feels safe | {X}% | {X}% ⚠️ |
+| Pupils are well behaved | {X}% | {X}% |
+| Bullying dealt with well | {X}% | {X}% ⚠️ |
+| School communicates well | {X}% | {X}% |
+| Concerns dealt with properly | {X}% | {X}% ⚠️ |
+| Acts in child's best interests | {X}% | {X}% |
+| Right support to learn | {X}% | {X}% |
+| SEND support | {X}% | {X}% |
+```
+
+⚠️ thresholds: Would recommend <80%, Child feels safe <88%, Bullying <70%, Concerns <75%.
+
+Footer: `⚠️ = below threshold (...). Fewer than 20 responses = too thin to rely on.`
+
+Total responses shown as plain number (no % suffix). All other rows shown as percentages.
+
+Section heading: `A8. Parent View` or `A8. Parent View ({academicYear})`.
+
+---
+
 ## Part B — Independent Research
 
 All Part B sections are AI-generated from web search and pre-fetched data. No server-side rendering.
@@ -614,23 +610,22 @@ All Part B sections are AI-generated from web search and pre-fetched data. No se
 
 ---
 
-### B1. Parent View
+### B1. Pupil Experience
 
-Heading: `## B1. Parent View` · Flag: `none`
+Heading: `## B1. Pupil Experience` · Flag: `none`
 
-**Data source:** Pre-fetched block — the Ofsted section of each school's Detailed School Data.
+**Data source:** Ofsted narratives from detailed school data blocks + web search.
 
-For each school, reproduce the Parent View table exactly as it appears in the pre-fetched block. Then write 2–3 sentences comparing the two schools' Parent View results.
+**Parent View survey data is already rendered server-side as a table in Part A — do not reproduce it here.**
 
-Thresholds (⚠️ flags already in the pre-fetched table):
-- Would recommend: below 80%
-- Child feels safe: below 88%
-- Bullying dealt with well: below 70%
-- Concerns dealt with properly: below 75%
+Synthesise a comparison of what it's like to be a pupil at each school. 4–5 bullets:
+- Compare school culture and atmosphere — warm, orderly, intense, calm?
+- How pupils treat each other and staff
+- Behaviour and attitudes to learning — which school is stronger
+- Standout strengths or concerns for each school
+- If the parent described their child, add one bullet on personal fit
 
-Total responses below 20 → note as too thin to rely on.
-
-If no Parent View data for either school, output: `_No Parent View data available for either school._`
+Never write as a single prose paragraph.
 
 ---
 

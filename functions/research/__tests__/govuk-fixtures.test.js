@@ -518,35 +518,33 @@ describe('renderPartAComparison — Parent View', () => {
 
     test('Parent View section exists', () => {
       if (!secondaryPair) return;
-      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      const pv = sections.find(s => s.heading?.startsWith('A8. Parent View'));
       expect(pv).toBeDefined();
     });
 
     test('heading includes academic year', () => {
       if (!secondaryPair) return;
-      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      const pv = sections.find(s => s.heading?.startsWith('A8. Parent View'));
       expect(pv.heading).toContain('2024/2025');
     });
 
-    test('placed between A2 and A3 in section order', () => {
+    test('placed after A7 in section order', () => {
       if (!secondaryPair) return;
-      const pvIdx = sections.findIndex(s => s.heading?.startsWith('Parent View'));
-      const a2Idx = sections.findIndex(s => s.heading?.startsWith('A2.'));
-      const a3Idx = sections.findIndex(s => s.heading?.startsWith('A3.'));
-      expect(pvIdx).toBeGreaterThan(a2Idx);
-      expect(pvIdx).toBeLessThan(a3Idx);
+      const pvIdx = sections.findIndex(s => s.heading?.startsWith('A8. Parent View'));
+      const a7Idx = sections.findIndex(s => s.heading?.startsWith('A7.'));
+      expect(pvIdx).toBeGreaterThan(a7Idx);
     });
 
     test('total responses is plain number (no % suffix)', () => {
       if (!secondaryPair) return;
-      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      const pv = sections.find(s => s.heading?.startsWith('A8. Parent View'));
       expect(pv.body).toContain('124');
       expect(pv.body).not.toMatch(/124%/);
     });
 
     test('percentage values have % suffix', () => {
       if (!secondaryPair) return;
-      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      const pv = sections.find(s => s.heading?.startsWith('A8. Parent View'));
       expect(pv.body).toContain('92%');
       expect(pv.body).toContain('95%');
       expect(pv.body).toContain('93%');
@@ -554,7 +552,7 @@ describe('renderPartAComparison — Parent View', () => {
 
     test('below-threshold values are flagged', () => {
       if (!secondaryPair) return;
-      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      const pv = sections.find(s => s.heading?.startsWith('A8. Parent View'));
       // 78% < 80% threshold for "Would recommend"
       expect(pv.body).toContain('78% ⚠️');
       // 65% < 70% threshold for "Bullying dealt with well"
@@ -565,7 +563,7 @@ describe('renderPartAComparison — Parent View', () => {
 
     test('above-threshold values are NOT flagged', () => {
       if (!secondaryPair) return;
-      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      const pv = sections.find(s => s.heading?.startsWith('A8. Parent View'));
       // 72% is above 70% threshold for bullying
       expect(pv.body).not.toMatch(/72% ⚠️/);
       // 92% is above 80% threshold for would recommend
@@ -574,14 +572,14 @@ describe('renderPartAComparison — Parent View', () => {
 
     test('footer explains threshold markers', () => {
       if (!secondaryPair) return;
-      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      const pv = sections.find(s => s.heading?.startsWith('A8. Parent View'));
       expect(pv.body).toMatch(/⚠️ = below threshold/);
       expect(pv.body).toMatch(/Fewer than 20/);
     });
 
     test('both school names appear in header', () => {
       if (!secondaryPair) return;
-      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      const pv = sections.find(s => s.heading?.startsWith('A8. Parent View'));
       const nameA = pair[0].identity?.officialName;
       const nameB = pair[1].identity?.officialName;
       expect(pv.body).toContain(nameA.split(',')[0]); // first part of name
@@ -602,7 +600,7 @@ describe('renderPartAComparison — Parent View', () => {
 
     test('Parent View section is absent when no data', () => {
       if (!secondaryPair) return;
-      const pv = sections.find(s => s.heading?.startsWith('Parent View'));
+      const pv = sections.find(s => s.heading?.startsWith('A8. Parent View'));
       expect(pv).toBeUndefined();
     });
   });

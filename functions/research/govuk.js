@@ -4414,45 +4414,6 @@ export function renderPartAComparison(schools) {
     });
   }
 
-  // Parent View (unnumbered, server-rendered — between A2 and A3)
-  const hasPV = schools.some(s => s.ofsted?.parentView);
-  if (hasPV) {
-    const yr = schools.find(s => s.ofsted?.parentView?.academicYear)?.ofsted?.parentView?.academicYear || '';
-    const yrSuffix = yr ? ` (${yr})` : '';
-    const rows = [];
-    const pvRow = (label, key, threshold) => {
-      const vals = schools.map(s => {
-        const pv = s.ofsted?.parentView;
-        if (!pv || pv[key] == null) return '—';
-        const v = pv[key];
-        const warn = threshold && v < threshold ? ' ⚠️' : '';
-        const suffix = key === 'totalResponses' ? '' : '%';
-        return v + suffix + warn;
-      });
-      if (vals.every(v => v === '—')) return; // skip rows with no data for either school
-      rows.push('| ' + label + ' | ' + vals.join(' | ') + ' |');
-    };
-    pvRow('Total responses', 'totalResponses', null);
-    pvRow('Would recommend this school', 'wouldRecommend', 80);
-    pvRow('My child is happy here', 'childHappy', null);
-    pvRow('My child feels safe', 'childSafe', 88);
-    pvRow('Pupils are well behaved', 'wellBehaved', null);
-    pvRow('Bullying dealt with well', 'bullyingHandled', 70);
-    pvRow('School communicates well', 'communication', null);
-    pvRow('Concerns dealt with properly', 'concernsHandled', 75);
-    pvRow('Acts in child\'s best interests', 'bestInterests', null);
-    pvRow('Right support to learn', 'rightSupport', null);
-    pvRow('SEND support', 'sendSupport', null);
-
-    sections.push({
-      heading: 'Parent View' + yrSuffix,
-      body: '| | ' + names.join(' | ') + ' |\n' +
-        '|---|---:|---:|\n' + rows.join('\n') +
-        '\n\n⚠️ = below threshold (Would recommend <80%, Child feels safe <88%, Bullying <70%, Concerns <75%). Fewer than 20 responses = too thin to rely on.',
-      flag: 'none',
-    });
-  }
-
   // A3 — Academic Performance (sub-sections vary by phase)
   // Sub-section naming matches the wiremock: A3.1. Attainment 8, etc.
 
@@ -4852,6 +4813,44 @@ export function renderPartAComparison(schools) {
     });
   }
 
+  // Parent View (unnumbered, server-rendered — after A7, before Part B)
+  const hasPV = schools.some(s => s.ofsted?.parentView);
+  if (hasPV) {
+    const yr = schools.find(s => s.ofsted?.parentView?.academicYear)?.ofsted?.parentView?.academicYear || '';
+    const yrSuffix = yr ? ` (${yr})` : '';
+    const pvRows = [];
+    const pvRow = (label, key, threshold) => {
+      const vals = schools.map(s => {
+        const pv = s.ofsted?.parentView;
+        if (!pv || pv[key] == null) return '—';
+        const v = pv[key];
+        const warn = threshold && v < threshold ? ' ⚠️' : '';
+        const suffix = key === 'totalResponses' ? '' : '%';
+        return v + suffix + warn;
+      });
+      if (vals.every(v => v === '—')) return;
+      pvRows.push('| ' + label + ' | ' + vals.join(' | ') + ' |');
+    };
+    pvRow('Total responses', 'totalResponses', null);
+    pvRow('Would recommend this school', 'wouldRecommend', 80);
+    pvRow('My child is happy here', 'childHappy', null);
+    pvRow('My child feels safe', 'childSafe', 88);
+    pvRow('Pupils are well behaved', 'wellBehaved', null);
+    pvRow('Bullying dealt with well', 'bullyingHandled', 70);
+    pvRow('School communicates well', 'communication', null);
+    pvRow('Concerns dealt with properly', 'concernsHandled', 75);
+    pvRow('Acts in child\'s best interests', 'bestInterests', null);
+    pvRow('Right support to learn', 'rightSupport', null);
+    pvRow('SEND support', 'sendSupport', null);
+
+    sections.push({
+      heading: 'A8. Parent View' + yrSuffix,
+      body: '| | ' + names.join(' | ') + ' |\n' +
+        '|---|---:|---:|\n' + pvRows.join('\n') +
+        '\n\n⚠️ = below threshold (Would recommend <80%, Child feels safe <88%, Bullying <70%, Concerns <75%). Fewer than 20 responses = too thin to rely on.',
+      flag: 'none',
+    });
+  }
 
   // ── Append deterministic analysis to each table ──────────────────────────
   // Pre-scan: find the last A3.x sub-section so we only append the analysis there
