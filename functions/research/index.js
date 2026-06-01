@@ -297,7 +297,9 @@ function parseOpenAIResponse(apiResponse) {
   const cleanBody = (text) => (text ?? '').replace(/\.?turn\d+(?:search|view)\d+\.?/gi, '').replace(/\s{2,}/g, ' ').trim();
 
   // Rename model's "Sources" section to "Primary Sources"
-  const sections = (parsed.sections ?? []).map(s => ({ ...s, body: cleanBody(s.body) }));
+  // Also strip markdown heading prefixes (##, ###) that the AI sometimes includes
+  const cleanHeading = (h) => (h ?? '').replace(/^#{1,4}\s+/, '').trim();
+  const sections = (parsed.sections ?? []).map(s => ({ ...s, heading: cleanHeading(s.heading), body: cleanBody(s.body) }));
 
   let primarySourcesBody = null;
   for (const s of sections) {
