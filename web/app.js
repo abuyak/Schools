@@ -79,22 +79,18 @@
         ? "/api/analytics/click"
         : "https://ep6az35owvnis2c6n6wcl7axyy0elrlh.lambda-url.eu-west-2.on.aws/api/analytics/click";
 
-      // sendBeacon for cross-origin, fetch as fallback.
-      // Explicitly omit credentials — analytics are anonymous and
-      // credentials: 'include' (triggered by keepalive) breaks CORS
-      // unless the Lambda returns Access-Control-Allow-Credentials.
-      try {
-        var queued = navigator.sendBeacon && navigator.sendBeacon(analyticsUrl, blob);
-        if (!queued) {
-          fetch(analyticsUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: body,
-            keepalive: true,
-            credentials: "omit"
-          }).catch(function () {});
-        }
-      } catch (_e) {
+      // Always use fetch for cross-origin analytics. sendBeacon with
+      // Blob+JSON triggers a CORS preflight that sends credentials,
+      // and the Lambda doesn't return Access-Control-Allow-Credentials.
+      // Localhost: use sendBeacon (same-origin, no CORS preflight).
+      if (isLocal) {
+        try {
+          if (navigator.sendBeacon) { navigator.sendBeacon(analyticsUrl, blob); }
+          else {
+            fetch(analyticsUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true }).catch(function () {});
+          }
+        } catch (_e) {}
+      } else {
         fetch(analyticsUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
