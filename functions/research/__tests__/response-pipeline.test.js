@@ -871,3 +871,198 @@ describe('normaliseComparisonTable', () => {
     expect(result[0].body).toContain('| Dimension | School A | School B |');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Full pipeline integration — parseOpenAIResponse → final tagged sections
+// ---------------------------------------------------------------------------
+
+describe('full pipeline — section delimiters (Part A/B/C)', () => {
+
+  const partAData = [
+    { heading: 'A1. School Identity', body: '...', flag: 'none' },
+    { heading: 'A2. Inspection Outcomes', body: '...', flag: 'none' },
+    { heading: 'A3. Academic Performance', body: '...', flag: 'none' },
+    { heading: 'A4. Intake & Cohort', body: '...', flag: 'none' },
+    { heading: 'A5. Absence & Engagement', body: '...', flag: 'none' },
+    { heading: 'A6. Financial Health', body: '...', flag: 'none' },
+    { heading: 'A7. Area Context', body: '...', flag: 'none' },
+  ];
+
+  function runPipeline(aiResponseSections, dataSections = partAData) {
+    const parsed = parseOpenAIResponse({
+      output_text: JSON.stringify({
+        title: 'Test', summary: 'Test', scorecard: [],
+        sections: aiResponseSections,
+      }),
+    });
+    if (parsed.status !== 'completed') throw new Error('parse failed: ' + parsed.status);
+    const interleaved = interleaveVerdicts(dataSections, parsed.sections);
+    const enforced = enforceObservations(interleaved, dataSections);
+    return tagPartLabels(enforced);
+  }
+
+  function partLabels(sections) {
+    return sections
+      .filter(s => s._partLabel)
+      .map(s => ({ heading: s.heading, label: s._partLabel }));
+  }
+
+  // -- Happy path: all three parts present ------------------------------------
+
+  it('produces Part A, B, and C delimiters for a complete response', () => {
+    const aiSections = [
+      { heading: 'A2. Observations', body: 'Inspection analysis.', flag: 'none' },
+      { heading: 'A3. Observations', body: 'Academic analysis.', flag: 'none' },
+      { heading: 'A4. Observations', body: 'Intake analysis.', flag: 'none' },
+      { heading: 'A5. Observations', body: 'Absence analysis.', flag: 'none' },
+      { heading: 'A6. Observations', body: 'Financial analysis.', flag: 'none' },
+      { heading: 'A7. Observations', body: 'Area analysis.', flag: 'none' },
+      { heading: 'B1. Pupil Experience', body: '...', flag: 'none' },
+      { heading: 'B2. Admissions', body: '...', flag: 'none' },
+      { heading: 'C1. Head-to-Head Verdict', body: '...', flag: 'none' },
+    ];
+
+    const result = runPipeline(aiSections);
+    const labels = partLabels(result);
+
+    expect(labels).toEqual([
+      { heading: 'A1. School Identity', label: 'Part A — Official Record' },
+      { heading: 'B1. Pupil Experience', label: 'Part B — Independent Research' },
+      { heading: 'C1. Head-to-Head Verdict', label: 'Part C — Verdict & Synthesis' },
+    ]);
+  });
+
+  // -- Part A delimiter always present (server-rendered A1 always exists) -----
+
+  it('always has Part A delimiter (A1 is server-rendered)', () => {
+    const aiSections = [
+      { heading: 'B1. Pupil Experience', body: '...', flag: 'none' },
+    ];
+    const result = runPipeline(aiSections);
+    const labels = partLabels(result);
+    expect(labels[0].label).toBe('Part A — Official Record');
+  });
+
+  // -- Only A1 gets Part A label, not A2/A3/etc ------------------------------
+
+  it('only tags A1 with Part A label — not A2, A3, etc.', () => {
+    const aiSections = [
+      { heading: 'A2. Observations', body: '...', flag: 'none' },
+      { heading: 'A3. Observations', body: '...', flag: 'none' },
+    ];
+    const result = runPipeline(aiSections);
+    const aLabels = result.filter(s => s._partLabel && s._partLabel.startsWith('Part A'));
+    expect(aLabels).toHaveLength(1);
+    expect(aLabels[0].heading).toBe('A1. School Identity');
+  });
+
+  // -- No delimiter between A-sections (A2, A3, etc.) ------------------------
+
+  it('has no delimiters between A-sections (A2, A3, ...)', () => {
+    const aiSections = [
+      { heading: 'A2. Observations', body: '...', flag: 'none' },
+      { heading: 'A3. Observations', body: '...', flag: 'none' },
+      { heading: 'A4. Observations', body: '...', flag: 'none' },
+      { heading: 'B1. Pupil Experience', body: '...', flag: 'none' },
+    ];
+    const result = runPipeline(aiSections);
+
+    // Check that between A1 and B1 there are no _partLabel tags
+    const b1Idx = result.findIndex(s => s.heading === 'B1. Pupil Experience');
+    const aSectionsBeforeB = result.slice(0, b1Idx);
+    const innerLabels = aSectionsBeforeB.filter(s => s._partLabel);
+    // Only A1 should have a label
+    expect(innerLabels).toHaveLength(1);
+    expect(innerLabels[0].heading).toBe('A1. School Identity');
+  });
+
+  // -- Part B delimiter only if B1 exists ------------------------------------
+
+  it('has no Part B delimiter when AI omits B1', () => {
+    // Regression test for TD-020 — KS5-only schools missing Part B delimiter
+    const aiSections = [
+      { heading: 'A2. Observations', body: '...', flag: 'none' },
+      { heading: 'C1. Head-to-Head Verdict', body: '...', flag: 'none' },
+    ];
+    const result = runPipeline(aiSections);
+    const labels = partLabels(result);
+
+    expect(labels).toEqual([
+      { heading: 'A1. School Identity', label: 'Part A — Official Record' },
+      { heading: 'C1. Head-to-Head Verdict', label: 'Part C — Verdict & Synthesis' },
+    ]);
+  });
+
+  // -- Part C delimiter only if C1 exists -------------------------------------
+
+  it('has no Part C delimiter when AI omits C1', () => {
+    const aiSections = [
+      { heading: 'B1. Pupil Experience', body: '...', flag: 'none' },
+    ];
+    const result = runPipeline(aiSections);
+    const labels = partLabels(result);
+
+    expect(labels).toEqual([
+      { heading: 'A1. School Identity', label: 'Part A — Official Record' },
+      { heading: 'B1. Pupil Experience', label: 'Part B — Independent Research' },
+    ]);
+  });
+
+  // -- AI doesn't produce its own "Part A" heading as a section ---------------
+
+  it('does not produce duplicate Part labels when AI outputs its own part headings', () => {
+    // The OUTPUT_CONSTRAINTS say: "Do NOT create separate section objects
+    // for structural part headers like 'Part A — Official Record'."
+    // But if the AI disobeys, tagPartLabels only tags the FIRST section
+    // with each prefix (A1., B1., C1.). This test verifies we don't
+    // accidentally tag an AI-generated fake part header.
+    const aiSections = [
+      { heading: 'Part A — Official Record', body: 'Some AI preamble.', flag: 'none' },
+      { heading: 'A2. Observations', body: '...', flag: 'none' },
+      { heading: 'B1. Pupil Experience', body: '...', flag: 'none' },
+    ];
+    const result = runPipeline(aiSections);
+    const labels = partLabels(result);
+
+    // "Part A — Official Record" does NOT start with "A1." — so no Part A label on it
+    // A1. School Identity gets Part A label
+    // B1. Pupil Experience gets Part B label
+    expect(labels).toEqual([
+      { heading: 'A1. School Identity', label: 'Part A — Official Record' },
+      { heading: 'B1. Pupil Experience', label: 'Part B — Independent Research' },
+    ]);
+  });
+
+  // -- Section ordering: delimiters appear at correct positions ---------------
+
+  it('places sections in order: Part A → observations → Part B → Part C', () => {
+    // AI outputs in the prompt's schema order: A observations, then B, then C.
+    // interleaveVerdicts preserves bcSections order as-is from the AI response.
+    const aiSections = [
+      { heading: 'A2. Observations', body: '...', flag: 'none' },
+      { heading: 'B1. Pupil Experience', body: '...', flag: 'none' },
+      { heading: 'B2. Admissions', body: '...', flag: 'none' },
+      { heading: 'C1. Head-to-Head Verdict', body: '...', flag: 'none' },
+    ];
+    const result = runPipeline(aiSections);
+
+    const a1Idx = result.findIndex(s => s.heading === 'A1. School Identity');
+    const a2ObsIdx = result.findIndex(s => s.heading === 'A2. Observations');
+    const b1Idx = result.findIndex(s => s.heading === 'B1. Pupil Experience');
+    const c1Idx = result.findIndex(s => s.heading === 'C1. Head-to-Head Verdict');
+
+    expect(a1Idx).toBeLessThan(a2ObsIdx);   // Part A heading before its observation
+    expect(a2ObsIdx).toBeLessThan(b1Idx);    // A observations before Part B
+    expect(b1Idx).toBeLessThan(c1Idx);       // Part B before Part C
+  });
+
+  // -- Empty AI response — only Part A exists ---------------------------------
+
+  it('produces only Part A delimiter when AI returns no sections', () => {
+    const result = runPipeline([]);
+    const labels = partLabels(result);
+    expect(labels).toEqual([
+      { heading: 'A1. School Identity', label: 'Part A — Official Record' },
+    ]);
+  });
+});
