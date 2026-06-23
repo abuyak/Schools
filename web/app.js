@@ -2,6 +2,7 @@
   "use strict";
 
   const ENABLE_PAYWALL = false;
+  const ENABLE_SECTION_FEEDBACK = true; // per-section thumbs up/down for beta-testing
 
   const form = document.getElementById("question-form");
   const branchInput = document.getElementById("branch-input");
@@ -19,14 +20,6 @@
   const premiumPoints = document.getElementById("premium-points");
   const gateNote = document.getElementById("gate-note");
   const premiumPanel = document.getElementById("premium-panel");
-  const feedbackPanel = document.getElementById("feedback-panel");
-  const feedbackUp = document.getElementById("feedback-up");
-  const feedbackDown = document.getElementById("feedback-down");
-  const feedbackForm = document.getElementById("feedback-form");
-  const feedbackText = document.getElementById("feedback-text");
-  const feedbackSubmit = document.getElementById("feedback-submit");
-  const feedbackThanks = document.getElementById("feedback-thanks");
-  const feedbackActions = document.getElementById("feedback-actions");
 
   // ── Section collapse/expand ───────────────────────────────────────────
 
@@ -445,6 +438,39 @@
         headingRow.appendChild(badge);
       }
 
+      // Per-section feedback mini-widget (beta)
+      if (ENABLE_SECTION_FEEDBACK) {
+        const mini = document.createElement("span");
+        mini.className = "section-feedback-mini";
+        mini.setAttribute("data-section", section.heading || "");
+
+        const upBtn = document.createElement("button");
+        upBtn.className = "sfm-btn sfm-up";
+        upBtn.type = "button";
+        upBtn.setAttribute("data-rating", "up");
+        upBtn.title = "This section was useful";
+        upBtn.textContent = "👍";
+        upBtn.setAttribute("aria-label", "Thumbs up — this section was useful");
+
+        const downBtn = document.createElement("button");
+        downBtn.className = "sfm-btn sfm-down";
+        downBtn.type = "button";
+        downBtn.setAttribute("data-rating", "down");
+        downBtn.title = "This section needs work";
+        downBtn.textContent = "👎";
+        downBtn.setAttribute("aria-label", "Thumbs down — this section needs work");
+
+        const thanks = document.createElement("span");
+        thanks.className = "sfm-thanks";
+        thanks.textContent = "✓";
+        thanks.hidden = true;
+
+        mini.appendChild(upBtn);
+        mini.appendChild(downBtn);
+        mini.appendChild(thanks);
+        headingRow.appendChild(mini);
+      }
+
       const body = document.createElement("div");
       body.className = "answer-section-body";
       renderBodyText(body, section.body || "");
@@ -482,16 +508,6 @@
       updateToggleButton();
     } else {
       sectionsToolbar.hidden = true;
-    }
-
-    // Reset feedback widget for new result
-    if (feedbackPanel) {
-      feedbackActions.hidden = false;
-      feedbackForm.hidden = true;
-      feedbackThanks.hidden = true;
-      if (feedbackUp) feedbackUp.classList.remove("is-selected");
-      if (feedbackDown) feedbackDown.classList.remove("is-selected");
-      if (feedbackText) feedbackText.value = "";
     }
 
     if (ENABLE_PAYWALL) {
@@ -595,56 +611,34 @@
     selectBranch(card.getAttribute("data-branch"));
   });
 
-  // ── Feedback widget ──────────────────────────────────────────────────
+  // ── Per-section feedback mini-widget (beta) ──────────────────────────
+  // Delegated from answerSections so it survives result re-renders.
 
-  var feedbackRating = null; // "up" or "down"
+  answerSections.addEventListener("click", function (e) {
+    if (!ENABLE_SECTION_FEEDBACK) return;
 
-  function showFeedbackForm() {
-    feedbackActions.hidden = true;
-    feedbackForm.hidden = false;
-    feedbackText.focus();
-  }
+    var btn = e.target.closest(".sfm-btn");
+    if (!btn) return;
 
-  function submitFeedback() {
-    var text = (feedbackText.value || "").trim().slice(0, 500);
-    trackEvent("feedback_submit", {
+    var mini = btn.closest(".section-feedback-mini");
+    if (!mini) return;
+
+    var section = mini.getAttribute("data-section") || "";
+    var rating = btn.getAttribute("data-rating") || "";
+
+    // Fire analytics
+    trackEvent("section_feedback", {
       branch: branchInput.value || "",
-      rating: feedbackRating || "none",
-      text: text
+      section: section,
+      rating: rating
     });
-    feedbackForm.hidden = true;
-    feedbackThanks.hidden = false;
-  }
 
-  if (feedbackUp) {
-    feedbackUp.addEventListener("click", function () {
-      feedbackRating = "up";
-      feedbackUp.classList.add("is-selected");
-      if (feedbackDown) feedbackDown.classList.remove("is-selected");
-      showFeedbackForm();
-    });
-  }
-
-  if (feedbackDown) {
-    feedbackDown.addEventListener("click", function () {
-      feedbackRating = "down";
-      feedbackDown.classList.add("is-selected");
-      if (feedbackUp) feedbackUp.classList.remove("is-selected");
-      showFeedbackForm();
-    });
-  }
-
-  if (feedbackSubmit) {
-    feedbackSubmit.addEventListener("click", submitFeedback);
-  }
-
-  if (feedbackText) {
-    feedbackText.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-        submitFeedback();
-      }
-    });
-  }
+    // Visual feedback: hide buttons, show thanks
+    var buttons = mini.querySelectorAll(".sfm-btn");
+    buttons.forEach(function (b) { b.hidden = true; });
+    var thanks = mini.querySelector(".sfm-thanks");
+    if (thanks) thanks.hidden = false;
+  });
 
   form.addEventListener("submit", submitQuestion);
   selectBranch(branchInput.value);

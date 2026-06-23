@@ -497,6 +497,17 @@ describe('normaliseC1Table — output contract', () => {
       expect(res.statusCode).toBe(200);
     });
 
+    test('captures section field for per-section feedback', async () => {
+      const event = makeFeedbackEvent({
+        event: 'section_feedback',
+        branch: 'prompt_branch_1',
+        section: 'A2. Inspection Outcomes',
+        rating: 'up',
+      });
+      const res = await handler(event);
+      expect(res.statusCode).toBe(200);
+    });
+
     test('does not intercept research POST at / path', async () => {
       // POST to / should still validate as a research request
       const event = { body: '{}', requestContext: { http: { method: 'POST', path: '/' } } };

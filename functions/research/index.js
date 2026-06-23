@@ -976,6 +976,7 @@ export const handler = async (event) => {
     log('feedback', {
       name: (fbBody.event || 'feedback').slice(0, 64),
       branch: (fbBody.branch || '').slice(0, 32),
+      section: (fbBody.section || '').slice(0, 128),
       rating: (fbBody.rating || '').slice(0, 8),
       text: (fbBody.text || '').slice(0, 500)
     });
