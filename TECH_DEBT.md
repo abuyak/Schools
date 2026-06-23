@@ -521,3 +521,102 @@ This affects:
 4. UI — needs to render blue/yellow dots and the legend
 
 **Done when:** Branch 2 output uses blue/yellow per-school indicators, a colour legend appears above A1, and the flag system clearly attributes wins to the correct school.
+
+---
+
+## Product Backlog (from SchoolScanner-Backlog.docx v1.0, May 2026)
+
+Items imported from `docs/requirements/SchoolScanner-Backlog.docx`. Priority/Effort/Phase as defined in that document. Items already covered by TD entries above are cross-referenced.
+
+### Core Product — Branches
+
+| ID | Title | Priority | Effort | Phase | Notes |
+|---|---|---|---|---|---|
+| B-01 | Branch 2: Compare Schools — side-by-side, delta analysis, ranked verdict | High | M | Phase 1 | In progress (feat/wiremock-part-a-spec) |
+| B-02 | Branch 3: Check an Area — postcode → top schools ranked by distance + fit | High | L | Phase 1 | |
+| B-03 | Branch 4: Plan Backup Options — reserve list, admissions deadlines, Plan B | Medium | M | Phase 1 | |
+| B-04 | Update Branch 2–4 prompts to match Branch 1 quality | Critical | S | Phase 1 | Branch 2 prompt v2 done; 3 & 4 remain |
+
+### Context & Personalisation
+
+| ID | Title | Priority | Effort | Phase | Notes |
+|---|---|---|---|---|---|
+| C-01 | Context text boxes — child age, personality, postcode, preferences (free-text) | High | S | Phase 1 | |
+| C-02 | Context persistence across branch switches within session (no accounts) | Medium | S | Phase 1 | |
+| C-03 | Structured onboarding form — multi-step, requires accounts | Low | L | Phase 4 | |
+| C-04 | Multi-child profiles — save/switch profiles, requires accounts | Low | L | Phase 4 | |
+| C-05 | Commute calculator — work postcode + TfL/Google Maps API integration | Medium | M | Phase 3 | |
+
+### UX & Interface
+
+| ID | Title | Priority | Effort | Phase | Notes |
+|---|---|---|---|---|---|
+| U-01 | Feedback widget — thumbs up/down + optional text, anonymous, no account | Critical | S | Phase 1 | |
+| U-02 | Loading state with progress — show what tool is doing during generation | High | S | Phase 1 | |
+| U-03 | Blurred paywall gate — Part B/C blurred, not hidden, clear unlock CTA | High | M | Phase 2 | |
+| U-04 | Source list cleanup — curate 6–8 links, hide secondary behind toggle | High | S | Phase 1 | |
+| U-05 | Remove Buy Me a Coffee — replace with B2B-aligned CTA | Critical | XS | Phase 1 | |
+| U-06 | Input hint placement — move guidance above/inside input box | Medium | XS | Phase 1 | |
+| U-07 | Mobile responsiveness audit — tables, traffic lights on breakpoints | Medium | S | Phase 2 | |
+| U-08 | Email capture widget — Tally.so embed on homepage, no auth needed | High | XS | Phase 1 | |
+
+### Monetisation & Auth
+
+| ID | Title | Priority | Effort | Phase | Notes |
+|---|---|---|---|---|---|
+| M-01 | Stripe bundle payments — Taster (£1), Starter (£9), Family (£24) | High | L | Phase 2 | |
+| M-02 | Agency subscription billing — Starter (£99), Pro (£249), monthly cap | High | L | Phase 2 | |
+| M-03 | Search credit system — track, deduct, display remaining credits | High | M | Phase 2 | |
+| M-04 | Credit rollover — unused agency credits roll over up to 1 month | Medium | S | Phase 2 | |
+| M-05 | User accounts — email/password auth, credit persistence, profiles | High | L | Phase 2 | |
+| M-06 | GDPR compliance — privacy policy, cookie consent, data retention | Critical | M | Phase 2 | |
+
+### B2B & White-Label
+
+| ID | Title | Priority | Effort | Phase | Notes |
+|---|---|---|---|---|---|
+| W-01 | PDF export — branded school report PDF, essential B2B deliverable | High | M | Phase 3 | |
+| W-02 | White-label branding (basic) — Agency Pro logo + brand colour on PDF/report | High | M | Phase 3 | |
+| W-03 | White-label domain — agencies serve reports on own subdomain | Medium | L | Phase 4 | |
+| W-04 | Bulk report mode — upload CSV of school names, get combined PDF | Medium | L | Phase 4 | |
+| W-05 | Agency dashboard — usage stats, credits, team seats, report history | Medium | L | Phase 3 | |
+| W-06 | API access — programmatic querying + embed in agency tools | Low | XL | Phase 4 | |
+
+### Internationalisation
+
+| ID | Title | Priority | Effort | Phase | Notes |
+|---|---|---|---|---|---|
+| I-01 | Mandarin language support — UI + report output in Simplified Chinese | High | L | Phase 4 | |
+| I-02 | Mandarin input handling — Chinese-character school names → UK records | Medium | M | Phase 4 | |
+| I-03 | WeChat sharing/integration — report sharing, mini-programme if traction | Low | XL | Phase 4 | |
+| I-04 | Russian language support — UI + report output in Russian | Low | L | Phase 4 | |
+
+### SEO & Marketing Infrastructure
+
+| ID | Title | Priority | Effort | Phase | Notes |
+|---|---|---|---|---|---|
+| S-01 | School landing page pipeline — /schools/[slug], lite public report + CTA | High | M | Phase 2 | |
+| S-02 | Area landing page pipeline — /area/[postcode], "Best schools in SE15" SEO | High | M | Phase 2 | |
+| S-03 | Sitemap generation — auto from school + area pages, Google Search Console | Medium | S | Phase 2 | |
+| S-04 | Marketing Agent: SEO module — batch SEO content from CSV, integrate with deploy | Medium | S | Phase 2 | |
+| S-05 | Marketing Agent: B2B module — firm research + outreach emails, test 10 targets | High | XS | Phase 2 | |
+| S-06 | Google Analytics / PostHog — searches, branch selections, paywall, conversions | High | S | Phase 1 | |
+
+### Infrastructure & Data
+
+| ID | Title | Priority | Effort | Phase | Notes |
+|---|---|---|---|---|---|
+| D-01 | API cost instrumentation — log tokens + estimated cost per report | Critical | S | Phase 1 | |
+| D-02 | Rate limiting — N searches per IP per day on free tier | High | S | Phase 2 | |
+| D-03 | Data freshness monitoring — alert on Ofsted/GIAS/DfE structure changes | Medium | M | Phase 2 | |
+| D-04 | AWS scaling review — CloudFront + backend config for traffic spikes | Medium | S | Phase 2 | |
+| D-05 | School data cache — cache parsed gov data per school, TTL 7 days | High | M | Phase 2 | See also TD-003, TD-004, TD-007 |
+| D-06 | Error handling & fallbacks — graceful degradation, partial report not error page | High | S | Phase 1 | See also TD-005 |
+
+### Summary Counts
+
+- **Critical:** 5 (B-04, U-01, U-05, M-06, D-01)
+- **High:** 21
+- **Medium:** 14
+- **Low:** 5
+- **Total:** 45 product backlog items + 21 tech debt entries = 66 tracked items
