@@ -424,25 +424,15 @@
 
       headingRow.appendChild(heading);
 
-      if (flag === "red") {
-        const badge = document.createElement("span");
-        badge.className = "section-flag section-flag--red";
-        badge.title = "Concern — review carefully";
-        badge.textContent = "🔴";
-        headingRow.appendChild(badge);
-      } else if (flag === "green") {
-        const badge = document.createElement("span");
-        badge.className = "section-flag section-flag--green";
-        badge.title = "Positive result";
-        badge.textContent = "🟢";
-        headingRow.appendChild(badge);
-      }
-
       // Per-section feedback mini-widget (beta)
       if (ENABLE_SECTION_FEEDBACK) {
         const mini = document.createElement("span");
         mini.className = "section-feedback-mini";
         mini.setAttribute("data-section", section.heading || "");
+
+        const label = document.createElement("span");
+        label.className = "sfm-label";
+        label.textContent = "Was it useful?";
 
         const upBtn = document.createElement("button");
         upBtn.className = "sfm-btn sfm-up";
@@ -462,9 +452,10 @@
 
         const thanks = document.createElement("span");
         thanks.className = "sfm-thanks";
-        thanks.textContent = "✓";
+        thanks.textContent = "✓ Thanks";
         thanks.hidden = true;
 
+        mini.appendChild(label);
         mini.appendChild(upBtn);
         mini.appendChild(downBtn);
         mini.appendChild(thanks);

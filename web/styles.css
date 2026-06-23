@@ -412,10 +412,7 @@ input[type="email"]:focus,
   padding-bottom: 0;
 }
 .section-flag {
-  font-size: 0.85rem;
-  line-height: 1;
-  flex-shrink: 0;
-  cursor: default;
+  display: none; /* removed — per-section feedback replaces flag dots */
 }
 
 /* Section heading — sans-serif label, visually separate from body */
@@ -706,44 +703,55 @@ input[type="email"]:focus,
 .section-feedback-mini {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 0.35rem;
   flex-shrink: 0;
-  margin-right: 0.15rem;
+  margin-right: 0.25rem;
+  margin-left: auto;
+}
+
+.sfm-label {
+  font-size: 0.7rem;
+  color: #999;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .sfm-btn {
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 2.4rem;
+  height: 2.4rem;
   border-radius: 999px;
-  border: 1px solid transparent;
-  background: transparent;
-  font-size: 0.65rem;
+  border: 1.5px solid #ddd;
+  background: #fff;
+  font-size: 1.05rem;
   cursor: pointer;
   padding: 0;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.35;
-  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+  opacity: 0.55;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s, transform 0.1s;
 }
 
 .sfm-btn:hover {
-  opacity: 0.85;
-  background: #f5f5f5;
-  border-color: #ddd;
+  opacity: 1;
+  background: #f9f9f9;
+  border-color: #bbb;
+  transform: scale(1.08);
 }
 
 .sfm-btn:focus {
   outline: 2px solid rgba(143, 59, 22, 0.3);
   outline-offset: 1px;
-  opacity: 0.85;
+  opacity: 1;
 }
 
 .sfm-thanks {
-  font-size: 0.6rem;
-  color: #999;
+  font-size: 0.75rem;
+  color: #666;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .security-list code {
