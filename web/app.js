@@ -79,22 +79,25 @@
         ? "/api/analytics/click"
         : "https://ep6az35owvnis2c6n6wcl7axyy0elrlh.lambda-url.eu-west-2.on.aws/api/analytics/click";
 
-      function sendTo(url) {
-        try {
-          if (navigator.sendBeacon) {
-            navigator.sendBeacon(url, blob);
-          } else {
-            fetch(url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: body,
-              keepalive: true
-            }).catch(function () {});
-          }
-        } catch (_e) {}
+      // sendBeacon can fail for cross-origin requests — always fall back to fetch
+      try {
+        var queued = navigator.sendBeacon && navigator.sendBeacon(analyticsUrl, blob);
+        if (!queued) {
+          fetch(analyticsUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: body,
+            keepalive: true
+          }).catch(function () {});
+        }
+      } catch (_e) {
+        fetch(analyticsUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: body,
+          keepalive: true
+        }).catch(function () {});
       }
-
-      sendTo(analyticsUrl);
     } catch (_e) {}
   }
 
