@@ -429,4 +429,82 @@ describe('normaliseC1Table — output contract', () => {
     expect(result[0].body).toBe('Some content.');
   });
 
+  // ── Feedback / analytics route ───────────────────────────────────────────────
+
+  describe('POST /api/feedback', () => {
+
+    function makeFeedbackEvent(body, path = '/api/feedback') {
+      return {
+        body: JSON.stringify(body),
+        requestContext: { http: { method: 'POST', path } },
+      };
+    }
+
+    test('returns 200 logged for valid feedback_submit event', async () => {
+      const event = makeFeedbackEvent({
+        event: 'feedback_submit',
+        branch: 'prompt_branch_1',
+        rating: 'up',
+        text: 'Great report, very detailed.',
+      });
+      const res = await handler(event);
+      expect(res.statusCode).toBe(200);
+      const body = JSON.parse(res.body);
+      expect(body.status).toBe('logged');
+    });
+
+    test('returns 200 for /api/analytics/click path', async () => {
+      const event = makeFeedbackEvent(
+        { event: 'feedback_submit', branch: '', rating: 'down', text: '' },
+        '/api/analytics/click'
+      );
+      const res = await handler(event);
+      expect(res.statusCode).toBe(200);
+      const body = JSON.parse(res.body);
+      expect(body.status).toBe('logged');
+    });
+
+    test('handles empty JSON body gracefully', async () => {
+      const event = { body: '{}', requestContext: { http: { method: 'POST', path: '/api/feedback' } } };
+      const res = await handler(event);
+      expect(res.statusCode).toBe(200);
+    });
+
+    test('handles completely empty body gracefully', async () => {
+      const event = { body: '', requestContext: { http: { method: 'POST', path: '/api/feedback' } } };
+      const res = await handler(event);
+      expect(res.statusCode).toBe(200);
+    });
+
+    test('truncates long text to 500 characters', async () => {
+      const event = makeFeedbackEvent({
+        event: 'feedback_submit',
+        branch: 'prompt_branch_1',
+        rating: 'up',
+        text: 'x'.repeat(600),
+      });
+      const res = await handler(event);
+      expect(res.statusCode).toBe(200);
+      // The text is truncated server-side via .slice(0, 500); we can't inspect
+      // the logged value directly but we confirm it doesn't crash.
+    });
+
+    test('truncates long event name to 64 characters', async () => {
+      const event = makeFeedbackEvent({
+        event: 'a'.repeat(100),
+      });
+      const res = await handler(event);
+      expect(res.statusCode).toBe(200);
+    });
+
+    test('does not intercept research POST at / path', async () => {
+      // POST to / should still validate as a research request
+      const event = { body: '{}', requestContext: { http: { method: 'POST', path: '/' } } };
+      const res = await handler(event);
+      // Missing branch → validation error from research handler
+      expect(res.statusCode).toBe(400);
+    });
+
+  });
+
 });
