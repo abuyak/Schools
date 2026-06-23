@@ -671,16 +671,22 @@
 
   var feedbackSubmitted = false;
 
+  // Init feedback panel visibility (CSS flex overrides HTML hidden attribute)
+  (function () {
+    var fr = document.getElementById("feedback-form-row");
+    var th = document.getElementById("feedback-thanks");
+    if (fr) fr.style.display = "";
+    if (th) th.style.display = "none";
+  })();
+
   function resetFeedbackForm() {
     feedbackSubmitted = false;
-    var panel = document.getElementById("feedback-panel");
     var formRow = document.getElementById("feedback-form-row");
     var thanks = document.getElementById("feedback-thanks");
     var textEl = document.getElementById("feedback-text");
     var emailEl = document.getElementById("feedback-email");
-    if (panel) panel.hidden = false;
-    if (formRow) formRow.hidden = false;
-    if (thanks) thanks.hidden = true;
+    if (formRow) formRow.style.display = "";
+    if (thanks) thanks.style.display = "none";
     if (textEl) textEl.value = "";
     if (emailEl) emailEl.value = "";
   }
@@ -690,7 +696,6 @@
     var btn = e.target.closest("#feedback-submit");
     if (!btn) return;
 
-    console.log("feedback: submit clicked", { text: document.getElementById("feedback-text")?.value, email: document.getElementById("feedback-email")?.value });
     e.preventDefault();
     var textEl = document.getElementById("feedback-text");
     var emailEl = document.getElementById("feedback-email");
@@ -705,8 +710,8 @@
 
     var formRow = document.getElementById("feedback-form-row");
     var thanks = document.getElementById("feedback-thanks");
-    if (formRow) formRow.hidden = true;
-    if (thanks) thanks.hidden = false;
+    if (formRow) formRow.style.display = "none";
+    if (thanks) thanks.style.display = "";
   });
 
   form.addEventListener("submit", submitQuestion);
