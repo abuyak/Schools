@@ -685,14 +685,13 @@
     if (emailEl) emailEl.value = "";
   }
 
-  // Delegated handler on document — works regardless of when the
-  // button is created or whether getElementById finds it.
+  // Delegated on document — same reliable pattern as per-section thumbs.
   document.addEventListener("click", function (e) {
     var btn = e.target.closest("#feedback-submit");
     if (!btn) return;
-    if (feedbackSubmitted) return;
-    feedbackSubmitted = true;
 
+    console.log("feedback: submit clicked", { text: document.getElementById("feedback-text")?.value, email: document.getElementById("feedback-email")?.value });
+    e.preventDefault();
     var textEl = document.getElementById("feedback-text");
     var emailEl = document.getElementById("feedback-email");
     var text = (textEl ? textEl.value : "").trim().slice(0, 1000);
