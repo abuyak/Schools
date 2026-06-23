@@ -614,21 +614,34 @@
     var mini = btn.closest(".section-feedback-mini");
     if (!mini) return;
 
+    // Guard against double-fires: once submitted, ignore further clicks
+    if (mini.getAttribute("data-submitted") === "true") return;
+    mini.setAttribute("data-submitted", "true");
+
     var section = mini.getAttribute("data-section") || "";
     var rating = btn.getAttribute("data-rating") || "";
 
-    // Fire analytics
+    // Fire analytics (exactly once)
     trackEvent("section_feedback", {
       branch: branchInput.value || "",
       section: section,
       rating: rating
     });
 
-    // Visual feedback: hide buttons, show thanks
-    var buttons = mini.querySelectorAll(".sfm-btn");
-    buttons.forEach(function (b) { b.hidden = true; });
-    var thanks = mini.querySelector(".sfm-thanks");
-    if (thanks) thanks.hidden = false;
+    // Show pressed state on the clicked button, dim the other
+    var sibling = rating === "up"
+      ? mini.querySelector(".sfm-down")
+      : mini.querySelector(".sfm-up");
+    btn.classList.add("is-pressed");
+    if (sibling) sibling.classList.add("is-dimmed");
+
+    // Transition to thanks after a brief pause so the user sees which one they pressed
+    setTimeout(function () {
+      var buttons = mini.querySelectorAll(".sfm-btn");
+      buttons.forEach(function (b) { b.hidden = true; });
+      var thanks = mini.querySelector(".sfm-thanks");
+      if (thanks) thanks.hidden = false;
+    }, 600);
   });
 
   form.addEventListener("submit", submitQuestion);
