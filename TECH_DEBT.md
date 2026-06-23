@@ -524,6 +524,38 @@ This affects:
 
 ---
 
+## TD-022 · Branch 1 — A7 median property price needs flats vs houses breakdown
+
+**Severity:** Medium — blended median hides important catchment signal  
+**File:** `functions/research/govuk.js` → `getAreaData()` / `fmtAreaDataSlim()`
+
+**Problem:**
+The A7 Area Context section currently shows a single median property price for the school's postcode area. This blended figure mixes flats, terraced houses, semi-detached, and detached — obscuring the real affordability signal. A parent deciding whether they can afford to live in a school's catchment needs to see:
+
+- Median flat price (entry-level affordability)
+- Median house price (family-home affordability)
+- Ideally: terraced vs semi-detached vs detached breakdown
+
+The ONS/Land Registry price data already breaks down by property type. We're just not surfacing it.
+
+**Fix:**
+1. In `getAreaData()`, fetch or extract property-type breakdown from the price data source
+2. In `fmtAreaDataSlim()`, render a mini sub-table under A7:
+   ```
+   | Property type | Median price |
+   |---|---:|
+   | Flat | £320,000 |
+   | Terraced | £485,000 |
+   | Semi-detached | £610,000 |
+   | Detached | £890,000 |
+   | Overall | £525,000 |
+   ```
+3. If only overall median is available, note this in the slim block so the AI doesn't fabricate breakdowns
+
+**Done when:** A7 shows property-type price breakdown (at minimum: flats vs houses) alongside the blended median.
+
+---
+
 ## Product Backlog (from SchoolScanner-Backlog.docx v1.0, May 2026)
 
 Items imported from `docs/requirements/SchoolScanner-Backlog.docx`. Priority/Effort/Phase as defined in that document. Items already covered by TD entries above are cross-referenced.
