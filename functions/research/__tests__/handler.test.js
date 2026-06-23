@@ -508,6 +508,41 @@ describe('normaliseC1Table — output contract', () => {
       expect(res.statusCode).toBe(200);
     });
 
+    test('captures bottom-form feedback_submit with text and email', async () => {
+      const event = makeFeedbackEvent({
+        event: 'feedback_submit',
+        branch: 'prompt_branch_1',
+        text: 'The A3 progress table is missing KS2 data.',
+        email: 'parent@example.com',
+      });
+      const res = await handler(event);
+      expect(res.statusCode).toBe(200);
+      const body = JSON.parse(res.body);
+      expect(body.status).toBe('logged');
+    });
+
+    test('captures bottom-form feedback_submit without email', async () => {
+      const event = makeFeedbackEvent({
+        event: 'feedback_submit',
+        branch: 'prompt_branch_2',
+        text: 'Missing independent school comparison.',
+        email: '',
+      });
+      const res = await handler(event);
+      expect(res.statusCode).toBe(200);
+    });
+
+    test('captures bottom-form feedback_submit with empty text', async () => {
+      const event = makeFeedbackEvent({
+        event: 'feedback_submit',
+        branch: 'prompt_branch_1',
+        text: '',
+        email: '',
+      });
+      const res = await handler(event);
+      expect(res.statusCode).toBe(200);
+    });
+
     test('does not intercept research POST at / path', async () => {
       // POST to / should still validate as a research request
       const event = { body: '{}', requestContext: { http: { method: 'POST', path: '/' } } };
