@@ -79,7 +79,10 @@
         ? "/api/analytics/click"
         : "https://ep6az35owvnis2c6n6wcl7axyy0elrlh.lambda-url.eu-west-2.on.aws/api/analytics/click";
 
-      // sendBeacon can fail for cross-origin requests — always fall back to fetch
+      // sendBeacon for cross-origin, fetch as fallback.
+      // Explicitly omit credentials — analytics are anonymous and
+      // credentials: 'include' (triggered by keepalive) breaks CORS
+      // unless the Lambda returns Access-Control-Allow-Credentials.
       try {
         var queued = navigator.sendBeacon && navigator.sendBeacon(analyticsUrl, blob);
         if (!queued) {
@@ -87,7 +90,8 @@
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: body,
-            keepalive: true
+            keepalive: true,
+            credentials: "omit"
           }).catch(function () {});
         }
       } catch (_e) {
@@ -95,7 +99,8 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: body,
-          keepalive: true
+          keepalive: true,
+          credentials: "omit"
         }).catch(function () {});
       }
     } catch (_e) {}
