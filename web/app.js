@@ -62,21 +62,39 @@
   }
 
   // Fire-and-forget analytics event. Silently swallows all errors.
+  // Sends to the local server (relative path) in dev, or to the Lambda
+  // Function URL in production, since CloudFront only routes /api/research.
   function trackEvent(name, props) {
     try {
       var payload = Object.assign({ event: name }, props || {});
-      if (navigator.sendBeacon) {
+      var body = JSON.stringify(payload);
+      var blob = new Blob([body], { type: "application/json" });
+
+      // On localhost, the PowerShell server handles /api/analytics/click.
+      // On CloudFront, only /api/research is routed to Lambda — analytics
+      // paths 404 from S3. Fall back to the raw Lambda URL so feedback
+      // events actually land in CloudWatch.
+      var isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      var analyticsUrl = isLocal
+        ? "/api/analytics/click"
+        : "https://ep6az35owvnis2c6n6wcl7axyy0elrlh.lambda-url.eu-west-2.on.aws/api/analytics/click";
+
+      function sendTo(url) {
         try {
-          navigator.sendBeacon("/api/analytics/click", new Blob([JSON.stringify(payload)], { type: "application/json" }));
-          return;
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon(url, blob);
+          } else {
+            fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: body,
+              keepalive: true
+            }).catch(function () {});
+          }
         } catch (_e) {}
       }
-      fetch("/api/analytics/click", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        keepalive: true
-      }).catch(function () {});
+
+      sendTo(analyticsUrl);
     } catch (_e) {}
   }
 
