@@ -96,32 +96,22 @@
         </div>
       </div>
 
-      <div class="support-panel">
-        <p class="support-note">This research cost real money to run. If it saved you an hour of Googling, a coffee keeps it going.</p>
-        <a
-          id="coffee-cta"
-          class="coffee-cta"
-          href="https://paypal.me/SchoolsScanner"
-          data-base-url="https://paypal.me/SchoolsScanner"
-          data-placement="results"
-          target="_blank"
-          rel="noopener noreferrer"
-        >☕ Buy me a coffee</a>
-      </div>
-
-      <div class="feedback-panel">
+      <div class="feedback-panel" id="feedback-panel">
         <div class="feedback-copy">
-          <p class="feedback-heading">Help us improve</p>
-          <p class="feedback-note">Found an issue? Missing information you expected to see? Got 30 seconds? Every response is read and acted on.</p>
+          <p class="feedback-heading">Was this useful?</p>
+          <p class="feedback-note">Real answers cost real money to run. Every response is read and acted on.</p>
         </div>
-        <a
-          id="feedback-cta"
-          class="feedback-cta"
-          href="https://forms.gle/iebTwABtatDZxcxe7"
-          data-placement="results"
-          target="_blank"
-          rel="noopener noreferrer"
-        >Leave feedback →</a>
+        <div class="feedback-actions" id="feedback-actions">
+          <button class="feedback-btn thumbs-up" id="feedback-up" type="button" aria-label="Thumbs up — this was helpful">👍</button>
+          <button class="feedback-btn thumbs-down" id="feedback-down" type="button" aria-label="Thumbs down — this needs work">👎</button>
+        </div>
+        <div class="feedback-form" id="feedback-form" hidden>
+          <textarea id="feedback-text" class="feedback-text" placeholder="What worked? What was missing? (optional)" maxlength="500" rows="2"></textarea>
+          <button class="feedback-submit" id="feedback-submit" type="button">Send</button>
+        </div>
+        <div class="feedback-thanks" id="feedback-thanks" hidden>
+          <span class="thanks-icon">✓</span> Thanks — every response is read.
+        </div>
       </div>
     </section>
 

@@ -19,8 +19,14 @@
   const premiumPoints = document.getElementById("premium-points");
   const gateNote = document.getElementById("gate-note");
   const premiumPanel = document.getElementById("premium-panel");
-  const coffeeCta = document.getElementById("coffee-cta");
-  const feedbackCta = document.getElementById("feedback-cta");
+  const feedbackPanel = document.getElementById("feedback-panel");
+  const feedbackUp = document.getElementById("feedback-up");
+  const feedbackDown = document.getElementById("feedback-down");
+  const feedbackForm = document.getElementById("feedback-form");
+  const feedbackText = document.getElementById("feedback-text");
+  const feedbackSubmit = document.getElementById("feedback-submit");
+  const feedbackThanks = document.getElementById("feedback-thanks");
+  const feedbackActions = document.getElementById("feedback-actions");
 
   // ── Section collapse/expand ───────────────────────────────────────────
 
@@ -478,33 +484,14 @@
       sectionsToolbar.hidden = true;
     }
 
-    if (coffeeCta) {
-      const status = result.status || "";
-      const branch = branchInput.value || "";
-      const utm = new URLSearchParams({
-        utm_source: "school_scanner",
-        utm_medium: "referral",
-        utm_campaign: "donation",
-        utm_content: status ? "answer_" + status : "answer"
-      });
-
-      if (branch) {
-        utm.set("utm_term", branch);
-      }
-
-      const baseUrl = coffeeCta.getAttribute("data-base-url") || coffeeCta.href;
-      try {
-        const url = new URL(baseUrl);
-        url.searchParams.forEach(function (_value, key) {
-          if (utm.has(key)) {
-            utm.delete(key);
-          }
-        });
-        url.search = utm.toString();
-        coffeeCta.href = url.toString();
-      } catch (_error) {
-        // If base URL is invalid, keep existing href.
-      }
+    // Reset feedback widget for new result
+    if (feedbackPanel) {
+      feedbackActions.hidden = false;
+      feedbackForm.hidden = true;
+      feedbackThanks.hidden = true;
+      if (feedbackUp) feedbackUp.classList.remove("is-selected");
+      if (feedbackDown) feedbackDown.classList.remove("is-selected");
+      if (feedbackText) feedbackText.value = "";
     }
 
     if (ENABLE_PAYWALL) {
@@ -608,21 +595,54 @@
     selectBranch(card.getAttribute("data-branch"));
   });
 
-  if (coffeeCta) {
-    coffeeCta.addEventListener("click", function () {
-      trackEvent("cta_click", {
-        branch: branchInput.value || "",
-        placement: coffeeCta.getAttribute("data-placement") || "results"
-      });
+  // ── Feedback widget ──────────────────────────────────────────────────
+
+  var feedbackRating = null; // "up" or "down"
+
+  function showFeedbackForm() {
+    feedbackActions.hidden = true;
+    feedbackForm.hidden = false;
+    feedbackText.focus();
+  }
+
+  function submitFeedback() {
+    var text = (feedbackText.value || "").trim().slice(0, 500);
+    trackEvent("feedback_submit", {
+      branch: branchInput.value || "",
+      rating: feedbackRating || "none",
+      text: text
+    });
+    feedbackForm.hidden = true;
+    feedbackThanks.hidden = false;
+  }
+
+  if (feedbackUp) {
+    feedbackUp.addEventListener("click", function () {
+      feedbackRating = "up";
+      feedbackUp.classList.add("is-selected");
+      if (feedbackDown) feedbackDown.classList.remove("is-selected");
+      showFeedbackForm();
     });
   }
 
-  if (feedbackCta) {
-    feedbackCta.addEventListener("click", function () {
-      trackEvent("feedback_click", {
-        branch: branchInput.value || "",
-        placement: feedbackCta.getAttribute("data-placement") || "results"
-      });
+  if (feedbackDown) {
+    feedbackDown.addEventListener("click", function () {
+      feedbackRating = "down";
+      feedbackDown.classList.add("is-selected");
+      if (feedbackUp) feedbackUp.classList.remove("is-selected");
+      showFeedbackForm();
+    });
+  }
+
+  if (feedbackSubmit) {
+    feedbackSubmit.addEventListener("click", submitFeedback);
+  }
+
+  if (feedbackText) {
+    feedbackText.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        submitFeedback();
+      }
     });
   }
 

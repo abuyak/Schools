@@ -181,7 +181,7 @@ function Build-AnalyticsDashboard {
         submits         = @($fe | Where-Object { [string]$_.name -eq "question_submitted" }).Count
         resultsRendered = @($fe | Where-Object { [string]$_.name -eq "result_rendered" }).Count
         ctaClicks       = @($fe | Where-Object { [string]$_.name -eq "cta_click" }).Count
-        feedbackClicks  = @($fe | Where-Object { [string]$_.name -eq "feedback_click" }).Count
+        feedbackSubmits = @($fe | Where-Object { [string]$_.name -eq "feedback_submit" }).Count
     }
 
     $recentRows = @()
@@ -358,7 +358,7 @@ var feItems=[
   {v:fe.submits||0,          l:'Questions submitted'},
   {v:fe.resultsRendered||0,  l:'Results rendered'},
   {v:fe.ctaClicks||0,        l:'Coffee CTA clicks'},
-  {v:fe.feedbackClicks||0,   l:'Feedback clicks'}
+  {v:fe.feedbackSubmits||0,  l:'Feedback submissions'}
 ];
 var feEl=document.getElementById('fe-grid');
 feItems.forEach(function(o){

@@ -521,7 +521,7 @@ try {
                 }
 
                 $props = @{}
-                foreach ($key in @("branch", "placement", "ms", "utm_campaign", "utm_content")) {
+                foreach ($key in @("branch", "placement", "ms", "utm_campaign", "utm_content", "rating", "text")) {
                     if ($body.ContainsKey($key)) {
                         $value = [string]$body[$key]
                         if ($value.Length -le 128) {

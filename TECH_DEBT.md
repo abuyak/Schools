@@ -551,11 +551,11 @@ Items imported from `docs/requirements/SchoolScanner-Backlog.docx`. Priority/Eff
 
 | ID | Title | Priority | Effort | Phase | Notes |
 |---|---|---|---|---|---|
-| U-01 | Feedback widget — thumbs up/down + optional text, anonymous, no account | Critical | S | Phase 1 | |
+| U-01 | Feedback widget — thumbs up/down + optional text, anonymous, no account | ✅ **Done** | — | — | Inline widget in `web/app.js`. Tied to analytics: `trackEvent("feedback_submit")` → `POST /api/analytics/click` (local server → JSONL) and `POST /api/feedback` (Lambda → CloudWatch). Dashboard counts `feedbackSubmits`. |
 | U-02 | Loading state with progress — show what tool is doing during generation | High | S | Phase 1 | |
 | U-03 | Blurred paywall gate — Part B/C blurred, not hidden, clear unlock CTA | High | M | Phase 2 | |
 | U-04 | Source list cleanup — curate 6–8 links, hide secondary behind toggle | High | S | Phase 1 | |
-| U-05 | Remove Buy Me a Coffee — replace with B2B-aligned CTA | Critical | XS | Phase 1 | |
+| U-05 | Remove Buy Me a Coffee — replace with B2B-aligned CTA | ✅ **Done** | — | — | Removed alongside U-01. Support panel replaced by inline feedback widget. |
 | U-06 | Input hint placement — move guidance above/inside input box | Medium | XS | Phase 1 | |
 | U-07 | Mobile responsiveness audit — tables, traffic lights on breakpoints | Medium | S | Phase 2 | |
 | U-08 | Email capture widget — Tally.so embed on homepage, no auth needed | High | XS | Phase 1 | |

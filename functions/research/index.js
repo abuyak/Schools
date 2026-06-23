@@ -968,6 +968,20 @@ export const handler = async (event) => {
     return okResponse({ status: 'processing', _jobId: jobId });
   }
 
+  // ── POST: analytics / feedback (fire-and-forget) ──────────────────────────────
+  const path = event.requestContext?.http?.path ?? '/';
+  if (method === 'POST' && (path === '/api/feedback' || path === '/api/analytics/click')) {
+    let fbBody;
+    try { fbBody = JSON.parse(event.body ?? '{}'); } catch { fbBody = {}; }
+    log('feedback', {
+      name: (fbBody.event || 'feedback').slice(0, 64),
+      branch: (fbBody.branch || '').slice(0, 32),
+      rating: (fbBody.rating || '').slice(0, 8),
+      text: (fbBody.text || '').slice(0, 500)
+    });
+    return okResponse({ status: 'logged', httpStatus: 200 });
+  }
+
   // ── POST: research request ──────────────────────────────────────────────────
 
   // Parse body
