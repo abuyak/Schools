@@ -177,12 +177,31 @@ function Build-AnalyticsDashboard {
 
     $fe      = @($events | Where-Object { [string]$_.name -ne "research_request" })
     $feStats = [ordered]@{
-        branchSelects   = @($fe | Where-Object { [string]$_.name -eq "branch_selected" }).Count
-        submits         = @($fe | Where-Object { [string]$_.name -eq "question_submitted" }).Count
-        resultsRendered = @($fe | Where-Object { [string]$_.name -eq "result_rendered" }).Count
-        ctaClicks       = @($fe | Where-Object { [string]$_.name -eq "cta_click" }).Count
-        feedbackSubmits = @($fe | Where-Object { [string]$_.name -eq "feedback_submit" }).Count
+        branchSelects    = @($fe | Where-Object { [string]$_.name -eq "branch_selected" }).Count
+        submits          = @($fe | Where-Object { [string]$_.name -eq "question_submitted" }).Count
+        resultsRendered  = @($fe | Where-Object { [string]$_.name -eq "result_rendered" }).Count
+        ctaClicks        = @($fe | Where-Object { [string]$_.name -eq "cta_click" }).Count
+        feedbackSubmits  = @($fe | Where-Object { [string]$_.name -in @("feedback_submit","section_feedback") }).Count
+        feedbackUp       = @($fe | Where-Object { [string]$_.name -in @("feedback_submit","section_feedback") -and (Get-EventProp -Event $_ -Key "rating") -eq "up" }).Count
+        feedbackDown     = @($fe | Where-Object { [string]$_.name -in @("feedback_submit","section_feedback") -and (Get-EventProp -Event $_ -Key "rating") -eq "down" }).Count
     }
+
+    # Per-section feedback breakdown
+    $sectionFeedback = [ordered]@{}
+    $sectionFbEvents = @($fe | Where-Object { [string]$_.name -eq "section_feedback" })
+    foreach ($ev in $sectionFbEvents) {
+        $sec = Get-EventProp -Event $ev -Key "section"
+        $rat = Get-EventProp -Event $ev -Key "rating"
+        if ([string]::IsNullOrWhiteSpace($sec)) { continue }
+        if (-not $sectionFeedback.ContainsKey($sec)) {
+            $sectionFeedback[$sec] = @{ up = 0; down = 0 }
+        }
+        if ($rat -eq "up")   { $sectionFeedback[$sec].up += 1 }
+        if ($rat -eq "down") { $sectionFeedback[$sec].down += 1 }
+    }
+    $sectionFeedbackRows = @($sectionFeedback.GetEnumerator() | ForEach-Object {
+        [ordered]@{ section = $_.Key; up = $_.Value.up; down = $_.Value.down; total = $_.Value.up + $_.Value.down }
+    } | Sort-Object { -$_.total }, { -$_.up })
 
     $recentRows = @()
     if ($events.Count -gt 0) {
@@ -199,6 +218,8 @@ function Build-AnalyticsDashboard {
                     "result_rendered"    { "$((Get-EventProp -Event $ev -Key 'branch') -replace 'prompt_branch_','p'), $([Math]::Round([int](Get-EventProp -Event $ev -Key 'ms' -Default 0)/1000,1))s" }
                     "cta_click"          { Get-EventProp -Event $ev -Key "placement" }
                     "feedback_click"     { Get-EventProp -Event $ev -Key "placement" }
+                    "section_feedback"   { "$(Get-EventProp -Event $ev -Key 'section'), $(Get-EventProp -Event $ev -Key 'rating')" }
+                    "feedback_submit"    { "rating: $(Get-EventProp -Event $ev -Key 'rating'), text: $([string](Get-EventProp -Event $ev -Key 'text')).Substring(0,[Math]::Min(40, [string](Get-EventProp -Event $ev -Key 'text')).Length))$(if ([string](Get-EventProp -Event $ev -Key 'text').Length -gt 40) { '...' })" }
                     default              { "" }
                 }
                 $city    = Get-EventProp -Event $ev -Key "city"
@@ -229,8 +250,9 @@ function Build-AnalyticsDashboard {
         last7d       = $last7d
         byBranch     = @($byBranch)
         daily        = $daily
-        fe           = $feStats
-        topCountries = @($topCountries)
+        fe              = $feStats
+        sectionFeedback = $sectionFeedbackRows
+        topCountries    = @($topCountries)
         recentRows   = @($recentRows)
         generatedAt  = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
     } | ConvertTo-Json -Depth 6 -Compress
@@ -291,6 +313,10 @@ function Build-AnalyticsDashboard {
 
 <h2>Frontend Events</h2>
 <div class="grid4 grid5" id="fe-grid"></div>
+
+<h2>Per-Section Feedback</h2>
+<div id="section-feedback-wrap" style="font-size:.85rem;color:#55637d;margin-bottom:.5rem"></div>
+<table id="section-feedback-table"><thead><tr><th>Section</th><th>👍 Up</th><th>👎 Down</th><th>Total</th></tr></thead><tbody id="sf-body"></tbody></table>
 
 <h2>Recent Events</h2>
 <table><thead><tr><th>Time</th><th>Event</th><th>Detail</th><th>Location</th></tr></thead><tbody id="recent-body"></tbody></table>
@@ -358,7 +384,8 @@ var feItems=[
   {v:fe.submits||0,          l:'Questions submitted'},
   {v:fe.resultsRendered||0,  l:'Results rendered'},
   {v:fe.ctaClicks||0,        l:'Coffee CTA clicks'},
-  {v:fe.feedbackSubmits||0,  l:'Feedback submissions'}
+  {v:fe.feedbackSubmits||0,  l:'Feedback submissions'},
+  {v:(fe.feedbackUp||0)+' / '+(fe.feedbackDown||0), l:'👍 up / 👎 down'}
 ];
 var feEl=document.getElementById('fe-grid');
 feItems.forEach(function(o){
@@ -366,6 +393,25 @@ feItems.forEach(function(o){
   d.innerHTML='<div class="val">'+o.v+'</div><div class="lbl">'+o.l+'</div>';
   feEl.appendChild(d);
 });
+
+// Per-section feedback breakdown
+var sfRows=S.sectionFeedback||[];
+var sfWrap=document.getElementById('section-feedback-wrap');
+var sfBody=document.getElementById('sf-body');
+if(sfRows.length===0){
+  sfWrap.textContent='No per-section feedback yet. Click 👍/👎 on any section heading in a report.';
+  document.getElementById('section-feedback-table').hidden=true;
+}else{
+  sfWrap.textContent=sfRows.length+' section(s) rated · click column headers to compare';
+  sfRows.forEach(function(r){
+    var tr=document.createElement('tr');
+    var ratio=r.total>0 ? Math.round(r.up/r.total*100)+'%' : '—';
+    tr.innerHTML='<td>'+he(r.section)+'</td><td>'+r.up+'</td><td>'+r.down+'</td><td>'+r.total+' ('+ratio+' up)';
+    sfBody.appendChild(tr);
+  });
+}
+
+function he(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 // Recent events
 var rb=document.getElementById('recent-body');

@@ -163,6 +163,28 @@ Resources:
                   "query": "SOURCE '/aws/lambda/${FnName}' | filter event = 'research_request' and status = 'completed' | fields ts, branch, ms, question | sort ts desc | limit 20",
                   "period": 86400
                 }
+              },
+              {
+                "type": "log",
+                "x": 0, "y": 12, "width": 12, "height": 4,
+                "properties": {
+                  "title": "Feedback submissions per day",
+                  "region": "${AWS::Region}",
+                  "view": "bar",
+                  "query": "SOURCE '/aws/lambda/${FnName}' | filter event = 'feedback' | stats count() by bin(1d)",
+                  "period": 86400
+                }
+              },
+              {
+                "type": "log",
+                "x": 12, "y": 12, "width": 12, "height": 4,
+                "properties": {
+                  "title": "Feedback — rated sections",
+                  "region": "${AWS::Region}",
+                  "view": "table",
+                  "query": "SOURCE '/aws/lambda/${FnName}' | filter event = 'feedback' and ispresent(section) and strlen(section) > 0 | fields ts, section, rating | sort ts desc | limit 20",
+                  "period": 86400
+                }
               }
             ]
           }
