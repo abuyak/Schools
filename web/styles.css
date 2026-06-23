@@ -699,6 +699,41 @@ input[type="email"]:focus,
   min-width: 14rem;
 }
 
+/* ── Per-section thumbs (beta) ─────────────────────────────────────── */
+.section-feedback-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  margin-right: 0.25rem;
+  margin-left: auto;
+}
+.sfm-label {
+  font-size: 0.7rem;
+  color: #999;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.sfm-btn {
+  width: 2.4rem; height: 2.4rem;
+  border-radius: 999px;
+  border: 1.5px solid #ddd;
+  background: #fff;
+  font-size: 1.05rem;
+  cursor: pointer;
+  padding: 0; line-height: 1;
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  opacity: 0.55;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.sfm-btn:hover { opacity: 1; background: #f9f9f9; border-color: #bbb; transform: scale(1.08); }
+.sfm-btn:focus { outline: 2px solid rgba(143,59,22,0.3); outline-offset: 1px; opacity: 1; }
+.sfm-btn.is-pressed { opacity: 1; background: #e8f0fe; border-color: #8ab4f8; transform: scale(1.1); }
+.sfm-btn.is-dimmed { opacity: 0.2; pointer-events: none; }
+.sfm-thanks { font-size: 0.7rem; color: #999; flex-shrink: 0; white-space: nowrap; }
+
 /* ── Bottom feedback panel ───────────────────────────────────────────── */
 .feedback-panel {
   margin-top: 2rem;

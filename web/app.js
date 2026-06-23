@@ -2,7 +2,7 @@
   "use strict";
 
   const ENABLE_PAYWALL = false;
-  const ENABLE_SECTION_FEEDBACK = false; // per-section thumbs (disabled — using bottom form instead)
+  const ENABLE_SECTION_FEEDBACK = true; // per-section thumbs up/down
 
   const form = document.getElementById("question-form");
   const branchInput = document.getElementById("branch-input");
@@ -445,73 +445,40 @@
       // Per-section feedback mini-widget (beta)
       if (ENABLE_SECTION_FEEDBACK) {
         const secHeading = section.heading || "";
-        const prevRating = submittedSections[secHeading];
 
         const mini = document.createElement("span");
         mini.className = "section-feedback-mini";
         mini.setAttribute("data-section", secHeading);
 
-        if (prevRating) {
-          // Section was already rated — show thanks state immediately
-          mini.setAttribute("data-submitted", "true");
-          mini.setAttribute("data-rating", prevRating);
-          const thanks = document.createElement("span");
-          thanks.className = "sfm-thanks";
-          thanks.textContent = "✓ Thanks";
-          headingRow.appendChild(mini.appendChild(thanks));
-        } else {
-          const label = document.createElement("span");
-          label.className = "sfm-label";
-          label.textContent = "Was it useful?";
+        const label = document.createElement("span");
+        label.className = "sfm-label";
+        label.textContent = "Was it useful?";
 
-          const upBtn = document.createElement("button");
-          upBtn.className = "sfm-btn sfm-up";
-          upBtn.type = "button";
-          upBtn.setAttribute("data-rating", "up");
-          upBtn.title = "This section was useful";
-          upBtn.textContent = "👍";
-          upBtn.setAttribute("aria-label", "Thumbs up — this section was useful");
+        const upBtn = document.createElement("button");
+        upBtn.className = "sfm-btn sfm-up";
+        upBtn.type = "button";
+        upBtn.setAttribute("data-rating", "up");
+        upBtn.title = "This section was useful";
+        upBtn.textContent = "👍";
+        upBtn.setAttribute("aria-label", "Thumbs up");
 
-          const downBtn = document.createElement("button");
-          downBtn.className = "sfm-btn sfm-down";
-          downBtn.type = "button";
-          downBtn.setAttribute("data-rating", "down");
-          downBtn.title = "This section needs work";
-          downBtn.textContent = "👎";
-          downBtn.setAttribute("aria-label", "Thumbs down — this section needs work");
+        const downBtn = document.createElement("button");
+        downBtn.className = "sfm-btn sfm-down";
+        downBtn.type = "button";
+        downBtn.setAttribute("data-rating", "down");
+        downBtn.title = "This section needs work";
+        downBtn.textContent = "👎";
+        downBtn.setAttribute("aria-label", "Thumbs down");
 
-          // Optional comment form (hidden until thumbs clicked)
-          const form = document.createElement("span");
-          form.className = "sfm-form";
-          form.hidden = true;
+        const thanks = document.createElement("span");
+        thanks.className = "sfm-thanks";
+        thanks.textContent = "✓";
+        thanks.hidden = true;
 
-          const input = document.createElement("input");
-          input.className = "sfm-input";
-          input.type = "text";
-          input.placeholder = "Email or comment (optional)";
-          input.maxLength = 200;
-
-          const sendBtn = document.createElement("button");
-          sendBtn.className = "sfm-btn sfm-send";
-          sendBtn.type = "button";
-          sendBtn.textContent = "Send";
-          sendBtn.title = "Send feedback";
-          sendBtn.setAttribute("aria-label", "Send feedback");
-
-          form.appendChild(input);
-          form.appendChild(sendBtn);
-
-          const thanks = document.createElement("span");
-          thanks.className = "sfm-thanks";
-          thanks.textContent = "✓ Thanks";
-          thanks.hidden = true;
-
-          mini.appendChild(label);
-          mini.appendChild(upBtn);
-          mini.appendChild(downBtn);
-          mini.appendChild(form);
-          mini.appendChild(thanks);
-        }
+        mini.appendChild(label);
+        mini.appendChild(upBtn);
+        mini.appendChild(downBtn);
+        mini.appendChild(thanks);
         headingRow.appendChild(mini);
       }
 
@@ -654,6 +621,46 @@
       return;
     }
     selectBranch(card.getAttribute("data-branch"));
+  });
+
+  // ── Per-section thumbs (beta) ────────────────────────────────────────
+
+  answerSections.addEventListener("click", function (e) {
+    if (!ENABLE_SECTION_FEEDBACK) return;
+
+    var btn = e.target.closest(".sfm-btn");
+    if (!btn || btn.classList.contains("sfm-send")) return;
+
+    var mini = btn.closest(".section-feedback-mini");
+    if (!mini) return;
+
+    if (mini.getAttribute("data-submitted") === "true") return;
+    mini.setAttribute("data-submitted", "true");
+
+    var section = mini.getAttribute("data-section") || "";
+    var rating = btn.getAttribute("data-rating") || "";
+    mini.setAttribute("data-rating", rating);
+
+    trackEvent("section_feedback", {
+      branch: branchInput.value || "",
+      section: section,
+      rating: rating
+    });
+
+    var sibling = rating === "up"
+      ? mini.querySelector(".sfm-down")
+      : mini.querySelector(".sfm-up");
+    btn.classList.add("is-pressed");
+    if (sibling) sibling.classList.add("is-dimmed");
+
+    setTimeout(function () {
+      var buttons = mini.querySelectorAll(".sfm-btn");
+      buttons.forEach(function (b) { b.hidden = true; });
+      var label = mini.querySelector(".sfm-label");
+      if (label) label.hidden = true;
+      var thanks = mini.querySelector(".sfm-thanks");
+      if (thanks) thanks.hidden = false;
+    }, 400);
   });
 
   // ── Bottom feedback form ─────────────────────────────────────────────
