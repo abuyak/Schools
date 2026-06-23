@@ -407,3 +407,117 @@ averages. Filter codes need mapping to human-readable dimensions.
 1. KS5 LA data is fetched for the school's LA and displayed alongside England values
 2. Minimum: average grade, average points, progress VA, AAB, retention LA values
 3. Multi-year support (like KS4 results over time)
+
+---
+
+## TD-017 · Branch 2 table headers — first column has no title
+
+**Severity:** Low — visual inconsistency with branch 1  
+**File:** `functions/research/govuk.js` → `renderPartAComparison()`
+
+**Problem:**
+Branch 2 side-by-side comparison tables have no title for the first column (the category/label column). Branch 1 tables use "Category" as the first column header. The comparison tables leave it blank, which looks inconsistent.
+
+Example — branch 1:
+```
+| Category | Value | National |
+|---|---|---|
+| Attainment 8 | 55.6 | 46.2 |
+```
+
+Branch 2 (current):
+```
+|  | School A | School B | National |
+|---|---|---|---|
+| Attainment 8 | 55.6 | 48.1 | 46.2 |
+```
+
+**Fix:** Add a first-column label (e.g. "Category" or "Metric") to all `buildTable3` and `buildTable4` calls in `renderPartAComparison()`.
+
+**Done when:** Every branch 2 comparison table has a non-empty first-column header.
+
+---
+
+## TD-018 · Branch 1 — add A8 Parent View section
+
+**Severity:** Medium — valuable parent data missing from single-school reports  
+**File:** `functions/research/govuk.js` → `renderPartA()`
+
+**Problem:**
+Branch 2 (comparison) has a server-rendered A8 Parent View section with table data (% would recommend, % child happy, etc.). Branch 1 (single school) does not — the Parent View data is fetched but not rendered as Part A. The AI is expected to incorporate it into B1, but this is inconsistent: we pre-fetch the data and have it available, yet don't show it server-side.
+
+Branch 1 should render A8 Parent View after A7, following the same pattern as branch 2:
+- Single-school table (not side-by-side)
+- Include national average if available
+- ⚠️ threshold markers
+- Footer explaining thresholds
+
+**Done when:** Branch 1 Part A includes an A8 Parent View section with the same table format as branch 2 (single-column instead of side-by-side).
+
+---
+
+## TD-019 · Branch 1 — "What the School Needs to Improve" should be A2-prefixed
+
+**Severity:** Low — breaks A-section numbering convention  
+**File:** `functions/research/govuk.js` → `renderPartA()` → section ordering
+
+**Problem:**
+Branch 1 Part A sections follow a clean A1–A7 numbering scheme. But the Ofsted "What the school needs to improve" section sits between A2 (Inspection Outcomes) and A3 (Academic Performance) without an A-prefix — it's just a plain heading. This breaks the A-section structure and makes the section ordering logic (`interleaveVerdicts`, `enforceObservations`) blind to it.
+
+Currently the section order is:
+```
+A1. School Identity
+A2. Inspection Outcomes
+What the School Needs to Improve    ← no prefix
+A3. Academic Performance
+...
+```
+
+**Fix:** Rename to `A2.1 What the School Needs to Improve` or `A2. Areas for Improvement` — something that nests under A2. Update `PART_A` constant and any section-matching code. The wiremock should define the exact heading.
+
+**Done when:** The Ofsted improvement section has an A-prefix consistent with the A2 parent.
+
+---
+
+## TD-020 · Branch 1 — Part B delimiter missing for KS5-only schools
+
+**Severity:** Medium — inconsistent section structure across school types  
+**File:** `functions/research/index.js` → `tagPartLabels()`
+
+**Problem:**
+`tagPartLabels()` tags the first section of each part (A1 → Part A, B1 → Part B, C1 → Part C) with a `_partLabel` that the UI renders as a divider row. For KS2 and KS4 schools this works correctly. But for KS5-only schools (e.g. Reigate College), the B1 section heading may not be "B1. Pupil Experience" — or the AI may omit B1 entirely, causing no Part B divider to render.
+
+Need to verify: is the AI not outputting B1, or is `tagPartLabels` failing to match it? The fix depends on root cause:
+- If AI omits B1: prompt needs to require it for KS5 schools too
+- If heading mismatch: `tagPartLabels` needs to be more flexible
+
+**Done when:** KS5-only school reports show the "Part B — Independent Research" divider consistently.
+
+---
+
+## TD-021 · Branch 2 — per-school colour coding instead of red/green flags
+
+**Severity:** Medium — current red/green conflates "winner" with "warning"  
+**File:** `functions/research/govuk.js` → `computeFlags()`, `renderPartAComparison()`, branch 2 prompt
+
+**Problem:**
+Branch 2 currently uses the same red/green flag system as branch 1. But in a comparison context, red/green is misleading:
+- Green means "one school wins this dimension" — but the parent can't tell WHICH school
+- Red means "red flag for this school" — but in comparison, both might have red flags
+- There's no way to see at a glance which school leads overall
+
+The user wants a two-colour per-school system:
+- **Blue dot** — School A wins this section
+- **Yellow dot** — School B wins this section
+- **Neutral/grey** — too close to call
+
+Plus a colour-coding legend/explanation above A1:
+> The Latymer School (🔵 blue dot) vs Fortismere School (🟡 yellow dot)
+
+This affects:
+1. `computeFlags()` — needs `schoolNames` parameter, returns school-specific flags
+2. `renderPartAComparison()` — sections need per-school flag markers
+3. Branch 2 prompt — AI observation flags need to name the winning school
+4. UI — needs to render blue/yellow dots and the legend
+
+**Done when:** Branch 2 output uses blue/yellow per-school indicators, a colour legend appears above A1, and the flag system clearly attributes wins to the correct school.
