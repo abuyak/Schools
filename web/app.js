@@ -2,7 +2,7 @@
   "use strict";
 
   const ENABLE_PAYWALL = false;
-  const ENABLE_SECTION_FEEDBACK = true; // per-section thumbs up/down for beta-testing
+  const ENABLE_SECTION_FEEDBACK = false; // per-section thumbs (disabled — using bottom form instead)
 
   const form = document.getElementById("question-form");
   const branchInput = document.getElementById("branch-input");
@@ -544,6 +544,7 @@
     appendTextWithLinks(resultSummary, result.summary || "");
     renderScorecard(result.scorecard || []);
     renderSections(result.sections || []);
+    resetFeedbackForm();
 
     // Show section toggle toolbar when there are sections
     if (result.sections && result.sections.length > 0) {
@@ -655,82 +656,47 @@
     selectBranch(card.getAttribute("data-branch"));
   });
 
-  // ── Per-section feedback mini-widget (beta) ──────────────────────────
-  // Delegated from answerSections so it survives result re-renders.
+  // ── Bottom feedback form ─────────────────────────────────────────────
 
-  // Track which sections have been rated so state persists across re-renders.
-  var submittedSections = {};
+  var feedbackSubmitted = false;
 
-  answerSections.addEventListener("click", function (e) {
-    if (!ENABLE_SECTION_FEEDBACK) return;
+  function resetFeedbackForm() {
+    feedbackSubmitted = false;
+    var panel = document.getElementById("feedback-panel");
+    var formRow = document.getElementById("feedback-form-row");
+    var thanks = document.getElementById("feedback-thanks");
+    var textEl = document.getElementById("feedback-text");
+    var emailEl = document.getElementById("feedback-email");
+    if (panel) panel.hidden = false;
+    if (formRow) formRow.hidden = false;
+    if (thanks) thanks.hidden = true;
+    if (textEl) textEl.value = "";
+    if (emailEl) emailEl.value = "";
+  }
 
-    var btn = e.target.closest(".sfm-btn");
-    if (!btn) return;
+  var feedbackSubmitBtn = document.getElementById("feedback-submit");
+  if (feedbackSubmitBtn) {
+    feedbackSubmitBtn.addEventListener("click", function () {
+      if (feedbackSubmitted) return;
+      feedbackSubmitted = true;
 
-    // Handle the "Send" button in the feedback form
-    if (btn.classList.contains("sfm-send")) {
-      var form = btn.closest(".sfm-form");
-      if (!form) return;
-      var mini = btn.closest(".section-feedback-mini");
-      if (!mini) return;
-      var input = form.querySelector(".sfm-input");
-      var text = (input ? input.value : "").trim().slice(0, 200);
+      var textEl = document.getElementById("feedback-text");
+      var emailEl = document.getElementById("feedback-email");
+      var text = (textEl ? textEl.value : "").trim().slice(0, 1000);
+      var email = (emailEl ? emailEl.value : "").trim().slice(0, 120);
 
-      // Fire analytics with the comment
-      trackEvent("section_feedback", {
+      trackEvent("feedback_submit", {
         branch: branchInput.value || "",
-        section: mini.getAttribute("data-section") || "",
-        rating: mini.getAttribute("data-rating") || "",
-        text: text
+        text: text,
+        email: email
       });
 
-      // Hide form, show thanks
-      form.hidden = true;
-      var label = mini.querySelector(".sfm-label");
-      if (label) label.hidden = true;
-      var buttons = mini.querySelectorAll(".sfm-btn:not(.sfm-send)");
-      buttons.forEach(function (b) { b.hidden = true; });
-      var thanks = mini.querySelector(".sfm-thanks");
+      var formRow = document.getElementById("feedback-form-row");
+      var thanks = document.getElementById("feedback-thanks");
+      if (formRow) formRow.hidden = true;
       if (thanks) thanks.hidden = false;
-      return;
-    }
-
-    // Thumbs up/down click
-    var mini = btn.closest(".section-feedback-mini");
-    if (!mini) return;
-
-    // Guard against double-fires
-    if (mini.getAttribute("data-submitted") === "true") return;
-    mini.setAttribute("data-submitted", "true");
-
-    var section = mini.getAttribute("data-section") || "";
-    var rating = btn.getAttribute("data-rating") || "";
-    mini.setAttribute("data-rating", rating);
-
-    // Remember this section was rated (survives re-renders via section heading)
-    submittedSections[section] = rating;
-
-    // Fire initial analytics (text may come later via send button)
-    trackEvent("section_feedback", {
-      branch: branchInput.value || "",
-      section: section,
-      rating: rating
     });
-
-    // Show pressed state, dim sibling, reveal the comment form
-    var sibling = rating === "up"
-      ? mini.querySelector(".sfm-down")
-      : mini.querySelector(".sfm-up");
-    btn.classList.add("is-pressed");
-    if (sibling) sibling.classList.add("is-dimmed");
-
-    var form = mini.querySelector(".sfm-form");
-    var label = mini.querySelector(".sfm-label");
-    if (form) form.hidden = false;
-    if (label) label.textContent = "Optional:";
-    var input = mini.querySelector(".sfm-input");
-    if (input) setTimeout(function () { input.focus(); }, 100);
-  });
+  }
 
   form.addEventListener("submit", submitQuestion);
   selectBranch(branchInput.value);
