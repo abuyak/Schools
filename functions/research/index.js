@@ -244,7 +244,19 @@ function getBCInstructions(promptFile) {
   return prompt + OUTPUT_CONSTRAINTS;
 }
 
-function parseOpenAIResponse(apiResponse) {
+// Strip AI search result markers (turn0search2, turn1view0, etc.) that
+// gpt-5.4-mini sometimes leaks into section bodies.
+export function cleanBody(text) {
+  return (text ?? '').replace(/\.?turn\d+(?:search|view)\d+\.?/gi, '').replace(/\s{2,}/g, ' ').trim();
+}
+
+// Strip markdown heading prefixes (##, ###, #, ####) from section headings
+// so that "## A2. Observations" becomes "A2. Observations".
+export function cleanHeading(h) {
+  return (h ?? '').replace(/^#{1,4}\s+/, '').trim();
+}
+
+export function parseOpenAIResponse(apiResponse) {
   // Extract text from output_text or output[].content[].text
   let outputText = apiResponse.output_text ?? null;
 
@@ -292,13 +304,8 @@ function parseOpenAIResponse(apiResponse) {
     }
   }
 
-  // Strip AI search result markers (turn0search2, turn1view0, etc.) that
-  // gpt-5.4-mini sometimes leaks into section bodies.
-  const cleanBody = (text) => (text ?? '').replace(/\.?turn\d+(?:search|view)\d+\.?/gi, '').replace(/\s{2,}/g, ' ').trim();
-
   // Rename model's "Sources" section to "Primary Sources"
-  // Also strip markdown heading prefixes (##, ###) that the AI sometimes includes
-  const cleanHeading = (h) => (h ?? '').replace(/^#{1,4}\s+/, '').trim();
+  // Heading/body cleanup is now handled by module-level cleanHeading/cleanBody
   const sections = (parsed.sections ?? []).map(s => ({ ...s, heading: cleanHeading(s.heading), body: cleanBody(s.body) }));
 
   let primarySourcesBody = null;
@@ -359,7 +366,7 @@ function log(event, props = {}) {
 // Handles all Part A/A1-A7 and C1 sections. Strips "Assumption:" preambles,
 // converts whitespace-separated rows to proper |...|...|...| markdown, and
 // splits off analysis paragraphs that were appended to the last table row.
-function normaliseComparisonTable(sections, schoolNames) {
+export function normaliseComparisonTable(sections, schoolNames) {
   if (!schoolNames || schoolNames.length < 2) return sections;
 
   const shortNames = schoolNames.map(n => {
@@ -596,7 +603,7 @@ export function normaliseC1Table(sections) {
 
 // Adds _partLabel to the first section of each part (A1, B1, C1).
 // The UI uses this to render a divider row directly above the section.
-function tagPartLabels(sections) {
+export function tagPartLabels(sections) {
   const PART_LABELS = {
     'A1.': 'Part A — Official Record',
     'B1.': 'Part B — Independent Research',
@@ -618,7 +625,7 @@ function tagPartLabels(sections) {
 //
 // The match is on the numeric prefix only — "A6." matches "A6. Academic Performance"
 // regardless of the rest of the heading.
-function interleaveVerdicts(partASections, call2Sections) {
+export function interleaveVerdicts(partASections, call2Sections) {
   // Partition call2 sections into Part-A verdicts vs B/C sections
   const aVerdicts = [];
   const bcSections = [];
@@ -670,7 +677,7 @@ function interleaveVerdicts(partASections, call2Sections) {
  * data sections exist) and ensure every data section A2–A7 has a matching
  * observation slot, inserting an empty placeholder if the AI omitted one.
  */
-function enforceObservations(sections, partADataSections) {
+export function enforceObservations(sections, partADataSections) {
   const dataPrefixes = new Set(
     partADataSections
       .map(s => s.heading?.match(/^(A\d+)\./)?.[1])
