@@ -685,33 +685,35 @@
     if (emailEl) emailEl.value = "";
   }
 
-  var feedbackSubmitBtn = document.getElementById("feedback-submit");
-  if (feedbackSubmitBtn) {
-    feedbackSubmitBtn.addEventListener("click", function () {
-      if (feedbackSubmitted) return;
-      feedbackSubmitted = true;
+  // Delegated handler on document — works regardless of when the
+  // button is created or whether getElementById finds it.
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("#feedback-submit");
+    if (!btn) return;
+    if (feedbackSubmitted) return;
+    feedbackSubmitted = true;
 
-      var textEl = document.getElementById("feedback-text");
-      var emailEl = document.getElementById("feedback-email");
-      var text = (textEl ? textEl.value : "").trim().slice(0, 1000);
-      var email = (emailEl ? emailEl.value : "").trim().slice(0, 120);
+    var textEl = document.getElementById("feedback-text");
+    var emailEl = document.getElementById("feedback-email");
+    var text = (textEl ? textEl.value : "").trim().slice(0, 1000);
+    var email = (emailEl ? emailEl.value : "").trim().slice(0, 120);
 
-      trackEvent("feedback_submit", {
-        branch: branchInput.value || "",
-        text: text,
-        email: email
-      });
-
-      var formRow = document.getElementById("feedback-form-row");
-      var thanks = document.getElementById("feedback-thanks");
-      if (formRow) formRow.hidden = true;
-      if (thanks) thanks.hidden = false;
+    trackEvent("feedback_submit", {
+      branch: branchInput.value || "",
+      text: text,
+      email: email
     });
-  }
+
+    var formRow = document.getElementById("feedback-form-row");
+    var thanks = document.getElementById("feedback-thanks");
+    if (formRow) formRow.hidden = true;
+    if (thanks) thanks.hidden = false;
+  });
 
   form.addEventListener("submit", submitQuestion);
   selectBranch(branchInput.value);
   if (!ENABLE_PAYWALL) {
     premiumPanel.hidden = true;
   }
+
 })();
