@@ -54,6 +54,10 @@ async function loadGovuk({ verbose = false } = {}) {
     // local-data.js bundles DfE ethnicity JSON — mock it so we don't read disk
     await jest.unstable_mockModule('../local-data.js', () => ({
       getSchoolEthnicity: jest.fn().mockReturnValue(null),
+      getEthnicityDataYear: jest.fn().mockReturnValue(null),
+      findSchoolsNear: jest.fn().mockReturnValue([]),
+      getGiasSchool: jest.fn().mockReturnValue(null),
+      getGiasMeta: jest.fn().mockReturnValue(null),
     }));
     mod = await import('../govuk.js');
   });

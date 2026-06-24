@@ -62,3 +62,77 @@ export function getEthnicityDataYear() {
   const index = loadEthnicityIndex();
   return index._meta?.academicYear ?? null;
 }
+
+// ── GIAS school index ────────────────────────────────────────────────────────
+
+let _giasIndex = null;
+let _giasList = null; // pre-computed array for proximity search
+
+function loadGiasIndex() {
+  if (_giasIndex) return _giasIndex;
+  const path = join(__dirname, 'sources', 'gias-schools-by-urn.json');
+  _giasIndex = JSON.parse(readFileSync(path, 'utf8'));
+  // Pre-compute a flat list for proximity search
+  _giasList = [];
+  for (const [urn, entry] of Object.entries(_giasIndex)) {
+    if (urn === '_meta') continue;
+    if (entry.lat != null && entry.lon != null) {
+      _giasList.push({ urn, ...entry });
+    }
+  }
+  return _giasIndex;
+}
+
+/**
+ * Haversine distance in miles between two lat/lon points.
+ */
+function haversineMiles(lat1, lon1, lat2, lon2) {
+  const R = 3959; // Earth radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+    + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180)
+    * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+/**
+ * Returns schools within `radiusMiles` of (lat, lon), sorted by distance.
+ * Returns up to `limit` results (default 50).
+ */
+export function findSchoolsNear(lat, lon, radiusMiles = 3, limit = 50) {
+  const index = loadGiasIndex();
+  if (!_giasList) return [];
+
+  const results = [];
+  for (const school of _giasList) {
+    const dist = haversineMiles(lat, lon, school.lat, school.lon);
+    if (dist <= radiusMiles) {
+      results.push({ ...school, distanceMiles: Number(dist.toFixed(2)) });
+    }
+  }
+
+  results.sort((a, b) => a.distanceMiles - b.distanceMiles);
+  return results.slice(0, limit);
+}
+
+/**
+ * Fast lookup of a school by URN from the bundled GIAS index.
+ * Returns null if not found.
+ */
+export function getGiasSchool(urn) {
+  if (!urn) return null;
+  const index = loadGiasIndex();
+  const entry = index[String(urn)];
+  if (!entry) return null;
+  return { urn: String(urn), ...entry };
+}
+
+/**
+ * Returns metadata about the bundled GIAS index (build date, count).
+ */
+export function getGiasMeta() {
+  const index = loadGiasIndex();
+  return index._meta ?? null;
+}

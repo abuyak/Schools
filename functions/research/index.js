@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { fetchGovDataForPrompt, renderPartA, renderPartAComparison, computeFlags, getAreaData, renderPartBArea } from './govuk.js';
+import { fetchGovDataForPrompt, renderPartA, renderPartAComparison, computeFlags, getAreaData, renderPartBArea, fetchSchoolsInArea } from './govuk.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -1619,10 +1619,50 @@ export const handler = async (event) => {
       if (postcode) {
         const area = await getAreaData(postcode);
         partBSections = renderPartBArea(area);
+
+        // Find nearby schools using the bundled GIAS index (TD-008)
+        const lat = area?.lat, lon = area?.lon;
+        if (lat != null && lon != null) {
+          const schools = fetchSchoolsInArea(lat, lon, 3);
+          if (schools.length) {
+            const primary = schools.filter(s => /primary/i.test(s['PhaseOfEducation (name)'] || ''));
+            const secondary = schools.filter(s => /secondary/i.test(s['PhaseOfEducation (name)'] || ''));
+            const allThrough = schools.filter(s => /all-through/i.test(s['PhaseOfEducation (name)'] || ''));
+            const sixthForm = schools.filter(s => /16 plus/i.test(s['PhaseOfEducation (name)'] || ''));
+
+            const lines = [];
+            lines.push(`\n\n---\n## Pre-fetched Schools Near ${postcode} (within 3 miles)\n`);
+            lines.push(`${schools.length} schools found. Use these as your candidate pool — prefer schools from this list. You may web-search for quality data (Ofsted, performance) on these schools, but do not fabricate schools not listed here.\n`);
+
+            const addGroup = (label, list) => {
+              if (!list.length) return;
+              lines.push(`### ${label} (${list.length})`);
+              for (const s of list) {
+                const name = s['EstablishmentName'] || s.name || '?';
+                const type = s['TypeOfEstablishment (name)'] || '';
+                const la = s['LA (name)'] || '';
+                const ageLo = s['StatutoryLowAge'] || '';
+                const ageHi = s['StatutoryHighAge'] || '';
+                const gender = s['Gender (name)'] || '';
+                const dist = s.distanceMiles != null ? ` · ${s.distanceMiles} mi` : '';
+                lines.push(`- ${name} (URN ${s.urn})${type ? ' · ' + type : ''}${la ? ' · ' + la : ''}${ageLo && ageHi ? ' · ages ' + ageLo + '-' + ageHi : ''}${gender && !/not applicable/i.test(gender) ? ' · ' + gender : ''}${dist}`);
+              }
+              lines.push('');
+            };
+
+            addGroup('Primary', primary);
+            addGroup('Secondary', secondary);
+            addGroup('All-through', allThrough);
+            addGroup('16 Plus', sixthForm);
+            // Remainder
+            const rest = schools.filter(s => !primary.includes(s) && !secondary.includes(s) && !allThrough.includes(s) && !sixthForm.includes(s));
+            addGroup('Other', rest);
+
+            instructions += lines.join('\n');
+            govukBlock = lines.join('\n');
+          }
+        }
         govukMs = Date.now() - govukT0;
-        // Note: nearby-school pre-fetch via GIAS HTML scraping is blocked
-        // (GIAS now returns bot-detection pages). The AI discovers schools
-        // via web search. TD-008 (bundled GIAS index) will fix this properly.
       }
     } catch (err) {
       log('govuk_inject_error', { branch: body.branch, error: err.message });

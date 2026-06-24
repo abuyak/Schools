@@ -1131,113 +1131,14 @@ export async function getGIASDetails(urn) {
 
 // ─── Branch 3: nearby-school search ─────────────────────────────────────────────
 //
-// Searches GIAS for all open schools matching a query string and returns the
-// full tile list (unlike lookupSchoolURN, which picks the single best match).
+// Uses the bundled GIAS index (built by scripts/build-gias-index.mjs) for
+// fast proximity search. Falls back to AI web search if the index is missing.
 
-async function searchGIASTiles(query) {
-  const url = `${GIAS_SEARCH}?TextSearchModel.Text=${encodeURIComponent(query)}&SelectedTab=Establishments`;
-  const html = await safeFetchText(url);
-  if (!html) return [];
+import { findSchoolsNear } from './local-data.js';
 
-  const tileRe = /<li[^>]*class="[^"]*gias-result-tile[^"]*"[^>]*>([\s\S]*?)<\/li>/g;
-  const tiles = [];
-
-  for (const tileMatch of html.matchAll(tileRe)) {
-    const tile = tileMatch[1];
-    const linkMatch = tile.match(/href="\/Establishments\/Establishment\/Details\/(\d{5,7})[^"]*"[^>]*>\s*([^<]+?)\s*<\/a>/);
-    if (!linkMatch) continue;
-
-    const urn = linkMatch[1];
-    const officialName = linkMatch[2].trim();
-
-    const ptMatch = tile.match(/Phase\s*\/\s*type[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
-    const phaseTypeRaw = ptMatch ? ptMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
-    const parts = phaseTypeRaw ? phaseTypeRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
-    const phase = parts[0] ?? null;
-    const type = parts.slice(1).join(', ') || null;
-    const isIndependent = /independent/i.test(phaseTypeRaw ?? '');
-
-    const statusMatch = tile.match(/Status[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
-    const status = statusMatch ? statusMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
-    const isOpen = !status || /^open$/i.test(status);
-
-    const laMatch = tile.match(/Local\s+authority[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
-    const la = laMatch ? laMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
-
-    const addrMatch = tile.match(/Address[^<]*<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/i);
-    const address = addrMatch
-      ? addrMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-          .replace(/&#39;/gi, "'").replace(/&amp;/gi, '&').replace(/&quot;/gi, '"')
-      : null;
-
-    const tileText = tile.replace(/<[^>]+>/g, ' ');
-    const pcMatch = tileText.match(/\b([A-Z]{1,2}\d{1,2}[A-Z]?)\s*(\d[A-Z]{2})\b/);
-    const postcode = pcMatch ? `${pcMatch[1]}${pcMatch[2]}`.toLowerCase() : null;
-    const outward = pcMatch ? pcMatch[1].toLowerCase() : null;
-
-    tiles.push({ urn, officialName, type, phase, la, address, postcode, outward, isIndependent, isOpen });
-  }
-
-  return tiles;
-}
-
-/**
- * Finds schools near a postcode by searching GIAS with the district/area name
- * and the postcode outward code. Returns deduplicated open schools sorted by
- * name. Used by Branch 3 to provide the AI with a pre-fetched pool of nearby
- * schools to rank and shortlist.
- */
-export async function fetchSchoolsInArea(postcode, district) {
-  if (!postcode && !district) return [];
-
-  const outward = (postcode || '').replace(/\s+/g, '').match(/^[A-Z]{1,2}\d{1,2}[A-Z]?/i)?.[0]?.toLowerCase() || '';
-  const districtName = district || '';
-
-  // Run GIAS searches in parallel
-  const queries = [];
-  if (districtName) queries.push(districtName);
-  if (outward) queries.push(outward);
-  // Also search with just the outward + area to catch more results
-  if (outward && districtName) {
-    const areaWord = districtName.split(/[\s,]+/)[0]; // e.g. "Southwark" from "Southwark, London"
-    if (areaWord && areaWord.toLowerCase() !== outward) {
-      queries.push(`${outward} ${areaWord}`);
-    }
-  }
-
-  const results = await Promise.allSettled(queries.map(q => searchGIASTiles(q)));
-
-  // Deduplicate by URN, filter to open schools only
-  const seen = new Set();
-  const schools = [];
-  for (const r of results) {
-    if (r.status !== 'fulfilled') continue;
-    for (const tile of r.value) {
-      if (!tile.isOpen || seen.has(tile.urn)) continue;
-      seen.add(tile.urn);
-      schools.push({
-        urn: tile.urn,
-        name: tile.officialName,
-        type: tile.type || '',
-        phase: tile.phase || '',
-        la: tile.la || '',
-        postcode: tile.postcode || '',
-        isIndependent: tile.isIndependent,
-      });
-    }
-  }
-
-  // Sort: primary first, then secondary, then all-through, then other
-  const phaseOrder = { 'Primary': 1, 'Secondary': 3, 'All-through': 4, '16 Plus': 5 };
-  schools.sort((a, b) => {
-    const pa = phaseOrder[a.phase] ?? 2;
-    const pb = phaseOrder[b.phase] ?? 2;
-    if (pa !== pb) return pa - pb;
-    return a.name.localeCompare(b.name);
-  });
-
-  glog('govuk_area_schools', { postcode, district, count: schools.length });
-  return schools;
+export function fetchSchoolsInArea(lat, lon, radiusMiles = 3) {
+  if (lat == null || lon == null) return [];
+  return findSchoolsNear(lat, lon, radiusMiles, 50);
 }
 
 // ─── Area data (postcodes.io → ONS / Land Registry) ──────────────────────────
@@ -1299,6 +1200,7 @@ export async function getAreaData(postcode) {
     region,
     lsoa,
     msoa,
+    lat, lon,  // for proximity search (Branch 3)
     ethnicity:   ethnicityData.status    === 'fulfilled' ? ethnicityData.value    : null,
     pricePaid:   pricePaidData.status    === 'fulfilled' ? pricePaidData.value    : null,
     income:      incomeData.status       === 'fulfilled' ? incomeData.value       : null,
