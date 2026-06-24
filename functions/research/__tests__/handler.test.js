@@ -14,7 +14,8 @@ await jest.unstable_mockModule('../govuk.js', () => ({
   computeFlags: jest.fn().mockReturnValue({}),
   getAreaData: jest.fn().mockResolvedValue(null),
   renderPartBArea: jest.fn().mockReturnValue([]),
-  fetchSchoolsInArea: jest.fn().mockResolvedValue([]),
+  fetchSchoolsInArea: jest.fn().mockReturnValue([]),
+  renderPartASchools: jest.fn().mockReturnValue(null),
 }));
 
 // Mock fetch globally before importing the handler

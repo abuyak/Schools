@@ -16,7 +16,7 @@
  */
 
 import { readFileSync } from 'fs';
-import { getSchoolEthnicity } from './local-data.js';
+import { getSchoolEthnicity, findSchoolsNear } from './local-data.js';
 import { getISIInspection, getIndependentFees } from './independent.js';
 
 const FETCH_TIMEOUT_MS      =  8000;  // standard HTML / JSON fetches
@@ -1134,11 +1134,50 @@ export async function getGIASDetails(urn) {
 // Uses the bundled GIAS index (built by scripts/build-gias-index.mjs) for
 // fast proximity search. Falls back to AI web search if the index is missing.
 
-import { findSchoolsNear } from './local-data.js';
-
 export function fetchSchoolsInArea(lat, lon, radiusMiles = 3, limit = 25) {
   if (lat == null || lon == null) return [];
   return findSchoolsNear(lat, lon, radiusMiles, limit);
+}
+
+/**
+ * Renders the full school list as a server-side Part A section for Branch 3.
+ * No AI curation — just all schools within radius, grouped by phase.
+ */
+export function renderPartASchools(schools, postcode) {
+  if (!schools || !schools.length) return null;
+
+  const primary = schools.filter(s => /primary/i.test(s['PhaseOfEducation (name)'] || ''));
+  const secondary = schools.filter(s => /secondary/i.test(s['PhaseOfEducation (name)'] || ''));
+  const allThrough = schools.filter(s => /all-through/i.test(s['PhaseOfEducation (name)'] || ''));
+  const sixthForm = schools.filter(s => /16 plus/i.test(s['PhaseOfEducation (name)'] || ''));
+  const other = schools.filter(s => !primary.includes(s) && !secondary.includes(s) && !allThrough.includes(s) && !sixthForm.includes(s));
+
+  const lines = [];
+  lines.push(`${schools.length} schools within 2 miles of ${postcode}.\n`);
+
+  const renderGroup = (label, list) => {
+    if (!list.length) return;
+    lines.push(`### ${label} (${list.length})`);
+    lines.push('');
+    for (const s of list) {
+      const name = s['EstablishmentName'] || '?';
+      const type = s['TypeOfEstablishment (name)'] || '';
+      const ages = (s['StatutoryLowAge'] && s['StatutoryHighAge']) ? `ages ${s['StatutoryLowAge']}–${s['StatutoryHighAge']}` : '';
+      const gender = s['Gender (name)'] && !/not applicable/i.test(s['Gender (name)']) ? s['Gender (name)'] : '';
+      const dist = s.distanceMiles != null ? `${s.distanceMiles} mi` : '';
+      const meta = [type, ages, gender, dist].filter(Boolean).join(' · ');
+      lines.push(`- **${name}** (URN ${s.urn})${meta ? ' · ' + meta : ''}`);
+    }
+    lines.push('');
+  };
+
+  renderGroup('Primary', primary);
+  renderGroup('Secondary', secondary);
+  renderGroup('All-through', allThrough);
+  renderGroup('16 Plus', sixthForm);
+  renderGroup('Other', other);
+
+  return { heading: 'A2. Nearby Schools', body: lines.join('\n'), flag: 'none' };
 }
 
 // ─── Area data (postcodes.io → ONS / Land Registry) ──────────────────────────

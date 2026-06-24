@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { fetchGovDataForPrompt, renderPartA, renderPartAComparison, computeFlags, getAreaData, renderPartBArea, fetchSchoolsInArea } from './govuk.js';
+import { fetchGovDataForPrompt, renderPartA, renderPartAComparison, computeFlags, getAreaData, renderPartBArea, fetchSchoolsInArea, renderPartASchools } from './govuk.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -1587,7 +1587,8 @@ export const handler = async (event) => {
   let govukBlock = '';
   let govukFlags = {};
   let govukMs    = 0;
-  let partBSections = [];  // Branch 3 server-rendered area sections
+  let partBSections = [];   // Branch 3 server-rendered area sections
+  let partASections = null;  // Branch 3 server-rendered A2 school list
 
   if (body.branch === 'prompt_branch_2') {
     try {
@@ -1646,27 +1647,15 @@ export const handler = async (event) => {
         // Find nearby schools using the bundled GIAS index (TD-008)
         const lat = area?.lat, lon = area?.lon;
         if (lat != null && lon != null) {
-          const schools = fetchSchoolsInArea(lat, lon, 2, 15); // top 15 closest
+          const schools = fetchSchoolsInArea(lat, lon, 2, 100); // all within 2 miles
           if (schools.length) {
-            const lines = [];
-            const allPrimary = schools.filter(s => /primary/i.test(s['PhaseOfEducation (name)'] || ''));
-            const allSecondary = schools.filter(s => /secondary/i.test(s['PhaseOfEducation (name)'] || ''));
-
-            lines.push(`\n\n---\n## Pre-fetched Schools Near ${postcode} (within 2 miles)\n`);
-            lines.push(`${schools.length} schools returned — ${allPrimary.length} primary, ${allSecondary.length} secondary. Your A2 shortlist MUST be drawn from this list. You may web-search for Ofsted grades, performance data, and inspection reports to determine which are the BEST schools — but do not fabricate schools.\n`);
-            lines.push(`SELECTION RULE: You MUST web-search Ofsted grades for ALL ${schools.length} schools in this list before writing A2. Do not only search the closest 5 — an Outstanding school at 1 mile is a better recommendation than a Good school at 0.2 miles. After searching all schools, pick the 3-5 BEST based on quality, not proximity. Include at least 2 primaries and 2 secondaries unless the parent specified one phase.\n`);
-
-            // Full list (compact)
-            lines.push(`### Full list (${schools.length} schools)`);
-            for (const s of schools) {
-              const name = s['EstablishmentName'] || '?';
-              const phase = s['PhaseOfEducation (name)'] || '';
-              const dist = s.distanceMiles != null ? ` · ${s.distanceMiles} mi` : '';
-              lines.push(`- ${name} (URN ${s.urn}) · ${phase}${dist}`);
+            // Render A2 server-side — all schools, grouped by phase, no AI curation
+            const a2Section = renderPartASchools(schools, postcode);
+            if (a2Section) {
+              a2Section._partLabel = 'Part A — Official Record';
+              // Prepend after the AI response is parsed — see below
+              partASections = [a2Section];
             }
-
-            instructions += lines.join('\n');
-            govukBlock = lines.join('\n');
           }
         }
         govukMs = Date.now() - govukT0;
@@ -1733,6 +1722,13 @@ export const handler = async (event) => {
   }
 
   const result = parseOpenAIResponse(apiResponse);
+
+  // Branch 3: insert server-rendered A2 after AI's A1 (Direct Answer)
+  if (partASections && result.sections) {
+    const a1Idx = result.sections.findIndex(s => /^A1\./i.test(s.heading ?? ''));
+    const insertAt = a1Idx >= 0 ? a1Idx + 1 : 0;
+    result.sections = [...result.sections.slice(0, insertAt), ...partASections, ...result.sections.slice(insertAt)];
+  }
 
   // Apply deterministic flag overrides from structured data
   if (result.sections && Object.keys(govukFlags).length) {

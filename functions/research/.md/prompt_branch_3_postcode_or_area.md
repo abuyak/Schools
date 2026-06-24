@@ -67,30 +67,9 @@ If a child description was provided, include a one-line fit verdict. Do not pre-
 
 ---
 
-### A2. Top Schools
+### A2. Nearby Schools
 
-**Output heading:** `## A2. Top Schools`
-
-Numbered shortlist of 3 to 5 schools. Use continuing numbers (1, 2, 3 — not restarting at 1). Include both state and private unless the parent specified one.
-
-**CRITICAL — School selection:**
-A pre-fetched list of all schools within 3 miles is provided in the prompt. Your shortlist MUST be drawn from this list. You may web-search for Ofsted grades, performance data, and inspection reports on these schools, but you MUST NOT fabricate schools not on the list. If the parent specified an area without a full postcode, the list was built from the postcode area centroid — all nearby schools are still included.
-
-**Selection priority:**
-1. Closest relevant schools first — proximity matters more than Ofsted grade for area search
-2. Mix of primary and secondary unless the parent specified one phase
-3. State and private both represented unless the parent specified one
-
-For each school:
-
-```
-N. School Name (type, e.g. state community primary, girls selective grammar)
-   - Why it matters: one sentence
-   - Best for: one sentence
-   - Main caution: one sentence
-```
-
-Use indented bullet points (- ) for the three sub-items. Do not add blank lines between sub-items. Add a blank line between schools.
+**This section is rendered server-side from the GIAS school register and will already be shown to the user.** Do NOT output an A2 section. The full list of all schools within 2 miles, grouped by phase, is already displayed.
 
 ---
 
@@ -230,7 +209,6 @@ Return valid JSON only. No markdown fences. Schema:
   ],
   "sections": [
     { "heading": "A1. Direct Answer", "body": "...", "flag": "none" },
-    { "heading": "A2. Top Schools", "body": "...", "flag": "none" },
     { "heading": "A3. Quick Comparison Grid", "body": "...", "flag": "none" },
     { "heading": "A4. Strengths & Weaknesses", "body": "...", "flag": "none" },
     { "heading": "C1. Area Scorecard", "body": "...", "flag": "none" },
