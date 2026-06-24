@@ -1153,7 +1153,7 @@ export function renderPartASchools(schools, postcode) {
   const other = schools.filter(s => !primary.includes(s) && !secondary.includes(s) && !allThrough.includes(s) && !sixthForm.includes(s));
 
   const lines = [];
-  lines.push(`${schools.length} schools within 2 miles of ${postcode}.\n`);
+  lines.push(`${schools.length} schools within 1.5 miles of ${postcode}.\n`);
 
   const renderGroup = (label, list) => {
     if (!list.length) return;

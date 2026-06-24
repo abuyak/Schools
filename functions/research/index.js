@@ -1647,7 +1647,7 @@ export const handler = async (event) => {
         // Find nearby schools using the bundled GIAS index (TD-008)
         const lat = area?.lat, lon = area?.lon;
         if (lat != null && lon != null) {
-          const schools = fetchSchoolsInArea(lat, lon, 2, 100); // all within 2 miles
+          const schools = fetchSchoolsInArea(lat, lon, 1.5, 60); // within 1.5 miles
           if (schools.length) {
             // Render A2 server-side — all schools, grouped by phase, no AI curation
             const a2Section = renderPartASchools(schools, postcode);
