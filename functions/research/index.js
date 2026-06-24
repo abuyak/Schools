@@ -1618,78 +1618,54 @@ export const handler = async (event) => {
         }
       }
       if (postcode) {
-        let area = await getAreaData(postcode);
-
-        // Fallback: outward-only codes (e.g. "SE16") don't resolve via
-        // postcodes.io postcode lookup. Try the outward-code endpoint
-        // which returns a centroid lat/lon for the postcode area.
-        if (!area && /^[A-Z]{1,2}\d{1,2}[A-Z]?$/i.test(postcode)) {
+        // Resolve outward-only codes to a real postcode first
+        let lookupPc = postcode;
+        if (/^[A-Z]{1,2}\d{1,2}[A-Z]?$/i.test(postcode)) {
           try {
-            const outcodeRes = await fetch(`https://api.postcodes.io/outcodes/${encodeURIComponent(postcode)}`);
-            if (outcodeRes.ok) {
-              const outcodeJson = await outcodeRes.json();
-              const r = outcodeJson?.result;
-              if (r && r.latitude != null && r.longitude != null) {
-                // Find the nearest real postcode to the outward-code centroid
-                // so we can fetch full MSOA/LSOA area data for Part B.
+            const ocRes = await fetch(`https://api.postcodes.io/outcodes/${encodeURIComponent(postcode)}`);
+            if (ocRes.ok) {
+              const ocJson = await ocRes.json();
+              const r = ocJson?.result;
+              if (r?.latitude != null && r?.longitude != null) {
                 const nearRes = await fetch(`https://api.postcodes.io/postcodes?lon=${r.longitude}&lat=${r.latitude}&limit=1&radius=2000`);
                 if (nearRes.ok) {
                   const nearJson = await nearRes.json();
-                  const nearestPc = nearJson?.result?.[0]?.postcode;
-                  if (nearestPc) {
-                    area = await getAreaData(nearestPc);
-                  }
-                }
-                if (!area) {
-                  area = {
-                    postcode: postcode,
-                    district: r.admin_district?.[0] || r.admin_county?.[0] || '',
-                    region: r.region || '',
-                    lat: r.latitude ?? null,
-                    lon: r.longitude ?? null,
-                  };
+                  const nearest = nearJson?.result?.[0]?.postcode;
+                  if (nearest) lookupPc = nearest;
                 }
               }
             }
           } catch (_) {}
         }
 
+        const area = await getAreaData(lookupPc);
         partBSections = renderPartBArea(area);
+        govukMs = Date.now() - govukT0;
 
         // Find nearby schools using the bundled GIAS index (TD-008)
         const lat = area?.lat, lon = area?.lon;
         if (lat != null && lon != null) {
-          // Find schools in the postcode area (outward code match).
-          // For "SE16 7LP" → outward = "SE16". For "SE16" → outward = "SE16".
-          // Only if no outward code can be extracted, fall back to tight radius.
           const outward = (postcode || '').replace(/\s+/g, '').match(/^[A-Z]{1,2}\d{1,2}[A-Z]?/i)?.[0]?.toUpperCase();
           let schools = [];
           if (outward) {
-            // Filter schools by POSTCODE OUTWARD CODE (e.g. "SE16"), not by
-            // spaceless prefix (which would match "SE1 6XX" as "SE16XX").
             const nearby = fetchSchoolsInArea(lat, lon, 5, 500);
             schools = nearby.filter(s => {
               const pc = (s.Postcode || s['Postcode'] || '').toUpperCase().trim();
-              // Extract outward code: "SE16 7LP" → "SE16", "SE1 6AB" → "SE1"
               const schoolOutward = pc.match(/^[A-Z]{1,2}\d{1,2}[A-Z]?/i)?.[0]?.toUpperCase();
               return schoolOutward === outward;
             });
           }
           if (!schools.length) {
-            // Fallback: tight radius search
             schools = fetchSchoolsInArea(lat, lon, 0.5, 20);
           }
           if (schools.length) {
-            // Render A2 server-side — all schools, grouped by phase, no AI curation
             const a2Section = renderPartASchools(schools, postcode, outward);
             if (a2Section) {
               a2Section._partLabel = 'Part A — Official Record';
-              // Prepend after the AI response is parsed — see below
               partASections = [a2Section];
             }
           }
         }
-        govukMs = Date.now() - govukT0;
       }
     } catch (err) {
       log('govuk_inject_error', { branch: body.branch, error: err.message });
