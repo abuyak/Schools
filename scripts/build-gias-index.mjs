@@ -27,7 +27,7 @@ const ROOT = join(__dirname, '..');
 
 const DOWNLOAD_URL = 'https://ea-edubase-api-prod.azurewebsites.net/edubase/downloads/public/edubasealldata20260624.csv';
 const OUTPUT = join(ROOT, 'functions', 'research', 'sources', 'gias-schools-by-urn.json');
-const CACHE_CSV = join(ROOT, 'functions', 'research', '.tmp', 'edubasealldata.csv');
+const CACHE_CSV = join(ROOT, '.tmp', 'edubasealldata.csv');
 
 // Fields we extract from the CSV (by header name)
 const KEEP = new Set([

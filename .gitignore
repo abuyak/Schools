@@ -40,5 +40,9 @@ env.json
 cf-distribution.json
 s3-policy.json
 
+# Build cache (large downloads not for deployment)
+.tmp/
+functions/research/.tmp/
+
 # Node dependencies
 node_modules/
