@@ -1605,9 +1605,20 @@ export const handler = async (event) => {
   if (body.branch === 'prompt_branch_3') {
     try {
       const govukT0 = Date.now();
-      // Extract a UK postcode from the question (simple regex)
-      const postcodeMatch = body.question?.match(/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i);
-      const postcode = postcodeMatch ? postcodeMatch[0] : null;
+      // Extract a UK postcode from the question.
+      // Try full postcode first (e.g. "SE16 7LP"), then outward-only (e.g. "SE16"),
+      // then look for area/district names (e.g. "Rotherhithe", "Southwark").
+      let postcode = null;
+      const fullPcMatch = body.question?.match(/\b([A-Z]{1,2}\d{1,2}[A-Z]?)\s*(\d[A-Z]{2})\b/i);
+      if (fullPcMatch) {
+        postcode = fullPcMatch[1] + ' ' + fullPcMatch[2];
+      } else {
+        // Try outward-only code — use as postcode for area search
+        const outMatch = body.question?.match(/\b([A-Z]{1,2}\d{1,2}[A-Z]?)\b/i);
+        if (outMatch && /^[A-Z]{1,2}\d/i.test(outMatch[1])) {
+          postcode = outMatch[1];
+        }
+      }
       if (postcode) {
         const [area, schools] = await Promise.all([
           getAreaData(postcode),
