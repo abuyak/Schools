@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { fetchGovDataForPrompt, renderPartA, renderPartAComparison, computeFlags, getAreaData, renderPartBArea } from './govuk.js';
+import { fetchGovDataForPrompt, renderPartA, renderPartAComparison, computeFlags, getAreaData, renderPartBArea, fetchSchoolsInArea } from './govuk.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -1609,9 +1609,51 @@ export const handler = async (event) => {
       const postcodeMatch = body.question?.match(/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i);
       const postcode = postcodeMatch ? postcodeMatch[0] : null;
       if (postcode) {
-        const area = await getAreaData(postcode);
+        const [area, schools] = await Promise.all([
+          getAreaData(postcode),
+          fetchSchoolsInArea(postcode, null),  // district resolved inside getAreaData
+        ]);
         partBSections = renderPartBArea(area);
         govukMs = Date.now() - govukT0;
+
+        // Inject nearby-school list into the prompt so the AI knows what's
+        // available without relying entirely on web search.
+        if (schools.length) {
+          const primarySchools = schools.filter(s => s.phase === 'Primary');
+          const secondarySchools = schools.filter(s => /Secondary|16/.test(s.phase));
+          const otherSchools = schools.filter(s => !primarySchools.includes(s) && !secondarySchools.includes(s));
+
+          const lines = [];
+          lines.push(`\n\n---\n## Pre-fetched Schools Near ${postcode || 'this area'}\n`);
+          lines.push(`${schools.length} schools found in the area. Use these as your candidate pool — do not fabricate schools not on this list. If the parent asked for specific phases (primary/secondary), prioritise those. You may web-search for additional schools, but prefer schools from this pre-verified list.\n`);
+
+          if (primarySchools.length) {
+            lines.push(`### Primary Schools (${primarySchools.length})`);
+            for (const s of primarySchools) {
+              lines.push(`- ${s.name} (URN ${s.urn}) · ${s.type || s.phase} · ${s.la}${s.postcode ? ' · ' + s.postcode.toUpperCase() : ''}${s.isIndependent ? ' · Independent' : ''}`);
+            }
+            lines.push('');
+          }
+
+          if (secondarySchools.length) {
+            lines.push(`### Secondary / 16+ Schools (${secondarySchools.length})`);
+            for (const s of secondarySchools) {
+              lines.push(`- ${s.name} (URN ${s.urn}) · ${s.type || s.phase} · ${s.la}${s.postcode ? ' · ' + s.postcode.toUpperCase() : ''}${s.isIndependent ? ' · Independent' : ''}`);
+            }
+            lines.push('');
+          }
+
+          if (otherSchools.length) {
+            lines.push(`### Other Schools (${otherSchools.length})`);
+            for (const s of otherSchools) {
+              lines.push(`- ${s.name} (URN ${s.urn}) · ${s.type || s.phase} · ${s.la}${s.postcode ? ' · ' + s.postcode.toUpperCase() : ''}${s.isIndependent ? ' · Independent' : ''}`);
+            }
+            lines.push('');
+          }
+
+          instructions += lines.join('\n');
+          govukBlock = lines.join('\n');
+        }
       }
     } catch (err) {
       log('govuk_inject_error', { branch: body.branch, error: err.message });
