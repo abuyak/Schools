@@ -20,6 +20,30 @@ The unit of analysis is the **area ecosystem** — the mix of schools, the depth
 
 ---
 
+## School Discovery (CRITICAL — do before writing any section)
+
+You MUST run a thorough multi-step school search before writing A2 or A3. Do not rely on a single search.
+
+**Step 1 — Government school register:**
+Search `[postcode/area] schools get-information-schools.service.gov.uk` or `GIAS schools near [postcode]` to get the authoritative list of all schools in the area.
+
+**Step 2 — Ofsted area search:**
+Search `site:reports.ofsted.gov.uk [area name]` to find all inspected schools in the area with their grades.
+
+**Step 3 — Cross-reference with performance data:**
+For each promising school found, search `[school name] compare-school-performance` to get Attainment 8 / Progress 8 / KS2 results.
+
+**Step 4 — Fill gaps:**
+Search `[postcode/area] best schools` and `[area name] primary schools` to catch any schools missed by steps 1–3.
+
+**Rules:**
+- You MUST run steps 1–3 before writing A2. A shortlist built from incomplete data is a failure.
+- If you haven't found at least 5 schools in the area, keep searching.
+- Prefer schools within a realistic commute radius (~2 miles for primary, ~4 miles for secondary).
+- When in doubt, include a school in A2 — parents want to know it exists even if it's not perfect.
+
+---
+
 ## Response Structure
 
 Your response has three parts: Part A (School Landscape) → Part B (Area Data, already rendered server-side) → Part C (Verdict & Synthesis).
