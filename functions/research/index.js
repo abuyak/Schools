@@ -978,7 +978,8 @@ export const handler = async (event) => {
       branch: (fbBody.branch || '').slice(0, 32),
       section: (fbBody.section || '').slice(0, 128),
       rating: (fbBody.rating || '').slice(0, 8),
-      text: (fbBody.text || '').slice(0, 500)
+      text: (fbBody.text || '').slice(0, 500),
+      email: (fbBody.email || '').slice(0, 120)
     });
     return okResponse({ status: 'logged', httpStatus: 200 });
   }
