@@ -1683,11 +1683,17 @@ export const handler = async (event) => {
     }
   }
 
-  // Append server-rendered Part B sections (Branch 3 area data)
+  // Insert server-rendered Part B sections (Branch 3 area data)
+  // between the last A-section and the first C-section.
   if (partBSections.length) {
-    // Tag the first Part B section with _partLabel for the UI divider
     partBSections[0]._partLabel = 'Part B — Area Data';
-    result.sections = (result.sections ?? []).concat(partBSections);
+    const sections = result.sections ?? [];
+    // Find the boundary: last A-section, first C-section
+    let insertIdx = sections.length;
+    for (let i = 0; i < sections.length; i++) {
+      if (/^C\d+\./i.test(sections[i].heading ?? '')) { insertIdx = i; break; }
+    }
+    result.sections = [...sections.slice(0, insertIdx), ...partBSections, ...sections.slice(insertIdx)];
   }
 
   // Tag part labels (Part A and Part C from AI output)
