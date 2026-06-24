@@ -1,7 +1,10 @@
 # Branch 3 Area Search Wiremock — v1
 
-Check an area from a school-choice perspective. Server-rendered Part A provides
-deterministic area data. AI writes Part B (school landscape) and Part C (verdict).
+Check an area from a school-choice perspective. Part A is AI-written (school landscape).
+Part B is server-rendered (deterministic area data). Part C is AI-written (verdict).
+
+**Order rationale:** Parents see schools first (Part A), area context second (Part B),
+verdict last (Part C). Same flow as Branch 1/2: primary content first, supporting data after.
 
 **Data sources:** `imd` = IMD 2025/2019 from findthatpostcode.uk. `ons` = ONS income
 estimates FYE 2018. `lr` = Land Registry Price Paid. `n` = Nomis Census 2021.
@@ -12,27 +15,127 @@ estimates FYE 2018. `lr` = Land Registry Price Paid. `n` = Nomis Census 2021.
 ## Section order
 
 ```
-A1. Area Profile                   ← server table (IMD, income, ethnicity, qualifications)
-A2. Crime & Safety                 ← server table (crime rate, trend)
-A3. Housing                        ← server table (buy vs rent, property type breakdown)
-A4. Connectivity                   ← server table (nearest stations, commute anchors)
-B1. Direct Answer                  ← AI paragraph: "strong for state/private/both/limited"
-B2. Top Schools                    ← AI numbered shortlist (3–5 schools)
-B3. Quick Comparison Grid          ← AI lightweight table (Academic | Access | Fit | Flag)
-B4. Area Strengths & Weaknesses    ← AI narrative
+A1. Direct Answer                  ← AI paragraph: "strong for state/private/both/limited"
+A2. Top Schools                    ← AI numbered shortlist (3–5 schools)
+A3. Quick Comparison Grid          ← AI lightweight table (Academic | Access | Fit | Flag)
+A4. Area Strengths & Weaknesses    ← AI narrative
+B1. Area Profile                   ← server table (IMD, income, ethnicity, qualifications)
+B2. Crime & Safety                 ← server table (crime rate, trend)
+B3. Housing                        ← server table (buy vs rent, property type breakdown)
+B4. Connectivity                   ← server table (nearest stations, commute anchors)
 C1. Area Scorecard                 ← AI dimension ratings
 C2. Tradeoffs & Risks              ← AI bullets
 C3. Best Next Moves                ← AI bullets
 C4. Sources                        ← AI source list
 ```
 
-Part A is server-rendered (deterministic). Part B and C are AI-written.
-There are no "Observations" sections in Branch 3 — the AI writes complete sections
-with no interleaving.
+Part A and C are AI-written. Part B is server-rendered (deterministic).
+There are no "Observations" sections in Branch 3.
 
 ---
 
-## A1. Area Profile
+## Part A — School Landscape (AI)
+
+### A1. Direct Answer
+
+AI-written. One short paragraph stating a clear judgement.
+
+```
+Southwark is **strong for state schools**, with several outstanding primaries
+and good secondary options within catchment distance. Private options are
+present but limited compared to neighbouring boroughs. The area works well
+for families prioritising state education with decent fallback depth.
+```
+
+Flag format: none (informational section, no verdict).
+
+---
+
+### A2. Top Schools
+
+AI-written. Numbered shortlist of 3–5 schools within catchment/proximity.
+
+```
+1. **Redriff Primary School** (state, mixed, ages 3–11)
+   - Why it matters: Ofsted Outstanding, strong KS2 results, established catchment
+   - Best for: Families wanting a high-performing state primary within walking distance
+   - Main caution: Tight catchment — address must be within ~0.3 mi for reliable entry
+
+2. **St John's Catholic Primary School** (state, mixed, ages 4–11)
+   - Why it matters: Good Ofsted, strong community reputation, faith-based entry
+   - Best for: Catholic families or those comfortable with faith admissions criteria
+   - Main caution: Faith-based admissions — non-Catholic places extremely limited
+
+3. **Bacon's College** (state, mixed, ages 11–18)
+   - Why it matters: Good Ofsted, Church of England secondary with sixth form
+   - Best for: Families wanting an all-through secondary with faith ethos
+   - Main caution: Progress 8 slightly below national — check latest performance data
+
+4. **City of London Academy** (state, mixed, ages 11–18)
+   - Why it matters: Strong Progress 8, sponsored by City of London, modern facilities
+   - Best for: Ambitious families seeking strong academic progress at secondary
+   - Main caution: Oversubscribed — 4+ applicants per place in recent years
+
+5. **Haberdashers' Aske's Hatcham College** (state, mixed, ages 11–18)
+   - Why it matters: Outstanding Ofsted, consistently high Progress 8, music specialism
+   - Best for: Academically driven families; strong music programme
+   - Main caution: Highly selective — banded admissions with entrance tests for music
+```
+
+Flag format: none.
+
+---
+
+### A3. Quick Comparison Grid
+
+AI-written. Lightweight table — high-level only, not Prompt 2 depth.
+
+```
+| School | Academic | Access realism | Best for | Flag |
+|---|---:|---:|---:|---:|
+| Redriff Primary | Strong (KS2 above national) | Tight catchment | State primary families | 🟢 |
+| St John's Primary | Good | Faith-limited | Catholic families | 🟡 |
+| Bacon's College | Mixed (P8 below avg) | Open — mixed catchment | Faith ethos secondary | 🟡 |
+| City of London Academy | Strong (P8 well above) | Competitive | Academic-focused families | 🟢 |
+| Haberdashers' Aske's | Outstanding (top P8) | Highly selective | Top academic performers | 🟢 |
+```
+
+**Table rules:**
+- Maximum 6 columns (compact — this is not Prompt 2's full table)
+- Flag: 🟢 = strong recommendation, 🟡 = conditional/niche, 🔴 = avoid
+- "Access realism" = how likely a typical family is to get a place
+- Do NOT include: class size, fees breakdown, destinations detail, full inspection analysis
+- If the parent described a child, add a one-line "Child fit" row at the bottom
+
+Flag format: none (informational).
+
+---
+
+### A4. Area Strengths & Weaknesses
+
+AI-written. Narrative assessment of the area ecosystem.
+
+```
+**Strengths**
+- Strong primary provision with multiple Good/Outstanding options within 1 mile
+- Good secondary depth — 3+ solid state secondaries within commute range
+- Good transport links into central London (Canada Water, Surrey Quays)
+- Improving area — IMD has shifted from decile 7 (2015) to decile 8 (2025)
+
+**Weaknesses**
+- Catchment-sensitive: top primaries have tight admission radii (<0.5 mi in some cases)
+- Limited private options — families wanting independent schools must look further afield
+- Some secondaries show below-average Progress 8 — check individual school performance
+- Housing costs are high and rising — 3-bed houses start at ~£600k
+```
+
+Flag format: none.
+
+---
+
+## Part B — Area Data (server-rendered)
+
+### B1. Area Profile
 
 Server-rendered table. Shows demographics for the searched postcode/area.
 
@@ -87,7 +190,7 @@ available (2025 preferred, 2019 fallback).
 
 ---
 
-## A2. Crime & Safety
+### B2. Crime & Safety
 
 Server-rendered table. Crime statistics for the area with multi-year trend.
 
@@ -108,9 +211,9 @@ Source: Police UK data (street-level crime) aggregated to LSOA/MSOA.
 
 ---
 
-## A3. Housing
+### B3. Housing
 
-Server-rendered table. Property prices and rental costs from Land Registry + web search.
+Server-rendered table. Property prices and rental costs.
 
 ```
 | Property type | Median buy price | Median rent (pcm) |
@@ -132,7 +235,7 @@ Rental data requires new data source.
 
 ---
 
-## A4. Connectivity
+### B4. Connectivity
 
 Server-rendered table. Transport links near the postcode.
 
@@ -154,104 +257,9 @@ via web search. Server-side transport lookup would require TfL API or similar fo
 
 ---
 
-## B1. Direct Answer
+## Part C — Verdict (AI)
 
-AI-written. One short paragraph stating a clear judgement.
-
-```
-Southwark is **strong for state schools**, with several outstanding primaries
-and good secondary options within catchment distance. Private options are
-present but limited compared to neighbouring boroughs. The area works well
-for families prioritising state education with decent fallback depth.
-```
-
-Flag format: none (informational section, no verdict).
-
----
-
-## B2. Top Schools
-
-AI-written. Numbered shortlist of 3–5 schools within catchment/proximity.
-
-```
-1. **Redriff Primary School** (state, mixed, ages 3–11)
-   - Why it matters: Ofsted Outstanding, strong KS2 results, established catchment
-   - Best for: Families wanting a high-performing state primary within walking distance
-   - Main caution: Tight catchment — address must be within ~0.3 mi for reliable entry
-
-2. **St John's Catholic Primary School** (state, mixed, ages 4–11)
-   - Why it matters: Good Ofsted, strong community reputation, faith-based entry
-   - Best for: Catholic families or those comfortable with faith admissions criteria
-   - Main caution: Faith-based admissions — non-Catholic places extremely limited
-
-3. **Bacon's College** (state, mixed, ages 11–18)
-   - Why it matters: Good Ofsted, Church of England secondary with sixth form
-   - Best for: Families wanting an all-through secondary with faith ethos
-   - Main caution: Progress 8 slightly below national — check latest performance data
-
-4. **City of London Academy** (state, mixed, ages 11–18)
-   - Why it matters: Strong Progress 8, sponsored by City of London, modern facilities
-   - Best for: Ambitious families seeking strong academic progress at secondary
-   - Main caution: Oversubscribed — 4+ applicants per place in recent years
-
-5. **Haberdashers' Aske's Hatcham College** (state, mixed, ages 11–18)
-   - Why it matters: Outstanding Ofsted, consistently high Progress 8, music specialism
-   - Best for: Academically driven families; strong music programme
-   - Main caution: Highly selective — banded admissions with entrance tests for music
-```
-
-Flag format: none.
-
----
-
-## B3. Quick Comparison Grid
-
-AI-written. Lightweight table — high-level only, not Prompt 2 depth.
-
-```
-| School | Academic | Access realism | Best for | Flag |
-|---|---:|---:|---:|---:|
-| Redriff Primary | Strong (KS2 above national) | Tight catchment | State primary families | 🟢 |
-| St John's Primary | Good | Faith-limited | Catholic families | 🟡 |
-| Bacon's College | Mixed (P8 below avg) | Open — mixed catchment | Faith ethos secondary | 🟡 |
-| City of London Academy | Strong (P8 well above) | Competitive | Academic-focused families | 🟢 |
-| Haberdashers' Aske's | Outstanding (top P8) | Highly selective | Top academic performers | 🟢 |
-```
-
-**Table rules:**
-- Maximum 6 columns (compact — this is not Prompt 2's full table)
-- Flag: 🟢 = strong recommendation, 🟡 = conditional/niche, 🔴 = avoid
-- "Access realism" = how likely a typical family is to get a place
-- Do NOT include: class size, fees breakdown, destinations detail, full inspection analysis
-- If the parent described a child, add a one-line "Child fit" row at the bottom
-
-Flag format: none (informational).
-
----
-
-## B4. Area Strengths & Weaknesses
-
-AI-written. Narrative assessment of the area ecosystem.
-
-```
-**Strengths**
-- Strong primary provision with multiple Good/Outstanding options within 1 mile
-- Good secondary depth — 3+ solid state secondaries within commute range
-- Good transport links into central London (Canada Water, Surrey Quays)
-- Improving area — IMD has shifted from decile 7 (2015) to decile 8 (2025)
-
-**Weaknesses**
-- Catchment-sensitive: top primaries have tight admission radii (<0.5 mi in some cases)
-- Limited private options — families wanting independent schools must look further afield
-- Some secondaries show below-average Progress 8 — check individual school performance
-- Housing costs are high and rising — 3-bed houses start at ~£600k
-```
-
-Flag format: none.
-
----
-
-## C1. Area Scorecard
+### C1. Area Scorecard
 
 AI-written. Dimension ratings for the area as a whole.
 
@@ -273,7 +281,7 @@ Flag format: none (informational section).
 
 ---
 
-## C2. Tradeoffs & Risks
+### C2. Tradeoffs & Risks
 
 AI-written. Bullet list of practical cautions.
 
@@ -292,7 +300,7 @@ AI-written. Bullet list of practical cautions.
 
 ---
 
-## C3. Best Next Moves
+### C3. Best Next Moves
 
 AI-written. Bullet list of practical next actions.
 
@@ -311,7 +319,7 @@ AI-written. Bullet list of practical next actions.
 
 ---
 
-## C4. Sources
+### C4. Sources
 
 AI-written. Links used.
 
@@ -338,19 +346,19 @@ Secondary Sources
 
 | Section | Status | Data source |
 |---|---|---|
-| A1. Area Profile | ✅ Implemented (`getAreaData` + `fmtAreaDataSlim`) | IMD, ONS, Nomis, Crystal Roof |
-| A2. Crime & Safety | ❌ Not yet implemented | Police UK API (`data.police.uk`) |
-| A3. Housing | ⚠️ Partial — overall median only | Land Registry (buy), Rightmove (rent — AI) |
-| A4. Connectivity | ❌ Not yet implemented | TfL / Google Maps API (AI web search for now) |
+| B1. Area Profile | ✅ Implemented (`getAreaData` + `fmtAreaDataSlim`) | IMD, ONS, Nomis, Crystal Roof |
+| B2. Crime & Safety | ❌ Not yet implemented | Police UK API (`data.police.uk`) |
+| B3. Housing | ⚠️ Partial — overall median only | Land Registry (buy), Rightmove (rent — AI) |
+| B4. Connectivity | ❌ Not yet implemented | TfL / Google Maps API (AI web search for now) |
 
 ### What's AI-written
 
 | Section | Key constraints |
 |---|---|
-| B1. Direct Answer | One paragraph. Must use a clear verdict word: strong/good/mixed/limited |
-| B2. Top Schools | 3–5 schools, numbered. Each: why it matters, best for, main caution |
-| B3. Quick Comparison Grid | Max 6 columns. Lightweight — NOT Prompt 2 depth. No class size or fees detail |
-| B4. Area Strengths & Weaknesses | Ecosystem-level, not per-school |
+| A1. Direct Answer | One paragraph. Must use a clear verdict word: strong/good/mixed/limited |
+| A2. Top Schools | 3–5 schools, numbered. Each: why it matters, best for, main caution |
+| A3. Quick Comparison Grid | Max 6 columns. Lightweight — NOT Prompt 2 depth. No class size or fees detail |
+| A4. Area Strengths & Weaknesses | Ecosystem-level, not per-school |
 | C1. Area Scorecard | 7 dimensions, rating + one-sentence note |
 | C2. Tradeoffs & Risks | Bullets. New points only — no restating |
 | C3. Best Next Moves | Practical, actionable. Include visit suggestions with dates if findable |

@@ -777,6 +777,16 @@ describe('tagPartLabels', () => {
     const result = tagPartLabels(sections);
     expect(result[0]._partLabel).toBeUndefined();
   });
+
+  it('does not overwrite existing _partLabel set by server-rendered code', () => {
+    // Branch 3 sets _partLabel on B1 before tagPartLabels runs
+    const sections = [
+      { heading: 'B1. Area Profile', body: '...', flag: 'none', _partLabel: 'Part B — Area Data' },
+    ];
+    const result = tagPartLabels(sections);
+    expect(result[0]._partLabel).toBe('Part B — Area Data');
+    // NOT overwritten to "Part B — Independent Research"
+  });
 });
 
 // ---------------------------------------------------------------------------

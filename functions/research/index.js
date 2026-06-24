@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { fetchGovDataForPrompt, renderPartA, renderPartAComparison, computeFlags } from './govuk.js';
+import { fetchGovDataForPrompt, renderPartA, renderPartAComparison, computeFlags, getAreaData, renderPartBArea } from './govuk.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -610,6 +610,7 @@ export function tagPartLabels(sections) {
     'C1.': 'Part C — Verdict & Synthesis',
   };
   for (const s of sections) {
+    if (s._partLabel) continue; // already labelled (e.g. by server-rendered Part B)
     for (const [prefix, label] of Object.entries(PART_LABELS)) {
       if (s.heading?.startsWith(prefix)) { s._partLabel = label; break; }
     }
@@ -1581,10 +1582,13 @@ export const handler = async (event) => {
 
   let instructions = getBranchInstructions(body.branch, promptFile);
 
-  // Pre-fetch gov.uk data for branch 2 (comparison summary)
+  // Pre-fetch gov.uk data for branch 2 (comparison summary) and
+  // branch 3 (area data for server-rendered Part B).
   let govukBlock = '';
   let govukFlags = {};
   let govukMs    = 0;
+  let partBSections = [];  // Branch 3 server-rendered area sections
+
   if (body.branch === 'prompt_branch_2') {
     try {
       const govukT0 = Date.now();
@@ -1593,6 +1597,22 @@ export const handler = async (event) => {
       govukFlags = govukResult?.flags  ?? {};
       govukMs = Date.now() - govukT0;
       if (govukBlock) instructions += govukBlock;
+    } catch (err) {
+      log('govuk_inject_error', { branch: body.branch, error: err.message });
+    }
+  }
+
+  if (body.branch === 'prompt_branch_3') {
+    try {
+      const govukT0 = Date.now();
+      // Extract a UK postcode from the question (simple regex)
+      const postcodeMatch = body.question?.match(/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i);
+      const postcode = postcodeMatch ? postcodeMatch[0] : null;
+      if (postcode) {
+        const area = await getAreaData(postcode);
+        partBSections = renderPartBArea(area);
+        govukMs = Date.now() - govukT0;
+      }
     } catch (err) {
       log('govuk_inject_error', { branch: body.branch, error: err.message });
     }
@@ -1663,7 +1683,14 @@ export const handler = async (event) => {
     }
   }
 
-  // Tag part labels
+  // Append server-rendered Part B sections (Branch 3 area data)
+  if (partBSections.length) {
+    // Tag the first Part B section with _partLabel for the UI divider
+    partBSections[0]._partLabel = 'Part B — Area Data';
+    result.sections = (result.sections ?? []).concat(partBSections);
+  }
+
+  // Tag part labels (Part A and Part C from AI output)
   result.sections = tagPartLabels(result.sections ?? []);
 
   const ms = Date.now() - t0;

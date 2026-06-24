@@ -19,7 +19,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { buildSlimBlock, renderPartA, renderPartAComparison, computeFlags } from '../govuk.js';
+import { buildSlimBlock, renderPartA, renderPartAComparison, computeFlags, renderPartBArea } from '../govuk.js';
 
 const __dir       = dirname(fileURLToPath(import.meta.url));
 const FIXTURES    = join(__dir, 'fixtures');
@@ -666,5 +666,178 @@ describe('branch 2 prompt — section contract', () => {
 
   test('prompt references pre-fetched data as ground truth', () => {
     expect(promptText).toMatch(/pre-fetched/);
+  });
+});
+
+// ── Branch 3: renderPartBArea — area data tables ───────────────────────────────
+
+describe('renderPartBArea — area data contract', () => {
+
+  const mockArea = {
+    postcode: 'SE16 7LP',
+    district: 'Southwark',
+    region: 'London',
+    msoa: 'Southwark 001',
+    lsoa: 'Southwark 001A',
+    imd: {
+      imdScore: 12.4,
+      imdRank: '24,310 / 32,844',
+      imdDecile: 8,
+      year: 2025,
+      subDomains: {
+        income: 7,
+        employment: 8,
+        education: 9,
+        health: 6,
+        crime: 5,
+        housing: 7,
+        livingEnvironment: 9,
+      },
+    },
+    income: {
+      totalAnnualHouseholdIncome: '£48,200',
+      netAnnualHouseholdIncome: '£35,100',
+      afterHousingCostsIncome: '£31,400',
+    },
+    crystalRoof: {
+      income: { meanAnnualHouseholdIncome: '£52,100' },
+      qualifications: { noQualifications: 12, level4AndAbove: 48 },
+      occupation: { managerialProfessional: 42, intermediate: 24, routineAndManual: 20 },
+    },
+    ethnicity: {
+      'White: English/Welsh/Scottish/Northern Irish/British': 35,
+      'White: Other White': 13,
+      'Asian/Asian British: Bangladeshi': 12,
+      'Asian/Asian British: Other Asian': 10,
+      'Black/African/Caribbean/Black British: African': 10,
+      'Black/African/Caribbean/Black British: Caribbean': 6,
+      'Mixed/multiple ethnic groups': 8,
+      'Other ethnic group': 6,
+    },
+    pricePaid: {
+      medianAllTypes: '£550,000',
+      totalTransactions: 234,
+      byType: { Flat: '£385,000', Terraced: '£620,000', 'Semi-detached': '£780,000' },
+    },
+  };
+
+  test('returns empty array for null area', () => {
+    expect(renderPartBArea(null)).toEqual([]);
+  });
+
+  test('B1 section exists with Area Profile heading', () => {
+    const sections = renderPartBArea(mockArea);
+    const b1 = sections.find(s => s.heading === 'B1. Area Profile');
+    expect(b1).toBeDefined();
+    expect(b1.flag).toBe('none');
+  });
+
+  test('B1 includes postcode and area identifiers', () => {
+    const sections = renderPartBArea(mockArea);
+    const b1 = sections.find(s => s.heading === 'B1. Area Profile');
+    expect(b1.body).toContain('SE16 7LP');
+    expect(b1.body).toContain('Southwark');
+    expect(b1.body).toContain('Southwark 001');
+  });
+
+  test('B1 includes IMD decile and sub-domains', () => {
+    const sections = renderPartBArea(mockArea);
+    const b1 = sections.find(s => s.heading === 'B1. Area Profile');
+    expect(b1.body).toContain('8');
+    expect(b1.body).toContain('income deprivation');
+    expect(b1.body).toContain('education deprivation');
+  });
+
+  test('B1 includes household income (ONS + Crystal Roof)', () => {
+    const sections = renderPartBArea(mockArea);
+    const b1 = sections.find(s => s.heading === 'B1. Area Profile');
+    expect(b1.body).toContain('£48,200');
+    expect(b1.body).toContain('£52,100');
+    expect(b1.body).toContain('£31,400');
+  });
+
+  test('B1 includes ethnicity breakdown with broad groups', () => {
+    const sections = renderPartBArea(mockArea);
+    const b1 = sections.find(s => s.heading === 'B1. Area Profile');
+    expect(b1.body).toContain('White');
+    expect(b1.body).toContain('Asian');
+    expect(b1.body).toContain('Black');
+    expect(b1.body).toContain('Mixed');
+  });
+
+  test('B1 includes qualifications and occupation', () => {
+    const sections = renderPartBArea(mockArea);
+    const b1 = sections.find(s => s.heading === 'B1. Area Profile');
+    expect(b1.body).toContain('12%');
+    expect(b1.body).toContain('48%');
+    expect(b1.body).toContain('42%');
+  });
+
+  test('B2 Crime & Safety placeholder exists', () => {
+    const sections = renderPartBArea(mockArea);
+    const b2 = sections.find(s => s.heading === 'B2. Crime & Safety');
+    expect(b2).toBeDefined();
+    expect(b2.body).toContain('not yet available');
+  });
+
+  test('B3 Housing includes price breakdown by property type', () => {
+    const sections = renderPartBArea(mockArea);
+    const b3 = sections.find(s => s.heading === 'B3. Housing');
+    expect(b3.body).toContain('£550,000');
+    expect(b3.body).toContain('£385,000');
+    expect(b3.body).toContain('£620,000');
+    expect(b3.body).toContain('£780,000');
+    expect(b3.body).toContain('Flat');
+    expect(b3.body).toContain('Terraced');
+  });
+
+  test('B3 Housing includes transaction count and source note', () => {
+    const sections = renderPartBArea(mockArea);
+    const b3 = sections.find(s => s.heading === 'B3. Housing');
+    expect(b3.body).toContain('234 sales');
+    expect(b3.body).toContain('Land Registry');
+  });
+
+  test('B4 Connectivity placeholder exists', () => {
+    const sections = renderPartBArea(mockArea);
+    const b4 = sections.find(s => s.heading === 'B4. Connectivity');
+    expect(b4).toBeDefined();
+    expect(b4.body).toContain('future update');
+  });
+
+  test('all four B sections present in order', () => {
+    const sections = renderPartBArea(mockArea);
+    const headings = sections.map(s => s.heading);
+    expect(headings).toEqual([
+      'B1. Area Profile',
+      'B2. Crime & Safety',
+      'B3. Housing',
+      'B4. Connectivity',
+    ]);
+  });
+
+  test('handles missing IMD gracefully', () => {
+    const noImd = { ...mockArea, imd: null };
+    const sections = renderPartBArea(noImd);
+    const b1 = sections.find(s => s.heading === 'B1. Area Profile');
+    expect(b1.body).not.toContain('IMD');
+  });
+
+  test('handles missing price data gracefully', () => {
+    const noPrices = { ...mockArea, pricePaid: null };
+    const sections = renderPartBArea(noPrices);
+    const b3 = sections.find(s => s.heading === 'B3. Housing');
+    expect(b3.body).toContain('Not retrieved');
+  });
+
+  test('handles missing Crystal Roof gracefully', () => {
+    const noCR = { ...mockArea, crystalRoof: null };
+    const sections = renderPartBArea(noCR);
+    const b1 = sections.find(s => s.heading === 'B1. Area Profile');
+    // Should still have ONS income, IMD, etc.
+    expect(b1.body).toContain('£48,200');
+    // Should not have Crystal Roof sections
+    expect(b1.body).not.toContain('Qualifications');
+    expect(b1.body).not.toContain('Occupation');
   });
 });

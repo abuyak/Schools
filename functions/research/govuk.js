@@ -3682,6 +3682,142 @@ function fmtAreaDataSlim(area) {
   return lines.join('\n');
 }
 
+// ─── Render Part B for Branch 3 (Area Data) ────────────────────────────────────
+//
+// Returns an array of { heading, body, flag } sections for server-rendered
+// area data tables: B1 Area Profile, B2 Crime & Safety, B3 Housing, B4 Connectivity.
+// These are appended after the AI-written Part A sections.
+
+export function renderPartBArea(area) {
+  if (!area) return [];
+  const sections = [];
+  const na = '_Not available_';
+
+  // ── B1. Area Profile ────────────────────────────────────────────────────
+
+  const b1Rows = [];
+
+  // Location
+  b1Rows.push(`| Postcode | ${area.postcode ?? na} |`);
+  b1Rows.push(`| Area | ${area.district ?? na}${area.region ? ', ' + area.region : ''} |`);
+  b1Rows.push(`| MSOA | ${area.msoa ?? na} |`);
+  b1Rows.push(`| LSOA | ${area.lsoa ?? na} |`);
+  b1Rows.push('');
+
+  // Deprivation
+  if (area.imd) {
+    const imd = area.imd;
+    const decileLabel = imd.imdDecile >= 8 ? `${imd.imdDecile} (less deprived)`
+      : imd.imdDecile >= 4 ? `${imd.imdDecile} (mid-range)`
+      : `${imd.imdDecile} (more deprived)`;
+    b1Rows.push('| | Value | England decile |');
+    b1Rows.push('|---|---:|---:|');
+    b1Rows.push(`| IMD score | ${imd.imdScore ?? na} | ${decileLabel} |`);
+    if (imd.imdRank) b1Rows.push(`| IMD rank | ${imd.imdRank} | — |`);
+    if (imd.subDomains) {
+      for (const [name, dec] of Object.entries(imd.subDomains)) {
+        b1Rows.push(`| ${name} deprivation | — | ${dec} |`);
+      }
+    }
+    b1Rows.push('');
+  }
+
+  // Household income
+  const crInc = area.crystalRoof?.income;
+  const onsInc = area.income;
+  if (crInc || onsInc) {
+    b1Rows.push('| Household income | Value |');
+    b1Rows.push('|---|---:|');
+    if (crInc?.meanAnnualHouseholdIncome) b1Rows.push(`| Mean gross annual (Crystal Roof) | ${crInc.meanAnnualHouseholdIncome} |`);
+    if (onsInc?.totalAnnualHouseholdIncome) b1Rows.push(`| Mean gross annual (ONS) | ${onsInc.totalAnnualHouseholdIncome} |`);
+    if (onsInc?.netAnnualHouseholdIncome) b1Rows.push(`| Net annual | ${onsInc.netAnnualHouseholdIncome} |`);
+    if (onsInc?.afterHousingCostsIncome) b1Rows.push(`| Net annual after housing costs | ${onsInc.afterHousingCostsIncome} |`);
+    b1Rows.push('');
+  }
+
+  // Ethnicity
+  if (area.ethnicity && Object.keys(area.ethnicity).length) {
+    const groups = {};
+    for (const [label, pct] of Object.entries(area.ethnicity)) {
+      const broad = label.startsWith('White:') ? 'White'
+        : label.startsWith('Asian')            ? 'Asian'
+        : label.startsWith('Black')            ? 'Black'
+        : label.startsWith('Mixed')            ? 'Mixed'
+        : 'Other';
+      groups[broad] = (groups[broad] ?? 0) + pct;
+    }
+    b1Rows.push('| Ethnicity (Census 2021) | % |');
+    b1Rows.push('|---|---:|');
+    for (const [group, pct] of Object.entries(groups).sort(([,a],[,b]) => b-a)) {
+      b1Rows.push(`| ${group} | ${Math.round(pct)}% |`);
+    }
+    b1Rows.push('');
+  }
+
+  // Qualifications
+  const q = area.crystalRoof?.qualifications;
+  if (q) {
+    b1Rows.push('| Qualifications (Census 2021) | % |');
+    b1Rows.push('|---|---:|');
+    if (q.noQualifications != null) b1Rows.push(`| No qualifications | ${q.noQualifications}% |`);
+    if (q.level4AndAbove != null) b1Rows.push(`| Level 4+ (degree) | ${q.level4AndAbove}% |`);
+    b1Rows.push('');
+  }
+
+  // Occupation
+  const o = area.crystalRoof?.occupation;
+  if (o) {
+    b1Rows.push('| Occupation (Census 2021) | % |');
+    b1Rows.push('|---|---:|');
+    if (o.managerialProfessional != null) b1Rows.push(`| Managerial / professional | ${o.managerialProfessional}% |`);
+    if (o.intermediate != null) b1Rows.push(`| Intermediate | ${o.intermediate}% |`);
+    if (o.routineAndManual != null) b1Rows.push(`| Routine / manual | ${o.routineAndManual}% |`);
+  }
+
+  sections.push({ heading: 'B1. Area Profile', body: b1Rows.join('\n'), flag: 'none' });
+
+  // ── B2. Crime & Safety ───────────────────────────────────────────────────
+  // Not yet pre-fetched — render placeholder so the section exists in the structure.
+  // TODO: wire up Police UK API (data.police.uk) to fill this table.
+  sections.push({
+    heading: 'B2. Crime & Safety',
+    body: '_Crime data is not yet available for this area. We are adding Police UK data soon._',
+    flag: 'none',
+  });
+
+  // ── B3. Housing ──────────────────────────────────────────────────────────
+
+  const b3Rows = [];
+  if (area.pricePaid) {
+    const pp = area.pricePaid;
+    b3Rows.push('| Property type | Median buy price |');
+    b3Rows.push('|---|---:|');
+    b3Rows.push(`| Overall (all types) | ${pp.medianAllTypes ?? na} |`);
+    if (pp.byType) {
+      for (const [type, price] of Object.entries(pp.byType)) {
+        b3Rows.push(`| ${type} | ${price} |`);
+      }
+    }
+    if (pp.totalTransactions) {
+      b3Rows.push('');
+      b3Rows.push(`_${pp.totalTransactions} sales within 800m, last 5 years. Source: Land Registry Price Paid._`);
+    }
+  } else {
+    b3Rows.push('_Not retrieved_');
+  }
+  sections.push({ heading: 'B3. Housing', body: b3Rows.join('\n'), flag: 'none' });
+
+  // ── B4. Connectivity ─────────────────────────────────────────────────────
+  // Not yet pre-fetched — the AI can fill this in via web search.
+  sections.push({
+    heading: 'B4. Connectivity',
+    body: '_Transport links and connectivity are assessed in the AI-written sections above. A server-rendered transport table will be added in a future update._',
+    flag: 'none',
+  });
+
+  return sections;
+}
+
 // ─── Build Branch 1 block (slim — used for prompt injection) ─────────────────
 //
 // Targets ~1,800 tokens vs ~5,700 for the detailed block (-68%).
