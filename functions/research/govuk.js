@@ -1136,9 +1136,9 @@ export async function getGIASDetails(urn) {
 
 import { findSchoolsNear } from './local-data.js';
 
-export function fetchSchoolsInArea(lat, lon, radiusMiles = 3) {
+export function fetchSchoolsInArea(lat, lon, radiusMiles = 3, limit = 25) {
   if (lat == null || lon == null) return [];
-  return findSchoolsNear(lat, lon, radiusMiles, 50);
+  return findSchoolsNear(lat, lon, radiusMiles, limit);
 }
 
 // ─── Area data (postcodes.io → ONS / Land Registry) ──────────────────────────

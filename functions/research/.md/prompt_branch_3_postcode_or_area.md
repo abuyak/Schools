@@ -73,6 +73,14 @@ If a child description was provided, include a one-line fit verdict. Do not pre-
 
 Numbered shortlist of 3 to 5 schools. Use continuing numbers (1, 2, 3 — not restarting at 1). Include both state and private unless the parent specified one.
 
+**CRITICAL — School selection:**
+A pre-fetched list of all schools within 3 miles is provided in the prompt. Your shortlist MUST be drawn from this list. You may web-search for Ofsted grades, performance data, and inspection reports on these schools, but you MUST NOT fabricate schools not on the list. If the parent specified an area without a full postcode, the list was built from the postcode area centroid — all nearby schools are still included.
+
+**Selection priority:**
+1. Closest relevant schools first — proximity matters more than Ofsted grade for area search
+2. Mix of primary and secondary unless the parent specified one phase
+3. State and private both represented unless the parent specified one
+
 For each school:
 
 ```
@@ -83,12 +91,6 @@ N. School Name (type, e.g. state community primary, girls selective grammar)
 ```
 
 Use indented bullet points (- ) for the three sub-items. Do not add blank lines between sub-items. Add a blank line between schools.
-
-**Selection criteria:**
-- Only include schools within a realistic commute or catchment radius
-- Prioritise by relevance to the parent's stated priorities
-- If faith schools are included, note the admissions implication
-- If SEN provision was requested, include relevant specialist provision
 
 ---
 

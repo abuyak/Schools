@@ -1617,46 +1617,53 @@ export const handler = async (event) => {
         }
       }
       if (postcode) {
-        const area = await getAreaData(postcode);
+        let area = await getAreaData(postcode);
+
+        // Fallback: outward-only codes (e.g. "SE16") don't resolve via
+        // postcodes.io postcode lookup. Try the outward-code endpoint
+        // which returns a centroid lat/lon for the postcode area.
+        if (!area && /^[A-Z]{1,2}\d{1,2}[A-Z]?$/i.test(postcode)) {
+          try {
+            const outcodeRes = await fetch(`https://api.postcodes.io/outcodes/${encodeURIComponent(postcode)}`);
+            if (outcodeRes.ok) {
+              const outcodeJson = await outcodeRes.json();
+              const r = outcodeJson?.result;
+              if (r) {
+                area = {
+                  postcode: postcode,
+                  district: r.admin_district?.[0] || r.admin_county?.[0] || '',
+                  region: r.region || '',
+                  lat: r.latitude ?? null,
+                  lon: r.longitude ?? null,
+                };
+              }
+            }
+          } catch (_) {}
+        }
+
         partBSections = renderPartBArea(area);
 
         // Find nearby schools using the bundled GIAS index (TD-008)
         const lat = area?.lat, lon = area?.lon;
         if (lat != null && lon != null) {
-          const schools = fetchSchoolsInArea(lat, lon, 3);
+          const schools = fetchSchoolsInArea(lat, lon, 2, 30); // top 30 closest
           if (schools.length) {
-            const primary = schools.filter(s => /primary/i.test(s['PhaseOfEducation (name)'] || ''));
-            const secondary = schools.filter(s => /secondary/i.test(s['PhaseOfEducation (name)'] || ''));
-            const allThrough = schools.filter(s => /all-through/i.test(s['PhaseOfEducation (name)'] || ''));
-            const sixthForm = schools.filter(s => /16 plus/i.test(s['PhaseOfEducation (name)'] || ''));
-
             const lines = [];
-            lines.push(`\n\n---\n## Pre-fetched Schools Near ${postcode} (within 3 miles)\n`);
-            lines.push(`${schools.length} schools found. Use these as your candidate pool — prefer schools from this list. You may web-search for quality data (Ofsted, performance) on these schools, but do not fabricate schools not listed here.\n`);
+            const allPrimary = schools.filter(s => /primary/i.test(s['PhaseOfEducation (name)'] || ''));
+            const allSecondary = schools.filter(s => /secondary/i.test(s['PhaseOfEducation (name)'] || ''));
 
-            const addGroup = (label, list) => {
-              if (!list.length) return;
-              lines.push(`### ${label} (${list.length})`);
-              for (const s of list) {
-                const name = s['EstablishmentName'] || s.name || '?';
-                const type = s['TypeOfEstablishment (name)'] || '';
-                const la = s['LA (name)'] || '';
-                const ageLo = s['StatutoryLowAge'] || '';
-                const ageHi = s['StatutoryHighAge'] || '';
-                const gender = s['Gender (name)'] || '';
-                const dist = s.distanceMiles != null ? ` · ${s.distanceMiles} mi` : '';
-                lines.push(`- ${name} (URN ${s.urn})${type ? ' · ' + type : ''}${la ? ' · ' + la : ''}${ageLo && ageHi ? ' · ages ' + ageLo + '-' + ageHi : ''}${gender && !/not applicable/i.test(gender) ? ' · ' + gender : ''}${dist}`);
-              }
-              lines.push('');
-            };
+            lines.push(`\n\n---\n## Pre-fetched Schools Near ${postcode} (within 2 miles)\n`);
+            lines.push(`${schools.length} schools returned — ${allPrimary.length} primary, ${allSecondary.length} secondary. Your A2 shortlist MUST be drawn from this list. You may web-search for Ofsted grades, performance data, and inspection reports to determine which are the BEST schools — but do not fabricate schools.\n`);
+            lines.push(`SELECTION RULE: Pick the 3-5 BEST schools from this list based on quality (Ofsted grade, progress scores, reputation), not just the closest. Proximity matters, but an Outstanding school at 1 mile beats a Requires Improvement school at 0.2 miles. Include at least 2 primaries and 2 secondaries unless the parent specified one phase.\n`);
 
-            addGroup('Primary', primary);
-            addGroup('Secondary', secondary);
-            addGroup('All-through', allThrough);
-            addGroup('16 Plus', sixthForm);
-            // Remainder
-            const rest = schools.filter(s => !primary.includes(s) && !secondary.includes(s) && !allThrough.includes(s) && !sixthForm.includes(s));
-            addGroup('Other', rest);
+            // Full list (compact)
+            lines.push(`### Full list (${schools.length} schools)`);
+            for (const s of schools) {
+              const name = s['EstablishmentName'] || '?';
+              const phase = s['PhaseOfEducation (name)'] || '';
+              const dist = s.distanceMiles != null ? ` · ${s.distanceMiles} mi` : '';
+              lines.push(`- ${name} (URN ${s.urn}) · ${phase}${dist}`);
+            }
 
             instructions += lines.join('\n');
             govukBlock = lines.join('\n');
