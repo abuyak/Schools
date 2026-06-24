@@ -1646,7 +1646,7 @@ export const handler = async (event) => {
         // Find nearby schools using the bundled GIAS index (TD-008)
         const lat = area?.lat, lon = area?.lon;
         if (lat != null && lon != null) {
-          const schools = fetchSchoolsInArea(lat, lon, 2, 30); // top 30 closest
+          const schools = fetchSchoolsInArea(lat, lon, 2, 15); // top 15 closest
           if (schools.length) {
             const lines = [];
             const allPrimary = schools.filter(s => /primary/i.test(s['PhaseOfEducation (name)'] || ''));
@@ -1654,7 +1654,7 @@ export const handler = async (event) => {
 
             lines.push(`\n\n---\n## Pre-fetched Schools Near ${postcode} (within 2 miles)\n`);
             lines.push(`${schools.length} schools returned — ${allPrimary.length} primary, ${allSecondary.length} secondary. Your A2 shortlist MUST be drawn from this list. You may web-search for Ofsted grades, performance data, and inspection reports to determine which are the BEST schools — but do not fabricate schools.\n`);
-            lines.push(`SELECTION RULE: Pick the 3-5 BEST schools from this list based on quality (Ofsted grade, progress scores, reputation), not just the closest. Proximity matters, but an Outstanding school at 1 mile beats a Requires Improvement school at 0.2 miles. Include at least 2 primaries and 2 secondaries unless the parent specified one phase.\n`);
+            lines.push(`SELECTION RULE: You MUST web-search Ofsted grades for ALL ${schools.length} schools in this list before writing A2. Do not only search the closest 5 — an Outstanding school at 1 mile is a better recommendation than a Good school at 0.2 miles. After searching all schools, pick the 3-5 BEST based on quality, not proximity. Include at least 2 primaries and 2 secondaries unless the parent specified one phase.\n`);
 
             // Full list (compact)
             lines.push(`### Full list (${schools.length} schools)`);

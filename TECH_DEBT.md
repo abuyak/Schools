@@ -623,6 +623,27 @@ Branch 3's B3 Housing table shows median buy prices by property type (from Land 
 
 ---
 
+## TD-026 · Branch 3 — inject Ofsted grades into pre-fetched school list
+
+**Severity:** High — AI can't rank schools by quality without web-searching every one  
+**File:** `functions/research/index.js` → Branch 3 handler  
+**Depends on:** TD-007 (bundled Ofsted index)
+
+**Problem:**
+Branch 3 injects the top 15 closest schools into the prompt with name, URN, type, phase, and distance. But it doesn't include Ofsted grades. The AI must web-search each school individually to determine quality — and it only searches the closest 5-6, missing outstanding schools slightly further away (e.g. Redriff Primary at 0.95 mi with Outstanding vs Southwark Park at 0.16 mi with Good).
+
+When TD-007 is complete (bundled Ofsted outcomes by URN), each injected school can include its Ofsted grade inline: `Redriff Primary (URN 137648) · Primary · 0.95 mi · Outstanding`. The AI can then rank by quality without any web searches.
+
+**Fix (after TD-007):**
+1. In the Branch 3 handler, after `fetchSchoolsInArea()`, look up each school's Ofsted grade via `getOfstedGrades(urn)` from local-data.js
+2. Include the grade in the injected list: `- School Name (URN) · Phase · 0.5 mi · Outstanding`
+3. Remove the "web-search all schools" instruction — the AI can pick the best directly from the list
+4. Cut the list to top 8-10 schools (since quality data makes the shorter list sufficient)
+
+**Done when:** Redriff Primary appears in Branch 3 results for "SE16 Rotherhithe" without requiring the AI to web-search every school.
+
+---
+
 ## Product Backlog (from SchoolScanner-Backlog.docx v1.0, May 2026)
 
 Items imported from `docs/requirements/SchoolScanner-Backlog.docx`. Priority/Effort/Phase as defined in that document. Items already covered by TD entries above are cross-referenced.
