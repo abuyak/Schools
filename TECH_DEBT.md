@@ -556,6 +556,73 @@ The ONS/Land Registry price data already breaks down by property type. We're jus
 
 ---
 
+## TD-023 · Branch 3 — B2 Crime & Safety: wire up Police UK API
+
+**Severity:** Medium — area safety is a top-3 parent concern  
+**File:** `functions/research/govuk.js` → `renderPartBArea()` → B2 section
+
+**Problem:**
+Branch 3's B2 Crime & Safety section currently renders a placeholder: "_Crime data is not yet available for this area._" But parents consistently ask about area safety — it's one of the most important non-school factors in a relocation decision. The Police UK API (`data.police.uk/api`) provides street-level crime data by latitude/longitude, broken down by category, with multi-year history.
+
+**Data available from Police UK API:**
+- `crimes-street/all-crime?lat=X&lng=Y` — all crimes within 1 mile, last month
+- `crimes-at-location?location_id=X` — crimes at a specific location
+- `crime-last-updated` — data freshness timestamp
+- Categories: violent-crime, burglary, anti-social-behaviour, vehicle-crime, etc.
+
+**Fix:**
+1. Write `fetchPoliceUKCrime(lat, lon)` — calls Police UK API for crimes within 1 mile radius, aggregates by category
+2. Compute rates per 1,000 residents (need population from LSOA/IMD data which is already available)
+3. For multi-year trend: use the API's historical data or compare with previous year snapshots
+4. Render B2 table: `| Crime type | Rate per 1,000 | England avg | Trend |`
+5. Fall back to placeholder only if the API is unreachable
+
+**Done when:** B2 shows real crime statistics with 5-year trend arrows for any UK postcode.
+
+---
+
+## TD-024 · Branch 3 — B4 Connectivity: transport link lookup
+
+**Severity:** Medium — commute practicality is a key area-assessment dimension  
+**File:** `functions/research/govuk.js` → `renderPartBArea()` → B4 section
+
+**Problem:**
+Branch 3's B4 Connectivity section currently renders: "_Transport links and connectivity are assessed in the AI-written sections above._" This pushes a deterministic data point to the AI, which may fabricate distances or miss stations. A server-side transport lookup would provide reliable nearest-station/walking-time data.
+
+**Data sources:**
+- **London**: TfL Unified API — nearest tube/rail/bus stops, walking time
+- **Rest of UK**: Google Maps Distance Matrix API or OpenStreetMap Overpass API
+- The postcode lat/lon is already resolved by `getAreaData()`
+
+**Fix:**
+1. Write `fetchTransportLinks(lat, lon)` — queries TfL API for London postcodes, falls back to OSM Overpass for rest of UK
+2. Determine nearest: tube/metro station, national rail station, bus stop, major road
+3. Compute walking distance/time (Haversine for distance, ~3mph walking pace for time)
+4. Compute drive time to nearest airport (Google Maps Distance Matrix or fixed estimate)
+5. Render B4 table: `| Transport | Nearest | Distance | Travel time |`
+
+**Done when:** B4 shows a populated transport table for London postcodes (TfL API); other regions show at minimum nearest rail station from OSM.
+
+---
+
+## TD-025 · Branch 3 — B3 Housing: rental price data
+
+**Severity:** Low — buy prices from Land Registry already shown; rental data would complete the picture  
+**File:** `functions/research/govuk.js` → `renderPartBArea()` → B3 section
+
+**Problem:**
+Branch 3's B3 Housing table shows median buy prices by property type (from Land Registry Price Paid data, already pre-fetched). But it does not include rental costs. For parents deciding whether to move to an area, both buy AND rent prices matter — especially for families who plan to rent first, buy later.
+
+**Fix:**
+1. Evaluate data sources: Rightmove API (commercial, may not be free), Zoopla API (commercial), ONS rental price index (free, but MSOA-level and quarterly)
+2. If a free/affordable API is found, write `fetchRentalPrices(postcode)` or extract from area-level ONS data
+3. Add a "Median rent (pcm)" column to the B3 table alongside buy prices
+4. If no API is available, note this in the prompt so the AI knows to web-search for rental prices
+
+**Done when:** B3 table has a rental price column, OR the prompt explicitly instructs the AI to fill rental costs via web search.
+
+---
+
 ## Product Backlog (from SchoolScanner-Backlog.docx v1.0, May 2026)
 
 Items imported from `docs/requirements/SchoolScanner-Backlog.docx`. Priority/Effort/Phase as defined in that document. Items already covered by TD entries above are cross-referenced.
