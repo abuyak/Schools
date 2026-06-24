@@ -1629,14 +1629,26 @@ export const handler = async (event) => {
             if (outcodeRes.ok) {
               const outcodeJson = await outcodeRes.json();
               const r = outcodeJson?.result;
-              if (r) {
-                area = {
-                  postcode: postcode,
-                  district: r.admin_district?.[0] || r.admin_county?.[0] || '',
-                  region: r.region || '',
-                  lat: r.latitude ?? null,
-                  lon: r.longitude ?? null,
-                };
+              if (r && r.latitude != null && r.longitude != null) {
+                // Find the nearest real postcode to the outward-code centroid
+                // so we can fetch full MSOA/LSOA area data for Part B.
+                const nearRes = await fetch(`https://api.postcodes.io/postcodes?lon=${r.longitude}&lat=${r.latitude}&limit=1&radius=2000`);
+                if (nearRes.ok) {
+                  const nearJson = await nearRes.json();
+                  const nearestPc = nearJson?.result?.[0]?.postcode;
+                  if (nearestPc) {
+                    area = await getAreaData(nearestPc);
+                  }
+                }
+                if (!area) {
+                  area = {
+                    postcode: postcode,
+                    district: r.admin_district?.[0] || r.admin_county?.[0] || '',
+                    region: r.region || '',
+                    lat: r.latitude ?? null,
+                    lon: r.longitude ?? null,
+                  };
+                }
               }
             }
           } catch (_) {}
@@ -1647,10 +1659,29 @@ export const handler = async (event) => {
         // Find nearby schools using the bundled GIAS index (TD-008)
         const lat = area?.lat, lon = area?.lon;
         if (lat != null && lon != null) {
-          const schools = fetchSchoolsInArea(lat, lon, 1.5, 60); // within 1.5 miles
+          // Find schools in the postcode area (outward code match).
+          // For "SE16 7LP" → outward = "SE16". For "SE16" → outward = "SE16".
+          // Only if no outward code can be extracted, fall back to tight radius.
+          const outward = (postcode || '').replace(/\s+/g, '').match(/^[A-Z]{1,2}\d{1,2}[A-Z]?/i)?.[0]?.toUpperCase();
+          let schools = [];
+          if (outward) {
+            // Filter schools by POSTCODE OUTWARD CODE (e.g. "SE16"), not by
+            // spaceless prefix (which would match "SE1 6XX" as "SE16XX").
+            const nearby = fetchSchoolsInArea(lat, lon, 5, 500);
+            schools = nearby.filter(s => {
+              const pc = (s.Postcode || s['Postcode'] || '').toUpperCase().trim();
+              // Extract outward code: "SE16 7LP" → "SE16", "SE1 6AB" → "SE1"
+              const schoolOutward = pc.match(/^[A-Z]{1,2}\d{1,2}[A-Z]?/i)?.[0]?.toUpperCase();
+              return schoolOutward === outward;
+            });
+          }
+          if (!schools.length) {
+            // Fallback: tight radius search
+            schools = fetchSchoolsInArea(lat, lon, 0.5, 20);
+          }
           if (schools.length) {
             // Render A2 server-side — all schools, grouped by phase, no AI curation
-            const a2Section = renderPartASchools(schools, postcode);
+            const a2Section = renderPartASchools(schools, postcode, outward);
             if (a2Section) {
               a2Section._partLabel = 'Part A — Official Record';
               // Prepend after the AI response is parsed — see below
